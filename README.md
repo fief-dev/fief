@@ -5,3 +5,7 @@
 <p align="center">
     <em>Users and authentication management SaaS</em>
 </p>
+
+## License
+
+Fief is [fair-code](http://faircode.io) distributed under [*MIT with Commons Clause**](./LICENSE.md) license.
