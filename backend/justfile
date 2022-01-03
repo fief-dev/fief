@@ -1,3 +1,5 @@
+set dotenv-load := false
+
 default:
   @just --list
 
@@ -9,3 +11,13 @@ format:
 
 test $UNIT_TESTS="1":
   pytest --cov fief/ --cov-report=term-missing
+
+create-local-db:
+	docker volume create fief-dev-db
+	docker run -p 5432:5432 --name fief-dev-db -e PGDATA=/var/lib/postgresql/data/pgdata -e POSTGRES_USER=fief -e POSTGRES_PASSWORD=fiefpassword -v fief-dev-db:/var/lib/postgresql/data -d postgres:alpine
+
+start-local-db:
+	docker start fief-dev-db
+
+run-api: start-local-db
+	uvicorn --reload fief.app:app
