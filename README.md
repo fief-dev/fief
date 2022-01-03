@@ -8,4 +8,4 @@
 
 ## License
 
-Fief is [fair-code](http://faircode.io) distributed under [*MIT with Commons Clause**](./LICENSE.md) license.
+Fief is [fair-code](http://faircode.io) distributed under [**MIT with Commons Clause**](https://github.com/fief-dev/fief/blob/main/LICENSE) license.
