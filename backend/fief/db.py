@@ -1,7 +1,7 @@
 from typing import AsyncGenerator
 
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, create_async_engine
-from sqlalchemy.ext.declarative import DeclarativeMeta, declarative_base
+from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 from fief.settings import settings
@@ -15,7 +15,7 @@ def create_async_session_maker(engine: AsyncEngine):
     return sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
 
-Base: DeclarativeMeta = declarative_base()
+Base = declarative_base()
 engine = create_engine()
 async_session_maker = create_async_session_maker(engine)
 

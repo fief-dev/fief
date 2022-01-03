@@ -23,6 +23,7 @@ runs:
       run: |
         isort --check .
         black --check .
+        mypy fief/
         tryceratops fief/
     - name: Test with pytest
       shell: bash

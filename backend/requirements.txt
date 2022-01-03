@@ -3,5 +3,5 @@ asyncpg==0.25.0
 fastapi==0.70.1
 gunicorn==20.1.0
 pydantic[dotenv]==1.9.0
-sqlalchemy==1.4.29
+sqlalchemy[mypy]==1.4.29
 uvicorn[standard]==0.16.0
