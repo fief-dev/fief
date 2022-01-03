@@ -1,0 +1,15 @@
+-r requirements.txt
+
+aiosqlite
+asgi-lifespan
+black
+coverage[toml]
+greenlet
+httpx
+isort
+mypy
+pytest
+pytest-cov
+pytest-asyncio
+pytest-mock
+tryceratops

@@ -1,0 +1,14 @@
+name: Test
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test-backend:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Test backend
+      uses: ./.github/actions/test-backend

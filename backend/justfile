@@ -1,0 +1,11 @@
+default:
+  @just --list
+
+install:
+  pip install -U -r requirements.dev.txt
+
+format:
+	isort . && black . && tryceratops fief/
+
+test $UNIT_TESTS="1":
+  pytest --cov fief/ --cov-report=term-missing
