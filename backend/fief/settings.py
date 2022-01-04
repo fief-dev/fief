@@ -14,6 +14,8 @@ class Settings(BaseSettings):
     unit_tests: bool = False
     database_url: str
 
+    account_table_prefix: str = "fief_"
+
     class Config:
         env_file = ".env"
 

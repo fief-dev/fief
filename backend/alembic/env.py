@@ -3,7 +3,7 @@ from logging.config import fileConfig
 from sqlalchemy import engine_from_config, pool
 
 from alembic import context
-from fief.db import Base
+from fief import models
 from fief.settings import settings
 
 # this is the Alembic Config object, which provides
@@ -18,7 +18,7 @@ fileConfig(config.config_file_name)
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-target_metadata = Base.metadata
+target_metadata = getattr(models, config.get_main_option("target_base")).metadata
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
@@ -57,15 +57,22 @@ def run_migrations_online():
     and associate a connection with the context.
 
     """
-    connectable = engine_from_config(
-        config.get_section(config.config_ini_section),
-        prefix="sqlalchemy.",
-        url=settings.get_database_url(asyncio=False),
-        poolclass=pool.NullPool,
-    )
+    connectable = config.attributes.get("connection", None)
+
+    if connectable is None:
+        connectable = engine_from_config(
+            config.get_section(config.config_ini_section),
+            prefix="sqlalchemy.",
+            url=settings.get_database_url(asyncio=False),
+            poolclass=pool.NullPool,
+        )
 
     with connectable.connect() as connection:
-        context.configure(connection=connection, target_metadata=target_metadata)
+        context.configure(
+            connection=connection,
+            target_metadata=target_metadata,
+            version_table=config.get_main_option("version_table_name"),
+        )
 
         with context.begin_transaction():
             context.run_migrations()
