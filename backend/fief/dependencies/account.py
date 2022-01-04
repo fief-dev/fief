@@ -1,3 +1,4 @@
+from functools import lru_cache
 from typing import AsyncGenerator
 
 from fastapi import Header, HTTPException, status
@@ -22,10 +23,15 @@ async def get_current_account(
     return account
 
 
+@lru_cache
+def get_engine(database_url: str) -> AsyncEngine:
+    return create_engine(database_url)
+
+
 async def get_current_account_engine(
     account: Account = Depends(get_current_account),
 ) -> AsyncEngine:
-    return create_engine(account.get_database_url())
+    return get_engine(account.get_database_url())
 
 
 async def get_current_account_session(
