@@ -3,12 +3,14 @@ from typing import Mapping, TypedDict
 
 from fastapi_users.password import get_password_hash
 
-from fief.models import Tenant, User, M
+from fief.models import M, Tenant, User
 
 ModelMapping = Mapping[str, M]
 
 
 class TestData(TypedDict):
+    __test__ = False
+
     tenants: ModelMapping[Tenant]
     users: ModelMapping[User]
 
