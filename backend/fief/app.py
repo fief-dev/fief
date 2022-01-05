@@ -1,8 +1,7 @@
 from fastapi import FastAPI
 
+from fief.routers.register import router as register_router
+
 app = FastAPI()
 
-
-@app.get("/")
-async def index():
-    return {"hello": "world"}
+app.include_router(register_router, prefix="/auth")

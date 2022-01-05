@@ -9,7 +9,7 @@ from fief.services.account_db import AccountDatabase
 
 
 @pytest.fixture
-def account() -> Account:
+def local_account() -> Account:
     return Account(name="Duché de Bretagne", database_url="sqlite:///account.db")
 
 
@@ -19,10 +19,10 @@ def account_db() -> Generator[AccountDatabase, None, None]:
     os.remove("account.db")
 
 
-def test_account_db_migrate(account_db: AccountDatabase, account: Account):
-    account_db.migrate(account)
+def test_account_db_migrate(account_db: AccountDatabase, local_account: Account):
+    account_db.migrate(local_account)
 
-    engine = create_engine(account.database_url)
+    engine = create_engine(local_account.database_url)
     inspector = inspect(engine)
     table_names = inspector.get_table_names()
 

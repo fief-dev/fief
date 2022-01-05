@@ -1,5 +1,6 @@
 [tool.mypy]
 plugins = "sqlalchemy.ext.mypy.plugin"
+exclude = "backend/venv/"
 
 [tool.isort]
 profile = "black"

@@ -6,7 +6,7 @@ from fastapi.param_functions import Depends
 from pydantic import UUID4
 
 from fief.db import AsyncEngine, AsyncSession, create_async_session_maker, create_engine
-from fief.dependencies.managers import get_account_manager
+from fief.dependencies.global_managers import get_account_manager
 from fief.managers import AccountManager
 from fief.models import Account
 

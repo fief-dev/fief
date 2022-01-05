@@ -1,4 +1,3 @@
-import os
 import uuid
 
 import httpx
@@ -9,7 +8,6 @@ from sqlalchemy import select
 from fief.db import AsyncSession
 from fief.dependencies.account import get_current_account, get_current_account_session
 from fief.models import Account, Tenant
-from fief.services.account_db import AccountDatabase
 from tests.conftest import TestClientGeneratorType
 
 
@@ -40,23 +38,6 @@ async def test_client(
 ) -> httpx.AsyncClient:
     async with test_client_generator(app) as test_client:
         yield test_client
-
-
-@pytest.fixture
-@pytest.mark.asyncio
-async def account(test_async_session: AsyncSession) -> Account:
-    account = Account(
-        name="Duché de Bretagne", database_url="sqlite:///account-bretagne.db"
-    )
-    test_async_session.add(account)
-    await test_async_session.commit()
-
-    account_db = AccountDatabase()
-    account_db.migrate(account)
-
-    yield account
-
-    os.remove("account-bretagne.db")
 
 
 @pytest.mark.asyncio

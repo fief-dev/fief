@@ -1,8 +1,8 @@
-"""Add Tenant and User tables
+"""Add initial migration
 
-Revision ID: 120e58fb0bfa
+Revision ID: 5dbb6789db19
 Revises:
-Create Date: 2022-01-04 16:24:04.923958
+Create Date: 2022-01-04 18:17:14.461260
 
 """
 import fastapi_users_db_sqlalchemy
@@ -12,7 +12,7 @@ import fief
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = "120e58fb0bfa"
+revision = "5dbb6789db19"
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -24,6 +24,7 @@ def upgrade():
         "fief_tenants",
         sa.Column("id", fief.models.generics.GUID(), nullable=False),
         sa.Column("name", sa.String(length=255), nullable=False),
+        sa.Column("default", sa.Boolean(), nullable=False),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_table(
