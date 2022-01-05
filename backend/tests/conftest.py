@@ -2,7 +2,7 @@ import asyncio
 import contextlib
 import os
 import uuid
-from typing import AsyncContextManager, AsyncGenerator, Callable
+from typing import Any, AsyncContextManager, AsyncGenerator, Callable, Mapping
 
 import asgi_lifespan
 import httpx
@@ -17,8 +17,9 @@ from fief.db import (
     create_engine,
     get_global_async_session,
 )
-from fief.models import Account, GlobalBase, Tenant
+from fief.models import Account, GlobalBase, M
 from fief.services.account_db import AccountDatabase
+from tests.data import data_mapping
 
 
 @pytest.fixture(scope="session")
@@ -30,7 +31,7 @@ def event_loop():
 
 
 @pytest.fixture(scope="session")
-async def global_engine() -> AsyncEngine:
+async def global_engine() -> AsyncGenerator[AsyncEngine, None]:
     engine = create_engine("sqlite+aiosqlite:///global_test.db")
     yield engine
     os.remove("global_test.db")
@@ -51,7 +52,7 @@ async def create_global_db(global_engine: AsyncEngine):
 @pytest.mark.asyncio
 async def account(
     global_engine: AsyncEngine, global_session_maker, create_global_db
-) -> Account:
+) -> AsyncGenerator[Account, None]:
     async with global_session_maker() as session:
         account = Account(
             name="Duché de Bretagne", database_url="sqlite:///account_test.db"
@@ -91,7 +92,7 @@ async def account_session_maker(account_engine: AsyncEngine):
 
 @pytest.fixture
 async def account_session(
-    account_engine: AsyncSession, account_session_maker
+    account_engine: AsyncEngine, account_session_maker
 ) -> AsyncGenerator[AsyncSession, None]:
     async with account_engine.connect() as connection:
         async with connection.begin() as transaction:
@@ -101,21 +102,28 @@ async def account_session(
 
 
 @pytest.fixture
-async def tenant(account_session: AsyncSession) -> Tenant:
-    tenant = Tenant(name="Default", default=True)
-    account_session.add(tenant)
-    await account_session.commit()
-    return tenant
-
-
-@pytest.fixture
 def not_existing_uuid() -> uuid.UUID:
     return uuid.uuid4()
 
 
-TestClientGeneratorType = Callable[
-    [FastAPI, Account], AsyncContextManager[httpx.AsyncClient]
-]
+@pytest.fixture(autouse=True)
+@pytest.mark.asyncio
+async def test_data(
+    request: pytest.FixtureRequest, account_session: AsyncSession
+) -> Mapping[str, Mapping[str, Any]]:
+    fixtures_marker = request.node.get_closest_marker("test_data")
+    if fixtures_marker is None:
+        return {}
+
+    for model in data_mapping.values():
+        for object in model.values():
+            account_session.add(object)
+    await account_session.commit()
+
+    return data_mapping
+
+
+TestClientGeneratorType = Callable[[FastAPI], AsyncContextManager[httpx.AsyncClient]]
 
 
 @pytest.fixture
@@ -139,7 +147,6 @@ async def test_client_generator(
 @pytest.fixture
 async def test_client(
     test_client_generator: TestClientGeneratorType,
-    tenant: Tenant,
 ) -> AsyncGenerator[httpx.AsyncClient, None]:
     async with test_client_generator(app) as test_client:
         yield test_client

@@ -1,6 +1,5 @@
 [tool.mypy]
 plugins = "sqlalchemy.ext.mypy.plugin"
-exclude = "backend/venv/"
 
 [tool.isort]
 profile = "black"
@@ -9,4 +8,4 @@ profile = "black"
 concurrency = ["greenlet"]
 
 [tool.pytest.ini_options]
-markers = ["user"]
+markers = ["test_data"]

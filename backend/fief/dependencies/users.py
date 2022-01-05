@@ -2,12 +2,15 @@ from typing import AsyncGenerator, Optional
 
 from fastapi import Depends, Request
 from fastapi_users import BaseUserManager
+from fastapi_users.authentication.strategy import AccessTokenDatabase, DatabaseStrategy
 from fastapi_users.db import SQLAlchemyUserDatabase
+from fastapi_users_db_sqlalchemy.access_token import SQLAlchemyAccessTokenDatabase
 
 from fief.db import AsyncSession
 from fief.dependencies.account import get_current_account_session
 from fief.dependencies.tenant import get_current_tenant
-from fief.models import Tenant, User
+from fief.models import AccessToken, Tenant, User
+from fief.schemas.access_token import AccessToken as AccessTokenSchema
 from fief.schemas.user import UserCreate, UserCreateInternal, UserDB
 
 
@@ -54,3 +57,19 @@ async def get_user_manager(
     tenant: Tenant = Depends(get_current_tenant),
 ):
     yield UserManager(user_db, tenant)
+
+
+async def get_access_token_db(
+    session: AsyncSession = Depends(get_current_account_session),
+) -> AsyncGenerator[SQLAlchemyAccessTokenDatabase[AccessTokenSchema], None]:
+    yield SQLAlchemyAccessTokenDatabase(AccessTokenSchema, session, AccessToken)
+
+
+def get_database_strategy(
+    access_token_db: AccessTokenDatabase[AccessTokenSchema] = Depends(
+        get_access_token_db
+    ),
+) -> DatabaseStrategy[UserCreate, UserDB, AccessTokenSchema]:
+    return DatabaseStrategy[UserCreate, UserDB, AccessTokenSchema](
+        access_token_db, lifetime_seconds=3600
+    )

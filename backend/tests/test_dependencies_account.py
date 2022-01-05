@@ -1,4 +1,5 @@
 import uuid
+from typing import AsyncGenerator
 
 import httpx
 import pytest
@@ -35,7 +36,7 @@ def app() -> FastAPI:
 @pytest.mark.asyncio
 async def test_client(
     test_client_generator: TestClientGeneratorType, app: FastAPI
-) -> httpx.AsyncClient:
+) -> AsyncGenerator[httpx.AsyncClient, None]:
     async with test_client_generator(app) as test_client:
         yield test_client
 
@@ -43,7 +44,7 @@ async def test_client(
 @pytest.mark.asyncio
 class TestGetCurrentAccount:
     async def test_missing_header(self, test_client: httpx.AsyncClient):
-        response = await test_client.get("/account", headers={})
+        response = await test_client.get("/account")
 
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
