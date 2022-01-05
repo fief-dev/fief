@@ -1,18 +1,17 @@
 """Add initial migration
 
-Revision ID: 8ce5f352381f
-Revises:
-Create Date: 2022-01-05 11:41:06.787469
+Revision ID: ba379c352a71
+Revises: 
+Create Date: 2022-01-05 14:23:48.135468
 
 """
-import fastapi_users_db_sqlalchemy
 import sqlalchemy as sa
 
 import fief
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = "8ce5f352381f"
+revision = "ba379c352a71"
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -29,7 +28,7 @@ def upgrade():
     )
     op.create_table(
         "fief_users",
-        sa.Column("id", fastapi_users_db_sqlalchemy.guid.GUID(), nullable=False),
+        sa.Column("id", fief.models.generics.GUID(), nullable=False),
         sa.Column("email", sa.String(length=320), nullable=False),
         sa.Column("hashed_password", sa.String(length=72), nullable=False),
         sa.Column("is_active", sa.Boolean(), nullable=False),
@@ -38,8 +37,9 @@ def upgrade():
         sa.Column("tenant_id", fief.models.generics.GUID(), nullable=False),
         sa.ForeignKeyConstraint(["tenant_id"], ["fief_tenants.id"], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("id"),
+        sa.UniqueConstraint("email", "tenant_id"),
     )
-    op.create_index(op.f("ix_fief_users_email"), "fief_users", ["email"], unique=True)
+    op.create_index(op.f("ix_fief_users_email"), "fief_users", ["email"], unique=False)
     op.create_table(
         "fief_access_tokens",
         sa.Column("token", sa.String(length=43), nullable=False),

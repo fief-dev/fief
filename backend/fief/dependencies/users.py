@@ -1,10 +1,15 @@
-from typing import AsyncGenerator, Optional
+from typing import AsyncGenerator, Optional, Type, cast
 
 from fastapi import Depends, Request
 from fastapi_users import BaseUserManager
 from fastapi_users.authentication.strategy import AccessTokenDatabase, DatabaseStrategy
-from fastapi_users.db import SQLAlchemyUserDatabase
+from fastapi_users.db import (
+    SQLAlchemyBaseOAuthAccountTable,
+    SQLAlchemyBaseUserTable,
+    SQLAlchemyUserDatabase,
+)
 from fastapi_users_db_sqlalchemy.access_token import SQLAlchemyAccessTokenDatabase
+from sqlalchemy.sql import Select
 
 from fief.db import AsyncSession
 from fief.dependencies.account import get_current_account_session
@@ -46,10 +51,33 @@ class UserManager(BaseUserManager[UserCreate, UserDB]):
         print(f"Verification requested for user {user.id}. Verification token: {token}")
 
 
+class SQLAlchemyUserTenantDatabase(SQLAlchemyUserDatabase[UserDB]):
+    def __init__(
+        self,
+        user_db_model: Type[UserDB],
+        session: AsyncSession,
+        tenant: Tenant,
+        user_table: Type[User],
+        oauth_account_table: Optional[Type[SQLAlchemyBaseOAuthAccountTable]] = None,
+    ):
+        super().__init__(
+            user_db_model,
+            session,
+            cast(Type[SQLAlchemyBaseUserTable], user_table),
+            oauth_account_table=oauth_account_table,
+        )
+        self.tenant = tenant
+
+    async def _get_user(self, statement: Select) -> Optional[UserDB]:
+        statement = statement.where(User.tenant_id == self.tenant.id)
+        return await super()._get_user(statement)
+
+
 async def get_user_db(
     session: AsyncSession = Depends(get_current_account_session),
+    tenant: Tenant = Depends(get_current_tenant),
 ) -> AsyncGenerator[SQLAlchemyUserDatabase[UserDB], None]:
-    yield SQLAlchemyUserDatabase(UserDB, session, User)
+    yield SQLAlchemyUserTenantDatabase(UserDB, session, tenant, User)
 
 
 async def get_user_manager(

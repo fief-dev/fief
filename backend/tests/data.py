@@ -1,15 +1,24 @@
 import uuid
-from typing import Any, Mapping
+from typing import Mapping, TypedDict
 
 from fastapi_users.password import get_password_hash
 
-from fief.models import M, Tenant, User
+from fief.models import Tenant, User, M
 
-tenants: Mapping[str, Tenant] = {
+ModelMapping = Mapping[str, M]
+
+
+class TestData(TypedDict):
+    tenants: ModelMapping[Tenant]
+    users: ModelMapping[User]
+
+
+tenants: ModelMapping[Tenant] = {
     "default": Tenant(name="Default", default=True),
+    "secondary": Tenant(name="Secondary", default=False),
 }
 
-users: Mapping[str, User] = {
+users: ModelMapping[User] = {
     "regular": User(
         id=uuid.uuid4(),
         email="anne@bretagne.duchy",
@@ -18,9 +27,9 @@ users: Mapping[str, User] = {
     )
 }
 
-data_mapping: Mapping[str, Mapping[str, Any]] = {
+data_mapping: TestData = {
     "tenants": tenants,
     "users": users,
 }
 
-__all__ = ["data_mapping"]
+__all__ = ["data_mapping", "TestData"]

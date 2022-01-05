@@ -17,9 +17,9 @@ from fief.db import (
     create_engine,
     get_global_async_session,
 )
-from fief.models import Account, GlobalBase, M
+from fief.models import Account, GlobalBase
 from fief.services.account_db import AccountDatabase
-from tests.data import data_mapping
+from tests.data import TestData, data_mapping
 
 
 @pytest.fixture(scope="session")
@@ -110,7 +110,7 @@ def not_existing_uuid() -> uuid.UUID:
 @pytest.mark.asyncio
 async def test_data(
     request: pytest.FixtureRequest, account_session: AsyncSession
-) -> Mapping[str, Mapping[str, Any]]:
+) -> TestData:
     fixtures_marker = request.node.get_closest_marker("test_data")
     if fixtures_marker is None:
         return {}

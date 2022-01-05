@@ -5,6 +5,7 @@ import pytest
 from fastapi import status
 
 from fief.models import Account
+from tests.data import TestData
 
 
 @pytest.mark.asyncio
@@ -52,3 +53,17 @@ class TestAuthLogin:
         json = response.json()
         assert "access_token" in json
         assert json["token_type"] == "bearer"
+
+    async def test_bad_credentials_on_another_tenant(
+        self, test_client: httpx.AsyncClient, account: Account, test_data: TestData
+    ):
+        response = await test_client.post(
+            "/auth/token/login",
+            headers={
+                "x-fief-account": str(account.id),
+                "x-fief-tenant": str(test_data["tenants"]["secondary"].id),
+            },
+            data={"username": "anne@bretagne.duchy", "password": "hermine"},
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
