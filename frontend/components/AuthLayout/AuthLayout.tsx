@@ -3,9 +3,11 @@ import Image from 'next/image';
 
 interface AuthLayoutProps {
   title: string;
+  tenantName: string;
+  tenantLogoURL?: string;
 }
 
-const AuthLayout: React.FunctionComponent<AuthLayoutProps> = ({ title, children }) => {
+const AuthLayout: React.FunctionComponent<AuthLayoutProps> = ({ title, children, tenantName, tenantLogoURL }) => {
   const { t } = useTranslation();
 
   return (
@@ -15,7 +17,8 @@ const AuthLayout: React.FunctionComponent<AuthLayoutProps> = ({ title, children 
           <div className="min-h-screen h-full flex flex flex-col after:flex-1">
             <div className="flex-1">
               <div className="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
-                TENANT LOGO
+                {tenantLogoURL && <Image src={tenantLogoURL} layout="fixed" width={200} height={40} alt={tenantName} />}
+                {!tenantLogoURL && <span className="text-3xl text-gray-800 font-bold">{tenantName}</span>}
               </div>
             </div>
 

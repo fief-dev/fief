@@ -17,7 +17,7 @@ const Home: NextPage = () => {
   const api = useAPI('ACCOUNT');
 
   return (
-    <AuthLayout title="Sign in">
+    <AuthLayout title="Sign in" tenantName="Fief" tenantLogoURL="/fief-logo.svg">
       <SignIn api={api} />
     </AuthLayout>
   );
