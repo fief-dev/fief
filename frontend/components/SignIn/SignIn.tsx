@@ -1,7 +1,11 @@
+import { useTranslation } from 'next-i18next';
+import { useState } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
 
+import { useFieldRequiredErrorMessage } from '../../hooks/errors';
 import * as schemas from '../../schemas';
-import { APIClient } from '../../services/api';
+import { APIClient, handleAPIError } from '../../services/api';
+import ErrorAlert from '../ErrorAlert/ErrorAlert';
 import FormErrorMessage from '../FormErrorMessage/FormErrorMessage';
 
 interface SignInProps {
@@ -9,37 +13,40 @@ interface SignInProps {
 }
 
 const SignIn: React.FunctionComponent<SignInProps> = ({ api }) => {
+  const { t } = useTranslation();
   const { register, handleSubmit, formState: { errors } } = useForm<schemas.auth.LoginData>();
+  const fieldRequiredErrorMessage = useFieldRequiredErrorMessage();
+  const [errorCode, setErrorCode] = useState<string | undefined>();
 
   const onSubmit: SubmitHandler<schemas.auth.LoginData> = async (data) => {
     try {
-      const response = await api.login(data);
+      await api.login(data);
     } catch (err) {
-      // TODO
+      setErrorCode(handleAPIError(err));
     }
   };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <div className="space-y-4">
-        {/* {errorCode && <ErrorAlert message={errorCode} />} */}
+        {errorCode && <ErrorAlert message={t(`common:api_errors.${errorCode}`)} />}
         <div>
-          <label className="block text-sm font-medium mb-1" htmlFor="input-email">Email Address</label>
+          <label className="block text-sm font-medium mb-1" htmlFor="input-email">{t('auth:signin.email')}</label>
           <input
             id="input-email"
             className={`form-input w-full ${errors.email ? 'border-red-300' : ''}`}
             type="email"
-            {...register('email', { required: true })}
+            {...register('email', { required: fieldRequiredErrorMessage })}
           />
           <FormErrorMessage errors={errors} name="email" />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1" htmlFor="input-password">Password</label>
+          <label className="block text-sm font-medium mb-1" htmlFor="input-password">{t('auth:signin.password')}</label>
           <input
             id="input-password"
             className={`form-input w-full ${errors.email ? 'border-red-300' : ''}`}
             type="password"
-            {...register('password', { required: true })}
+            {...register('password', { required: fieldRequiredErrorMessage })}
           />
           <FormErrorMessage errors={errors} name="password" />
         </div>
@@ -48,7 +55,7 @@ const SignIn: React.FunctionComponent<SignInProps> = ({ api }) => {
         <div className="mr-1">
           <a className="text-sm underline hover:no-underline" href="reset-password.html">Forgot Password?</a>
         </div>
-        <button type="submit" className="btn bg-indigo-500 hover:bg-indigo-600 text-white ml-3">Sign In</button>
+        <button type="submit" className="btn bg-indigo-500 hover:bg-indigo-600 text-white ml-3">{t('auth:signin.signin')}</button>
       </div>
     </form>
   );
