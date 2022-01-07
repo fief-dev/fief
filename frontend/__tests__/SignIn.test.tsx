@@ -67,4 +67,30 @@ describe('SignIn', () => {
 
     expect(screen.queryByText('common:api_errors.UNKNOWN_ERROR')).not.toBeNull();
   });
+
+  it('should hide error code on subsequent submissions', async () => {
+    render(<SignIn api={mockAPIClient} />);
+
+    const emailInput = screen.getByLabelText('auth:signin.email');
+    fireEvent.change(emailInput, { target: { value: 'anne@bretagne.duchy' } });
+
+    const passwordInput = screen.getByLabelText('auth:signin.password');
+    fireEvent.change(passwordInput, { target: { value: 'hermine' } });
+
+    const submitButton = screen.getByText('auth:signin.signin');
+
+    mockLogin.mockRejectedValueOnce({ isAxiosError: true, response: { status: 502 } });
+    fireEvent.click(submitButton);
+
+    await waitFor(() =>
+      expect(screen.queryByText('common:api_errors.UNKNOWN_ERROR')).not.toBeNull()
+    );
+
+    mockLogin.mockResolvedValue({ status: 200 });
+    fireEvent.click(submitButton);
+
+    await waitFor(() =>
+      expect(screen.queryByText('common:api_errors.UNKNOWN_ERROR')).toBeNull()
+    );
+  });
 });

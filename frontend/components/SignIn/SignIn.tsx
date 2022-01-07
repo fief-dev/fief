@@ -19,6 +19,7 @@ const SignIn: React.FunctionComponent<SignInProps> = ({ api }) => {
   const [errorCode, setErrorCode] = useState<string | undefined>();
 
   const onSubmit: SubmitHandler<schemas.auth.LoginData> = async (data) => {
+    setErrorCode(undefined);
     try {
       await api.login(data);
     } catch (err) {
