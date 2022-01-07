@@ -13,7 +13,7 @@ runs:
     - name: Install dependencies
       shell: bash
       working-directory: frontend
-      run: npm run ci
+      run: npm ci
     - name: Lint
       shell: bash
       working-directory: frontend
