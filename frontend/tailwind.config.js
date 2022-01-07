@@ -15,6 +15,9 @@ module.exports = {
         xl: '0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 10px 10px -5px rgba(0, 0, 0, 0.01)',
       },
       colors: {
+        primary: 'var(--color-primary)',
+        'primary-hover': 'var(--color-primary-hover)',
+        'primary-light': 'var(--color-primary-light)',
         gray: colors.slate,
         'light-blue': colors.sky,
         red: colors.rose,

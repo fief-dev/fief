@@ -55,7 +55,7 @@ const SignIn: React.FunctionComponent<SignInProps> = ({ api }) => {
         <div className="mr-1">
           <a className="text-sm underline hover:no-underline" href="reset-password.html">Forgot Password?</a>
         </div>
-        <button type="submit" className="btn bg-indigo-500 hover:bg-indigo-600 text-white ml-3">{t('auth:signin.signin')}</button>
+        <button type="submit" className="btn bg-primary hover:bg-primary-hover text-white ml-3">{t('auth:signin.signin')}</button>
       </div>
     </form>
   );
