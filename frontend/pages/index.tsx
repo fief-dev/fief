@@ -15,7 +15,7 @@ export const getServerSideProps: GetServerSideProps = async ({ locale }) => {
 };
 
 const Home: NextPage = () => {
-  const api = useAPI('ACCOUNT');
+  const api = useAPI('f99847c1-ce03-4c93-b493-48761c33a11c');
   useTenantColors({});
 
   return (

@@ -1,0 +1,31 @@
+version: '3.8'
+
+volumes:
+  fief-dev-db:
+
+services:
+  backend:
+    command: uvicorn --host 0.0.0.0 --port 80 --reload fief.app:app
+    volumes:
+      - ./backend:/app
+    environment:
+      - DATABASE_URL=postgresql://fief:fiefpassword@localhost:5432
+      - ALLOW_ORIGIN_REGEX=http://localhost:3000
+
+  frontend:
+    command: npm run dev
+    volumes:
+      - ./frontend:/app
+
+  db:
+    image: postgres:alpine
+    environment:
+      - PGDATA=/var/lib/postgresql/data/pgdata
+      - POSTGRES_USER=fief
+      - POSTGRES_PASSWORD=fiefpassword
+    volumes:
+      - fief-dev-db:/var/lib/postgresql/data
+
+  reverse-proxy:
+    ports:
+      - "8000:80"

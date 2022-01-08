@@ -1,0 +1,5 @@
+.mypy_cache/
+.pytest_cache/
+tests/
+venv/
+.env
