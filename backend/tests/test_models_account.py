@@ -6,7 +6,9 @@ from fief.models import Account
 
 @pytest.mark.asyncio
 async def test_create_account(global_session: AsyncSession):
-    account = Account(name="Duché de Bretagne", database_url="")
+    account = Account(
+        name="Duché de Bretagne", domain="bretagne.fief.dev", database_url=""
+    )
     global_session.add(account)
 
     await global_session.commit()

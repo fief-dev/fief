@@ -1,9 +1,8 @@
-import uuid
-
 import httpx
 import pytest
 from fastapi import status
 
+from fief.errors import ErrorCode
 from fief.models import Account
 from tests.data import TestData
 
@@ -11,20 +10,10 @@ from tests.data import TestData
 @pytest.mark.asyncio
 @pytest.mark.test_data
 class TestAuthLogin:
-    async def test_missing_header(self, test_client: httpx.AsyncClient):
+    async def test_not_existing_account(self, test_client: httpx.AsyncClient):
         response = await test_client.post(
             "/auth/token/login",
-            data={"username": "anne@bretagne.duchy", "password": "hermine"},
-        )
-
-        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-
-    async def test_not_existing_account(
-        self, test_client: httpx.AsyncClient, not_existing_uuid: uuid.UUID
-    ):
-        response = await test_client.post(
-            "/auth/token/login",
-            headers={"x-fief-account": str(not_existing_uuid)},
+            headers={"Host": "unknown.fief.dev"},
             data={"username": "anne@bretagne.duchy", "password": "hermine"},
         )
 
@@ -35,7 +24,7 @@ class TestAuthLogin:
     ):
         response = await test_client.post(
             "/auth/token/login",
-            headers={"x-fief-account": str(account.id)},
+            headers={"Host": account.domain},
             data={"username": "anne@bretagne.duchy", "password": "foo"},
         )
 
@@ -44,7 +33,7 @@ class TestAuthLogin:
     async def test_success(self, test_client: httpx.AsyncClient, account: Account):
         response = await test_client.post(
             "/auth/token/login",
-            headers={"x-fief-account": str(account.id)},
+            headers={"Host": account.domain},
             data={"username": "anne@bretagne.duchy", "password": "hermine"},
         )
 
@@ -60,10 +49,55 @@ class TestAuthLogin:
         response = await test_client.post(
             "/auth/token/login",
             headers={
-                "x-fief-account": str(account.id),
+                "Host": account.domain,
                 "x-fief-tenant": str(test_data["tenants"]["secondary"].id),
             },
             data={"username": "anne@bretagne.duchy", "password": "hermine"},
         )
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+
+@pytest.mark.asyncio
+@pytest.mark.test_data
+class TestAuthAuthorize:
+    async def test_missing_client_id(
+        self, test_client: httpx.AsyncClient, account: Account
+    ):
+        response = await test_client.get(
+            "/auth/token/authorize", headers={"Host": account.domain}
+        )
+
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+    async def test_unknown_client_id(
+        self, test_client: httpx.AsyncClient, account: Account
+    ):
+        response = await test_client.get(
+            "/auth/token/authorize",
+            params={"client_id": "UNKNOWN"},
+            headers={"Host": account.domain},
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+        json = response.json()
+        assert json["detail"] == ErrorCode.AUTH_INVALID_CLIENT_ID
+
+    async def test_valid_client_id(
+        self, test_client: httpx.AsyncClient, test_data: TestData, account: Account
+    ):
+        tenant = test_data["tenants"]["default"]
+
+        response = await test_client.get(
+            "/auth/token/authorize",
+            params={"client_id": tenant.client_id},
+            headers={"Host": account.domain},
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+
+        json = response.json()
+        assert json["id"] == str(tenant.id)
+        assert "client_id" not in json
+        assert "client_secret" not in json

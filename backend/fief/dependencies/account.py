@@ -3,7 +3,6 @@ from typing import AsyncGenerator
 
 from fastapi import Header, HTTPException, status
 from fastapi.param_functions import Depends
-from pydantic import UUID4
 
 from fief.db import AsyncEngine, AsyncSession, create_async_session_maker, create_engine
 from fief.dependencies.global_managers import get_account_manager
@@ -12,10 +11,10 @@ from fief.models import Account
 
 
 async def get_current_account(
-    account_id: UUID4 = Header(..., alias="x-fief-account"),
+    host: str = Header(...),
     manager: AccountManager = Depends(get_account_manager),
 ) -> Account:
-    account = await manager.get_by_id(account_id)
+    account = await manager.get_by_domain(host)
 
     if account is None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)

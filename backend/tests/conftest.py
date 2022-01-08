@@ -55,7 +55,9 @@ async def account(
 ) -> AsyncGenerator[Account, None]:
     async with global_session_maker() as session:
         account = Account(
-            name="Duché de Bretagne", database_url="sqlite:///account_test.db"
+            name="Duché de Bretagne",
+            domain="bretagne.fief.dev",
+            database_url="sqlite:///account_test.db",
         )
         session.add(account)
         await session.commit()

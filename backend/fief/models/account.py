@@ -8,10 +8,11 @@ class Account(UUIDModel, GlobalBase):
     __tablename__ = "accounts"
 
     name: str = Column(String(length=255), nullable=False)
+    domain: str = Column(String(length=255), nullable=False)
     database_url: str = Column(Text, nullable=False)
 
     def __repr__(self) -> str:
-        return f"Account(id={self.id}, name={self.name})"
+        return f"Account(id={self.id}, name={self.name}, domain={self.domain})"
 
     def get_database_url(self, asyncio=True) -> str:
         """

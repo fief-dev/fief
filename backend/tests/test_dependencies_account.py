@@ -1,4 +1,3 @@
-import uuid
 from typing import AsyncGenerator
 
 import httpx
@@ -43,16 +42,9 @@ async def test_client(
 
 @pytest.mark.asyncio
 class TestGetCurrentAccount:
-    async def test_missing_header(self, test_client: httpx.AsyncClient):
-        response = await test_client.get("/account")
-
-        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-
-    async def test_not_existing_account(
-        self, test_client: httpx.AsyncClient, not_existing_uuid: uuid.UUID
-    ):
+    async def test_not_existing_account(self, test_client: httpx.AsyncClient):
         response = await test_client.get(
-            "/account", headers={"x-fief-account": str(not_existing_uuid)}
+            "/account", headers={"Host": "unknown.fief.dev"}
         )
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
@@ -60,9 +52,7 @@ class TestGetCurrentAccount:
     async def test_existing_account(
         self, test_client: httpx.AsyncClient, account: Account
     ):
-        response = await test_client.get(
-            "/account", headers={"x-fief-account": str(account.id)}
-        )
+        response = await test_client.get("/account", headers={"Host": account.domain})
 
         assert response.status_code == status.HTTP_200_OK
 
@@ -75,9 +65,7 @@ class TestGetCurrentAccountSession:
     async def test_existing_account(
         self, test_client: httpx.AsyncClient, account: Account
     ):
-        response = await test_client.get(
-            "/tenants", headers={"x-fief-account": str(account.id)}
-        )
+        response = await test_client.get("/tenants", headers={"Host": account.domain})
 
         assert response.status_code == status.HTTP_200_OK
 

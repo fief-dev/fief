@@ -10,7 +10,11 @@ from fief.services.account_db import AccountDatabase
 
 @pytest.fixture
 def local_account() -> Account:
-    return Account(name="Duché de Bretagne", database_url="sqlite:///account.db")
+    return Account(
+        name="Duché de Bretagne",
+        domain="bretagne.fief.dev",
+        database_url="sqlite:///account.db",
+    )
 
 
 @pytest.fixture

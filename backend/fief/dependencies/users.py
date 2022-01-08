@@ -3,7 +3,7 @@ from typing import AsyncGenerator, Optional, Type, cast
 from fastapi import Depends, Request
 from fastapi_users import BaseUserManager
 from fastapi_users.authentication.strategy import AccessTokenDatabase, DatabaseStrategy
-from fastapi_users.db import (
+from fastapi_users_db_sqlalchemy import (
     SQLAlchemyBaseOAuthAccountTable,
     SQLAlchemyBaseUserTable,
     SQLAlchemyUserDatabase,
