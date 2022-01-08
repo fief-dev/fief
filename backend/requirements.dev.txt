@@ -8,7 +8,6 @@ greenlet
 httpx
 isort
 mypy
-psycopg2
 pytest
 pytest-cov
 pytest-asyncio
