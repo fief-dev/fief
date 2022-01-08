@@ -1,13 +1,14 @@
 import { useTranslation } from 'next-i18next';
 import Image from 'next/image';
 
+import * as schemas from '../../schemas';
+
 interface AuthLayoutProps {
   title: string;
-  tenantName: string;
-  tenantLogoURL?: string;
+  tenant: schemas.tenant.TenantReadPublic | null;
 }
 
-const AuthLayout: React.FunctionComponent<AuthLayoutProps> = ({ title, children, tenantName, tenantLogoURL }) => {
+const AuthLayout: React.FunctionComponent<AuthLayoutProps> = ({ title, children, tenant }) => {
   const { t } = useTranslation();
 
   return (
@@ -17,8 +18,12 @@ const AuthLayout: React.FunctionComponent<AuthLayoutProps> = ({ title, children,
           <div className="min-h-screen h-full flex flex flex-col after:flex-1">
             <div className="flex-1">
               <div className="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
-                {tenantLogoURL && <Image src={tenantLogoURL} layout="fixed" width={200} height={40} alt={tenantName} />}
-                {!tenantLogoURL && <span className="text-3xl text-gray-800 font-bold">{tenantName}</span>}
+                {tenant &&
+                  <>
+                    {tenant.logo_url && <Image src={tenant.logo_url} layout="fixed" width={200} height={40} alt={tenant.name} />}
+                    {!tenant.logo_url && <span className="text-3xl text-gray-800 font-bold">{tenant.name}</span>}
+                  </>
+                }
               </div>
             </div>
 

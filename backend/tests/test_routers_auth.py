@@ -12,7 +12,7 @@ from tests.data import TestData
 class TestAuthLogin:
     async def test_not_existing_account(self, test_client: httpx.AsyncClient):
         response = await test_client.post(
-            "/auth/token/login",
+            "/auth/login",
             headers={"Host": "unknown.fief.dev"},
             data={"username": "anne@bretagne.duchy", "password": "hermine"},
         )
@@ -23,7 +23,7 @@ class TestAuthLogin:
         self, test_client: httpx.AsyncClient, account: Account
     ):
         response = await test_client.post(
-            "/auth/token/login",
+            "/auth/login",
             headers={"Host": account.domain},
             data={"username": "anne@bretagne.duchy", "password": "foo"},
         )
@@ -32,7 +32,7 @@ class TestAuthLogin:
 
     async def test_success(self, test_client: httpx.AsyncClient, account: Account):
         response = await test_client.post(
-            "/auth/token/login",
+            "/auth/login",
             headers={"Host": account.domain},
             data={"username": "anne@bretagne.duchy", "password": "hermine"},
         )
@@ -47,7 +47,7 @@ class TestAuthLogin:
         self, test_client: httpx.AsyncClient, account: Account, test_data: TestData
     ):
         response = await test_client.post(
-            "/auth/token/login",
+            "/auth/login",
             headers={
                 "Host": account.domain,
                 "x-fief-tenant": str(test_data["tenants"]["secondary"].id),
@@ -65,7 +65,7 @@ class TestAuthAuthorize:
         self, test_client: httpx.AsyncClient, account: Account
     ):
         response = await test_client.get(
-            "/auth/token/authorize", headers={"Host": account.domain}
+            "/auth/authorize", headers={"Host": account.domain}
         )
 
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
@@ -74,7 +74,7 @@ class TestAuthAuthorize:
         self, test_client: httpx.AsyncClient, account: Account
     ):
         response = await test_client.get(
-            "/auth/token/authorize",
+            "/auth/authorize",
             params={"client_id": "UNKNOWN"},
             headers={"Host": account.domain},
         )
@@ -90,7 +90,7 @@ class TestAuthAuthorize:
         tenant = test_data["tenants"]["default"]
 
         response = await test_client.get(
-            "/auth/token/authorize",
+            "/auth/authorize",
             params={"client_id": tenant.client_id},
             headers={"Host": account.domain},
         )

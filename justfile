@@ -7,6 +7,9 @@ compose command:
 start:
   just compose "up -d --build"
 
+restart:
+  just compose "restart"
+
 stop:
   just compose "stop"
 
@@ -14,4 +17,4 @@ migrate-global-db:
   just compose "run backend alembic -n global upgrade head"
 
 migrate-account-db:
-  just compose "run backend alembic -n global upgrade head"
+  just compose "run backend alembic -n account upgrade head"

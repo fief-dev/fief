@@ -9,11 +9,13 @@ services:
     volumes:
       - ./backend:/app
     environment:
-      - DATABASE_URL=postgresql://fief:fiefpassword@localhost:5432
+      - DATABASE_URL=postgresql://fief:fiefpassword@db:5432
       - ALLOW_ORIGIN_REGEX=http://localhost:3000
 
   frontend:
     command: npm run dev
+    environment:
+      - NEXT_PUBLIC_BACKEND_HOST=http://backend
     volumes:
       - ./frontend:/app
 

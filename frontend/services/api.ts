@@ -1,4 +1,5 @@
 import axios, { AxiosError, AxiosInstance, AxiosResponse } from 'axios';
+import { IncomingMessage } from 'http';
 import * as R from 'ramda';
 
 import * as schemas from '../schemas';
@@ -6,20 +7,24 @@ import * as schemas from '../schemas';
 export class APIClient {
   client: AxiosInstance;
 
-  constructor(accountId: string, tenantId?: string, domain?: string) {
+  constructor(tenantId?: string, req?: IncomingMessage) {
     this.client = axios.create({
-      baseURL: domain ? domain : process.env.NEXT_PUBLIC_BACKEND_HOST,
+      baseURL: req ? process.env.NEXT_PUBLIC_BACKEND_HOST : '/api',
       withCredentials: true,
       headers: {
-        'x-fief-account': accountId,
+        ...req ? { 'Host': req.headers.host } : {},
         ...tenantId ? { 'x-fief-tenant': tenantId } : {},
       },
     });
   }
 
+  public authorize(clientId: string): Promise<AxiosResponse<schemas.tenant.TenantReadPublic>> {
+    return this.client.get('/auth/authorize', { params: { client_id: clientId }});
+  }
+
   public login(data: schemas.auth.LoginData): Promise<AxiosResponse<void>> {
     return this.postFormData(
-      '/auth/token/login',
+      '/auth/login',
       { username: data.email, password: data.password },
     );
   }

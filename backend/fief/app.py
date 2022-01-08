@@ -16,5 +16,5 @@ app.add_middleware(
 )
 
 
-app.include_router(auth_router, prefix="/auth/token")
+app.include_router(auth_router, prefix="/auth")
 app.include_router(register_router, prefix="/auth")

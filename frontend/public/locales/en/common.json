@@ -3,6 +3,8 @@
     "field_required": "This field is required."
   },
   "api_errors": {
-
+    "UNKNOWN_ERROR": "An unknown error has occured. Please try again later.",
+    "BAD_REQUEST": "The request is not correctly formed. Please check that you passed all required parameters.",
+    "AUTH_INVALID_CLIENT_ID": "The client id. provided was not found on our system."
   }
 }
