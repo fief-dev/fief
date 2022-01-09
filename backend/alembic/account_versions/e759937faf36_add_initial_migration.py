@@ -1,8 +1,8 @@
 """Add initial migration
 
-Revision ID: ba379c352a71
+Revision ID: e759937faf36
 Revises: 
-Create Date: 2022-01-05 14:23:48.135468
+Create Date: 2022-01-09 09:32:53.571859
 
 """
 import sqlalchemy as sa
@@ -11,7 +11,7 @@ import fief
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = "ba379c352a71"
+revision = "e759937faf36"
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -24,7 +24,18 @@ def upgrade():
         sa.Column("id", fief.models.generics.GUID(), nullable=False),
         sa.Column("name", sa.String(length=255), nullable=False),
         sa.Column("default", sa.Boolean(), nullable=False),
+        sa.Column("client_id", sa.String(length=255), nullable=False),
+        sa.Column("client_secret", sa.String(length=255), nullable=False),
         sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_index(
+        op.f("ix_fief_tenants_client_id"), "fief_tenants", ["client_id"], unique=False
+    )
+    op.create_index(
+        op.f("ix_fief_tenants_client_secret"),
+        "fief_tenants",
+        ["client_secret"],
+        unique=False,
     )
     op.create_table(
         "fief_users",
@@ -65,5 +76,7 @@ def downgrade():
     op.drop_table("fief_access_tokens")
     op.drop_index(op.f("ix_fief_users_email"), table_name="fief_users")
     op.drop_table("fief_users")
+    op.drop_index(op.f("ix_fief_tenants_client_secret"), table_name="fief_tenants")
+    op.drop_index(op.f("ix_fief_tenants_client_id"), table_name="fief_tenants")
     op.drop_table("fief_tenants")
     # ### end Alembic commands ###

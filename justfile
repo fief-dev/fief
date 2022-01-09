@@ -13,8 +13,14 @@ restart:
 stop:
   just compose "stop"
 
+revision-global-db message:
+  just compose "run backend alembic -n global revision --autogenerate -m \"{{message}}\""
+
 migrate-global-db:
   just compose "run backend alembic -n global upgrade head"
+
+revision-account-db message:
+  just compose "run backend alembic -n account revision --autogenerate -m \"{{message}}\""
 
 migrate-account-db:
   just compose "run backend alembic -n account upgrade head"
