@@ -1,6 +1,7 @@
 import type { GetServerSideProps, NextPage } from 'next';
 import { useTranslation } from 'next-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
+import { useMemo } from 'react';
 
 import AuthLayout from '../components/AuthLayout/AuthLayout';
 import ErrorAlert from '../components/ErrorAlert/ErrorAlert';
@@ -10,42 +11,39 @@ import * as schemas from '../schemas';
 import { APIClient, handleAPIError } from '../services/api';
 
 interface LoginProps {
-  tenant: schemas.tenant.TenantReadPublic | null;
+  authorizeResponse: schemas.auth.AuthorizeResponse | null;
   errorCode: string | null;
 }
 
 export const getServerSideProps: GetServerSideProps = async ({ locale, query, req, res }) => {
   const api = new APIClient(undefined, req);
-  let tenant: schemas.tenant.TenantReadPublic | null = null;
+  let authorizeResponse: schemas.auth.AuthorizeResponse | null = null;
   let errorCode: string | null = null;
 
-  const client_id = query.client_id;
-
-  if (client_id) {
-    try {
-      const { data } = await api.authorize(client_id as string);
-      tenant = data;
-    } catch (err) {
-      res.statusCode = 400;
-      errorCode = handleAPIError(err);
-    }
-  } else {
+  try {
+    const { data } = await api.authorize(query);
+    authorizeResponse = data;
+  } catch (err) {
     res.statusCode = 400;
-    errorCode = 'BAD_REQUEST';
+    errorCode = handleAPIError(err);
   }
 
   return {
     props: {
-      tenant,
+      authorizeResponse,
       errorCode,
       ...(await serverSideTranslations(locale as string, ['common', 'auth'])),
     },
   };
 };
 
-const Login: NextPage<LoginProps> = ({ tenant, errorCode }) => {
+const Login: NextPage<LoginProps> = ({ authorizeResponse, errorCode }) => {
   const api = useAPI();
   const { t } = useTranslation();
+  const tenant = useMemo<schemas.tenant.TenantReadPublic | null>(
+    () => authorizeResponse ? authorizeResponse.tenant : null,
+    [authorizeResponse],
+  );
 
   return (
     <>

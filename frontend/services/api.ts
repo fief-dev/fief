@@ -18,8 +18,8 @@ export class APIClient {
     });
   }
 
-  public authorize(clientId: string): Promise<AxiosResponse<schemas.tenant.TenantReadPublic>> {
-    return this.client.get('/auth/authorize', { params: { client_id: clientId }});
+  public authorize(params: any): Promise<AxiosResponse<schemas.auth.AuthorizeResponse>> {
+    return this.client.get('/auth/authorize', { params });
   }
 
   public login(data: schemas.auth.LoginData): Promise<AxiosResponse<void>> {
