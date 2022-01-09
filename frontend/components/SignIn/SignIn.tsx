@@ -10,25 +10,27 @@ import FormErrorMessage from '../FormErrorMessage/FormErrorMessage';
 
 interface SignInProps {
   api: APIClient;
+  authorizationParameters: schemas.auth.AuthorizationParameters;
 }
 
-const SignIn: React.FunctionComponent<SignInProps> = ({ api }) => {
+const SignIn: React.FunctionComponent<SignInProps> = ({ api, authorizationParameters }) => {
   const { t } = useTranslation();
-  const { register, handleSubmit, formState: { errors } } = useForm<schemas.auth.LoginData>();
+  const { register, handleSubmit, formState: { errors } } = useForm<{ email: string, password: string }>();
   const fieldRequiredErrorMessage = useFieldRequiredErrorMessage();
   const [errorCode, setErrorCode] = useState<string | undefined>();
 
-  const onSubmit: SubmitHandler<schemas.auth.LoginData> = async (data) => {
+  const onSubmit: SubmitHandler<{ email: string, password: string }> = async ({ email, password }) => {
     setErrorCode(undefined);
     try {
-      await api.login(data);
+      const { data: { redirect_uri }} = await api.login({ ...authorizationParameters, username: email, password });
+      window.location.href = redirect_uri;
     } catch (err) {
       setErrorCode(handleAPIError(err));
     }
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <form onSubmit={handleSubmit(onSubmit)} action="/auth/login" method="POST">
       <div className="space-y-4">
         {errorCode && <ErrorAlert message={t(`common:api_errors.${errorCode}`)} />}
         <div>

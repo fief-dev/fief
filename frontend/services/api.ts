@@ -1,8 +1,9 @@
-import axios, { AxiosError, AxiosInstance, AxiosResponse } from 'axios';
+import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { IncomingMessage } from 'http';
 import * as R from 'ramda';
 
 import * as schemas from '../schemas';
+import { LoginResponse } from '../schemas/auth';
 
 export class APIClient {
   client: AxiosInstance;
@@ -22,14 +23,11 @@ export class APIClient {
     return this.client.get('/auth/authorize', { params });
   }
 
-  public login(data: schemas.auth.LoginData): Promise<AxiosResponse<void>> {
-    return this.postFormData(
-      '/auth/login',
-      { username: data.email, password: data.password },
-    );
+  public async login(data: schemas.auth.LoginRequest): Promise<AxiosResponse<LoginResponse>> {
+    return this.postFormData('/auth/login', data);
   }
 
-  private postFormData<T>(url: string, data: Record<string, any>): Promise<AxiosResponse<T>> {
+  private postFormData<T>(url: string, data: Record<string, any>, config?: AxiosRequestConfig<any>): Promise<AxiosResponse<T>> {
     const formData = new FormData();
     Object.keys(data).forEach((key) => {
       const value = data[key];
@@ -41,7 +39,7 @@ export class APIClient {
         formData.set(key, data[key]);
       }
     });
-    return this.client.post(url, formData, { headers: { 'Content-Type': 'multipart/form-data' }});
+    return this.client.post(url, formData, { ...config, headers: { 'Content-Type': 'multipart/form-data' }});
   }
 }
 

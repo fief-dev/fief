@@ -1,12 +1,12 @@
-from typing import Optional
+from typing import List, Optional
 
-from fastapi import Depends, HTTPException, Query, status
+from fastapi import Depends, Form, HTTPException, Query, status
 
 from fief.dependencies.account_managers import get_tenant_manager
 from fief.errors import ErrorCode
 from fief.managers import TenantManager
 from fief.models.tenant import Tenant
-from fief.schemas.auth import AuthorizationParameters
+from fief.schemas.auth import AuthorizationParameters, LoginRequest
 
 
 async def get_authorization_parameters(
@@ -40,3 +40,23 @@ async def get_tenant_by_authorization_parameters(
         )
 
     return tenant
+
+
+async def get_login_request_data(
+    username: str = Form(...),
+    password: str = Form(...),
+    response_type: str = Form(...),
+    client_id: str = Form(...),
+    redirect_uri: str = Form(...),
+    scope: Optional[List[str]] = Form(None),
+    state: Optional[str] = Form(None),
+) -> LoginRequest:
+    return LoginRequest(
+        username=username,
+        password=password,
+        response_type=response_type,
+        client_id=client_id,
+        redirect_uri=redirect_uri,
+        scope=scope,
+        state=state,
+    )

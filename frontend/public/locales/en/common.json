@@ -4,6 +4,16 @@
   },
   "api_errors": {
     "UNKNOWN_ERROR": "An unknown error has occured. Please try again later.",
-    "AUTH_INVALID_CLIENT_ID": "The client id. provided was not found on our system."
+    "AUTH_INVALID_CLIENT_ID": "The client id. provided was not found on our system.",
+    "REGISTER_INVALID_PASSWORD": "The password is invalid.",
+    "REGISTER_USER_ALREADY_EXISTS": "A user with the same email address already exists.",
+    "LOGIN_BAD_CREDENTIALS": "The email or password you entered is invalid.",
+    "LOGIN_USER_NOT_VERIFIED": "LOGIN_USER_NOT_VERIFIED",
+    "RESET_PASSWORD_BAD_TOKEN": "RESET_PASSWORD_BAD_TOKEN",
+    "RESET_PASSWORD_INVALID_PASSWORD": "RESET_PASSWORD_INVALID_PASSWORD",
+    "VERIFY_USER_BAD_TOKEN": "VERIFY_USER_BAD_TOKEN",
+    "VERIFY_USER_ALREADY_VERIFIED": "VERIFY_USER_ALREADY_VERIFIED",
+    "UPDATE_USER_EMAIL_ALREADY_EXISTS": "UPDATE_USER_EMAIL_ALREADY_EXISTS",
+    "UPDATE_USER_INVALID_PASSWORD": "UPDATE_USER_INVALID_PASSWORD"
   }
 }

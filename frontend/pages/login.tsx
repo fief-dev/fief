@@ -48,8 +48,8 @@ const Login: NextPage<LoginProps> = ({ authorizeResponse, errorCode }) => {
   return (
     <>
       <AuthLayout title={t('auth:signin.title')} tenant={tenant}>
-        {!tenant && <ErrorAlert message={t(`common:api_errors.${errorCode}`)} />}
-        {tenant && <SignIn api={api} />}
+        {!authorizeResponse && <ErrorAlert message={t(`common:api_errors.${errorCode}`)} />}
+        {authorizeResponse && <SignIn api={api} authorizationParameters={authorizeResponse?.parameters}/>}
       </AuthLayout>
     </>
   );

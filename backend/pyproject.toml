@@ -1,6 +1,10 @@
 [tool.mypy]
 plugins = "sqlalchemy.ext.mypy.plugin"
 
+[[tool.mypy.overrides]]
+module = "furl.*"
+ignore_missing_imports = true
+
 [tool.isort]
 profile = "black"
 

@@ -14,7 +14,7 @@ class AuthorizationParameters(BaseModel):
 
     @validator("scope", pre=True)
     def parse_scope(cls, value: Optional[str]) -> Optional[List[str]]:
-        if value is not None:
+        if value is not None and not isinstance(value, list):
             return value.split()
         return value
 
@@ -22,3 +22,12 @@ class AuthorizationParameters(BaseModel):
 class AuthorizeResponse(BaseModel):
     parameters: AuthorizationParameters
     tenant: TenantReadPublic
+
+
+class LoginRequest(AuthorizationParameters):
+    username: str
+    password: str
+
+
+class LoginResponse(BaseModel):
+    redirect_uri: str
