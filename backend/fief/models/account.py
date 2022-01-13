@@ -1,5 +1,7 @@
+from jwcrypto import jwk
 from sqlalchemy import Column, String, Text
 
+from fief.auth.jwk import generate_account_signature_jwk, load_jwk
 from fief.models.base import GlobalBase
 from fief.models.generics import UUIDModel
 
@@ -10,6 +12,7 @@ class Account(UUIDModel, GlobalBase):
     name: str = Column(String(length=255), nullable=False)
     domain: str = Column(String(length=255), nullable=False)
     database_url: str = Column(Text, nullable=False)
+    sign_jwk: str = Column(Text, nullable=False, default=generate_account_signature_jwk)
 
     def __repr__(self) -> str:
         return f"Account(id={self.id}, name={self.name}, domain={self.domain})"
@@ -27,3 +30,6 @@ class Account(UUIDModel, GlobalBase):
             elif url.startswith("postgresql://"):
                 return url.replace("postgresql://", "postgresql+asyncpg://", 1)
         return url
+
+    def get_sign_jwk(self) -> jwk.JWK:
+        return load_jwk(self.sign_jwk)

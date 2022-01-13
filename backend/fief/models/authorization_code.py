@@ -6,6 +6,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql.sqltypes import JSON, String
 
 from fief.models.base import AccountBase
+from fief.models.client import Client
 from fief.models.generics import GUID, UUIDModel
 from fief.models.user import User
 
@@ -24,4 +25,7 @@ class AuthorizationCode(UUIDModel, AccountBase):
     scope: Optional[List[str]] = Column(JSON, nullable=True)
 
     user_id = Column(GUID, ForeignKey(User.id, ondelete="CASCADE"), nullable=False)
-    user: User = relationship("User", cascade="all, delete")
+    user: User = relationship("User")
+
+    client_id = Column(GUID, ForeignKey(Client.id, ondelete="CASCADE"), nullable=False)
+    client: Client = relationship("Client", lazy="joined")

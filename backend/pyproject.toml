@@ -5,6 +5,10 @@ plugins = "sqlalchemy.ext.mypy.plugin"
 module = "furl.*"
 ignore_missing_imports = true
 
+[[tool.mypy.overrides]]
+module = "jwcrypto.*"
+ignore_missing_imports = true
+
 [tool.isort]
 profile = "black"
 

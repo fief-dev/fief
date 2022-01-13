@@ -28,6 +28,7 @@ class TestRegister:
         )
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.json()["detail"] != "Bad Request"
 
     async def test_new_user(self, test_client: httpx.AsyncClient, account: Account):
         response = await test_client.post(

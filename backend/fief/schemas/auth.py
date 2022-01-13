@@ -31,3 +31,16 @@ class LoginRequest(AuthorizationParameters):
 
 class LoginResponse(BaseModel):
     redirect_uri: str
+
+
+class TokenRequest(BaseModel):
+    grant_type: Literal["authorization_code"]
+    code: str
+    redirect_uri: str
+    client_id: str
+    client_secret: str
+
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: Literal["bearer"] = "bearer"

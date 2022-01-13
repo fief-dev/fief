@@ -18,7 +18,7 @@ class User(UUIDModel, AccountBase):
     is_verified = Column(Boolean, default=False, nullable=False)
 
     tenant_id = Column(GUID, ForeignKey(Tenant.id, ondelete="CASCADE"), nullable=False)
-    tenant: Tenant = relationship("Tenant", cascade="all, delete")
+    tenant: Tenant = relationship("Tenant")
 
     def __repr__(self) -> str:
         return f"User(id={self.id}, email={self.email})"

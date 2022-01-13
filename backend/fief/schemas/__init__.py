@@ -1,3 +1,3 @@
-from fief.schemas import access_token, auth, tenant, user
+from fief.schemas import auth, tenant, user
 
-__all__ = ["access_token", "auth", "tenant", "user"]
+__all__ = ["auth", "tenant", "user"]
