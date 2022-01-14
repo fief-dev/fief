@@ -9,7 +9,7 @@ import httpx
 import pytest
 from fastapi import FastAPI
 
-from fief.app import app
+from fief.apps import account_app, supervisor_app
 from fief.db import (
     AsyncEngine,
     AsyncSession,
@@ -145,8 +145,16 @@ async def test_client_generator(
 
 
 @pytest.fixture
-async def test_client(
+async def test_client_supervisor(
     test_client_generator: TestClientGeneratorType,
 ) -> AsyncGenerator[httpx.AsyncClient, None]:
-    async with test_client_generator(app) as test_client:
+    async with test_client_generator(supervisor_app) as test_client:
+        yield test_client
+
+
+@pytest.fixture
+async def test_client_account(
+    test_client_generator: TestClientGeneratorType,
+) -> AsyncGenerator[httpx.AsyncClient, None]:
+    async with test_client_generator(account_app) as test_client:
         yield test_client

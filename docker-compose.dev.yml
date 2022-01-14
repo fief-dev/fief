@@ -5,7 +5,7 @@ volumes:
 
 services:
   backend:
-    command: uvicorn --host 0.0.0.0 --port 80 --reload fief.app:app
+    command: uvicorn --host 0.0.0.0 --port 80 --root-path /api --reload fief.app:app
     volumes:
       - ./backend:/app
     environment:

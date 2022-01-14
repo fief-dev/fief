@@ -10,9 +10,9 @@ from tests.data import TestData
 @pytest.mark.test_data
 class TestRegister:
     async def test_existing_user(
-        self, test_client: httpx.AsyncClient, account: Account
+        self, test_client_account: httpx.AsyncClient, account: Account
     ):
-        response = await test_client.post(
+        response = await test_client_account.post(
             "/auth/register",
             headers={"Host": account.domain},
             json={"email": "anne@bretagne.duchy", "password": "hermine"},
@@ -21,8 +21,10 @@ class TestRegister:
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert response.json()["detail"] != "Bad Request"
 
-    async def test_new_user(self, test_client: httpx.AsyncClient, account: Account):
-        response = await test_client.post(
+    async def test_new_user(
+        self, test_client_account: httpx.AsyncClient, account: Account
+    ):
+        response = await test_client_account.post(
             "/auth/register",
             headers={"Host": account.domain},
             json={"email": "louis@bretagne.duchy", "password": "hermine"},
@@ -34,9 +36,12 @@ class TestRegister:
         assert "id" in json
 
     async def test_no_email_conflict_on_another_tenant(
-        self, test_client: httpx.AsyncClient, account: Account, test_data: TestData
+        self,
+        test_client_account: httpx.AsyncClient,
+        account: Account,
+        test_data: TestData,
     ):
-        response = await test_client.post(
+        response = await test_client_account.post(
             "/auth/register",
             headers={
                 "Host": account.domain,

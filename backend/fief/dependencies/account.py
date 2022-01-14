@@ -4,7 +4,7 @@ from typing import AsyncGenerator
 from fastapi import Header, HTTPException, status
 from fastapi.param_functions import Depends
 
-from fief.db import AsyncEngine, AsyncSession, create_async_session_maker, create_engine
+from fief.db import AsyncEngine, AsyncSession, create_engine
 from fief.dependencies.global_managers import get_account_manager
 from fief.managers import AccountManager
 from fief.models import Account

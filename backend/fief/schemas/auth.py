@@ -1,12 +1,13 @@
-from typing import List, Literal, Optional
+from typing import List, Optional
 
 from pydantic import BaseModel, validator
+from pydantic.fields import Field
 
 from fief.schemas.tenant import TenantReadPublic
 
 
 class AuthorizationParameters(BaseModel):
-    response_type: Literal["code"]
+    response_type: str = Field(..., regex="code")
     client_id: str
     redirect_uri: str
     scope: Optional[List[str]]
@@ -34,7 +35,7 @@ class LoginResponse(BaseModel):
 
 
 class TokenRequest(BaseModel):
-    grant_type: Literal["authorization_code"]
+    grant_type: str = Field(..., regex="authorization_code")
     code: str
     redirect_uri: str
     client_id: str
@@ -43,4 +44,4 @@ class TokenRequest(BaseModel):
 
 class TokenResponse(BaseModel):
     access_token: str
-    token_type: Literal["bearer"] = "bearer"
+    token_type: str = Field("bearer", regex="bearer")
