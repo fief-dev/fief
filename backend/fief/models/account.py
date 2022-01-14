@@ -1,7 +1,13 @@
+from typing import Optional
+
 from jwcrypto import jwk
 from sqlalchemy import Column, String, Text
 
-from fief.auth.jwk import generate_account_signature_jwk, load_jwk
+from fief.crypto.jwk import (
+    generate_account_encryption_jwk,
+    generate_account_signature_jwk,
+    load_jwk,
+)
 from fief.models.base import GlobalBase
 from fief.models.generics import UUIDModel
 
@@ -13,6 +19,7 @@ class Account(UUIDModel, GlobalBase):
     domain: str = Column(String(length=255), nullable=False)
     database_url: str = Column(Text, nullable=False)
     sign_jwk: str = Column(Text, nullable=False, default=generate_account_signature_jwk)
+    encrypt_jwk: str = Column(Text, nullable=True)
 
     def __repr__(self) -> str:
         return f"Account(id={self.id}, name={self.name}, domain={self.domain})"
@@ -33,3 +40,8 @@ class Account(UUIDModel, GlobalBase):
 
     def get_sign_jwk(self) -> jwk.JWK:
         return load_jwk(self.sign_jwk)
+
+    def get_encrypt_jwk(self) -> Optional[jwk.JWK]:
+        if self.encrypt_jwk is None:
+            return None
+        return load_jwk(self.encrypt_jwk)

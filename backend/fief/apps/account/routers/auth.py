@@ -7,21 +7,21 @@ from fastapi_users.router.common import ErrorCode as FastAPIUsersErrorCode
 from furl import furl
 from pydantic import UUID4
 
-from fief.auth.jwt import AssymetricJWTStrategy
+from fief.crypto.access_token import generate_access_token
+from fief.crypto.id_token import generate_id_token
+from fief.dependencies.account import get_current_account
 from fief.dependencies.account_managers import get_authorization_code_manager
 from fief.dependencies.auth import (
-    get_assymetric_jwt_strategy,
     get_authorization_parameters,
     get_client_by_authorization_parameters,
     get_client_by_login_request_data,
-    get_client_by_token_request,
     get_login_request_data,
     get_token_request_data,
 )
 from fief.dependencies.users import UserManager, get_user_manager
 from fief.errors import ErrorCode
 from fief.managers import AuthorizationCodeManager
-from fief.models import AuthorizationCode, Client, Tenant
+from fief.models import Account, AuthorizationCode, Client
 from fief.schemas.auth import (
     AuthorizationParameters,
     AuthorizeResponse,
@@ -92,9 +92,7 @@ async def token(
     authorization_code_manager: AuthorizationCodeManager = Depends(
         get_authorization_code_manager
     ),
-    assymetric_jwt_strategy: AssymetricJWTStrategy = Depends(
-        get_assymetric_jwt_strategy
-    ),
+    account: Account = Depends(get_current_account),
 ) -> TokenResponse:
     authorization_code = await authorization_code_manager.get_by_code(
         token_request.code
@@ -133,7 +131,12 @@ async def token(
             detail=ErrorCode.AUTH_INVALID_AUTHORIZATION_CODE,
         ) from e
     else:
-        access_token = await assymetric_jwt_strategy.write_token(user)
-        return TokenResponse(access_token=access_token)
+        access_token = generate_access_token(
+            account.get_sign_jwk(), account, client, user, 3600
+        )
+        id_token = generate_id_token(
+            account.get_sign_jwk(), account, client, user, 3600
+        )
+        return TokenResponse(access_token=access_token, id_token=id_token)
     finally:
         await authorization_code_manager.delete(authorization_code)

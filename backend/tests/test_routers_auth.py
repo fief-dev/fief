@@ -293,4 +293,5 @@ class TestAuthToken:
 
         json = response.json()
         assert isinstance(json["access_token"], str)
+        assert isinstance(json["id_token"], str)
         assert json["token_type"] == "bearer"

@@ -2,12 +2,10 @@ from typing import List, Optional
 
 from fastapi import Depends, Form, HTTPException, Query, status
 
-from fief.auth.jwt import AssymetricJWTStrategy
-from fief.dependencies.account import get_current_account
-from fief.dependencies.account_managers import get_client_manager, get_tenant_manager
+from fief.dependencies.account_managers import get_client_manager
 from fief.errors import ErrorCode
-from fief.managers import ClientManager, TenantManager
-from fief.models import Account, Client, Tenant, client
+from fief.managers import ClientManager
+from fief.models import Client
 from fief.schemas.auth import AuthorizationParameters, LoginRequest, TokenRequest
 
 
@@ -108,9 +106,3 @@ async def get_client_by_token_request(
         )
 
     return client
-
-
-def get_assymetric_jwt_strategy(
-    account: Account = Depends(get_current_account),
-) -> AssymetricJWTStrategy:
-    return AssymetricJWTStrategy(account.get_sign_jwk(), account, 3600)

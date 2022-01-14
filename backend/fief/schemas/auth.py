@@ -44,4 +44,5 @@ class TokenRequest(BaseModel):
 
 class TokenResponse(BaseModel):
     access_token: str
+    id_token: str
     token_type: str = Field("bearer", regex="bearer")
