@@ -26,7 +26,7 @@ def account_db() -> Generator[AccountDatabase, None, None]:
 def test_account_db_migrate(account_db: AccountDatabase, local_account: Account):
     account_db.migrate(local_account)
 
-    engine = create_engine(local_account.database_url)
+    engine = create_engine(local_account.get_database_url(asyncio=False))
     inspector = inspect(engine)
     table_names = inspector.get_table_names()
 

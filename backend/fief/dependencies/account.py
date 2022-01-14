@@ -35,6 +35,11 @@ async def get_current_account_engine(
 
 async def get_current_account_session(
     engine: AsyncEngine = Depends(get_current_account_engine),
+    account: Account = Depends(get_current_account),
 ) -> AsyncGenerator[AsyncSession, None]:
-    session_maker = create_async_session_maker(engine)
-    yield session_maker()
+    async with engine.connect() as connection:
+        connection = await connection.execution_options(
+            schema_translate_map={None: str(account.id)}
+        )
+        async with AsyncSession(bind=connection, expire_on_commit=False) as session:
+            yield session
