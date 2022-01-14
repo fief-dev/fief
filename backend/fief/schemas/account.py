@@ -1,21 +1,24 @@
+from typing import Optional
+
 from pydantic import BaseModel
 
 from fief.schemas.generics import UUIDSchema
 
 
-class BaseAccount(BaseModel):
+class AccountCreate(BaseModel):
+    name: str
+    database_url: Optional[str]
+
+
+class BaseAccount(UUIDSchema):
     name: str
     domain: str
-    database_url: str
+    database_url: Optional[str]
 
 
-class AccountCreate(BaseAccount):
-    pass
-
-
-class Account(BaseAccount, UUIDSchema):
+class Account(BaseAccount):
     sign_jwk: str
 
 
-class AccountRead(Account):
+class AccountRead(BaseAccount):
     pass

@@ -3,6 +3,7 @@ import contextlib
 import os
 import uuid
 from typing import AsyncContextManager, AsyncGenerator, Callable
+from unittest.mock import MagicMock
 
 import asgi_lifespan
 import httpx
@@ -18,6 +19,7 @@ from fief.db import (
     get_global_async_session,
 )
 from fief.dependencies.account import get_current_account_session
+from fief.dependencies.account_db import get_account_db
 from fief.models import Account, GlobalBase
 from fief.services.account_db import AccountDatabase
 from tests.data import TestData, data_mapping
@@ -79,7 +81,7 @@ async def global_session(
         async with AsyncSession(bind=connection, expire_on_commit=False) as session:
             await session.begin_nested()
             yield session
-        await session.rollback()
+            await session.rollback()
 
 
 @pytest.fixture(scope="session")
@@ -96,7 +98,8 @@ async def account_session(
         async with AsyncSession(bind=connection, expire_on_commit=False) as session:
             await session.begin_nested()
             yield session
-        await session.rollback()
+            print("ROLLBACK")
+            await session.rollback()
 
 
 @pytest.fixture
@@ -122,18 +125,26 @@ async def test_data(
     return data_mapping
 
 
+@pytest.fixture
+async def account_db_mock() -> MagicMock:
+    return MagicMock(spec=AccountDatabase)
+
+
 TestClientGeneratorType = Callable[[FastAPI], AsyncContextManager[httpx.AsyncClient]]
 
 
 @pytest.fixture
 async def test_client_generator(
-    global_session: AsyncSession, account_session: AsyncSession
+    global_session: AsyncSession,
+    account_session: AsyncSession,
+    account_db_mock: MagicMock,
 ) -> TestClientGeneratorType:
     @contextlib.asynccontextmanager
     async def _test_client_generator(app: FastAPI):
         app.dependency_overrides = {}
         app.dependency_overrides[get_global_async_session] = lambda: global_session
         app.dependency_overrides[get_current_account_session] = lambda: account_session
+        app.dependency_overrides[get_account_db] = lambda: account_db_mock
 
         async with asgi_lifespan.LifespanManager(app):
             async with httpx.AsyncClient(

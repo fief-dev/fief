@@ -25,15 +25,15 @@ def app() -> FastAPI:
     ):
         statement = select(Tenant)
         results = await session.execute(statement)
-
-        return {"count": len(results.all())}
+        results_list = results.all()
+        return {"count": len(results_list)}
 
     return app
 
 
 @pytest.fixture
 @pytest.mark.asyncio
-async def test_client(
+async def test_client_dependencies(
     test_client_generator: TestClientGeneratorType, app: FastAPI
 ) -> AsyncGenerator[httpx.AsyncClient, None]:
     async with test_client_generator(app) as test_client:
@@ -41,18 +41,23 @@ async def test_client(
 
 
 @pytest.mark.asyncio
+@pytest.mark.test_data
 class TestGetCurrentAccount:
-    async def test_not_existing_account(self, test_client: httpx.AsyncClient):
-        response = await test_client.get(
+    async def test_not_existing_account(
+        self, test_client_dependencies: httpx.AsyncClient
+    ):
+        response = await test_client_dependencies.get(
             "/account", headers={"Host": "unknown.fief.dev"}
         )
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 
     async def test_existing_account(
-        self, test_client: httpx.AsyncClient, account: Account
+        self, test_client_dependencies: httpx.AsyncClient, account: Account
     ):
-        response = await test_client.get("/account", headers={"Host": account.domain})
+        response = await test_client_dependencies.get(
+            "/account", headers={"Host": account.domain}
+        )
 
         assert response.status_code == status.HTTP_200_OK
 
@@ -61,13 +66,16 @@ class TestGetCurrentAccount:
 
 
 @pytest.mark.asyncio
+@pytest.mark.test_data
 class TestGetCurrentAccountSession:
     async def test_existing_account(
-        self, test_client: httpx.AsyncClient, account: Account
+        self, test_client_dependencies: httpx.AsyncClient, account: Account
     ):
-        response = await test_client.get("/tenants", headers={"Host": account.domain})
+        response = await test_client_dependencies.get(
+            "/tenants", headers={"Host": account.domain}
+        )
 
         assert response.status_code == status.HTTP_200_OK
 
         json = response.json()
-        assert json["count"] == 0
+        assert json["count"] == 2

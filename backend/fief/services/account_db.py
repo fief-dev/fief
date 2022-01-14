@@ -1,6 +1,6 @@
 from os import path
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, exc
 from sqlalchemy.engine import Engine
 from sqlalchemy.schema import CreateSchema
 
@@ -13,14 +13,25 @@ alembic_config_file = path.join(
 )
 
 
+class AccountDatabaseError(Exception):
+    pass
+
+
+class AccountDatabaseConnectionError(AccountDatabaseError):
+    pass
+
+
 class AccountDatabase:
     def migrate(self, account: Account):
-        schema_name = self._create_schema(account)
-        engine = self._get_schema_engine(account, schema_name)
-        with engine.begin() as connection:
-            alembic_config = Config(alembic_config_file, ini_section="account")
-            alembic_config.attributes["connection"] = connection
-            command.upgrade(alembic_config, "head")
+        try:
+            schema_name = self._create_schema(account)
+            engine = self._get_schema_engine(account, schema_name)
+            with engine.begin() as connection:
+                alembic_config = Config(alembic_config_file, ini_section="account")
+                alembic_config.attributes["connection"] = connection
+                command.upgrade(alembic_config, "head")
+        except exc.OperationalError as e:
+            raise AccountDatabaseConnectionError(str(e)) from e
 
     def _create_schema(self, account: Account) -> str:
         schema_name = str(account.id)

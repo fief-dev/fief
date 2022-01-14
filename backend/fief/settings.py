@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     environment: Environment
     unit_tests: bool = False
     database_url: str
+    root_domain: str
     allow_origin_regex: str
 
     account_table_prefix: str = "fief_"

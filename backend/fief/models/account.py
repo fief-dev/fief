@@ -3,13 +3,10 @@ from typing import Optional
 from jwcrypto import jwk
 from sqlalchemy import Column, String, Text
 
-from fief.crypto.jwk import (
-    generate_account_encryption_jwk,
-    generate_account_signature_jwk,
-    load_jwk,
-)
+from fief.crypto.jwk import generate_account_signature_jwk, load_jwk
 from fief.models.base import GlobalBase
 from fief.models.generics import UUIDModel
+from fief.settings import settings
 
 
 class Account(UUIDModel, GlobalBase):
@@ -17,7 +14,7 @@ class Account(UUIDModel, GlobalBase):
 
     name: str = Column(String(length=255), nullable=False)
     domain: str = Column(String(length=255), nullable=False)
-    database_url: str = Column(Text, nullable=False)
+    database_url: Optional[str] = Column(Text, nullable=True)
     sign_jwk: str = Column(Text, nullable=False, default=generate_account_signature_jwk)
     encrypt_jwk: str = Column(Text, nullable=True)
 
@@ -26,10 +23,13 @@ class Account(UUIDModel, GlobalBase):
 
     def get_database_url(self, asyncio=True) -> str:
         """
-        Returns a proper database URL for async or not-async context.
+        Return the database URL for this account.
 
-        Some tools like Alembic still require a sync connection.
+        If it's not specified on the model, the instance database URL is returned.
         """
+        if self.database_url is None:
+            return settings.get_database_url()
+
         url = self.database_url
         if asyncio:
             if url.startswith("sqlite://"):
