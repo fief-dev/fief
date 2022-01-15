@@ -25,4 +25,8 @@ class TestUserUserinfo:
         user = test_data["users"]["regular"]
 
         json = response.json()
-        assert json == {"sub": str(user.id), "email": user.email}
+        assert json == {
+            "sub": str(user.id),
+            "email": user.email,
+            "tenant_id": str(user.tenant_id),
+        }
