@@ -13,11 +13,11 @@ from fief.services.account_db import AccountDatabaseConnectionError
 @pytest.mark.test_data
 class TestCreateAccount:
     async def test_db_connection_error(
-        self, test_client_supervisor: httpx.AsyncClient, account_db_mock: MagicMock
+        self, test_client_admin: httpx.AsyncClient, account_db_mock: MagicMock
     ):
         account_db_mock.migrate.side_effect = AccountDatabaseConnectionError()
 
-        response = await test_client_supervisor.post(
+        response = await test_client_admin.post(
             "/accounts/",
             json={"name": "Burgundy"},
         )
@@ -28,9 +28,9 @@ class TestCreateAccount:
         assert json["detail"] == ErrorCode.ACCOUNT_DB_CONNECTION_ERROR
 
     async def test_success(
-        self, test_client_supervisor: httpx.AsyncClient, account_db_mock: MagicMock
+        self, test_client_admin: httpx.AsyncClient, account_db_mock: MagicMock
     ):
-        response = await test_client_supervisor.post(
+        response = await test_client_admin.post(
             "/accounts/",
             json={"name": "Burgundy"},
         )
@@ -47,9 +47,9 @@ class TestCreateAccount:
         assert "encrypt_jwk" not in json
 
     async def test_avoid_domain_collision(
-        self, test_client_supervisor: httpx.AsyncClient, account_db_mock: MagicMock
+        self, test_client_admin: httpx.AsyncClient, account_db_mock: MagicMock
     ):
-        response = await test_client_supervisor.post(
+        response = await test_client_admin.post(
             "/accounts/",
             json={"name": "Bretagne"},
         )

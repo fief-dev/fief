@@ -9,16 +9,16 @@ from tests.data import TestData
 @pytest.mark.test_data
 @pytest.mark.account_host
 class TestUserUserinfo:
-    async def test_unauthorized(self, test_client_account: httpx.AsyncClient):
-        response = await test_client_account.get("/user/userinfo")
+    async def test_unauthorized(self, test_client_user: httpx.AsyncClient):
+        response = await test_client_user.get("/userinfo")
 
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
     @pytest.mark.access_token(user="regular")
     async def test_authorized(
-        self, test_client_account: httpx.AsyncClient, test_data: TestData
+        self, test_client_user: httpx.AsyncClient, test_data: TestData
     ):
-        response = await test_client_account.get("/user/userinfo")
+        response = await test_client_user.get("/userinfo")
 
         assert response.status_code == status.HTTP_200_OK
 

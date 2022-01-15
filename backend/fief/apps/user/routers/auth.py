@@ -135,7 +135,12 @@ async def token(
             account.get_sign_jwk(), account, client, user, 3600
         )
         id_token = generate_id_token(
-            account.get_sign_jwk(), account, client, user, 3600
+            account.get_sign_jwk(),
+            account,
+            client,
+            user,
+            3600,
+            encryption_key=account.get_encrypt_jwk(),
         )
         return TokenResponse(access_token=access_token, id_token=id_token)
     finally:

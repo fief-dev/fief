@@ -13,9 +13,9 @@ from fief.models import Account
 @pytest.mark.account_host
 class TestWellKnownJWKS:
     async def test_return_public_keys(
-        self, test_client_account: httpx.AsyncClient, account: Account
+        self, test_client_admin: httpx.AsyncClient, account: Account
     ):
-        response = await test_client_account.get("/.well-known/jwks.json")
+        response = await test_client_admin.get("/.well-known/jwks.json")
 
         assert response.status_code == status.HTTP_200_OK
 
