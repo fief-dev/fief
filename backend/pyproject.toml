@@ -17,3 +17,4 @@ concurrency = ["greenlet"]
 
 [tool.pytest.ini_options]
 markers = ["test_data", "account_host", "access_token"]
+asyncio_mode = "auto"

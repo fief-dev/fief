@@ -23,8 +23,3 @@ def load_jwk(json: str) -> jwk.JWK:
 def generate_account_signature_jwk() -> str:
     key = generate_jwk(secrets.token_urlsafe(), "sig")
     return key.export()
-
-
-def generate_account_encryption_jwk() -> str:
-    key = generate_jwk(secrets.token_urlsafe(), "enc")
-    return key.export()

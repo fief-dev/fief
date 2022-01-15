@@ -46,7 +46,7 @@ class BaseManagerProtocol(Protocol[M]):
     async def create(self, object: M) -> M:
         ...  # pragma: no cover
 
-    async def update(self, object: M, update_dict: Dict[str, Any]) -> M:
+    async def update(self, object: M) -> None:
         ...  # pragma: no cover
 
     async def delete(self, object: M) -> None:
@@ -133,14 +133,10 @@ class BaseManager(BaseManagerProtocol, Generic[M]):
         await self.session.commit()
         return objects
 
-    async def update(self, object: M, update_dict: Dict[str, Any]) -> M:
-        for key, value in update_dict.items():
-            setattr(object, key, value)
-
+    async def update(self, object: M) -> None:
         self.session.add(object)
         await self.session.commit()
         await self.session.refresh(object)
-        return object
 
     async def delete(self, object: M) -> None:
         await self.session.delete(object)

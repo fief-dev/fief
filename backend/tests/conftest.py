@@ -100,7 +100,6 @@ async def account_session(
         async with AsyncSession(bind=connection, expire_on_commit=False) as session:
             await session.begin_nested()
             yield session
-            print("ROLLBACK")
             await session.rollback()
 
 
