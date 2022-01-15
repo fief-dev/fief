@@ -1,3 +1,5 @@
+from typing import Any, Dict
+
 from fastapi_users import models
 from pydantic import UUID4
 
@@ -24,4 +26,8 @@ class UserUpdate(models.BaseUserUpdate):
 
 
 class UserDB(User, models.BaseUserDB):
-    pass
+    def get_claims(self) -> Dict[str, Any]:
+        return {
+            "sub": str(self.id),
+            "email": self.email,
+        }

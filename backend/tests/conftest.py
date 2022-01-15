@@ -2,7 +2,7 @@ import asyncio
 import contextlib
 import os
 import uuid
-from typing import AsyncContextManager, AsyncGenerator, Callable
+from typing import AsyncContextManager, AsyncGenerator, Callable, Optional
 from unittest.mock import MagicMock
 
 import asgi_lifespan
@@ -11,6 +11,7 @@ import pytest
 from fastapi import FastAPI
 
 from fief.apps import account_app, supervisor_app
+from fief.crypto.access_token import generate_access_token
 from fief.db import (
     AsyncEngine,
     AsyncSession,
@@ -21,6 +22,7 @@ from fief.db import (
 from fief.dependencies.account import get_current_account_session
 from fief.dependencies.account_db import get_account_db
 from fief.models import Account, GlobalBase
+from fief.schemas.user import UserDB
 from fief.services.account_db import AccountDatabase
 from tests.data import TestData, data_mapping
 
@@ -130,6 +132,29 @@ async def account_db_mock() -> MagicMock:
     return MagicMock(spec=AccountDatabase)
 
 
+@pytest.fixture
+def account_host(request: pytest.FixtureRequest, account: Account) -> Optional[str]:
+    marker = request.node.get_closest_marker("account_host")
+    if marker:
+        return account.domain
+    return None
+
+
+@pytest.fixture
+def access_token(
+    request: pytest.FixtureRequest, test_data: TestData, account: Account
+) -> Optional[str]:
+    marker = request.node.get_closest_marker("access_token")
+    if marker:
+        user_alias = marker.kwargs["user"]
+        user = test_data["users"][user_alias]
+        client = test_data["clients"]["default_tenant"]
+        return generate_access_token(
+            account.get_sign_jwk(), account, client, UserDB.from_orm(user), 3600
+        )
+    return None
+
+
 TestClientGeneratorType = Callable[[FastAPI], AsyncContextManager[httpx.AsyncClient]]
 
 
@@ -138,6 +163,8 @@ async def test_client_generator(
     global_session: AsyncSession,
     account_session: AsyncSession,
     account_db_mock: MagicMock,
+    account_host: Optional[str],
+    access_token: Optional[str],
 ) -> TestClientGeneratorType:
     @contextlib.asynccontextmanager
     async def _test_client_generator(app: FastAPI):
@@ -146,9 +173,15 @@ async def test_client_generator(
         app.dependency_overrides[get_current_account_session] = lambda: account_session
         app.dependency_overrides[get_account_db] = lambda: account_db_mock
 
+        headers = {}
+        if account_host is not None:
+            headers["Host"] = account_host
+        if access_token is not None:
+            headers["Authorization"] = f"Bearer {access_token}"
+
         async with asgi_lifespan.LifespanManager(app):
             async with httpx.AsyncClient(
-                app=app, base_url="http://api.fief.dev"
+                app=app, base_url="http://api.fief.dev", headers=headers
             ) as test_client:
                 yield test_client
 

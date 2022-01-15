@@ -31,13 +31,12 @@ def generate_id_token(
     exp = iat + lifetime_seconds
 
     claims = {
+        **user.get_claims(),
         "iss": f"https://{account.domain}",
-        "sub": str(user.id),
         "aud": [str(client.client_id)],
         "exp": exp,
         "iat": iat,
         "azp": client.client_id,
-        "email": user.email,
     }
 
     signed_token = jwt.JWT(header={"alg": "RS256"}, claims=claims)

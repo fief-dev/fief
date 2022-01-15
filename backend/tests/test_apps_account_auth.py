@@ -6,25 +6,20 @@ from furl import furl
 from pytest_lazyfixture import lazy_fixture
 
 from fief.errors import ErrorCode
-from fief.models import Account, AuthorizationCode
+from fief.models import AuthorizationCode
 from tests.data import TestData
 
 
 @pytest.mark.asyncio
 @pytest.mark.test_data
+@pytest.mark.account_host
 class TestAuthAuthorize:
-    async def test_missing_parameters(
-        self, test_client_account: httpx.AsyncClient, account: Account
-    ):
-        response = await test_client_account.get(
-            "/auth/authorize", headers={"Host": account.domain}
-        )
+    async def test_missing_parameters(self, test_client_account: httpx.AsyncClient):
+        response = await test_client_account.get("/auth/authorize")
 
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
-    async def test_unknown_client_id(
-        self, test_client_account: httpx.AsyncClient, account: Account
-    ):
+    async def test_unknown_client_id(self, test_client_account: httpx.AsyncClient):
         response = await test_client_account.get(
             "/auth/authorize",
             params={
@@ -32,7 +27,6 @@ class TestAuthAuthorize:
                 "client_id": "UNKNOWN",
                 "redirect_uri": "https://bretagne.duchy/callback",
             },
-            headers={"Host": account.domain},
         )
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
@@ -41,10 +35,7 @@ class TestAuthAuthorize:
         assert json["detail"] == ErrorCode.AUTH_INVALID_CLIENT_ID
 
     async def test_valid_client_id(
-        self,
-        test_client_account: httpx.AsyncClient,
-        test_data: TestData,
-        account: Account,
+        self, test_client_account: httpx.AsyncClient, test_data: TestData
     ):
         client = test_data["clients"]["default_tenant"]
         tenant = client.tenant
@@ -56,7 +47,6 @@ class TestAuthAuthorize:
                 "client_id": client.client_id,
                 "redirect_uri": "https://bretagne.duchy/callback",
             },
-            headers={"Host": account.domain},
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -74,21 +64,15 @@ class TestAuthAuthorize:
 
 @pytest.mark.asyncio
 @pytest.mark.test_data
+@pytest.mark.account_host
 class TestAuthLogin:
-    async def test_missing_parameters(
-        self, test_client_account: httpx.AsyncClient, account: Account
-    ):
-        response = await test_client_account.post(
-            "/auth/login", headers={"Host": account.domain}
-        )
+    async def test_missing_parameters(self, test_client_account: httpx.AsyncClient):
+        response = await test_client_account.post("/auth/login")
 
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
     async def test_bad_credentials(
-        self,
-        test_client_account: httpx.AsyncClient,
-        account: Account,
-        test_data: TestData,
+        self, test_client_account: httpx.AsyncClient, test_data: TestData
     ):
         client = test_data["clients"]["default_tenant"]
 
@@ -101,7 +85,6 @@ class TestAuthLogin:
                 "username": "anne@bretagne.duchy",
                 "password": "foo",
             },
-            headers={"Host": account.domain},
         )
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
@@ -110,10 +93,7 @@ class TestAuthLogin:
         assert json["detail"] == FastAPIUsersErrorCode.LOGIN_BAD_CREDENTIALS
 
     async def test_valid_credentials(
-        self,
-        test_client_account: httpx.AsyncClient,
-        account: Account,
-        test_data: TestData,
+        self, test_client_account: httpx.AsyncClient, test_data: TestData
     ):
         client = test_data["clients"]["default_tenant"]
 
@@ -127,7 +107,6 @@ class TestAuthLogin:
                 "username": "anne@bretagne.duchy",
                 "password": "hermine",
             },
-            headers={"Host": account.domain},
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -141,10 +120,7 @@ class TestAuthLogin:
         assert parsed_location.query.params["state"] == "STATE"
 
     async def test_none_state_not_in_redirect_uri(
-        self,
-        test_client_account: httpx.AsyncClient,
-        account: Account,
-        test_data: TestData,
+        self, test_client_account: httpx.AsyncClient, test_data: TestData
     ):
         client = test_data["clients"]["default_tenant"]
 
@@ -157,7 +133,6 @@ class TestAuthLogin:
                 "username": "anne@bretagne.duchy",
                 "password": "hermine",
             },
-            headers={"Host": account.domain},
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -196,13 +171,10 @@ def authorization_code_client_secret(authorization_code: AuthorizationCode) -> s
 
 @pytest.mark.asyncio
 @pytest.mark.test_data
+@pytest.mark.account_host
 class TestAuthToken:
-    async def test_missing_parameters(
-        self, test_client_account: httpx.AsyncClient, account: Account
-    ):
-        response = await test_client_account.post(
-            "/auth/token", headers={"Host": account.domain}
-        )
+    async def test_missing_parameters(self, test_client_account: httpx.AsyncClient):
+        response = await test_client_account.post("/auth/token")
 
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
@@ -246,7 +218,6 @@ class TestAuthToken:
     async def test_invalid(
         self,
         test_client_account: httpx.AsyncClient,
-        account: Account,
         code: str,
         redirect_uri: str,
         client_id: str,
@@ -256,7 +227,6 @@ class TestAuthToken:
     ):
         response = await test_client_account.post(
             "/auth/token",
-            headers={"Host": account.domain},
             data={
                 "grant_type": "authorization_code",
                 "code": code,
@@ -274,12 +244,10 @@ class TestAuthToken:
     async def test_valid(
         self,
         test_client_account: httpx.AsyncClient,
-        account: Account,
         authorization_code: AuthorizationCode,
     ):
         response = await test_client_account.post(
             "/auth/token",
-            headers={"Host": account.domain},
             data={
                 "grant_type": "authorization_code",
                 "code": authorization_code.code,

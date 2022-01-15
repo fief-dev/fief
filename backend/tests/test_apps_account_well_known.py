@@ -10,13 +10,12 @@ from fief.models import Account
 
 @pytest.mark.asyncio
 @pytest.mark.test_data
+@pytest.mark.account_host
 class TestWellKnownJWKS:
     async def test_return_public_keys(
         self, test_client_account: httpx.AsyncClient, account: Account
     ):
-        response = await test_client_account.get(
-            "/.well-known/jwks.json", headers={"Host": account.domain}
-        )
+        response = await test_client_account.get("/.well-known/jwks.json")
 
         assert response.status_code == status.HTTP_200_OK
 

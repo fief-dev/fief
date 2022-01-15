@@ -1,3 +1,4 @@
+import json
 import uuid
 from datetime import datetime, timezone
 
@@ -37,7 +38,8 @@ def generate_access_token(
 def read_access_token(key: jwk.JWK, token: str) -> UUID4:
     try:
         decoded_jwt = jwt.JWT(jwt=token, key=key)
-        user_id = decoded_jwt.claims["sub"]
+        claims = json.loads(decoded_jwt.claims)
+        user_id = claims["sub"]
     except JWException as e:
         raise InvalidAccessToken() from e
     except KeyError as e:
