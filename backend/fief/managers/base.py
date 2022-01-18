@@ -43,6 +43,9 @@ class BaseManagerProtocol(Protocol[M]):
     async def get_one_or_none(self, statement: Select) -> Optional[M]:
         ...  # pragma: no cover
 
+    async def list(self, statement: Select) -> List[M]:
+        ...  # pragma: no cover
+
     async def create(self, object: M) -> M:
         ...  # pragma: no cover
 
@@ -120,6 +123,10 @@ class BaseManager(BaseManagerProtocol, Generic[M]):
         if object is None:
             return None
         return object[0]
+
+    async def list(self, statement: Select) -> List[M]:
+        results = await self._execute_statement(statement)
+        return [result[0] for result in results.unique().all()]
 
     async def create(self, object: M) -> M:
         self.session.add(object)

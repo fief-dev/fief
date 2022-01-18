@@ -1,10 +1,9 @@
-from functools import lru_cache
 from typing import AsyncGenerator
 
 from fastapi import Header, HTTPException, status
 from fastapi.param_functions import Depends
 
-from fief.db import AsyncEngine, AsyncSession, create_engine
+from fief.db import AsyncSession, get_account_session
 from fief.dependencies.global_managers import get_account_manager
 from fief.managers import AccountManager
 from fief.models import Account
@@ -22,24 +21,8 @@ async def get_current_account(
     return account
 
 
-@lru_cache
-def get_engine(database_url: str) -> AsyncEngine:
-    return create_engine(database_url)
-
-
-async def get_current_account_engine(
-    account: Account = Depends(get_current_account),
-) -> AsyncEngine:
-    return get_engine(account.get_database_url())
-
-
 async def get_current_account_session(
-    engine: AsyncEngine = Depends(get_current_account_engine),
     account: Account = Depends(get_current_account),
 ) -> AsyncGenerator[AsyncSession, None]:
-    async with engine.connect() as connection:
-        connection = await connection.execution_options(
-            schema_translate_map={None: str(account.id)}
-        )
-        async with AsyncSession(bind=connection, expire_on_commit=False) as session:
-            yield session
+    async with get_account_session(account) as session:
+        yield session

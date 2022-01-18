@@ -1,8 +1,11 @@
+import contextlib
+from functools import lru_cache
 from typing import AsyncGenerator
 
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
+from fief.models import Account
 from fief.settings import settings
 
 
@@ -25,6 +28,23 @@ global_async_session_maker = create_async_session_maker(global_engine)
 async def get_global_async_session() -> AsyncGenerator[AsyncSession, None]:
     async with global_async_session_maker() as session:
         yield session
+
+
+@lru_cache
+def get_account_engine(database_url: str) -> AsyncEngine:
+    return create_engine(database_url)
+
+
+@contextlib.asynccontextmanager
+async def get_account_session(account: Account) -> AsyncGenerator[AsyncSession, None]:
+    engine = get_account_engine(account.get_database_url())
+    async with engine.connect() as connection:
+        if engine.dialect.name != "sqlite":
+            connection = await connection.execution_options(
+                schema_translate_map={None: str(account.id)}
+            )
+        async with AsyncSession(bind=connection, expire_on_commit=False) as session:
+            yield session
 
 
 __all__ = [

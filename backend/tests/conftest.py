@@ -20,9 +20,11 @@ from fief.db import (
     get_global_async_session,
 )
 from fief.dependencies.account import get_current_account_session
+from fief.dependencies.account_creation import get_account_creation
 from fief.dependencies.account_db import get_account_db
 from fief.models import Account, GlobalBase
 from fief.schemas.user import UserDB
+from fief.services.account_creation import AccountCreation
 from fief.services.account_db import AccountDatabase
 from tests.data import TestData, data_mapping
 
@@ -132,6 +134,11 @@ async def account_db_mock() -> MagicMock:
 
 
 @pytest.fixture
+async def account_creation_mock() -> MagicMock:
+    return MagicMock(spec=AccountCreation)
+
+
+@pytest.fixture
 def account_host(request: pytest.FixtureRequest, account: Account) -> Optional[str]:
     marker = request.node.get_closest_marker("account_host")
     if marker:
@@ -162,6 +169,7 @@ async def test_client_generator(
     global_session: AsyncSession,
     account_session: AsyncSession,
     account_db_mock: MagicMock,
+    account_creation_mock: MagicMock,
     account_host: Optional[str],
     access_token: Optional[str],
 ) -> TestClientGeneratorType:
@@ -171,6 +179,7 @@ async def test_client_generator(
         app.dependency_overrides[get_global_async_session] = lambda: global_session
         app.dependency_overrides[get_current_account_session] = lambda: account_session
         app.dependency_overrides[get_account_db] = lambda: account_db_mock
+        app.dependency_overrides[get_account_creation] = lambda: account_creation_mock
 
         headers = {}
         if account_host is not None:
