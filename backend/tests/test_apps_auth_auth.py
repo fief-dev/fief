@@ -13,15 +13,26 @@ from tests.data import TestData
 @pytest.mark.asyncio
 @pytest.mark.test_data
 @pytest.mark.account_host
+@pytest.mark.parametrize(
+    "client_alias,path_prefix",
+    [
+        ("default_tenant", ""),
+        ("secondary_tenant", "/secondary"),
+    ],
+)
 class TestAuthAuthorize:
-    async def test_missing_parameters(self, test_client_auth: httpx.AsyncClient):
-        response = await test_client_auth.get("/authorize")
+    async def test_missing_parameters(
+        self, client_alias: str, path_prefix: str, test_client_auth: httpx.AsyncClient
+    ):
+        response = await test_client_auth.get(f"{path_prefix}/authorize")
 
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
-    async def test_unknown_client_id(self, test_client_auth: httpx.AsyncClient):
+    async def test_unknown_client_id(
+        self, client_alias: str, path_prefix: str, test_client_auth: httpx.AsyncClient
+    ):
         response = await test_client_auth.get(
-            "/authorize",
+            f"{path_prefix}/authorize",
             params={
                 "response_type": "code",
                 "client_id": "UNKNOWN",
@@ -35,13 +46,17 @@ class TestAuthAuthorize:
         assert json["detail"] == ErrorCode.AUTH_INVALID_CLIENT_ID
 
     async def test_valid_client_id(
-        self, test_client_auth: httpx.AsyncClient, test_data: TestData
+        self,
+        client_alias: str,
+        path_prefix: str,
+        test_client_auth: httpx.AsyncClient,
+        test_data: TestData,
     ):
-        client = test_data["clients"]["default_tenant"]
+        client = test_data["clients"][client_alias]
         tenant = client.tenant
 
         response = await test_client_auth.get(
-            "/authorize",
+            f"{path_prefix}/authorize",
             params={
                 "response_type": "code",
                 "client_id": client.client_id,
@@ -65,19 +80,37 @@ class TestAuthAuthorize:
 @pytest.mark.asyncio
 @pytest.mark.test_data
 @pytest.mark.account_host
+@pytest.mark.parametrize(
+    "client_alias,user_alias,path_prefix",
+    [
+        ("default_tenant", "regular", ""),
+        ("secondary_tenant", "regular_secondary", "/secondary"),
+    ],
+)
 class TestAuthLogin:
-    async def test_missing_parameters(self, test_client_auth: httpx.AsyncClient):
-        response = await test_client_auth.post("/login")
+    async def test_missing_parameters(
+        self,
+        client_alias: str,
+        user_alias: str,
+        path_prefix: str,
+        test_client_auth: httpx.AsyncClient,
+    ):
+        response = await test_client_auth.post(f"{path_prefix}/login")
 
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
     async def test_bad_credentials(
-        self, test_client_auth: httpx.AsyncClient, test_data: TestData
+        self,
+        client_alias: str,
+        user_alias: str,
+        path_prefix: str,
+        test_client_auth: httpx.AsyncClient,
+        test_data: TestData,
     ):
-        client = test_data["clients"]["default_tenant"]
+        client = test_data["clients"][client_alias]
 
         response = await test_client_auth.post(
-            "/login",
+            f"{path_prefix}/login",
             data={
                 "response_type": "code",
                 "client_id": client.client_id,
@@ -93,18 +126,24 @@ class TestAuthLogin:
         assert json["detail"] == FastAPIUsersErrorCode.LOGIN_BAD_CREDENTIALS
 
     async def test_valid_credentials(
-        self, test_client_auth: httpx.AsyncClient, test_data: TestData
+        self,
+        client_alias: str,
+        user_alias: str,
+        path_prefix: str,
+        test_client_auth: httpx.AsyncClient,
+        test_data: TestData,
     ):
-        client = test_data["clients"]["default_tenant"]
+        client = test_data["clients"][client_alias]
+        user = test_data["users"][user_alias]
 
         response = await test_client_auth.post(
-            "/login",
+            f"{path_prefix}/login",
             data={
                 "response_type": "code",
                 "client_id": client.client_id,
                 "redirect_uri": "https://bretagne.duchy/callback",
                 "state": "STATE",
-                "username": "anne@bretagne.duchy",
+                "username": user.email,
                 "password": "hermine",
             },
         )
@@ -120,17 +159,23 @@ class TestAuthLogin:
         assert parsed_location.query.params["state"] == "STATE"
 
     async def test_none_state_not_in_redirect_uri(
-        self, test_client_auth: httpx.AsyncClient, test_data: TestData
+        self,
+        client_alias: str,
+        user_alias: str,
+        path_prefix: str,
+        test_client_auth: httpx.AsyncClient,
+        test_data: TestData,
     ):
-        client = test_data["clients"]["default_tenant"]
+        client = test_data["clients"][client_alias]
+        user = test_data["users"][user_alias]
 
         response = await test_client_auth.post(
-            "/login",
+            f"{path_prefix}/login",
             data={
                 "response_type": "code",
                 "client_id": client.client_id,
                 "redirect_uri": "https://bretagne.duchy/callback",
-                "username": "anne@bretagne.duchy",
+                "username": user.email,
                 "password": "hermine",
             },
         )

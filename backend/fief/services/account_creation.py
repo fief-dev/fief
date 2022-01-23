@@ -2,7 +2,7 @@ from typing import Optional
 
 from fief.db import get_account_session, get_global_async_session
 from fief.logging import logger
-from fief.managers import AccountManager
+from fief.managers import AccountManager, TenantManager
 from fief.models import Account, Client, Tenant
 from fief.schemas.account import AccountCreate
 from fief.services.account_db import AccountDatabase
@@ -43,7 +43,9 @@ class AccountCreation:
 
         # Create a default tenant and client
         async with get_account_session(account) as session:
-            tenant = Tenant(name=account.name, default=True)
+            tenant_name = account.name
+            tenant_slug = await TenantManager(session).get_available_slug(tenant_name)
+            tenant = Tenant(name=account.name, slug=tenant_slug, default=True)
             session.add(tenant)
 
             client = Client(name=f"{tenant.name}'s client", tenant=tenant)

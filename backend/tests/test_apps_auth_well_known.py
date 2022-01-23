@@ -11,11 +11,18 @@ from fief.models import Account
 @pytest.mark.asyncio
 @pytest.mark.test_data
 @pytest.mark.account_host
+@pytest.mark.parametrize(
+    "path_prefix",
+    [
+        (""),
+        ("/secondary"),
+    ],
+)
 class TestWellKnownJWKS:
     async def test_return_public_keys(
-        self, test_client_auth: httpx.AsyncClient, account: Account
+        self, path_prefix: str, test_client_auth: httpx.AsyncClient, account: Account
     ):
-        response = await test_client_auth.get("/.well-known/jwks.json")
+        response = await test_client_auth.get(f"{path_prefix}/.well-known/jwks.json")
 
         assert response.status_code == status.HTTP_200_OK
 

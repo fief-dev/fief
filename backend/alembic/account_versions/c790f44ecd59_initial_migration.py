@@ -1,8 +1,8 @@
 """Initial migration
 
-Revision ID: 9a7335491816
-Revises: 
-Create Date: 2022-01-13 16:06:21.807432
+Revision ID: c790f44ecd59
+Revises:
+Create Date: 2022-01-23 17:40:39.161363
 
 """
 import sqlalchemy as sa
@@ -11,7 +11,7 @@ import fief
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = "9a7335491816"
+revision = "c790f44ecd59"
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -23,8 +23,10 @@ def upgrade():
         "fief_tenants",
         sa.Column("id", fief.models.generics.GUID(), nullable=False),
         sa.Column("name", sa.String(length=255), nullable=False),
+        sa.Column("slug", sa.String(length=255), nullable=False),
         sa.Column("default", sa.Boolean(), nullable=False),
         sa.PrimaryKeyConstraint("id"),
+        sa.UniqueConstraint("slug"),
     )
     op.create_table(
         "fief_clients",

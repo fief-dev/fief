@@ -31,8 +31,7 @@ class TestRegister:
         self, test_client_auth: httpx.AsyncClient, test_data: TestData
     ):
         response = await test_client_auth.post(
-            "/register",
-            headers={"x-fief-tenant": str(test_data["tenants"]["secondary"].id)},
+            f"/{test_data['tenants']['secondary'].slug}/register",
             json={"email": "anne@bretagne.duchy", "password": "hermine"},
         )
 

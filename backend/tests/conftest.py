@@ -22,7 +22,7 @@ from fief.db import (
 from fief.dependencies.account import get_current_account_session
 from fief.dependencies.account_creation import get_account_creation
 from fief.dependencies.account_db import get_account_db
-from fief.models import Account, GlobalBase
+from fief.models import Account, GlobalBase, tenant
 from fief.schemas.user import UserDB
 from fief.services.account_creation import AccountCreation
 from fief.services.account_db import AccountDatabase
@@ -154,7 +154,12 @@ def access_token(
     if marker:
         user_alias = marker.kwargs["user"]
         user = test_data["users"][user_alias]
-        client = test_data["clients"]["default_tenant"]
+        user_tenant = user.tenant
+        client = next(
+            client
+            for _, client in test_data["clients"].items()
+            if client.tenant_id == user_tenant.id
+        )
         return generate_access_token(
             account.get_sign_jwk(), account, client, UserDB.from_orm(user), 3600
         )
