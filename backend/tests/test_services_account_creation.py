@@ -58,6 +58,28 @@ class TestAccountCreationCreate:
             client = clients[0]
             assert client.tenant_id == tenant.id
 
+    async def test_default_parameters(
+        self, account_create: AccountCreate, account_creation: AccountCreation
+    ):
+        account = await account_creation.create(
+            account_create,
+            default_domain="foobar.fief.dev",
+            default_client_id="CLIENT_ID",
+            default_client_secret="CLIENT_SECRET",
+            default_encryption_key="ENCRYPTION_KEY",
+        )
+
+        assert account.domain == "foobar.fief.dev"
+        assert account.encrypt_jwk == "ENCRYPTION_KEY"
+
+        async with get_account_session(account) as session:
+            client_manager = ClientManager(session)
+            clients = await client_manager.list(select(Client))
+            client = clients[0]
+
+            assert client.client_id == "CLIENT_ID"
+            assert client.client_secret == "CLIENT_SECRET"
+
     async def test_avoid_domain_collision(
         self, account_create: AccountCreate, account_creation: AccountCreation
     ):

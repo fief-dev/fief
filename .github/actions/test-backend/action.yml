@@ -34,5 +34,8 @@ runs:
         DATABASE_URL: postgresql://fief:fiefpassword@localhost:5432
         ROOT_DOMAIN: fief.dev
         ALLOW_ORIGIN_REGEX: http://localhost:3000
+        FIEF_DOMAIN: fief-auth.localhost:3000
+        FIEF_CLIENT_ID: FIEF_CLIENT_ID
+        FIEF_CLIENT_SECRET: FIEF_CLIENT_SECRET
       run: |
         pytest --cov=fief/ --cov-report=term-missing
