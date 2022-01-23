@@ -10,7 +10,7 @@ import httpx
 import pytest
 from fastapi import FastAPI
 
-from fief.apps import admin_app, user_app
+from fief.apps import admin_app, auth_app
 from fief.crypto.access_token import generate_access_token
 from fief.db import (
     AsyncEngine,
@@ -205,8 +205,8 @@ async def test_client_admin(
 
 
 @pytest.fixture
-async def test_client_user(
+async def test_client_auth(
     test_client_generator: TestClientGeneratorType,
 ) -> AsyncGenerator[httpx.AsyncClient, None]:
-    async with test_client_generator(user_app) as test_client:
+    async with test_client_generator(auth_app) as test_client:
         yield test_client

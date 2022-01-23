@@ -1,13 +1,12 @@
 from typing import Optional
 
 from fief.db import get_account_session, get_global_async_session
+from fief.logging import logger
 from fief.managers import AccountManager
 from fief.models import Account, Client, Tenant
 from fief.schemas.account import AccountCreate
 from fief.services.account_db import AccountDatabase
-
 from fief.settings import settings
-from fief.logging import logger
 
 
 class AccountCreation:

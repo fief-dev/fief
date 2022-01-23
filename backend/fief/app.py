@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from fief.apps import admin_app, user_app
+from fief.apps import admin_app, auth_app
 from fief.services.account_creation import create_global_fief_account
 from fief.settings import settings
 
@@ -15,8 +15,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.mount("/", admin_app)
-app.mount("/u", user_app)
+app.mount("/admin", admin_app)
+app.mount("/", auth_app)
 
 
 @app.on_event("startup")

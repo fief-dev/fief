@@ -9,6 +9,10 @@ ignore_missing_imports = true
 module = "jwcrypto.*"
 ignore_missing_imports = true
 
+[[tool.mypy.overrides]]
+module = "uvicorn.logging.*"
+ignore_missing_imports = true
+
 [tool.isort]
 profile = "black"
 

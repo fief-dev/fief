@@ -8,7 +8,7 @@ from fief.models import Account
 router = APIRouter()
 
 
-@router.get("/jwks.json")
+@router.get("/jwks.json", name="well_known:jwks")
 async def get_jwks(account: Account = Depends(get_current_account)):
     keyset = jwk.JWKSet(keys=account.get_sign_jwk())
     return keyset.export(private_keys=False, as_dict=True)
