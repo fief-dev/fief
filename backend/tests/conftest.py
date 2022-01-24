@@ -1,5 +1,6 @@
 import asyncio
 import contextlib
+import dataclasses
 import os
 import uuid
 from typing import AsyncContextManager, AsyncGenerator, Callable, Optional
@@ -22,7 +23,7 @@ from fief.db import (
 from fief.dependencies.account import get_current_account_session
 from fief.dependencies.account_creation import get_account_creation
 from fief.dependencies.account_db import get_account_db
-from fief.models import Account, GlobalBase, tenant
+from fief.models import Account, AuthorizationCode, Client, GlobalBase, Tenant, User
 from fief.schemas.user import UserDB
 from fief.services.account_creation import AccountCreation
 from fief.services.account_db import AccountDatabase
@@ -146,20 +147,69 @@ def account_host(request: pytest.FixtureRequest, account: Account) -> Optional[s
     return None
 
 
+@dataclasses.dataclass
+class TenantParams:
+    path_prefix: str
+    tenant: Tenant
+    client: Client
+    user: User
+    authorization_code: AuthorizationCode
+
+
+@pytest.fixture(
+    params=[
+        {
+            "path_prefix": "",
+            "tenant_alias": "default",
+            "client_alias": "default_tenant",
+            "user_alias": "regular",
+            "authorization_code_alias": "default_regular",
+        },
+        {
+            "path_prefix": "/secondary",
+            "tenant_alias": "secondary",
+            "client_alias": "secondary_tenant",
+            "user_alias": "regular_secondary",
+            "authorization_code_alias": "secondary_regular",
+        },
+    ]
+)
+def tenant_params(request, test_data: TestData) -> TenantParams:
+    params = request.param
+    return TenantParams(
+        path_prefix=params["path_prefix"],
+        tenant=test_data["tenants"][params["tenant_alias"]],
+        client=test_data["clients"][params["client_alias"]],
+        user=test_data["users"][params["user_alias"]],
+        authorization_code=test_data["authorization_codes"][
+            params["authorization_code_alias"]
+        ],
+    )
+
+
 @pytest.fixture
 def access_token(
-    request: pytest.FixtureRequest, test_data: TestData, account: Account
+    request: pytest.FixtureRequest,
+    test_data: TestData,
+    tenant_params: TenantParams,
+    account: Account,
 ) -> Optional[str]:
     marker = request.node.get_closest_marker("access_token")
     if marker:
-        user_alias = marker.kwargs["user"]
-        user = test_data["users"][user_alias]
+        from_tenant_params: bool = marker.kwargs.get("from_tenant_params", False)
+        if from_tenant_params:
+            user = tenant_params.user
+        else:
+            user_alias = marker.kwargs["user"]
+            user = test_data["users"][user_alias]
+
         user_tenant = user.tenant
         client = next(
             client
             for _, client in test_data["clients"].items()
             if client.tenant_id == user_tenant.id
         )
+
         return generate_access_token(
             account.get_sign_jwk(), account, client, UserDB.from_orm(user), 3600
         )

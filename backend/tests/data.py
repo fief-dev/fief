@@ -47,7 +47,12 @@ authorization_codes: ModelMapping[AuthorizationCode] = {
         redirect_uri="https://bretagne.duchy/callback",
         user=users["regular"],
         client=clients["default_tenant"],
-    )
+    ),
+    "secondary_regular": AuthorizationCode(
+        redirect_uri="https://nantes.city/callback",
+        user=users["regular_secondary"],
+        client=clients["secondary_tenant"],
+    ),
 }
 
 data_mapping: TestData = {

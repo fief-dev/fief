@@ -6,23 +6,22 @@ from fastapi import status
 from jwcrypto import jwk
 
 from fief.models import Account
+from tests.conftest import TenantParams
 
 
 @pytest.mark.asyncio
 @pytest.mark.test_data
 @pytest.mark.account_host
-@pytest.mark.parametrize(
-    "path_prefix",
-    [
-        (""),
-        ("/secondary"),
-    ],
-)
 class TestWellKnownJWKS:
     async def test_return_public_keys(
-        self, path_prefix: str, test_client_auth: httpx.AsyncClient, account: Account
+        self,
+        tenant_params: TenantParams,
+        test_client_auth: httpx.AsyncClient,
+        account: Account,
     ):
-        response = await test_client_auth.get(f"{path_prefix}/.well-known/jwks.json")
+        response = await test_client_auth.get(
+            f"{tenant_params.path_prefix}/.well-known/jwks.json"
+        )
 
         assert response.status_code == status.HTTP_200_OK
 
