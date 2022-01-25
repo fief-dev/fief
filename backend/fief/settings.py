@@ -25,6 +25,8 @@ class Settings(BaseSettings):
     fief_client_secret: str
     fief_encryption_key: Optional[str] = None
 
+    fief_documentation_url: str = "https://docs.fief.dev"
+
     class Config:
         env_file = ".env"
 
