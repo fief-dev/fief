@@ -9,7 +9,7 @@ from fief.services.account_db import AccountDatabaseConnectionError
 router = APIRouter()
 
 
-@router.post("/", status_code=status.HTTP_201_CREATED)
+@router.post("/", name="accounts:create", status_code=status.HTTP_201_CREATED)
 async def create_account(
     account_create: AccountCreate,
     account_creation: AccountCreation = Depends(get_account_creation),

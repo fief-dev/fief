@@ -11,7 +11,7 @@ from fief.models import Tenant
 router = APIRouter()
 
 
-@router.post("/", status_code=status.HTTP_201_CREATED)
+@router.post("/", name="encryption_keys:create", status_code=status.HTTP_201_CREATED)
 async def create_encryption_key(
     tenant: Tenant = Depends(get_current_tenant),
     manager: TenantManager = Depends(get_tenant_manager),
