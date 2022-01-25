@@ -18,10 +18,11 @@ from fief.dependencies.auth import (
     get_login_request_data,
     get_token_request_data,
 )
+from fief.dependencies.tenant import get_current_tenant
 from fief.dependencies.users import UserManager, get_user_manager
 from fief.errors import ErrorCode
 from fief.managers import AuthorizationCodeManager
-from fief.models import Account, AuthorizationCode, Client
+from fief.models import Account, AuthorizationCode, Client, Tenant
 from fief.schemas.auth import (
     AuthorizationParameters,
     AuthorizeResponse,
@@ -93,6 +94,7 @@ async def token(
         get_authorization_code_manager
     ),
     account: Account = Depends(get_current_account),
+    tenant: Tenant = Depends(get_current_tenant),
 ) -> TokenResponse:
     authorization_code = await authorization_code_manager.get_by_code(
         token_request.code
@@ -131,16 +133,17 @@ async def token(
             detail=ErrorCode.AUTH_INVALID_AUTHORIZATION_CODE,
         ) from e
     else:
+        tenant_host = tenant.get_host(account.domain)
         access_token = generate_access_token(
-            account.get_sign_jwk(), account, client, user, 3600
+            tenant.get_sign_jwk(), tenant_host, client, user, 3600
         )
         id_token = generate_id_token(
-            account.get_sign_jwk(),
-            account,
+            tenant.get_sign_jwk(),
+            tenant_host,
             client,
             user,
             3600,
-            encryption_key=account.get_encrypt_jwk(),
+            encryption_key=tenant.get_encrypt_jwk(),
         )
         return TokenResponse(access_token=access_token, id_token=id_token)
     finally:

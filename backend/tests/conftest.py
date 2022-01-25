@@ -211,7 +211,11 @@ def access_token(
         )
 
         return generate_access_token(
-            account.get_sign_jwk(), account, client, UserDB.from_orm(user), 3600
+            user_tenant.get_sign_jwk(),
+            user_tenant.get_host(account.domain),
+            client,
+            UserDB.from_orm(user),
+            3600,
         )
     return None
 

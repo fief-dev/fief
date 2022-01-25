@@ -1,8 +1,8 @@
 """Initial migration
 
-Revision ID: c790f44ecd59
-Revises:
-Create Date: 2022-01-23 17:40:39.161363
+Revision ID: d0e8fa016926
+Revises: 
+Create Date: 2022-01-25 07:13:38.554833
 
 """
 import sqlalchemy as sa
@@ -11,7 +11,7 @@ import fief
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = "c790f44ecd59"
+revision = "d0e8fa016926"
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -25,6 +25,8 @@ def upgrade():
         sa.Column("name", sa.String(length=255), nullable=False),
         sa.Column("slug", sa.String(length=255), nullable=False),
         sa.Column("default", sa.Boolean(), nullable=False),
+        sa.Column("sign_jwk", sa.Text(), nullable=False),
+        sa.Column("encrypt_jwk", sa.Text(), nullable=True),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("slug"),
     )

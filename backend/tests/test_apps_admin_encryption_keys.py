@@ -4,8 +4,8 @@ from fastapi import status
 from jwcrypto import jwk
 
 from fief.db import AsyncSession
-from fief.managers import AccountManager
-from fief.models import Account
+from fief.managers import TenantManager
+from tests.conftest import TenantParams
 
 
 @pytest.mark.asyncio
@@ -15,10 +15,12 @@ class TestCreateEncryptionKey:
     async def test_success(
         self,
         test_client_admin: httpx.AsyncClient,
-        account: Account,
-        global_session: AsyncSession,
+        tenant_params: TenantParams,
+        account_session: AsyncSession,
     ):
-        response = await test_client_admin.post("/encryption-keys/")
+        response = await test_client_admin.post(
+            f"{tenant_params.path_prefix}/encryption-keys/"
+        )
 
         assert response.status_code == status.HTTP_201_CREATED
 
@@ -27,11 +29,13 @@ class TestCreateEncryptionKey:
         assert key.has_private == True
         assert key.has_public == True
 
-        manager = AccountManager(global_session)
-        updated_account = await manager.get_by_id(account.id)
-        assert updated_account is not None
-        assert updated_account.encrypt_jwk is not None
+        tenant = tenant_params.tenant
 
-        account_key = jwk.JWK.from_json(updated_account.encrypt_jwk)
-        assert account_key.has_private == False
-        assert account_key.has_public == True
+        manager = TenantManager(account_session)
+        updated_tenant = await manager.get_by_id(tenant.id)
+        assert updated_tenant is not None
+        assert updated_tenant.encrypt_jwk is not None
+
+        tenant_key = jwk.JWK.from_json(updated_tenant.encrypt_jwk)
+        assert tenant_key.has_private == False
+        assert tenant_key.has_public == True

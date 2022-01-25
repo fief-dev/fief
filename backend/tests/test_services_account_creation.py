@@ -70,9 +70,14 @@ class TestAccountCreationCreate:
         )
 
         assert account.domain == "foobar.fief.dev"
-        assert account.encrypt_jwk == "ENCRYPTION_KEY"
 
         async with get_account_session(account) as session:
+            tenant_manager = TenantManager(session)
+            tenants = await tenant_manager.list(select(Tenant))
+
+            tenant = tenants[0]
+            assert tenant.encrypt_jwk == "ENCRYPTION_KEY"
+
             client_manager = ClientManager(session)
             clients = await client_manager.list(select(Client))
             client = clients[0]

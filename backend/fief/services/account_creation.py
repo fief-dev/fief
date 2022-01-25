@@ -33,9 +33,6 @@ class AccountCreation:
         else:
             account.domain = default_domain
 
-        if default_encryption_key is not None:
-            account.encrypt_jwk = default_encryption_key
-
         account = await self.account_manager.create(account)
 
         # Apply the database schema
@@ -46,6 +43,10 @@ class AccountCreation:
             tenant_name = account.name
             tenant_slug = await TenantManager(session).get_available_slug(tenant_name)
             tenant = Tenant(name=account.name, slug=tenant_slug, default=True)
+
+            if default_encryption_key is not None:
+                tenant.encrypt_jwk = default_encryption_key
+
             session.add(tenant)
 
             client = Client(name=f"{tenant.name}'s client", tenant=tenant)

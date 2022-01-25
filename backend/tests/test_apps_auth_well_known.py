@@ -5,7 +5,6 @@ import pytest
 from fastapi import status
 from jwcrypto import jwk
 
-from fief.models import Account
 from tests.conftest import TenantParams
 
 
@@ -17,7 +16,6 @@ class TestWellKnownJWKS:
         self,
         tenant_params: TenantParams,
         test_client_auth: httpx.AsyncClient,
-        account: Account,
     ):
         response = await test_client_auth.get(
             f"{tenant_params.path_prefix}/.well-known/jwks.json"
@@ -27,6 +25,8 @@ class TestWellKnownJWKS:
 
         keyset = jwk.JWKSet.from_json(response.text)
 
-        key: Optional[jwk.JWK] = keyset.get_key(account.get_sign_jwk()["kid"])
+        key: Optional[jwk.JWK] = keyset.get_key(
+            tenant_params.tenant.get_sign_jwk()["kid"]
+        )
         assert key is not None
         assert key.has_private is False

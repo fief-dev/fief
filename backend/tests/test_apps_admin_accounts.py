@@ -45,5 +45,4 @@ class TestCreateAccount:
         account_creation_mock.create.assert_called_once()
 
         json = response.json()
-        assert "sign_jwk" not in json
-        assert "encrypt_jwk" not in json
+        assert "id" in json

@@ -17,7 +17,7 @@ class BaseAccount(UUIDSchema):
 
 
 class Account(BaseAccount):
-    sign_jwk: str
+    pass
 
 
 class AccountRead(BaseAccount):

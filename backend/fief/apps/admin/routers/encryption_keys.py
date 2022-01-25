@@ -3,21 +3,21 @@ import secrets
 from fastapi import APIRouter, Depends, status
 
 from fief.crypto.jwk import generate_jwk
-from fief.dependencies.account import get_current_account
-from fief.dependencies.global_managers import get_account_manager
-from fief.managers import AccountManager
-from fief.models import Account
+from fief.dependencies.account_managers import get_tenant_manager
+from fief.dependencies.tenant import get_current_tenant
+from fief.managers import TenantManager
+from fief.models import Tenant
 
 router = APIRouter()
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
 async def create_encryption_key(
-    account: Account = Depends(get_current_account),
-    manager: AccountManager = Depends(get_account_manager),
+    tenant: Tenant = Depends(get_current_tenant),
+    manager: TenantManager = Depends(get_tenant_manager),
 ):
     key = generate_jwk(secrets.token_urlsafe(), "enc")
-    account.encrypt_jwk = key.export_public()
-    await manager.update(account)
+    tenant.encrypt_jwk = key.export_public()
+    await manager.update(tenant)
 
     return key.export(as_dict=True)
