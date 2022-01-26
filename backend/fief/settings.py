@@ -24,6 +24,11 @@ class Settings(BaseSettings):
     fief_client_id: str
     fief_client_secret: str
     fief_encryption_key: Optional[str] = None
+    fief_internal_host: Optional[str] = None
+
+    fief_admin_session_cookie_name: str = "fief_session"
+    fief_admin_session_cookie_domain: str = ""
+    fief_admin_session_cookie_secure: bool = True
 
     fief_documentation_url: str = "https://docs.fief.dev"
 

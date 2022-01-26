@@ -3,7 +3,7 @@ from typing import Optional
 
 from jwcrypto import jwk, jwt
 
-from fief.models import Account, Client
+from fief.models import Client
 from fief.schemas.user import UserDB
 
 

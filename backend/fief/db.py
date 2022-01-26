@@ -10,7 +10,7 @@ from fief.settings import settings
 
 
 def create_engine(database_url: str) -> AsyncEngine:
-    return create_async_engine(database_url, echo=False)
+    return create_async_engine(database_url, echo=settings.log_level == "DEBUG")
 
 
 def create_global_engine() -> AsyncEngine:
