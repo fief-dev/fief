@@ -26,7 +26,7 @@ jobs:
     - name: Test backend
       uses: ./.github/actions/test-backend
       with:
-        test_database_url: postgresql://fief:fiefpassword@localhost:5432/fief
+        test_database_url: postgresql://fief:fiefpassword@postgres:5432/fief
 
   test-auth-frontend:
     runs-on: ubuntu-latest
