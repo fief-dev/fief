@@ -2,7 +2,7 @@ import json
 
 from fastapi import APIRouter, Depends, Query, Request, status
 from fastapi.responses import RedirectResponse
-from fief_client import Fief
+from fief_client import FiefAsync
 
 from fief.dependencies.fief import get_fief, get_userinfo
 from fief.dependencies.global_managers import get_session_token_manager
@@ -14,23 +14,23 @@ router = APIRouter()
 
 
 @router.get("/login", name="admin.auth:login")
-async def login(request: Request, fief: Fief = Depends(get_fief)):
-    return RedirectResponse(
-        url=fief.auth_url(
-            redirect_uri=request.url_for("admin.auth:callback"), scope=["openid"]
-        ),
-        status_code=status.HTTP_302_FOUND,
+async def login(request: Request, fief: FiefAsync = Depends(get_fief)):
+    url = await fief.auth_url(
+        redirect_uri=request.url_for("admin.auth:callback"), scope=["openid"]
     )
+    return RedirectResponse(url=url, status_code=status.HTTP_302_FOUND)
 
 
 @router.get("/callback", name="admin.auth:callback")
 async def callback(
     request: Request,
     code: str = Query(...),
-    fief: Fief = Depends(get_fief),
+    fief: FiefAsync = Depends(get_fief),
     manager: SessionTokenManager = Depends(get_session_token_manager),
 ):
-    tokens, userinfo = fief.auth_callback(code, request.url_for("admin.auth:callback"))
+    tokens, userinfo = await fief.auth_callback(
+        code, request.url_for("admin.auth:callback")
+    )
     session_token = SessionToken(
         raw_tokens=json.dumps(tokens), raw_userinfo=json.dumps(userinfo)
     )

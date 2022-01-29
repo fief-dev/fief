@@ -7,7 +7,6 @@ from tests.data import TestData
 
 
 @pytest.mark.asyncio
-@pytest.mark.test_data
 @pytest.mark.account_host
 class TestUserUserinfo:
     async def test_unauthorized(

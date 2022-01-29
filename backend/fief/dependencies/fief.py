@@ -2,29 +2,29 @@ from typing import Any, Dict
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import APIKeyCookie
-from fief_client import Fief
+from fief_client import FiefAsync
 
 from fief.dependencies.global_managers import get_session_token_manager
 from fief.managers import SessionTokenManager
 from fief.models import SessionToken
 from fief.settings import settings
 
-fief_host = f"http://{settings.fief_domain}"
+fief = FiefAsync(
+    settings.fief_base_url,
+    settings.fief_client_id,
+    settings.fief_client_secret,
+    encryption_key=settings.fief_encryption_key,
+    host=settings.fief_domain,
+)
 
 
-async def get_fief() -> Fief:
+async def get_fief() -> FiefAsync:
     """
     This is Fief-ception.
 
     We are configuring a Fief client to authenticate Fief users to their account.
     """
-    return Fief(
-        fief_host,
-        settings.fief_client_id,
-        settings.fief_client_secret,
-        encryption_key=settings.fief_encryption_key,
-        internal_host=settings.fief_internal_host,
-    )
+    return fief
 
 
 cookie_scheme = APIKeyCookie(name=settings.fief_admin_session_cookie_name)

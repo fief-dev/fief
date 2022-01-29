@@ -9,7 +9,6 @@ from tests.conftest import TenantParams
 
 
 @pytest.mark.asyncio
-@pytest.mark.test_data
 @pytest.mark.account_host
 class TestCreateEncryptionKey:
     async def test_success(

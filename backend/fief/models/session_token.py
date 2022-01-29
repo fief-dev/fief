@@ -24,7 +24,7 @@ class SessionToken(UUIDModel, GlobalBase):
 
     @functools.cached_property
     def tokens(self) -> FiefTokenResponse:
-        return FiefTokenResponse(**json.loads(self.raw_tokens))
+        return json.loads(self.raw_tokens)
 
     @functools.cached_property
     def userinfo(self) -> Dict[str, Any]:

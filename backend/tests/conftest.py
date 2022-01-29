@@ -15,9 +15,9 @@ from fief_client import Fief
 from fief.apps import admin_app, auth_app
 from fief.crypto.access_token import generate_access_token
 from fief.db import (
+    AsyncConnection,
     AsyncEngine,
     AsyncSession,
-    create_async_session_maker,
     create_engine,
     get_global_async_session,
 )
@@ -29,7 +29,10 @@ from fief.models import Account, AuthorizationCode, Client, GlobalBase, Tenant, 
 from fief.schemas.user import UserDB
 from fief.services.account_creation import AccountCreation
 from fief.services.account_db import AccountDatabase
+from fief.utils.db_connection import get_database_url
 from tests.data import TestData, data_mapping
+
+TEST_DATABASE_URL = os.environ["TEST_DATABASE_URL"]
 
 
 @pytest.fixture(scope="session")
@@ -42,93 +45,93 @@ def event_loop():
 
 @pytest.fixture(scope="session")
 async def global_engine() -> AsyncGenerator[AsyncEngine, None]:
-    engine = create_engine("sqlite+aiosqlite:///global_test.db")
+    engine = create_engine(get_database_url(TEST_DATABASE_URL))
     yield engine
-    os.remove("global_test.db")
 
 
 @pytest.fixture(scope="session")
-async def global_session_maker(global_engine: AsyncEngine):
-    return create_async_session_maker(global_engine)
-
-
-@pytest.fixture(scope="session")
-async def create_global_db(global_engine: AsyncEngine):
+async def global_connection(
+    global_engine: AsyncEngine,
+) -> AsyncGenerator[AsyncConnection, None]:
     async with global_engine.connect() as connection:
-        await connection.run_sync(GlobalBase.metadata.create_all)
+        yield connection
+
+
+@pytest.fixture(scope="session")
+async def create_global_db(global_connection: AsyncConnection):
+    await global_connection.run_sync(GlobalBase.metadata.create_all)
+
+
+@pytest.fixture(scope="session")
+async def global_session(
+    global_connection: AsyncConnection, create_global_db
+) -> AsyncGenerator[AsyncSession, None]:
+    async with AsyncSession(bind=global_connection, expire_on_commit=False) as session:
+        await session.begin_nested()
+        yield session
+        await session.rollback()
 
 
 @pytest.fixture(scope="session", autouse=True)
 @pytest.mark.asyncio
-async def account(
-    global_session_maker, create_global_db
-) -> AsyncGenerator[Account, None]:
-    async with global_session_maker() as session:
-        account = Account(
-            name="Duché de Bretagne",
-            domain="bretagne.fief.dev",
-            database_url="sqlite:///account_test.db",
-        )
-        session.add(account)
-        await session.commit()
+async def account(global_session, create_global_db) -> AsyncGenerator[Account, None]:
+    account = Account(
+        name="Duché de Bretagne",
+        domain="bretagne.fief.dev",
+        database_url=get_database_url(TEST_DATABASE_URL, False),
+    )
+    global_session.add(account)
+    await global_session.commit()
 
     account_db = AccountDatabase()
     account_db.migrate(account)
 
     yield account
 
-    os.remove("account_test.db")
 
-
-@pytest.fixture
-async def global_session(
-    global_engine: AsyncEngine, create_global_db
-) -> AsyncGenerator[AsyncSession, None]:
-    async with global_engine.connect() as connection:
-        async with AsyncSession(bind=connection, expire_on_commit=False) as session:
-            await session.begin_nested()
-            yield session
-            await session.rollback()
+@pytest.fixture(scope="session")
+async def account_engine(account: Account) -> AsyncGenerator[AsyncEngine, None]:
+    yield create_engine(account.get_database_url())
 
 
 @pytest.fixture(scope="session")
-async def account_engine(account: Account) -> AsyncEngine:
-    engine = create_engine(account.get_database_url())
-    return engine
-
-
-@pytest.fixture
-async def account_session(
-    account_engine: AsyncEngine,
-) -> AsyncGenerator[AsyncSession, None]:
+async def account_connection(
+    account_engine: AsyncEngine, account: Account
+) -> AsyncGenerator[AsyncConnection, None]:
     async with account_engine.connect() as connection:
-        async with AsyncSession(bind=connection, expire_on_commit=False) as session:
-            await session.begin_nested()
-            yield session
-            await session.rollback()
+        connection = await connection.execution_options(
+            schema_translate_map={None: str(account.id)}
+        )
+        await connection.begin()
+        yield connection
+        await connection.rollback()
+
+
+@pytest.fixture(scope="session")
+@pytest.mark.asyncio
+async def test_data(account_connection: AsyncConnection) -> TestData:
+    async with AsyncSession(bind=account_connection, expire_on_commit=False) as session:
+        for model in data_mapping.values():
+            for object in model.values():
+                session.add(object)
+        await session.commit()
+    await account_connection.commit()
+    yield data_mapping
+
+
+@pytest.fixture()
+async def account_session(
+    account_connection: AsyncConnection,
+) -> AsyncGenerator[AsyncSession, None]:
+    await account_connection.begin_nested()
+    async with AsyncSession(bind=account_connection, expire_on_commit=False) as session:
+        yield session
+    await account_connection.rollback()
 
 
 @pytest.fixture
 def not_existing_uuid() -> uuid.UUID:
     return uuid.uuid4()
-
-
-@pytest.fixture(autouse=True)
-@pytest.mark.asyncio
-async def test_data(
-    request: pytest.FixtureRequest, account_session: AsyncSession
-) -> TestData:
-    fixtures_marker = request.node.get_closest_marker("test_data")
-    if fixtures_marker is None:
-        return {}
-
-    for model in data_mapping.values():
-        for object in model.values():
-            account_session.add(object)
-    await account_session.commit()
-    account_session.expunge_all()
-
-    return data_mapping
 
 
 @pytest.fixture

@@ -1,5 +1,9 @@
 name: 'Test backend'
 description: 'Run the tests for the Python backend'
+inputs:
+  test_database_url:
+    description: 'URL to a test database'
+    required: true
 
 runs:
   using: "composite"
@@ -31,6 +35,7 @@ runs:
       env:
         ENVIRONMENT: development
         UNIT_TESTS: "1"
+        TEST_DATABASE_URL: ${{ inputs.test_database_url }}
         DATABASE_URL: postgresql://fief:fiefpassword@localhost:5432
         ROOT_DOMAIN: fief.dev
         ALLOW_ORIGIN_REGEX: http://localhost:3000

@@ -11,7 +11,6 @@ from tests.conftest import TenantParams
 
 
 @pytest.mark.asyncio
-@pytest.mark.test_data
 @pytest.mark.account_host
 class TestAuthAuthorize:
     async def test_missing_parameters(
@@ -67,7 +66,6 @@ class TestAuthAuthorize:
 
 
 @pytest.mark.asyncio
-@pytest.mark.test_data
 @pytest.mark.account_host
 class TestAuthLogin:
     async def test_missing_parameters(
@@ -178,7 +176,6 @@ def authorization_code_client_secret(authorization_code: AuthorizationCode) -> s
 
 
 @pytest.mark.asyncio
-@pytest.mark.test_data
 @pytest.mark.account_host
 class TestAuthToken:
     async def test_missing_parameters(

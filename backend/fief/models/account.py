@@ -5,6 +5,7 @@ from sqlalchemy import Column, String, Text
 from fief.models.base import GlobalBase
 from fief.models.generics import UUIDModel
 from fief.settings import settings
+from fief.utils.db_connection import get_database_url
 
 
 class Account(UUIDModel, GlobalBase):
@@ -26,10 +27,4 @@ class Account(UUIDModel, GlobalBase):
         if self.database_url is None:
             return settings.get_database_url()
 
-        url = self.database_url
-        if asyncio:
-            if url.startswith("sqlite://"):
-                return url.replace("sqlite://", "sqlite+aiosqlite://", 1)
-            elif url.startswith("postgresql://"):
-                return url.replace("postgresql://", "postgresql+asyncpg://", 1)
-        return url
+        return get_database_url(self.database_url, asyncio)

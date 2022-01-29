@@ -10,7 +10,6 @@ from tests.conftest import TenantParams
 
 
 @pytest.mark.asyncio
-@pytest.mark.test_data
 @pytest.mark.account_host
 class TestWellKnownOpenIDConfiguration:
     async def test_return_configuration(
@@ -33,7 +32,6 @@ class TestWellKnownOpenIDConfiguration:
 
 
 @pytest.mark.asyncio
-@pytest.mark.test_data
 @pytest.mark.account_host
 class TestWellKnownJWKS:
     async def test_return_public_keys(

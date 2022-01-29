@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock
 
 import httpx
 import pytest
@@ -6,12 +6,11 @@ from fastapi import status
 
 
 @pytest.mark.asyncio
-@pytest.mark.test_data
 class TestLogin:
     async def test_success(
         self, test_client_admin: httpx.AsyncClient, fief_client_mock: MagicMock
     ):
-        fief_client_mock.auth_url.return_value = "AUTHORIZE_URL"
+        fief_client_mock.auth_url.side_effect = AsyncMock(return_value="AUTHORIZE_URL")
 
         response = await test_client_admin.get("/auth/login")
 

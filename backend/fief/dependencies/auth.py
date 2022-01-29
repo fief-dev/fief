@@ -10,7 +10,7 @@ from fief.schemas.auth import AuthorizationParameters, LoginRequest, TokenReques
 
 
 async def get_authorization_parameters(
-    response_type: str = Query(...),
+    response_type: str = Query(..., regex="code"),
     client_id: str = Query(...),
     redirect_uri: str = Query(...),
     scope: Optional[str] = Query(None),

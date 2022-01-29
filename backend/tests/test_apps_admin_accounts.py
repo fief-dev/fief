@@ -10,7 +10,6 @@ from fief.services.account_db import AccountDatabaseConnectionError
 
 
 @pytest.mark.asyncio
-@pytest.mark.test_data
 class TestCreateAccount:
     async def test_db_connection_error(
         self, test_client_admin: httpx.AsyncClient, account_creation_mock: MagicMock

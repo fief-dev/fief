@@ -2,7 +2,12 @@ import contextlib
 from functools import lru_cache
 from typing import AsyncGenerator
 
-from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, create_async_engine
+from sqlalchemy.ext.asyncio import (
+    AsyncConnection,
+    AsyncEngine,
+    AsyncSession,
+    create_async_engine,
+)
 from sqlalchemy.orm import sessionmaker
 
 from fief.models import Account
@@ -48,6 +53,7 @@ async def get_account_session(account: Account) -> AsyncGenerator[AsyncSession, 
 
 
 __all__ = [
+    "AsyncConnection",
     "AsyncEngine",
     "AsyncSession",
     "create_async_session_maker",
