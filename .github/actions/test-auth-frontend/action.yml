@@ -1,5 +1,5 @@
-name: 'Test fronted'
-description: 'Run the tests for the NextJS frontend'
+name: 'Test auth frontend'
+description: 'Run the tests for the React auth frontend'
 
 runs:
   using: "composite"
