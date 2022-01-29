@@ -48,7 +48,7 @@ jobs:
       env:
         ENVIRONMENT: development
         UNIT_TESTS: "1"
-        TEST_DATABASE_URL: postgresql://fief:fiefpassword@postgres:5432
+        TEST_DATABASE_URL: postgresql://fief:fiefpassword@localhost:5432
         DATABASE_URL: postgresql://fief:fiefpassword@localhost:5432
         ROOT_DOMAIN: fief.dev
         ALLOW_ORIGIN_REGEX: http://localhost:3000
