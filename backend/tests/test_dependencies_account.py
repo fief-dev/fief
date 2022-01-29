@@ -41,7 +41,6 @@ async def test_client_dependencies(
 
 
 @pytest.mark.asyncio
-@pytest.mark.test_data
 class TestGetCurrentAccount:
     async def test_not_existing_account(
         self, test_client_dependencies: httpx.AsyncClient
@@ -66,7 +65,6 @@ class TestGetCurrentAccount:
 
 
 @pytest.mark.asyncio
-@pytest.mark.test_data
 class TestGetCurrentAccountSession:
     async def test_existing_account(
         self, test_client_dependencies: httpx.AsyncClient, account: Account

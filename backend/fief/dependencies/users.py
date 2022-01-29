@@ -18,9 +18,9 @@ from sqlalchemy.sql import Select
 
 from fief.crypto.access_token import InvalidAccessToken, read_access_token
 from fief.db import AsyncSession
-from fief.dependencies.account import get_current_account, get_current_account_session
+from fief.dependencies.account import get_current_account_session
 from fief.dependencies.tenant import get_current_tenant
-from fief.models import Account, Tenant, User
+from fief.models import Tenant, User
 from fief.schemas.user import UserCreate, UserCreateInternal, UserDB
 
 
@@ -100,9 +100,9 @@ class JWTAccessTokenStrategy(Strategy[UserCreate, UserDB]):
 
 
 async def get_jwt_access_token_strategy(
-    account: Account = Depends(get_current_account),
+    tenant: Tenant = Depends(get_current_tenant),
 ) -> JWTAccessTokenStrategy:
-    return JWTAccessTokenStrategy(account.get_sign_jwk())
+    return JWTAccessTokenStrategy(tenant.get_sign_jwk())
 
 
 async def get_user_db(

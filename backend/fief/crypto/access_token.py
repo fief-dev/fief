@@ -15,13 +15,13 @@ class InvalidAccessToken(Exception):
 
 
 def generate_access_token(
-    key: jwk.JWK, account: Account, client: Client, user: UserDB, lifetime_seconds: int
+    key: jwk.JWK, host: str, client: Client, user: UserDB, lifetime_seconds: int
 ) -> str:
     iat = int(datetime.now(timezone.utc).timestamp())
     exp = iat + lifetime_seconds
 
     claims = {
-        "iss": f"https://{account.domain}",
+        "iss": host,
         "sub": str(user.id),
         "aud": [client.client_id],
         "exp": exp,

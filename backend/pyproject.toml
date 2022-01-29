@@ -9,6 +9,10 @@ ignore_missing_imports = true
 module = "jwcrypto.*"
 ignore_missing_imports = true
 
+[[tool.mypy.overrides]]
+module = "uvicorn.logging.*"
+ignore_missing_imports = true
+
 [tool.isort]
 profile = "black"
 
@@ -17,3 +21,4 @@ concurrency = ["greenlet"]
 
 [tool.pytest.ini_options]
 markers = ["test_data", "account_host", "access_token"]
+asyncio_mode = "auto"

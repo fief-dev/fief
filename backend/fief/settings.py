@@ -1,6 +1,9 @@
 from enum import Enum
+from typing import Optional
 
 from pydantic import BaseSettings, validator
+
+from fief.utils.db_connection import get_database_url
 
 
 class Environment(str, Enum):
@@ -11,12 +14,25 @@ class Environment(str, Enum):
 
 class Settings(BaseSettings):
     environment: Environment
+    log_level: str = "DEBUG"
     unit_tests: bool = False
     database_url: str
     root_domain: str
     allow_origin_regex: str
 
     account_table_prefix: str = "fief_"
+
+    fief_domain: str
+    fief_base_url: str
+    fief_client_id: str
+    fief_client_secret: str
+    fief_encryption_key: Optional[str] = None
+
+    fief_admin_session_cookie_name: str = "fief_session"
+    fief_admin_session_cookie_domain: str = ""
+    fief_admin_session_cookie_secure: bool = True
+
+    fief_documentation_url: str = "https://docs.fief.dev"
 
     class Config:
         env_file = ".env"
@@ -37,13 +53,7 @@ class Settings(BaseSettings):
 
         Some tools like Alembic still require a sync connection.
         """
-        url = self.database_url
-        if asyncio:
-            if url.startswith("sqlite://"):
-                return url.replace("sqlite://", "sqlite+aiosqlite://", 1)
-            elif url.startswith("postgresql://"):
-                return url.replace("postgresql://", "postgresql+asyncpg://", 1)
-        return url
+        return get_database_url(self.database_url, asyncio)
 
 
 settings = Settings()

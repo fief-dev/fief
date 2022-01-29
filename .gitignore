@@ -115,5 +115,3 @@ ENV/
 
 # SQLite databases
 *.db
-
-s3cfg

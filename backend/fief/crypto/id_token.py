@@ -3,16 +3,17 @@ from typing import Optional
 
 from jwcrypto import jwk, jwt
 
-from fief.models import Account, Client
+from fief.models import Client
 from fief.schemas.user import UserDB
 
 
 def generate_id_token(
     signing_key: jwk.JWK,
-    account: Account,
+    host: str,
     client: Client,
     user: UserDB,
     lifetime_seconds: int,
+    *,
     encryption_key: Optional[jwk.JWK] = None,
 ) -> str:
     """
@@ -21,7 +22,7 @@ def generate_id_token(
     It's a signed JWT with claims following the OpenID specification.
 
     :param signing_key: The JWK to sign the JWT.
-    :account: The account associated to the user.
+    :host: The issuer host.
     :client: The client used to authenticate the user.
     :lifetime_seconds: Lifetime of the JWT.
     :encryption_key: Optional JWK to further encrypt the signed token.
@@ -32,7 +33,7 @@ def generate_id_token(
 
     claims = {
         **user.get_claims(),
-        "iss": f"https://{account.domain}",
+        "iss": host,
         "aud": [str(client.client_id)],
         "exp": exp,
         "iat": iat,
