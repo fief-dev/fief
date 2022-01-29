@@ -40,6 +40,7 @@ runs:
         ROOT_DOMAIN: fief.dev
         ALLOW_ORIGIN_REGEX: http://localhost:3000
         FIEF_DOMAIN: fief-auth.localhost:3000
+        FIEF_BASE_URL: http://localhost:8000
         FIEF_CLIENT_ID: FIEF_CLIENT_ID
         FIEF_CLIENT_SECRET: FIEF_CLIENT_SECRET
       run: |
