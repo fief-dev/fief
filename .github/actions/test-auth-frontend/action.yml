@@ -12,13 +12,13 @@ runs:
         node-version: 14.x
     - name: Install dependencies
       shell: bash
-      working-directory: frontend
+      working-directory: auth-frontend
       run: npm ci
     - name: Lint
       shell: bash
-      working-directory: frontend
+      working-directory: auth-frontend
       run: npm run lint
     - name: Test
       shell: bash
-      working-directory: frontend
+      working-directory: auth-frontend
       run: npm run test
