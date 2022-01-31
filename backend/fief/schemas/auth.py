@@ -65,3 +65,7 @@ class TokenErrorResponse(BaseModel):
     @classmethod
     def get_unsupported_grant_type(cls):
         return cls(error="unsupported_grant_type")
+
+    @classmethod
+    def get_invalid_scope(cls):
+        return cls(error="invalid_scope")

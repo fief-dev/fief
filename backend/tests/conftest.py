@@ -258,6 +258,7 @@ def access_token(
             user_tenant.get_host(account.domain),
             client,
             UserDB.from_orm(user),
+            ["openid"],
             3600,
         )
     return None

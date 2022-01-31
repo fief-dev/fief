@@ -1,12 +1,13 @@
 import json
 import uuid
 from datetime import datetime, timezone
+from typing import List
 
 from jwcrypto import jwk, jwt
 from jwcrypto.common import JWException
 from pydantic import UUID4
 
-from fief.models import Account, Client
+from fief.models import Client
 from fief.schemas.user import UserDB
 
 
@@ -15,7 +16,12 @@ class InvalidAccessToken(Exception):
 
 
 def generate_access_token(
-    key: jwk.JWK, host: str, client: Client, user: UserDB, lifetime_seconds: int
+    key: jwk.JWK,
+    host: str,
+    client: Client,
+    user: UserDB,
+    scope: List[str],
+    lifetime_seconds: int,
 ) -> str:
     iat = int(datetime.now(timezone.utc).timestamp())
     exp = iat + lifetime_seconds
@@ -27,6 +33,7 @@ def generate_access_token(
         "exp": exp,
         "iat": iat,
         "azp": client.client_id,
+        "scope": " ".join(scope),
     }
 
     token = jwt.JWT(header={"alg": "RS256"}, claims=claims)

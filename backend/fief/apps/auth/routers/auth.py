@@ -3,7 +3,6 @@ from typing import List, Tuple, cast
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security.oauth2 import OAuth2PasswordRequestForm
-from fastapi_users.manager import UserNotExists
 from fastapi_users.router.common import ErrorCode as FastAPIUsersErrorCode
 from furl import furl
 from pydantic import UUID4
@@ -25,7 +24,6 @@ from fief.dependencies.auth import (
 )
 from fief.dependencies.tenant import get_current_tenant
 from fief.dependencies.users import UserManager, get_user_manager
-from fief.errors import ErrorCode
 from fief.managers import AuthorizationCodeManager, RefreshTokenManager
 from fief.models import Account, AuthorizationCode, Client, RefreshToken, Tenant
 from fief.schemas.auth import (
@@ -106,7 +104,7 @@ async def token(
 
     tenant_host = tenant.get_host(account.domain)
     access_token = generate_access_token(
-        tenant.get_sign_jwk(), tenant_host, client, user, TOKEN_LIFETIME
+        tenant.get_sign_jwk(), tenant_host, client, user, scope, TOKEN_LIFETIME
     )
     id_token = generate_id_token(
         tenant.get_sign_jwk(),
