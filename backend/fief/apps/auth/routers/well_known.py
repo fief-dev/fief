@@ -31,7 +31,7 @@ async def get_openid_configuration(
         userinfo_endpoint=_url_for("user:userinfo"),
         jwks_uri=_url_for("well_known:jwks"),
         registration_endpoint=_url_for("register:register"),
-        scopes_supported=["openid"],
+        scopes_supported=["openid", "offline_access"],
         response_types_supported=["code"],
         grant_types_supported=["authorization_code"],
         subject_types_supported=["public"],

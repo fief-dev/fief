@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta, timezone
 from typing import cast
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -10,7 +11,10 @@ from pydantic import UUID4
 from fief.crypto.access_token import generate_access_token
 from fief.crypto.id_token import generate_id_token
 from fief.dependencies.account import get_current_account
-from fief.dependencies.account_managers import get_authorization_code_manager
+from fief.dependencies.account_managers import (
+    get_authorization_code_manager,
+    get_refresh_token_manager,
+)
 from fief.dependencies.auth import (
     get_authorization_parameters,
     get_client_by_authorization_parameters,
@@ -21,8 +25,8 @@ from fief.dependencies.auth import (
 from fief.dependencies.tenant import get_current_tenant
 from fief.dependencies.users import UserManager, get_user_manager
 from fief.errors import ErrorCode
-from fief.managers import AuthorizationCodeManager
-from fief.models import Account, AuthorizationCode, Client, Tenant
+from fief.managers import AuthorizationCodeManager, RefreshTokenManager
+from fief.models import Account, AuthorizationCode, Client, RefreshToken, Tenant
 from fief.schemas.auth import (
     AuthorizationParameters,
     AuthorizeResponse,
@@ -33,6 +37,9 @@ from fief.schemas.auth import (
 )
 
 router = APIRouter()
+
+TOKEN_LIFETIME = 3600
+REFRESH_TOKEN_LIFETIME = 3600 * 24 * 30
 
 
 @router.get("/authorize", name="auth:authorize", response_model=AuthorizeResponse)
@@ -93,9 +100,10 @@ async def token(
     authorization_code_manager: AuthorizationCodeManager = Depends(
         get_authorization_code_manager
     ),
+    refresh_token_manager: RefreshTokenManager = Depends(get_refresh_token_manager),
     account: Account = Depends(get_current_account),
     tenant: Tenant = Depends(get_current_tenant),
-) -> TokenResponse:
+):
     authorization_code = await authorization_code_manager.get_by_code(
         token_request.code
     )
@@ -125,6 +133,8 @@ async def token(
 
     user_id = cast(UUID4, authorization_code.user_id)
 
+    scope = authorization_code.scope
+
     try:
         user = await user_manager.get(user_id)
     except UserNotExists as e:
@@ -135,18 +145,30 @@ async def token(
     else:
         tenant_host = tenant.get_host(account.domain)
         access_token = generate_access_token(
-            tenant.get_sign_jwk(), tenant_host, client, user, 3600
+            tenant.get_sign_jwk(), tenant_host, client, user, TOKEN_LIFETIME
         )
         id_token = generate_id_token(
             tenant.get_sign_jwk(),
             tenant_host,
             client,
             user,
-            3600,
+            TOKEN_LIFETIME,
             encryption_key=tenant.get_encrypt_jwk(),
         )
-        return TokenResponse(
-            access_token=access_token, id_token=id_token, expires_in=3600
+        token_response = TokenResponse(
+            access_token=access_token, id_token=id_token, expires_in=TOKEN_LIFETIME
         )
+
+        if "offline_access" in scope:
+            expires_at = datetime.now(timezone.utc) + timedelta(
+                seconds=REFRESH_TOKEN_LIFETIME
+            )
+            refresh_token = RefreshToken(
+                expires_at=expires_at, scope=scope, user_id=user.id, client_id=client.id
+            )
+            refresh_token = await refresh_token_manager.create(refresh_token)
+            token_response.refresh_token = refresh_token.token
+
+        return token_response.dict(exclude_none=True)
     finally:
         await authorization_code_manager.delete(authorization_code)

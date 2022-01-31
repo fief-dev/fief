@@ -28,6 +28,7 @@ class TestAuthAuthorize:
             params={
                 "response_type": "code",
                 "client_id": "UNKNOWN",
+                "scope": "openid",
                 "redirect_uri": "https://bretagne.duchy/callback",
             },
         )
@@ -48,6 +49,7 @@ class TestAuthAuthorize:
             params={
                 "response_type": "code",
                 "client_id": client.client_id,
+                "scope": "openid",
                 "redirect_uri": "https://bretagne.duchy/callback",
             },
         )
@@ -59,7 +61,7 @@ class TestAuthAuthorize:
             "response_type": "code",
             "client_id": client.client_id,
             "redirect_uri": "https://bretagne.duchy/callback",
-            "scope": None,
+            "scope": ["openid"],
             "state": None,
         }
         assert json["tenant"]["id"] == str(tenant.id)
@@ -86,6 +88,7 @@ class TestAuthLogin:
                 "response_type": "code",
                 "client_id": client.client_id,
                 "redirect_uri": "https://bretagne.duchy/callback",
+                "scope": "openid",
                 "username": "anne@bretagne.duchy",
                 "password": "foo",
             },
@@ -108,6 +111,7 @@ class TestAuthLogin:
                 "response_type": "code",
                 "client_id": client.client_id,
                 "redirect_uri": "https://bretagne.duchy/callback",
+                "scope": "openid",
                 "state": "STATE",
                 "username": user.email,
                 "password": "hermine",
@@ -138,6 +142,7 @@ class TestAuthLogin:
                 "redirect_uri": "https://bretagne.duchy/callback",
                 "username": user.email,
                 "password": "hermine",
+                "scope": "openid",
             },
         )
 
@@ -273,3 +278,8 @@ class TestAuthToken:
         assert isinstance(json["id_token"], str)
         assert json["token_type"] == "bearer"
         assert json["expires_in"] == 3600
+
+        if "offline_access" in authorization_code.scope:
+            assert json["refresh_token"] is not None
+        else:
+            assert "refresh_token" not in json

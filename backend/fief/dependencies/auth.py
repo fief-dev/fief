@@ -13,7 +13,7 @@ async def get_authorization_parameters(
     response_type: str = Query(..., regex="code"),
     client_id: str = Query(...),
     redirect_uri: str = Query(...),
-    scope: Optional[str] = Query(None),
+    scope: str = Query(...),
     state: Optional[str] = Query(None),
 ) -> AuthorizationParameters:
     return AuthorizationParameters(
@@ -48,7 +48,7 @@ async def get_login_request_data(
     response_type: str = Form(..., regex="code"),
     client_id: str = Form(...),
     redirect_uri: str = Form(...),
-    scope: Optional[List[str]] = Form(None),
+    scope: List[str] = Form(...),
     state: Optional[str] = Form(None),
 ) -> LoginRequest:
     return LoginRequest(

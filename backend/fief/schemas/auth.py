@@ -10,12 +10,12 @@ class AuthorizationParameters(BaseModel):
     response_type: str = Field(..., regex="code")
     client_id: str
     redirect_uri: str
-    scope: Optional[List[str]]
+    scope: List[str]
     state: Optional[str]
 
     @validator("scope", pre=True)
-    def parse_scope(cls, value: Optional[str]) -> Optional[List[str]]:
-        if value is not None and not isinstance(value, list):
+    def parse_scope(cls, value: str) -> List[str]:
+        if not isinstance(value, list):
             return value.split()
         return value
 
@@ -47,3 +47,4 @@ class TokenResponse(BaseModel):
     id_token: str
     token_type: str = Field("bearer", regex="bearer")
     expires_in: int
+    refresh_token: Optional[str] = None

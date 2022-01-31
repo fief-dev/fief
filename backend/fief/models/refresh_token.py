@@ -1,9 +1,9 @@
 import secrets
-from typing import List, Optional
+from datetime import datetime
+from typing import List
 
-from sqlalchemy import Column, ForeignKey
+from sqlalchemy import JSON, TIMESTAMP, Column, ForeignKey, String
 from sqlalchemy.orm import relationship
-from sqlalchemy.sql.sqltypes import JSON, String
 
 from fief.models.base import AccountBase
 from fief.models.client import Client
@@ -11,17 +11,17 @@ from fief.models.generics import GUID, UUIDModel
 from fief.models.user import User
 
 
-class AuthorizationCode(UUIDModel, AccountBase):
-    __tablename__ = "authorization_codes"
+class RefreshToken(UUIDModel, AccountBase):
+    __tablename__ = "refresh_tokens"
 
-    code: str = Column(
+    token: str = Column(
         String(length=255),
         default=secrets.token_urlsafe,
         nullable=False,
         index=True,
         unique=True,
     )
-    redirect_uri: str = Column(String(length=2048), nullable=False)
+    expires_at: datetime = Column(TIMESTAMP(timezone=True), nullable=False, index=True)
     scope: List[str] = Column(JSON, nullable=False, default=list)
 
     user_id = Column(GUID, ForeignKey(User.id, ondelete="CASCADE"), nullable=False)
