@@ -115,3 +115,9 @@ ENV/
 
 # SQLite databases
 *.db
+
+# node_modules
+node_modules/
+
+# Generated files
+backend/static/output.css

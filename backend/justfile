@@ -12,6 +12,16 @@ lint:
 test $UNIT_TESTS="1" $TEST_DATABASE_URL="postgresql://fief:fiefpassword@localhost:5432/fief-test":
   pytest --cov fief/ --cov-report=term-missing
 
+update-translations:
+  pybabel extract --mapping babel.cfg --output-file=locale/auth.pot .
+  pybabel update --domain=auth --input-file=locale/auth.pot --output-dir=locale
+
+compile-translations:
+  pybabel compile --domain=auth --directory=locale
+
+build-css:
+  npm run build:css
+
 create-db:
 	docker volume create fief-dev-db
 	docker run -p 5432:5432 --name fief-dev-db -e PGDATA=/var/lib/postgresql/data/pgdata -e POSTGRES_USER=fief -e POSTGRES_PASSWORD=fiefpassword -v fief-dev-db:/var/lib/postgresql/data -d postgres:alpine
@@ -34,5 +44,8 @@ revision-account-db message: start-db
 migrate-account-db: start-db
   alembic -n account upgrade head
 
-start: start-db
-  uvicorn --host 0.0.0.0 --port 8000 --reload fief.app:app
+start: start-db compile-translations build-css
+  uvicorn --host 0.0.0.0 --port 8000 fief.app:app
+
+start-watch:
+  watchexec -r --exts po,py,html -- just start

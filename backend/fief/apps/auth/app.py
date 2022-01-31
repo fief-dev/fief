@@ -1,4 +1,5 @@
 from fastapi import APIRouter, FastAPI
+from fastapi.staticfiles import StaticFiles
 
 from fief.apps.auth.routers.auth import router as auth_router
 from fief.apps.auth.routers.register import router as register_router
@@ -24,6 +25,6 @@ app = FastAPI()
 app.add_exception_handler(TokenRequestException, token_request_exception_handler)
 app.include_router(default_tenant_router)
 app.include_router(tenant_router)
-
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 __all__ = ["app"]

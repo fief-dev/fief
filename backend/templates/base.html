@@ -1,0 +1,13 @@
+<html lang="en">
+  <head>
+    {% block head %}
+      <title>{% block title %}{% endblock %}</title>
+      <link href="{{ url_for('static', path='/output.css') }}" rel="stylesheet">
+    {% endblock %}
+  </head>
+  <body class="font-inter antialiased bg-gray-100 text-gray-600">
+    {% block main %}
+
+    {% endblock %}
+  </body>
+</html>

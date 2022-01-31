@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block main %}
+  <main class="bg-white">
+    <div class="relative flex">
+      <div class="w-full md:w-1/2">
+        <div class="min-h-screen h-full flex flex flex-col after:flex-1">
+          <div class="flex-1">
+            <div class="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
+              <span class="text-3xl text-gray-800 font-bold">{{ tenant.name }}</span>
+            </div>
+          </div>
+
+          <div class="w-full max-w-sm mx-auto px-4 py-8">
+            <h1 class="text-3xl text-gray-800 font-bold mb-6">{% block title %}{% endblock %}</h1>
+            {% block auth_form %}{% endblock %}
+            <div class="pt-5 mt-6 border-t border-gray-200">
+              <div class="text-xs flex justify-center items-top">
+                <span class="mr-1">{% trans %}Powered by{% endtrans %}</span>
+                <img src="{{ url_for('static', path='fief-logo.svg') }}" alt="Fief" layout="fixed" height="15" width="30" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="hidden md:block absolute top-0 bottom-0 right-0 md:w-1/2" aria-hidden="true">
+
+      </div>
+
+    </div>
+  </main>
+{% endblock %}

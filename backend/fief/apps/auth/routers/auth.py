@@ -1,12 +1,13 @@
 from datetime import datetime, timedelta, timezone
 from typing import List, Tuple, cast
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 from fastapi_users.router.common import ErrorCode as FastAPIUsersErrorCode
 from furl import furl
 from pydantic import UUID4
 
+from fief.apps.auth.templates import templates
 from fief.crypto.access_token import generate_access_token
 from fief.crypto.id_token import generate_id_token
 from fief.dependencies.account import get_current_account
@@ -35,10 +36,10 @@ from fief.schemas.auth import (
 )
 from fief.schemas.user import UserDB
 
-router = APIRouter()
-
 TOKEN_LIFETIME = 3600
 REFRESH_TOKEN_LIFETIME = 3600 * 24 * 30
+
+router = APIRouter()
 
 
 @router.get("/authorize", name="auth:authorize", response_model=AuthorizeResponse)
@@ -49,6 +50,20 @@ async def authorize(
     client: Client = Depends(get_client_by_authorization_parameters),
 ) -> AuthorizeResponse:
     return AuthorizeResponse(parameters=authorization_parameters, tenant=client.tenant)
+
+
+@router.get("/login", name="auth:login.get")
+async def get_login(
+    request: Request,
+    authorization_parameters: AuthorizationParameters = Depends(
+        get_authorization_parameters
+    ),
+    client: Client = Depends(get_client_by_authorization_parameters),
+):
+    return templates.TemplateResponse(
+        "authorize.html",
+        {"request": request, "tenant": client.tenant, "title": "FOOBAR"},
+    )
 
 
 @router.post("/login", name="auth:login")
