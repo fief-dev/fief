@@ -3,7 +3,7 @@ import gettext
 from fastapi.templating import Jinja2Templates
 
 translations = gettext.translation(
-    domain="auth", localedir="locale", languages=["en_US"]
+    domain="auth", localedir="locale", languages=["en_US"], fallback=True
 )
 translations.install()
 
