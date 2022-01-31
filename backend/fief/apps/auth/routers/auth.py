@@ -145,6 +145,8 @@ async def token(
             3600,
             encryption_key=tenant.get_encrypt_jwk(),
         )
-        return TokenResponse(access_token=access_token, id_token=id_token)
+        return TokenResponse(
+            access_token=access_token, id_token=id_token, expires_in=3600
+        )
     finally:
         await authorization_code_manager.delete(authorization_code)

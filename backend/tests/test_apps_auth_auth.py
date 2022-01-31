@@ -272,3 +272,4 @@ class TestAuthToken:
         assert isinstance(json["access_token"], str)
         assert isinstance(json["id_token"], str)
         assert json["token_type"] == "bearer"
+        assert json["expires_in"] == 3600
