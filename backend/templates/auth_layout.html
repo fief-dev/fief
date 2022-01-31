@@ -13,11 +13,26 @@
 
           <div class="w-full max-w-sm mx-auto px-4 py-8">
             <h1 class="text-3xl text-gray-800 font-bold mb-6">{% block title %}{% endblock %}</h1>
-            {% block auth_form %}{% endblock %}
+            {% if error is defined %}
+              <div class="my-4 px-4 py-2 rounded-sm text-sm bg-red-100 border border-red-200 text-red-600">
+                <div class="flex w-full justify-between items-start">
+                  <div class="flex">
+                    <svg class="w-4 h-4 shrink-0 fill-current opacity-80 mt-[3px] mr-3" viewBox="0 0 16 16">
+                      <path
+                        d="M8 0C3.6 0 0 3.6 0 8s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8zm3.5 10.1l-1.4 1.4L8 9.4l-2.1 2.1-1.4-1.4L6.6 8 4.5 5.9l1.4-1.4L8 6.6l2.1-2.1 1.4 1.4L9.4 8l2.1 2.1z" />
+                    </svg>
+                    <div>{{error}}</div>
+                  </div>
+                </div>
+              </div>
+            {% endif %}
+            {% if not fatal_error %}
+              {% block auth_form %}{% endblock %}
+            {% endif %}
             <div class="pt-5 mt-6 border-t border-gray-200">
-              <div class="text-xs flex justify-center items-top">
+              <div class="text-xs flex justify-center items-center">
                 <span class="mr-1">{% trans %}Powered by{% endtrans %}</span>
-                <img src="{{ url_for('static', path='fief-logo.svg') }}" alt="Fief" layout="fixed" height="15" width="30" />
+                <img src="{{ url_for('static', path='fief-logo.svg') }}" alt="Fief" layout="fixed" height="20" width="30" />
               </div>
             </div>
           </div>

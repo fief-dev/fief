@@ -3,6 +3,7 @@ from fief.models.authorization_code import AuthorizationCode
 from fief.models.base import AccountBase, GlobalBase
 from fief.models.client import Client
 from fief.models.generics import M_UUID, M
+from fief.models.login_session import LoginSession
 from fief.models.refresh_token import RefreshToken
 from fief.models.session_token import SessionToken
 from fief.models.tenant import Tenant
@@ -14,6 +15,7 @@ __all__ = [
     "AuthorizationCode",
     "Client",
     "GlobalBase",
+    "LoginSession",
     "RefreshToken",
     "SessionToken",
     "M",

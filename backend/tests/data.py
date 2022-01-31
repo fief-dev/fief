@@ -4,7 +4,15 @@ from typing import Mapping, TypedDict
 
 from fastapi_users.password import get_password_hash
 
-from fief.models import AuthorizationCode, Client, M, RefreshToken, Tenant, User
+from fief.models import (
+    AuthorizationCode,
+    Client,
+    LoginSession,
+    M,
+    RefreshToken,
+    Tenant,
+    User,
+)
 
 ModelMapping = Mapping[str, M]
 
@@ -15,6 +23,7 @@ class TestData(TypedDict):
     tenants: ModelMapping[Tenant]
     clients: ModelMapping[Client]
     users: ModelMapping[User]
+    login_sessions: ModelMapping[LoginSession]
     authorization_codes: ModelMapping[AuthorizationCode]
     refresh_tokens: ModelMapping[RefreshToken]
 
@@ -49,6 +58,16 @@ users: ModelMapping[User] = {
     ),
 }
 
+login_sessions: ModelMapping[LoginSession] = {
+    "default": LoginSession(
+        response_type="code",
+        redirect_uri="https://nantes.city/callback",
+        scope=["openid", "offline_access"],
+        state="STATE",
+        client=clients["default_tenant"],
+    ),
+}
+
 authorization_codes: ModelMapping[AuthorizationCode] = {
     "default_regular": AuthorizationCode(
         redirect_uri="https://bretagne.duchy/callback",
@@ -77,6 +96,7 @@ data_mapping: TestData = {
     "tenants": tenants,
     "clients": clients,
     "users": users,
+    "login_sessions": login_sessions,
     "authorization_codes": authorization_codes,
     "refresh_tokens": refresh_tokens,
 }

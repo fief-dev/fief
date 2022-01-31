@@ -3,12 +3,12 @@ from typing import Optional
 from sqlalchemy import Column, String, Text
 
 from fief.models.base import GlobalBase
-from fief.models.generics import UUIDModel
+from fief.models.generics import CreatedUpdatedAt, UUIDModel
 from fief.settings import settings
 from fief.utils.db_connection import get_database_url
 
 
-class Account(UUIDModel, GlobalBase):
+class Account(UUIDModel, CreatedUpdatedAt, GlobalBase):
     __tablename__ = "accounts"
 
     name: str = Column(String(length=255), nullable=False)

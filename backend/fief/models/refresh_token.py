@@ -7,11 +7,11 @@ from sqlalchemy.orm import relationship
 
 from fief.models.base import AccountBase
 from fief.models.client import Client
-from fief.models.generics import GUID, UUIDModel
+from fief.models.generics import GUID, CreatedUpdatedAt, UUIDModel
 from fief.models.user import User
 
 
-class RefreshToken(UUIDModel, AccountBase):
+class RefreshToken(UUIDModel, CreatedUpdatedAt, AccountBase):
     __tablename__ = "refresh_tokens"
 
     token: str = Column(

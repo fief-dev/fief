@@ -5,30 +5,17 @@
 {% block title %}{{ _('Welcome back!') }}{% endblock %}
 
 {% block auth_form %}
-  <form method="POST">
+  <form method="POST" action="/login">
     <div class="space-y-4">
-      {% if error is defined %}
-        <div class="px-4 py-2 rounded-sm text-sm bg-red-100 border border-red-200 text-red-600">
-          <div class="flex w-full justify-between items-start">
-            <div class="flex">
-              <svg class="w-4 h-4 shrink-0 fill-current opacity-80 mt-[3px] mr-3" viewBox="0 0 16 16">
-                <path
-                  d="M8 0C3.6 0 0 3.6 0 8s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8zm3.5 10.1l-1.4 1.4L8 9.4l-2.1 2.1-1.4-1.4L6.6 8 4.5 5.9l1.4-1.4L8 6.6l2.1-2.1 1.4 1.4L9.4 8l2.1 2.1z" />
-              </svg>
-              <div>{{error}}</div>
-            </div>
-          </div>
-        </div>
-      {% endif %}
       <div>
-        <label class="block text-sm font-medium mb-1" htmlFor="input-email">{{ _('Email address') }}</label>
-        <input id="input-email" class="form-input w-full" type="email" name="email" required />
+        <label class="block text-sm font-medium mb-1" for="input-email">{{ _('Email address') }}</label>
+        <input id="input-email" class="form-input w-full" type="email" name="username" required />
         {% if form_errors is defined and form_errors.email %}
         <div id="errors-email" class="text-xs mt-1 text-red-500">{{form_errors.email}}</div>
         {% endif %}
       </div>
       <div>
-        <label class="block text-sm font-medium mb-1" htmlFor="input-password">{{ _('Password') }}</label>
+        <label class="block text-sm font-medium mb-1" for="input-password">{{ _('Password') }}</label>
         <input id="input-password" class="form-input w-full" type="password" name="password" required />
         {% if form_errors is defined and form_errors.password %}
           <div id="errors-password" class="text-xs mt-1 text-red-500">{{form_errors.password}}</div>

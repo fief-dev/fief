@@ -1,13 +1,56 @@
+
 msgid ""
 msgstr ""
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
-"X-Generator: POEditor.com\n"
-"Project-Id-Version: Fief\n"
+"Project-Id-Version:  Fief\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2022-01-31 19:18+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
+"Language-Team: en <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.9.1\n"
 
-#: templates/auth_layout.html:19
+#: fief/apps/auth/routers/auth.py:101
+msgid "Invalid email or password"
+msgstr ""
+
+#: fief/dependencies/auth.py:33
+msgid "response_type is missing"
+msgstr ""
+
+#: fief/dependencies/auth.py:38
+msgid "response_type should be \"code\""
+msgstr ""
+
+#: fief/dependencies/auth.py:50
+msgid "client_id is missing"
+msgstr ""
+
+#: fief/dependencies/auth.py:56
+msgid "Unknown client"
+msgstr ""
+
+#: fief/dependencies/auth.py:66
+msgid "redirect_uri is missing"
+msgstr ""
+
+#: fief/dependencies/auth.py:77
+msgid "scope is missing"
+msgstr ""
+
+#: fief/dependencies/auth.py:84
+msgid "scope should contain \"openid\""
+msgstr ""
+
+#: fief/dependencies/auth.py:94
+msgid "Invalid login session"
+msgstr ""
+
+#: templates/auth_layout.html:34
 msgid "Powered by"
 msgstr "Powered by"
 
@@ -19,15 +62,15 @@ msgstr "Login"
 msgid "Welcome back!"
 msgstr "Welcome back!"
 
-#: templates/authorize.html:24
+#: templates/authorize.html:11
 msgid "Email address"
 msgstr "Email address"
 
-#: templates/authorize.html:31
+#: templates/authorize.html:18
 msgid "Password"
 msgstr "Password"
 
-#: templates/authorize.html:42
+#: templates/authorize.html:29
 msgid "Sign in"
 msgstr "Sign in"
 

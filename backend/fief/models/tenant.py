@@ -5,10 +5,10 @@ from sqlalchemy import Boolean, Column, String, Text
 
 from fief.crypto.jwk import generate_signature_jwk_string, load_jwk
 from fief.models.base import AccountBase
-from fief.models.generics import UUIDModel
+from fief.models.generics import CreatedUpdatedAt, UUIDModel
 
 
-class Tenant(UUIDModel, AccountBase):
+class Tenant(UUIDModel, CreatedUpdatedAt, AccountBase):
     __tablename__ = "tenants"
 
     name: str = Column(String(length=255), nullable=False)

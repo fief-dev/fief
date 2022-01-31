@@ -5,6 +5,7 @@ from fief.dependencies.account import get_current_account_session
 from fief.managers import (
     AuthorizationCodeManager,
     ClientManager,
+    LoginSessionManager,
     RefreshTokenManager,
     TenantManager,
     get_manager,
@@ -21,6 +22,12 @@ async def get_client_manager(
     session: AsyncSession = Depends(get_current_account_session),
 ) -> ClientManager:
     return get_manager(ClientManager, session)
+
+
+async def get_login_session_manager(
+    session: AsyncSession = Depends(get_current_account_session),
+) -> LoginSessionManager:
+    return get_manager(LoginSessionManager, session)
 
 
 async def get_authorization_code_manager(

@@ -1,37 +1,39 @@
-from typing import List, Literal, Optional
+from typing import Optional
 
-from pydantic import BaseModel, validator
+from pydantic import BaseModel
 from pydantic.fields import Field
 
-from fief.schemas.tenant import TenantReadPublic
+
+class AuthorizeError(BaseModel):
+    error: str = Field(..., regex="invalid_request|invalid_client|invalid_scope")
+    error_description: Optional[str] = None
+    error_uri: Optional[str] = None
+
+    @classmethod
+    def get_invalid_request(cls, error_description: Optional[str] = None):
+        return cls(error="invalid_request", error_description=error_description)
+
+    @classmethod
+    def get_invalid_client(cls, error_description: Optional[str] = None):
+        return cls(error="invalid_client", error_description=error_description)
+
+    @classmethod
+    def get_invalid_scope(cls, error_description: Optional[str] = None):
+        return cls(error="invalid_scope", error_description=error_description)
 
 
-class AuthorizationParameters(BaseModel):
-    response_type: str = Field(..., regex="code")
-    client_id: str
-    redirect_uri: str
-    scope: List[str]
-    state: Optional[str]
+class LoginError(BaseModel):
+    error: str = Field(..., regex="invalid_session|bad_credentials")
+    error_description: Optional[str] = None
+    error_uri: Optional[str] = None
 
-    @validator("scope", pre=True)
-    def parse_scope(cls, value: str) -> List[str]:
-        if not isinstance(value, list):
-            return value.split()
-        return value
+    @classmethod
+    def get_invalid_session(cls, error_description: Optional[str] = None):
+        return cls(error="invalid_session", error_description=error_description)
 
-
-class AuthorizeResponse(BaseModel):
-    parameters: AuthorizationParameters
-    tenant: TenantReadPublic
-
-
-class LoginRequest(AuthorizationParameters):
-    username: str
-    password: str
-
-
-class LoginResponse(BaseModel):
-    redirect_uri: str
+    @classmethod
+    def get_bad_credentials(cls, error_description: Optional[str] = None):
+        return cls(error="bad_credentials", error_description=error_description)
 
 
 class TokenResponse(BaseModel):
@@ -42,7 +44,7 @@ class TokenResponse(BaseModel):
     refresh_token: Optional[str] = None
 
 
-class TokenErrorResponse(BaseModel):
+class TokenError(BaseModel):
     error: str = Field(
         ...,
         regex="invalid_request|invalid_client|invalid_grant|unauthorized_client|unsupported_grant_type|invalid_scope",

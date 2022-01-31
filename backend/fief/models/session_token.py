@@ -7,10 +7,10 @@ from fief_client import FiefTokenResponse
 from sqlalchemy import Column, String, Text
 
 from fief.models.base import GlobalBase
-from fief.models.generics import UUIDModel
+from fief.models.generics import CreatedUpdatedAt, UUIDModel
 
 
-class SessionToken(UUIDModel, GlobalBase):
+class SessionToken(UUIDModel, CreatedUpdatedAt, GlobalBase):
     __tablename__ = "session_tokens"
 
     token: str = Column(

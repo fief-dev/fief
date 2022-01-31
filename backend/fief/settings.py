@@ -22,6 +22,10 @@ class Settings(BaseSettings):
 
     account_table_prefix: str = "fief_"
 
+    login_session_cookie_name: str = "fief_login_session"
+    login_session_cookie_domain: str = ""
+    login_session_cookie_secure: bool = True
+
     fief_domain: str
     fief_base_url: str
     fief_client_id: str

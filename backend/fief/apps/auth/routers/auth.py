@@ -1,9 +1,10 @@
 from datetime import datetime, timedelta, timezone
-from typing import List, Tuple, cast
+from gettext import gettext as _
+from typing import List, Optional, Tuple
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, Query, Request, status
+from fastapi.responses import RedirectResponse
 from fastapi.security.oauth2 import OAuth2PasswordRequestForm
-from fastapi_users.router.common import ErrorCode as FastAPIUsersErrorCode
 from furl import furl
 from pydantic import UUID4
 
@@ -13,28 +14,37 @@ from fief.crypto.id_token import generate_id_token
 from fief.dependencies.account import get_current_account
 from fief.dependencies.account_managers import (
     get_authorization_code_manager,
+    get_login_session_manager,
     get_refresh_token_manager,
 )
 from fief.dependencies.auth import (
-    get_authorization_parameters,
-    get_client_by_authorization_parameters,
-    get_client_by_login_request_data,
-    get_login_request_data,
+    get_authorize_client,
+    get_authorize_redirect_uri,
+    get_authorize_response_type,
+    get_authorize_scope,
+    get_login_session,
     get_user_from_grant_request,
     validate_grant_request,
 )
 from fief.dependencies.tenant import get_current_tenant
 from fief.dependencies.users import UserManager, get_user_manager
-from fief.managers import AuthorizationCodeManager, RefreshTokenManager
-from fief.models import Account, AuthorizationCode, Client, RefreshToken, Tenant
-from fief.schemas.auth import (
-    AuthorizationParameters,
-    AuthorizeResponse,
-    LoginRequest,
-    LoginResponse,
-    TokenResponse,
+from fief.errors import LoginException
+from fief.managers import (
+    AuthorizationCodeManager,
+    LoginSessionManager,
+    RefreshTokenManager,
 )
+from fief.models import (
+    Account,
+    AuthorizationCode,
+    Client,
+    LoginSession,
+    RefreshToken,
+    Tenant,
+)
+from fief.schemas.auth import LoginError, TokenResponse
 from fief.schemas.user import UserDB
+from fief.settings import settings
 
 TOKEN_LIFETIME = 3600
 REFRESH_TOKEN_LIFETIME = 3600 * 24 * 30
@@ -42,47 +52,54 @@ REFRESH_TOKEN_LIFETIME = 3600 * 24 * 30
 router = APIRouter()
 
 
-@router.get("/authorize", name="auth:authorize", response_model=AuthorizeResponse)
+@router.get("/authorize", name="auth:authorize")
 async def authorize(
-    authorization_parameters: AuthorizationParameters = Depends(
-        get_authorization_parameters
-    ),
-    client: Client = Depends(get_client_by_authorization_parameters),
-) -> AuthorizeResponse:
-    return AuthorizeResponse(parameters=authorization_parameters, tenant=client.tenant)
-
-
-@router.get("/login", name="auth:login.get")
-async def get_login(
     request: Request,
-    authorization_parameters: AuthorizationParameters = Depends(
-        get_authorization_parameters
-    ),
-    client: Client = Depends(get_client_by_authorization_parameters),
+    response_type: str = Depends(get_authorize_response_type),
+    client: Client = Depends(get_authorize_client),
+    redirect_uri: str = Depends(get_authorize_redirect_uri),
+    scope: List[str] = Depends(get_authorize_scope),
+    state: Optional[str] = Query(None),
+    login_session_manager: LoginSessionManager = Depends(get_login_session_manager),
 ):
-    return templates.TemplateResponse(
-        "authorize.html",
-        {"request": request, "tenant": client.tenant, "title": "FOOBAR"},
+    login_session = LoginSession(
+        response_type=response_type,
+        redirect_uri=redirect_uri,
+        scope=scope,
+        state=state,
+        client_id=client.id,
     )
+    login_session = await login_session_manager.create(login_session)
+
+    response = templates.TemplateResponse(
+        "authorize.html",
+        {"request": request, "tenant": client.tenant},
+    )
+    response.set_cookie(
+        settings.login_session_cookie_name,
+        login_session.token,
+        domain=settings.login_session_cookie_domain,
+        secure=settings.login_session_cookie_secure,
+    )
+
+    return response
 
 
 @router.post("/login", name="auth:login")
 async def login(
-    login_request: LoginRequest = Depends(get_login_request_data),
-    client: Client = Depends(get_client_by_login_request_data),
+    credentials: OAuth2PasswordRequestForm = Depends(OAuth2PasswordRequestForm),
+    login_session: LoginSession = Depends(get_login_session),
     user_manager: UserManager = Depends(get_user_manager),
     authorization_code_manager: AuthorizationCodeManager = Depends(
         get_authorization_code_manager
     ),
 ):
-    user = await user_manager.authenticate(
-        cast(OAuth2PasswordRequestForm, login_request)
-    )
+    user = await user_manager.authenticate(credentials)
 
     if user is None or not user.is_active:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=FastAPIUsersErrorCode.LOGIN_BAD_CREDENTIALS,
+        raise LoginException(
+            LoginError.get_bad_credentials(_("Invalid email or password")),
+            login_session.client.tenant,
         )
     # if requires_verification and not user.is_verified:
     #     raise HTTPException(
@@ -92,19 +109,21 @@ async def login(
 
     authorization_code = await authorization_code_manager.create(
         AuthorizationCode(
-            redirect_uri=login_request.redirect_uri,
-            scope=login_request.scope,
+            redirect_uri=login_session.redirect_uri,
+            scope=login_session.scope,
             user_id=user.id,
-            client_id=client.id,
+            client_id=login_session.client.id,
         )
     )
 
-    parsed_redirect_uri = furl(login_request.redirect_uri)
+    parsed_redirect_uri = furl(login_session.redirect_uri)
     parsed_redirect_uri.add(query_params={"code": authorization_code.code})
-    if login_request.state is not None:
-        parsed_redirect_uri.add(query_params={"state": login_request.state})
+    if login_session.state is not None:
+        parsed_redirect_uri.add(query_params={"state": login_session.state})
 
-    return LoginResponse(redirect_uri=parsed_redirect_uri.url)
+    return RedirectResponse(
+        url=parsed_redirect_uri.url, status_code=status.HTTP_302_FOUND
+    )
 
 
 @router.post("/token", name="auth:token")

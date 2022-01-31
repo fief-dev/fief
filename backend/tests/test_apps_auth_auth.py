@@ -1,14 +1,17 @@
-from typing import Dict
+from typing import Dict, Optional
 
 import httpx
 import pytest
 from fastapi import status
-from fastapi_users.router.common import ErrorCode as FastAPIUsersErrorCode
 from furl import furl
 
 from fief.db import AsyncSession
-from fief.errors import ErrorCode
-from fief.managers import AuthorizationCodeManager, RefreshTokenManager
+from fief.managers import (
+    AuthorizationCodeManager,
+    LoginSessionManager,
+    RefreshTokenManager,
+)
+from fief.settings import settings
 from tests.conftest import TenantParams
 from tests.data import TestData
 
@@ -16,146 +19,193 @@ from tests.data import TestData
 @pytest.mark.asyncio
 @pytest.mark.account_host
 class TestAuthAuthorize:
-    async def test_missing_parameters(
-        self, tenant_params: TenantParams, test_client_auth: httpx.AsyncClient
-    ):
-        response = await test_client_auth.get(f"{tenant_params.path_prefix}/authorize")
-
-        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-
-    async def test_unknown_client_id(
-        self, tenant_params: TenantParams, test_client_auth: httpx.AsyncClient
+    @pytest.mark.parametrize(
+        "params,error",
+        [
+            pytest.param(
+                {
+                    "client_id": "DEFAULT_TENANT_CLIENT_ID",
+                    "redirect_uri": "REDIRECT_URI",
+                    "scope": "openid",
+                },
+                "invalid_request",
+                id="Missing response_type",
+            ),
+            pytest.param(
+                {
+                    "response_type": "magic_wand",
+                    "client_id": "DEFAULT_TENANT_CLIENT_ID",
+                    "redirect_uri": "REDIRECT_URI",
+                    "scope": "openid",
+                },
+                "invalid_request",
+                id="Invalid response_type",
+            ),
+            pytest.param(
+                {
+                    "response_type": "code",
+                    "redirect_uri": "REDIRECT_URI",
+                    "scope": "openid",
+                },
+                "invalid_request",
+                id="Missing client_id",
+            ),
+            pytest.param(
+                {
+                    "response_type": "code",
+                    "client_id": "INVALID_CLIENT_ID",
+                    "redirect_uri": "REDIRECT_URI",
+                    "scope": "openid",
+                },
+                "invalid_client",
+                id="Invalid client",
+            ),
+            pytest.param(
+                {
+                    "response_type": "code",
+                    "client_id": "DEFAULT_TENANT_CLIENT_ID",
+                    "scope": "openid",
+                },
+                "invalid_request",
+                id="Missing redirect_uri",
+            ),
+            pytest.param(
+                {
+                    "response_type": "code",
+                    "client_id": "DEFAULT_TENANT_CLIENT_ID",
+                    "redirect_uri": "REDIRECT_URI",
+                },
+                "invalid_request",
+                id="Missing scope",
+            ),
+            pytest.param(
+                {
+                    "response_type": "code",
+                    "client_id": "DEFAULT_TENANT_CLIENT_ID",
+                    "redirect_uri": "REDIRECT_URI",
+                    "scope": "user",
+                },
+                "invalid_scope",
+                id="Missing openid scope",
+            ),
+        ],
+    )
+    async def test_invalid_request(
+        self,
+        tenant_params: TenantParams,
+        test_client_auth: httpx.AsyncClient,
+        params: Dict[str, str],
+        error: str,
     ):
         response = await test_client_auth.get(
-            f"{tenant_params.path_prefix}/authorize",
-            params={
-                "response_type": "code",
-                "client_id": "UNKNOWN",
-                "scope": "openid",
-                "redirect_uri": "https://bretagne.duchy/callback",
-            },
+            f"{tenant_params.path_prefix}/authorize", params=params
         )
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 
-        json = response.json()
-        assert json["detail"] == ErrorCode.AUTH_INVALID_CLIENT_ID
+        headers = response.headers
+        assert headers["X-Fief-Error"] == error
 
-    async def test_valid_client_id(
-        self, tenant_params: TenantParams, test_client_auth: httpx.AsyncClient
+    async def test_valid(
+        self,
+        tenant_params: TenantParams,
+        test_client_auth: httpx.AsyncClient,
+        account_session: AsyncSession,
     ):
-        client = tenant_params.client
-        tenant = tenant_params.tenant
-
         response = await test_client_auth.get(
             f"{tenant_params.path_prefix}/authorize",
             params={
                 "response_type": "code",
-                "client_id": client.client_id,
+                "client_id": "DEFAULT_TENANT_CLIENT_ID",
+                "redirect_uri": "REDIRECT_URI",
                 "scope": "openid",
-                "redirect_uri": "https://bretagne.duchy/callback",
             },
         )
 
         assert response.status_code == status.HTTP_200_OK
 
-        json = response.json()
-        assert json["parameters"] == {
-            "response_type": "code",
-            "client_id": client.client_id,
-            "redirect_uri": "https://bretagne.duchy/callback",
-            "scope": ["openid"],
-            "state": None,
-        }
-        assert json["tenant"]["id"] == str(tenant.id)
+        login_session_cookie = response.cookies[settings.login_session_cookie_name]
+        login_session_manager = LoginSessionManager(account_session)
+        login_session = await login_session_manager.get_by_token(login_session_cookie)
+        assert login_session is not None
 
 
 @pytest.mark.asyncio
 @pytest.mark.account_host
 class TestAuthLogin:
-    async def test_missing_parameters(
-        self, tenant_params: TenantParams, test_client_auth: httpx.AsyncClient
+    @pytest.mark.parametrize("cookie", [None, "INVALID_SESSION_TOKEN"])
+    async def test_invalid_login_session(
+        self,
+        cookie: Optional[str],
+        tenant_params: TenantParams,
+        test_client_auth: httpx.AsyncClient,
     ):
-        response = await test_client_auth.post(f"{tenant_params.path_prefix}/login")
-
-        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-
-    async def test_bad_credentials(
-        self, tenant_params: TenantParams, test_client_auth: httpx.AsyncClient
-    ):
-        client = tenant_params.client
+        cookies = {}
+        if cookie is not None:
+            cookies[settings.login_session_cookie_name] = cookie
 
         response = await test_client_auth.post(
-            f"{tenant_params.path_prefix}/login",
-            data={
-                "response_type": "code",
-                "client_id": client.client_id,
-                "redirect_uri": "https://bretagne.duchy/callback",
-                "scope": "openid",
-                "username": "anne@bretagne.duchy",
-                "password": "foo",
-            },
+            f"{tenant_params.path_prefix}/login", cookies=cookies
         )
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 
-        json = response.json()
-        assert json["detail"] == FastAPIUsersErrorCode.LOGIN_BAD_CREDENTIALS
+        headers = response.headers
+        assert headers["X-Fief-Error"] == "invalid_session"
 
-    async def test_valid_credentials(
-        self, tenant_params: TenantParams, test_client_auth: httpx.AsyncClient
+    async def test_bad_credentials(
+        self, test_client_auth: httpx.AsyncClient, test_data: TestData
     ):
-        client = tenant_params.client
-        user = tenant_params.user
+        login_session = test_data["login_sessions"]["default"]
+        client = login_session.client
+        tenant = client.tenant
+        path_prefix = tenant.slug if not tenant.default else ""
+
+        cookies = {}
+        cookies[settings.login_session_cookie_name] = login_session.token
 
         response = await test_client_auth.post(
-            f"{tenant_params.path_prefix}/login",
+            f"{path_prefix}/login",
             data={
-                "response_type": "code",
-                "client_id": client.client_id,
-                "redirect_uri": "https://bretagne.duchy/callback",
-                "scope": "openid",
-                "state": "STATE",
-                "username": user.email,
-                "password": "hermine",
+                "username": "anne@bretagne.duchy",
+                "password": "foo",
             },
+            cookies=cookies,
         )
 
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
 
-        json = response.json()
-        redirect_uri = json["redirect_uri"]
+        headers = response.headers
+        assert headers["X-Fief-Error"] == "bad_credentials"
 
-        assert redirect_uri.startswith("https://bretagne.duchy/callback")
+    async def test_valid(
+        self, test_client_auth: httpx.AsyncClient, test_data: TestData
+    ):
+        login_session = test_data["login_sessions"]["default"]
+        client = login_session.client
+        tenant = client.tenant
+        path_prefix = tenant.slug if not tenant.default else ""
+
+        cookies = {}
+        cookies[settings.login_session_cookie_name] = login_session.token
+
+        response = await test_client_auth.post(
+            f"{path_prefix}/login",
+            data={
+                "username": "anne@bretagne.duchy",
+                "password": "hermine",
+            },
+            cookies=cookies,
+        )
+
+        assert response.status_code == status.HTTP_302_FOUND
+
+        redirect_uri = response.headers["Location"]
+
+        assert redirect_uri.startswith(login_session.redirect_uri)
         parsed_location = furl(redirect_uri)
         assert "code" in parsed_location.query.params
-        assert parsed_location.query.params["state"] == "STATE"
-
-    async def test_none_state_not_in_redirect_uri(
-        self, tenant_params: TenantParams, test_client_auth: httpx.AsyncClient
-    ):
-        client = tenant_params.client
-        user = tenant_params.user
-
-        response = await test_client_auth.post(
-            f"{tenant_params.path_prefix}/login",
-            data={
-                "response_type": "code",
-                "client_id": client.client_id,
-                "redirect_uri": "https://bretagne.duchy/callback",
-                "username": user.email,
-                "password": "hermine",
-                "scope": "openid",
-            },
-        )
-
-        assert response.status_code == status.HTTP_200_OK
-
-        json = response.json()
-        redirect_uri = json["redirect_uri"]
-
-        parsed_location = furl(redirect_uri)
-        assert "state" not in parsed_location.query.params
+        assert parsed_location.query.params["state"] == login_session.state
 
 
 @pytest.mark.asyncio
