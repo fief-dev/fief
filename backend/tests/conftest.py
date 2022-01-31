@@ -1,6 +1,7 @@
 import asyncio
 import contextlib
 import dataclasses
+import json
 import os
 import uuid
 from typing import AsyncContextManager, AsyncGenerator, Callable, Optional
@@ -14,6 +15,7 @@ from fief_client import Fief
 
 from fief.apps import admin_app, auth_app
 from fief.crypto.access_token import generate_access_token
+from fief.crypto.id_token import generate_id_token
 from fief.db import (
     AsyncConnection,
     AsyncEngine,
@@ -25,14 +27,26 @@ from fief.dependencies.account import get_current_account_session
 from fief.dependencies.account_creation import get_account_creation
 from fief.dependencies.account_db import get_account_db
 from fief.dependencies.fief import get_fief
-from fief.models import Account, AuthorizationCode, Client, GlobalBase, Tenant, User
+from fief.managers.session_token import SessionTokenManager
+from fief.models import (
+    Account,
+    AuthorizationCode,
+    Client,
+    GlobalBase,
+    SessionToken,
+    Tenant,
+    User,
+)
 from fief.schemas.user import UserDB
 from fief.services.account_creation import AccountCreation
 from fief.services.account_db import AccountDatabase
+from fief.settings import settings
 from fief.utils.db_connection import get_database_url
 from tests.data import TestData, data_mapping
 
-TEST_DATABASE_URL = os.environ["TEST_DATABASE_URL"]
+TEST_DATABASE_URL = os.getenv(
+    "TEST_DATABASE_URL", "postgresql://fief:fiefpassword@localhost:5432/fief-test"
+)
 
 
 @pytest.fixture(scope="session")
@@ -157,6 +171,25 @@ def account_host(request: pytest.FixtureRequest, account: Account) -> Optional[s
     return None
 
 
+@pytest.fixture
+async def session_token(
+    request: pytest.FixtureRequest, test_data: TestData, global_session: AsyncSession
+) -> Optional[str]:
+    marker = request.node.get_closest_marker("session_token")
+    if marker:
+        user_alias = marker.kwargs["user"]
+        user = test_data["users"][user_alias]
+
+        userinfo = UserDB.from_orm(user).get_claims()
+        session_token = SessionToken(raw_tokens="{}", raw_userinfo=json.dumps(userinfo))
+
+        session_token_manager = SessionTokenManager(global_session)
+        await session_token_manager.create(session_token)
+
+        return session_token.token
+    return None
+
+
 @dataclasses.dataclass
 class TenantParams:
     path_prefix: str
@@ -234,12 +267,57 @@ TestClientGeneratorType = Callable[[FastAPI], AsyncContextManager[httpx.AsyncCli
 
 
 @pytest.fixture
-async def test_client_generator(
+async def test_client_admin_generator(
     global_session: AsyncSession,
     account_session: AsyncSession,
     account_db_mock: MagicMock,
     account_creation_mock: MagicMock,
     fief_client_mock: MagicMock,
+    account_host: Optional[str],
+    session_token: Optional[str],
+) -> TestClientGeneratorType:
+    @contextlib.asynccontextmanager
+    async def _test_client_generator(app: FastAPI):
+        app.dependency_overrides = {}
+        app.dependency_overrides[get_global_async_session] = lambda: global_session
+        app.dependency_overrides[get_current_account_session] = lambda: account_session
+        app.dependency_overrides[get_account_db] = lambda: account_db_mock
+        app.dependency_overrides[get_account_creation] = lambda: account_creation_mock
+        app.dependency_overrides[get_fief] = lambda: fief_client_mock
+
+        headers = {}
+        cookies = {}
+        if account_host is not None:
+            headers["Host"] = account_host
+        if session_token is not None:
+            cookies[settings.fief_admin_session_cookie_name] = session_token
+
+        async with asgi_lifespan.LifespanManager(app):
+            async with httpx.AsyncClient(
+                app=app,
+                base_url="http://api.fief.dev",
+                headers=headers,
+                cookies=cookies,
+            ) as test_client:
+                yield test_client
+
+    return _test_client_generator
+
+
+@pytest.fixture
+async def test_client_admin(
+    test_client_admin_generator: TestClientGeneratorType,
+) -> AsyncGenerator[httpx.AsyncClient, None]:
+    async with test_client_admin_generator(admin_app) as test_client:
+        yield test_client
+
+
+@pytest.fixture
+async def test_client_auth_generator(
+    global_session: AsyncSession,
+    account_session: AsyncSession,
+    account_db_mock: MagicMock,
+    account_creation_mock: MagicMock,
     account_host: Optional[str],
     access_token: Optional[str],
 ) -> TestClientGeneratorType:
@@ -250,7 +328,6 @@ async def test_client_generator(
         app.dependency_overrides[get_current_account_session] = lambda: account_session
         app.dependency_overrides[get_account_db] = lambda: account_db_mock
         app.dependency_overrides[get_account_creation] = lambda: account_creation_mock
-        app.dependency_overrides[get_fief] = lambda: fief_client_mock
 
         headers = {}
         if account_host is not None:
@@ -268,16 +345,8 @@ async def test_client_generator(
 
 
 @pytest.fixture
-async def test_client_admin(
-    test_client_generator: TestClientGeneratorType,
-) -> AsyncGenerator[httpx.AsyncClient, None]:
-    async with test_client_generator(admin_app) as test_client:
-        yield test_client
-
-
-@pytest.fixture
 async def test_client_auth(
-    test_client_generator: TestClientGeneratorType,
+    test_client_auth_generator: TestClientGeneratorType,
 ) -> AsyncGenerator[httpx.AsyncClient, None]:
-    async with test_client_generator(auth_app) as test_client:
+    async with test_client_auth_generator(auth_app) as test_client:
         yield test_client
