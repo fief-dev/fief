@@ -1,13 +1,14 @@
+from typing import Dict
+
 import httpx
 import pytest
 from fastapi import status
 from fastapi_users.router.common import ErrorCode as FastAPIUsersErrorCode
 from furl import furl
-from pytest_lazyfixture import lazy_fixture
 
 from fief.errors import ErrorCode
-from fief.models import AuthorizationCode
 from tests.conftest import TenantParams
+from tests.data import TestData
 
 
 @pytest.mark.asyncio
@@ -155,119 +156,183 @@ class TestAuthLogin:
         assert "state" not in parsed_location.query.params
 
 
-@pytest.fixture
-def authorization_code(tenant_params: TenantParams):
-    return tenant_params.authorization_code
-
-
-@pytest.fixture
-def authorization_code_code(authorization_code: AuthorizationCode) -> str:
-    return authorization_code.code
-
-
-@pytest.fixture
-def authorization_code_redirect_uri(authorization_code: AuthorizationCode) -> str:
-    return authorization_code.redirect_uri
-
-
-@pytest.fixture
-def authorization_code_client_id(authorization_code: AuthorizationCode) -> str:
-    return authorization_code.client.client_id
-
-
-@pytest.fixture
-def authorization_code_client_secret(authorization_code: AuthorizationCode) -> str:
-    return authorization_code.client.client_secret
-
-
 @pytest.mark.asyncio
 @pytest.mark.account_host
-class TestAuthToken:
-    async def test_missing_parameters(
-        self, tenant_params: TenantParams, test_client_auth: httpx.AsyncClient
-    ):
-        response = await test_client_auth.post(f"{tenant_params.path_prefix}/token")
-
-        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-
+class TestAuthTokenAuthorizationCode:
     @pytest.mark.parametrize(
-        "code,redirect_uri,client_id,client_secret,status,error_code",
+        "data,error",
         [
-            (
-                "INVALID_CODE",
-                lazy_fixture("authorization_code_redirect_uri"),
-                lazy_fixture("authorization_code_client_id"),
-                lazy_fixture("authorization_code_client_secret"),
-                status.HTTP_400_BAD_REQUEST,
-                ErrorCode.AUTH_INVALID_AUTHORIZATION_CODE,
+            pytest.param(
+                {
+                    "grant_type": "authorization_code",
+                    "client_secret": "DEFAULT_TENANT_CLIENT_SECRET",
+                    "code": "CODE",
+                    "redirect_uri": "REDIRECT_URI",
+                },
+                "invalid_client",
+                id="Missing client_id",
             ),
-            (
-                lazy_fixture("authorization_code_code"),
-                lazy_fixture("authorization_code_redirect_uri"),
-                "INVALID_CLIENT_ID",
-                lazy_fixture("authorization_code_client_secret"),
-                status.HTTP_400_BAD_REQUEST,
-                ErrorCode.AUTH_INVALID_CLIENT_ID_SECRET,
+            pytest.param(
+                {
+                    "grant_type": "authorization_code",
+                    "client_id": "DEFAULT_TENANT_CLIENT_ID",
+                    "code": "CODE",
+                    "redirect_uri": "REDIRECT_URI",
+                },
+                "invalid_client",
+                id="Missing client_secret",
             ),
-            (
-                lazy_fixture("authorization_code_code"),
-                lazy_fixture("authorization_code_redirect_uri"),
-                lazy_fixture("authorization_code_client_id"),
-                "INVALID_CLIENT_SECRET",
-                status.HTTP_400_BAD_REQUEST,
-                ErrorCode.AUTH_INVALID_CLIENT_ID_SECRET,
+            pytest.param(
+                {
+                    "grant_type": "authorization_code",
+                    "client_id": "DEFAULT_TENANT_CLIENT_ID",
+                    "client_secret": "INVALID_CLIENT_SECRET",
+                    "code": "CODE",
+                    "redirect_uri": "REDIRECT_URI",
+                },
+                "invalid_client",
+                id="Invalid client_id/client_secret",
             ),
-            (
-                lazy_fixture("authorization_code_code"),
-                "https://bretagne.duchy/wrong-callback",
-                lazy_fixture("authorization_code_client_id"),
-                lazy_fixture("authorization_code_client_secret"),
-                status.HTTP_400_BAD_REQUEST,
-                ErrorCode.AUTH_REDIRECT_URI_MISMATCH,
+            pytest.param(
+                {
+                    "client_id": "DEFAULT_TENANT_CLIENT_ID",
+                    "client_secret": "DEFAULT_TENANT_CLIENT_SECRET",
+                    "code": "CODE",
+                    "redirect_uri": "REDIRECT_URI",
+                },
+                "invalid_request",
+                id="Missing grant_type",
+            ),
+            pytest.param(
+                {
+                    "grant_type": "magic_wand",
+                    "client_id": "DEFAULT_TENANT_CLIENT_ID",
+                    "client_secret": "DEFAULT_TENANT_CLIENT_SECRET",
+                    "code": "CODE",
+                    "redirect_uri": "REDIRECT_URI",
+                },
+                "unsupported_grant_type",
+                id="Unsupported grant_type",
+            ),
+            pytest.param(
+                {
+                    "grant_type": "authorization_code",
+                    "client_id": "DEFAULT_TENANT_CLIENT_ID",
+                    "client_secret": "DEFAULT_TENANT_CLIENT_SECRET",
+                    "redirect_uri": "REDIRECT_URI",
+                },
+                "invalid_request",
+                id="Missing code",
+            ),
+            pytest.param(
+                {
+                    "grant_type": "authorization_code",
+                    "client_id": "DEFAULT_TENANT_CLIENT_ID",
+                    "client_secret": "DEFAULT_TENANT_CLIENT_SECRET",
+                    "code": "CODE",
+                },
+                "invalid_request",
+                id="Missing redirect_uri",
+            ),
+            pytest.param(
+                {
+                    "grant_type": "authorization_code",
+                    "client_id": "DEFAULT_TENANT_CLIENT_ID",
+                    "client_secret": "DEFAULT_TENANT_CLIENT_SECRET",
+                    "code": "CODE",
+                    "redirect_uri": "REDIRECT_URI",
+                },
+                "invalid_grant",
+                id="Invalid code",
             ),
         ],
     )
-    async def test_invalid(
+    async def test_invalid_request(
         self,
         tenant_params: TenantParams,
         test_client_auth: httpx.AsyncClient,
-        code: str,
-        redirect_uri: str,
-        client_id: str,
-        client_secret: str,
-        status: int,
-        error_code: ErrorCode,
+        data: Dict[str, str],
+        error: str,
     ):
+        response = await test_client_auth.post(
+            f"{tenant_params.path_prefix}/token", data=data
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+        json = response.json()
+        assert json["error"] == error
+
+    async def test_client_not_matching_authorization_code(
+        self,
+        tenant_params: TenantParams,
+        test_client_auth: httpx.AsyncClient,
+        test_data: TestData,
+    ):
+        authorization_code = test_data["authorization_codes"]["default_regular"]
+        client = test_data["clients"]["secondary_tenant"]
         response = await test_client_auth.post(
             f"{tenant_params.path_prefix}/token",
             data={
                 "grant_type": "authorization_code",
-                "code": code,
-                "redirect_uri": redirect_uri,
-                "client_id": client_id,
-                "client_secret": client_secret,
+                "client_id": client.client_id,
+                "client_secret": client.client_secret,
+                "code": authorization_code.code,
+                "redirect_uri": authorization_code.redirect_uri,
             },
         )
 
-        assert response.status_code == status
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
 
         json = response.json()
-        assert json["detail"] == error_code.value
+        assert json["error"] == "invalid_grant"
 
-    async def test_valid(
+    async def test_redirect_uri_not_matching(
         self,
         tenant_params: TenantParams,
         test_client_auth: httpx.AsyncClient,
-        authorization_code: AuthorizationCode,
+        test_data: TestData,
     ):
+        authorization_code = test_data["authorization_codes"]["default_regular"]
+        client = authorization_code.client
         response = await test_client_auth.post(
             f"{tenant_params.path_prefix}/token",
+            data={
+                "grant_type": "authorization_code",
+                "client_id": client.client_id,
+                "client_secret": client.client_secret,
+                "code": authorization_code.code,
+                "redirect_uri": "INVALID_REDIRECT_URI",
+            },
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+        json = response.json()
+        assert json["error"] == "invalid_grant"
+
+    @pytest.mark.parametrize(
+        "authorization_code_alias", ["default_regular", "secondary_regular"]
+    )
+    async def test_valid(
+        self,
+        authorization_code_alias: str,
+        test_client_auth: httpx.AsyncClient,
+        test_data: TestData,
+    ):
+        authorization_code = test_data["authorization_codes"][authorization_code_alias]
+        client = authorization_code.client
+        tenant = client.tenant
+        path_prefix = tenant.slug if not tenant.default else ""
+
+        response = await test_client_auth.post(
+            f"{path_prefix}/token",
             data={
                 "grant_type": "authorization_code",
                 "code": authorization_code.code,
                 "redirect_uri": authorization_code.redirect_uri,
-                "client_id": authorization_code.client.client_id,
-                "client_secret": authorization_code.client.client_secret,
+                "client_id": client.client_id,
+                "client_secret": client.client_secret,
             },
         )
 

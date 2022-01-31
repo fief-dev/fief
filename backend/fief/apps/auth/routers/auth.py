@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta, timezone
-from typing import cast
+from typing import List, Tuple, cast
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security.oauth2 import OAuth2PasswordRequestForm
@@ -20,7 +20,8 @@ from fief.dependencies.auth import (
     get_client_by_authorization_parameters,
     get_client_by_login_request_data,
     get_login_request_data,
-    get_token_request_data,
+    get_user_from_grant_request,
+    validate_grant_request,
 )
 from fief.dependencies.tenant import get_current_tenant
 from fief.dependencies.users import UserManager, get_user_manager
@@ -32,9 +33,9 @@ from fief.schemas.auth import (
     AuthorizeResponse,
     LoginRequest,
     LoginResponse,
-    TokenRequest,
     TokenResponse,
 )
+from fief.schemas.user import UserDB
 
 router = APIRouter()
 
@@ -95,80 +96,38 @@ async def login(
 
 @router.post("/token", name="auth:token")
 async def token(
-    token_request: TokenRequest = Depends(get_token_request_data),
-    user_manager: UserManager = Depends(get_user_manager),
-    authorization_code_manager: AuthorizationCodeManager = Depends(
-        get_authorization_code_manager
-    ),
+    grant_request: Tuple[UUID4, List[str], Client] = Depends(validate_grant_request),
+    user: UserDB = Depends(get_user_from_grant_request),
     refresh_token_manager: RefreshTokenManager = Depends(get_refresh_token_manager),
     account: Account = Depends(get_current_account),
     tenant: Tenant = Depends(get_current_tenant),
 ):
-    authorization_code = await authorization_code_manager.get_by_code(
-        token_request.code
+    _, scope, client = grant_request
+
+    tenant_host = tenant.get_host(account.domain)
+    access_token = generate_access_token(
+        tenant.get_sign_jwk(), tenant_host, client, user, TOKEN_LIFETIME
+    )
+    id_token = generate_id_token(
+        tenant.get_sign_jwk(),
+        tenant_host,
+        client,
+        user,
+        TOKEN_LIFETIME,
+        encryption_key=tenant.get_encrypt_jwk(),
+    )
+    token_response = TokenResponse(
+        access_token=access_token, id_token=id_token, expires_in=TOKEN_LIFETIME
     )
 
-    if authorization_code is None:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=ErrorCode.AUTH_INVALID_AUTHORIZATION_CODE,
+    if "offline_access" in scope:
+        expires_at = datetime.now(timezone.utc) + timedelta(
+            seconds=REFRESH_TOKEN_LIFETIME
         )
-
-    client = authorization_code.client
-
-    if (
-        client.client_id != token_request.client_id
-        or client.client_secret != token_request.client_secret
-    ):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=ErrorCode.AUTH_INVALID_CLIENT_ID_SECRET,
+        refresh_token = RefreshToken(
+            expires_at=expires_at, scope=scope, user_id=user.id, client_id=client.id
         )
+        refresh_token = await refresh_token_manager.create(refresh_token)
+        token_response.refresh_token = refresh_token.token
 
-    if authorization_code.redirect_uri != token_request.redirect_uri:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=ErrorCode.AUTH_REDIRECT_URI_MISMATCH,
-        )
-
-    user_id = cast(UUID4, authorization_code.user_id)
-
-    scope = authorization_code.scope
-
-    try:
-        user = await user_manager.get(user_id)
-    except UserNotExists as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=ErrorCode.AUTH_INVALID_AUTHORIZATION_CODE,
-        ) from e
-    else:
-        tenant_host = tenant.get_host(account.domain)
-        access_token = generate_access_token(
-            tenant.get_sign_jwk(), tenant_host, client, user, TOKEN_LIFETIME
-        )
-        id_token = generate_id_token(
-            tenant.get_sign_jwk(),
-            tenant_host,
-            client,
-            user,
-            TOKEN_LIFETIME,
-            encryption_key=tenant.get_encrypt_jwk(),
-        )
-        token_response = TokenResponse(
-            access_token=access_token, id_token=id_token, expires_in=TOKEN_LIFETIME
-        )
-
-        if "offline_access" in scope:
-            expires_at = datetime.now(timezone.utc) + timedelta(
-                seconds=REFRESH_TOKEN_LIFETIME
-            )
-            refresh_token = RefreshToken(
-                expires_at=expires_at, scope=scope, user_id=user.id, client_id=client.id
-            )
-            refresh_token = await refresh_token_manager.create(refresh_token)
-            token_response.refresh_token = refresh_token.token
-
-        return token_response.dict(exclude_none=True)
-    finally:
-        await authorization_code_manager.delete(authorization_code)
+    return token_response.dict(exclude_none=True)
