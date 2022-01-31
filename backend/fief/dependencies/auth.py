@@ -1,4 +1,4 @@
-from typing import List, Literal, Optional, Tuple, cast
+from typing import AsyncGenerator, List, Literal, Optional, Tuple, cast
 
 from fastapi import Depends, Form, HTTPException, Query, status
 from fastapi_users.manager import UserNotExists
@@ -119,7 +119,7 @@ async def validate_grant_request(
         get_authorization_code_manager
     ),
     refresh_token_manager: RefreshTokenManager = Depends(get_refresh_token_manager),
-) -> Tuple[UUID4, List[str], Client]:
+) -> AsyncGenerator[Tuple[UUID4, List[str], Client], None]:
     if grant_type == "authorization_code":
         if code is None:
             raise TokenRequestException(TokenErrorResponse.get_invalid_request())
@@ -137,11 +137,14 @@ async def validate_grant_request(
         if authorization_code.redirect_uri != redirect_uri:
             raise TokenRequestException(TokenErrorResponse.get_invalid_grant())
 
-        return (
+        yield (
             cast(UUID4, authorization_code.user_id),
             authorization_code.scope,
             client,
         )
+
+        await authorization_code_manager.delete(authorization_code)
+        return
     elif grant_type == "refresh_token":
         if refresh_token_token is None:
             raise TokenRequestException(TokenErrorResponse.get_invalid_request())
@@ -158,7 +161,10 @@ async def validate_grant_request(
         if not set(new_scope).issubset(set(refresh_token.scope)):
             raise TokenRequestException(TokenErrorResponse.get_invalid_scope())
 
-        return (cast(UUID4, refresh_token.user_id), new_scope, client)
+        yield (cast(UUID4, refresh_token.user_id), new_scope, client)
+
+        await refresh_token_manager.delete(refresh_token)
+        return
 
     raise TokenRequestException(TokenErrorResponse.get_unsupported_grant_type())
 

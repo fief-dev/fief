@@ -6,7 +6,9 @@ from fastapi import status
 from fastapi_users.router.common import ErrorCode as FastAPIUsersErrorCode
 from furl import furl
 
+from fief.db import AsyncSession
 from fief.errors import ErrorCode
+from fief.managers import AuthorizationCodeManager, RefreshTokenManager
 from tests.conftest import TenantParams
 from tests.data import TestData
 
@@ -319,6 +321,7 @@ class TestAuthTokenAuthorizationCode:
         authorization_code_alias: str,
         test_client_auth: httpx.AsyncClient,
         test_data: TestData,
+        account_session: AsyncSession,
     ):
         authorization_code = test_data["authorization_codes"][authorization_code_alias]
         client = authorization_code.client
@@ -343,6 +346,12 @@ class TestAuthTokenAuthorizationCode:
         assert isinstance(json["id_token"], str)
         assert json["token_type"] == "bearer"
         assert json["expires_in"] == 3600
+
+        authorization_code_manager = AuthorizationCodeManager(account_session)
+        used_authorization_code = await authorization_code_manager.get_by_code(
+            authorization_code.code
+        )
+        assert used_authorization_code is None
 
         if "offline_access" in authorization_code.scope:
             assert json["refresh_token"] is not None
@@ -488,7 +497,10 @@ class TestAuthTokenRefreshToken:
         assert json["error"] == "invalid_scope"
 
     async def test_valid(
-        self, test_client_auth: httpx.AsyncClient, test_data: TestData
+        self,
+        test_client_auth: httpx.AsyncClient,
+        test_data: TestData,
+        account_session: AsyncSession,
     ):
         refresh_token = test_data["refresh_tokens"]["default_regular"]
         client = refresh_token.client
@@ -515,5 +527,12 @@ class TestAuthTokenRefreshToken:
 
         if "offline_access" in refresh_token.scope:
             assert json["refresh_token"] is not None
+
+            assert json["refresh_token"] != refresh_token.token
+            refresh_token_manager = RefreshTokenManager(account_session)
+            old_refresh_token = await refresh_token_manager.get_by_token(
+                refresh_token.token
+            )
+            assert old_refresh_token is None
         else:
             assert "refresh_token" not in json
