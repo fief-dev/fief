@@ -93,6 +93,7 @@ async def login(
     authorization_code_manager: AuthorizationCodeManager = Depends(
         get_authorization_code_manager
     ),
+    login_session_manager: LoginSessionManager = Depends(get_login_session_manager),
 ):
     user = await user_manager.authenticate(credentials)
 
@@ -121,9 +122,16 @@ async def login(
     if login_session.state is not None:
         parsed_redirect_uri.add(query_params={"state": login_session.state})
 
-    return RedirectResponse(
+    response = RedirectResponse(
         url=parsed_redirect_uri.url, status_code=status.HTTP_302_FOUND
     )
+
+    response.delete_cookie(
+        settings.login_session_cookie_name, domain=settings.login_session_cookie_domain
+    )
+    await login_session_manager.delete(login_session)
+
+    return response
 
 
 @router.post("/token", name="auth:token")

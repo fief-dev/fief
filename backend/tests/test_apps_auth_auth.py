@@ -179,7 +179,10 @@ class TestAuthLogin:
         assert headers["X-Fief-Error"] == "bad_credentials"
 
     async def test_valid(
-        self, test_client_auth: httpx.AsyncClient, test_data: TestData
+        self,
+        test_client_auth: httpx.AsyncClient,
+        test_data: TestData,
+        account_session: AsyncSession,
     ):
         login_session = test_data["login_sessions"]["default"]
         client = login_session.client
@@ -206,6 +209,16 @@ class TestAuthLogin:
         parsed_location = furl(redirect_uri)
         assert "code" in parsed_location.query.params
         assert parsed_location.query.params["state"] == login_session.state
+
+        set_cookie_header = response.headers["Set-Cookie"]
+        assert set_cookie_header.startswith(f"{settings.login_session_cookie_name}=\"\"")
+        assert "Max-Age=0" in set_cookie_header
+
+        login_session_manager = LoginSessionManager(account_session)
+        used_login_session = await login_session_manager.get_by_token(
+            login_session.token
+        )
+        assert used_login_session is None
 
 
 @pytest.mark.asyncio
