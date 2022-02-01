@@ -211,7 +211,7 @@ class TestAuthLogin:
         assert parsed_location.query.params["state"] == login_session.state
 
         set_cookie_header = response.headers["Set-Cookie"]
-        assert set_cookie_header.startswith(f"{settings.login_session_cookie_name}=\"\"")
+        assert set_cookie_header.startswith(f'{settings.login_session_cookie_name}=""')
         assert "Max-Age=0" in set_cookie_header
 
         login_session_manager = LoginSessionManager(account_session)

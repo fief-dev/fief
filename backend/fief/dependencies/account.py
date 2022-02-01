@@ -10,7 +10,7 @@ from fief.models import Account
 
 
 async def get_current_account(
-    host: str = Header(...),
+    host: str = Header(..., include_in_schema=False),
     manager: AccountManager = Depends(get_account_manager),
 ) -> Account:
     account = await manager.get_by_domain(host)

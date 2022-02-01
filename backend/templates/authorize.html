@@ -5,7 +5,7 @@
 {% block title %}{{ _('Welcome back!') }}{% endblock %}
 
 {% block auth_form %}
-  <form method="POST" action="/login">
+  <form method="POST" action="{{ url_for('auth:login') }}">
     <div class="space-y-4">
       <div>
         <label class="block text-sm font-medium mb-1" for="input-email">{{ _('Email address') }}</label>

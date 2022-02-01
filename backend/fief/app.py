@@ -5,7 +5,7 @@ from fief.apps import admin_app, auth_app
 from fief.services.account_creation import create_global_fief_account
 from fief.settings import settings
 
-app = FastAPI()
+app = FastAPI(openapi_url=None)
 
 app.add_middleware(
     CORSMiddleware,

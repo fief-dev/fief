@@ -1,6 +1,7 @@
-from typing import AsyncGenerator, Optional, Type, cast
+from typing import AsyncGenerator, Dict, Optional, Type, cast
 
 from fastapi import Depends, Request
+from fastapi.security import OAuth2AuthorizationCodeBearer
 from fastapi_users import BaseUserManager
 from fastapi_users.authentication import (
     AuthenticationBackend,
@@ -119,6 +120,25 @@ async def get_user_manager(
     yield UserManager(user_db, tenant)
 
 
+class AuthorizationCodeBearerTransport(BearerTransport):
+    scheme: OAuth2AuthorizationCodeBearer  # type: ignore
+
+    def __init__(
+        self,
+        authorizationUrl: str,
+        tokenUrl: str,
+        refreshUrl: str,
+        scopes: Dict[str, str],
+    ):
+        self.scheme = OAuth2AuthorizationCodeBearer(
+            authorizationUrl, tokenUrl, refreshUrl, scopes=scopes
+        )
+
+
 authentication_backend = AuthenticationBackend[UserCreate, UserDB](
-    "jwt_access_token", BearerTransport("/auth/login"), get_jwt_access_token_strategy
+    "jwt_access_token",
+    AuthorizationCodeBearerTransport(
+        "/authorize", "/token", "/token", {"openid": "openid"}
+    ),
+    get_jwt_access_token_strategy,
 )
