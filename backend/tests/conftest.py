@@ -12,10 +12,10 @@ import httpx
 import pytest
 from fastapi import FastAPI
 from fief_client import Fief
+from sqlalchemy_utils import create_database, drop_database
 
 from fief.apps import admin_app, auth_app
 from fief.crypto.access_token import generate_access_token
-from fief.crypto.id_token import generate_id_token
 from fief.db import (
     AsyncConnection,
     AsyncEngine,
@@ -58,9 +58,32 @@ def event_loop():
 
 
 @pytest.fixture(scope="session")
-async def global_engine() -> AsyncGenerator[AsyncEngine, None]:
-    engine = create_engine(get_database_url(TEST_DATABASE_URL))
-    yield engine
+def get_test_database():
+    base_url = os.getenv(
+        "TEST_DATABASE_URL", "postgresql://fief:fiefpassword@localhost:5432"
+    )
+
+    @contextlib.asynccontextmanager
+    async def _get_test_database(
+        *, name: str = "fief-test"
+    ) -> AsyncGenerator[str, None]:
+        url = f"{base_url}/{name}"
+        create_database(url)
+        yield url
+        drop_database(url)
+
+    return _get_test_database
+
+
+@pytest.fixture(scope="session")
+async def main_test_database(get_test_database):
+    async with get_test_database() as url:
+        yield url
+
+
+@pytest.fixture(scope="session")
+async def global_engine(main_test_database) -> AsyncGenerator[AsyncEngine, None]:
+    yield create_engine(get_database_url(main_test_database))
 
 
 @pytest.fixture(scope="session")
@@ -88,17 +111,19 @@ async def global_session(
 
 @pytest.fixture(scope="session", autouse=True)
 @pytest.mark.asyncio
-async def account(global_session, create_global_db) -> AsyncGenerator[Account, None]:
+async def account(
+    main_test_database, global_session, create_global_db
+) -> AsyncGenerator[Account, None]:
     account = Account(
         name="Duché de Bretagne",
         domain="bretagne.fief.dev",
-        database_url=get_database_url(TEST_DATABASE_URL, False),
+        database_url=get_database_url(main_test_database, asyncio=False),
     )
     global_session.add(account)
     await global_session.commit()
 
     account_db = AccountDatabase()
-    account_db.migrate(account)
+    account_db.migrate(account.get_database_url(False), str(account.id))
 
     yield account
 

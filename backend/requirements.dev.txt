@@ -12,5 +12,6 @@ pytest
 pytest-cov
 pytest-asyncio
 pytest-mock
+sqlalchemy-utils
 tryceratops
 types-python-slugify

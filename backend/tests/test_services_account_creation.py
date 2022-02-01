@@ -1,6 +1,5 @@
-import os
 import re
-from typing import Generator
+from typing import AsyncGenerator
 
 import pytest
 from sqlalchemy import select
@@ -13,25 +12,22 @@ from fief.services.account_creation import AccountCreation
 from fief.services.account_db import AccountDatabase
 
 
-@pytest.fixture
-def account_create() -> AccountCreate:
-    return AccountCreate(
-        name="Burgundy",
-        database_url="sqlite:///account.db",
-    )
+@pytest.fixture(scope="module")
+async def test_database_url(get_test_database) -> AsyncGenerator[str, None]:
+    async with get_test_database(name="fief-test-account-creation") as url:
+        yield url
 
 
 @pytest.fixture
-def account_creation(
-    global_session: AsyncSession,
-) -> Generator[AccountCreation, None, None]:
+def account_create(test_database_url: str) -> AccountCreate:
+    return AccountCreate(name="Burgundy", database_url=test_database_url)
+
+
+@pytest.fixture
+def account_creation(global_session: AsyncSession) -> AccountCreation:
     account_manager = AccountManager(global_session)
     account_db = AccountDatabase()
-    yield AccountCreation(account_manager, account_db)
-    try:
-        os.remove("account.db")
-    except FileNotFoundError:
-        pass
+    return AccountCreation(account_manager, account_db)
 
 
 @pytest.mark.asyncio

@@ -36,7 +36,7 @@ class AccountCreation:
         account = await self.account_manager.create(account)
 
         # Apply the database schema
-        self.account_db.migrate(account)
+        self.account_db.migrate(account.get_database_url(False), str(account.id))
 
         # Create a default tenant and client
         async with get_account_session(account) as session:

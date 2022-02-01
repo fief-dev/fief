@@ -44,10 +44,9 @@ def get_account_engine(database_url: str) -> AsyncEngine:
 async def get_account_session(account: Account) -> AsyncGenerator[AsyncSession, None]:
     engine = get_account_engine(account.get_database_url())
     async with engine.connect() as connection:
-        if engine.dialect.name != "sqlite":
-            connection = await connection.execution_options(
-                schema_translate_map={None: str(account.id)}
-            )
+        connection = await connection.execution_options(
+            schema_translate_map={None: str(account.id)}
+        )
         async with AsyncSession(bind=connection, expire_on_commit=False) as session:
             yield session
 

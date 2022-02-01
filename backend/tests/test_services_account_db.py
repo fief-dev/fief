@@ -1,5 +1,4 @@
-import os
-from typing import Generator
+from typing import AsyncGenerator
 
 import pytest
 from sqlalchemy import create_engine, inspect
@@ -9,38 +8,30 @@ from fief.services.account_db import AccountDatabase, AccountDatabaseConnectionE
 
 
 @pytest.fixture
-def local_account() -> Account:
-    return Account(
-        name="Duché de Bretagne",
-        domain="bretagne.fief.dev",
-        database_url="sqlite:///account.db",
-    )
+async def test_database_url(get_test_database) -> AsyncGenerator[str, None]:
+    async with get_test_database(name="fief-test-account-db") as url:
+        yield url
 
 
 @pytest.fixture
-def account_db() -> Generator[AccountDatabase, None, None]:
-    yield AccountDatabase()
-    try:
-        os.remove("account.db")
-    except FileNotFoundError:
-        pass
+def account_db() -> AccountDatabase:
+    return AccountDatabase()
 
 
 class TestMigrate:
-    def test_connection_error(
-        self, account_db: AccountDatabase, local_account: Account
-    ):
-        local_account.database_url = "postgresql://foo:bar@localhost:1234/foobar"
+    def test_connection_error(self, account_db: AccountDatabase):
 
         with pytest.raises(AccountDatabaseConnectionError):
-            account_db.migrate(local_account)
+            account_db.migrate(
+                "postgresql://foo:bar@localhost:1234/foobar", "account-schema"
+            )
 
-    def test_valid_db(self, account_db: AccountDatabase, local_account: Account):
-        account_db.migrate(local_account)
+    def test_valid_db(self, account_db: AccountDatabase, test_database_url: str):
+        account_db.migrate(test_database_url, "account-schema")
 
-        engine = create_engine(local_account.get_database_url(asyncio=False))
+        engine = create_engine(test_database_url)
         inspector = inspect(engine)
-        table_names = inspector.get_table_names()
+        table_names = inspector.get_table_names("account-schema")
 
         assert "fief_alembic_version" in table_names
         assert "fief_tenants" in table_names
