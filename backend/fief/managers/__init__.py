@@ -5,6 +5,7 @@ from fief.managers.base import get_manager
 from fief.managers.client import ClientManager
 from fief.managers.login_session import LoginSessionManager
 from fief.managers.refresh_token import RefreshTokenManager
+from fief.managers.session_token import SessionTokenManager
 from fief.managers.tenant import TenantManager
 
 __all__ = [
@@ -14,6 +15,7 @@ __all__ = [
     "ClientManager",
     "LoginSessionManager",
     "RefreshTokenManager",
+    "SessionTokenManager",
     "TenantManager",
     "get_manager",
 ]

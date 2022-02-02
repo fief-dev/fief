@@ -6,6 +6,7 @@ from fief.models.client import Client
 from fief.models.generics import M_UUID, M
 from fief.models.login_session import LoginSession
 from fief.models.refresh_token import RefreshToken
+from fief.models.session_token import SessionToken
 from fief.models.tenant import Tenant
 from fief.models.user import User
 
@@ -18,6 +19,7 @@ __all__ = [
     "GlobalBase",
     "LoginSession",
     "RefreshToken",
+    "SessionToken",
     "M",
     "M_UUID",
     "Tenant",

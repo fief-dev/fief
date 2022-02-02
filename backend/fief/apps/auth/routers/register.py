@@ -54,6 +54,8 @@ async def post_register(
             tenant=tenant,
         ) from e
 
-    response = await authorization_code_flow.get_redirect(login_session, created_user)
+    response = await authorization_code_flow.get_success_redirect(
+        login_session, created_user
+    )
 
     return response

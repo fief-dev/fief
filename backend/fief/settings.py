@@ -26,13 +26,18 @@ class Settings(BaseSettings):
     login_session_cookie_domain: str = ""
     login_session_cookie_secure: bool = True
 
+    session_cookie_name: str = "fief_session"
+    session_cookie_domain: str = ""
+    session_cookie_secure: bool = True
+    session_lifetime_seconds: int = 86400 * 30
+
     fief_domain: str
     fief_base_url: str
     fief_client_id: str
     fief_client_secret: str
     fief_encryption_key: Optional[str] = None
 
-    fief_admin_session_cookie_name: str = "fief_session"
+    fief_admin_session_cookie_name: str = "fief_admin_session"
     fief_admin_session_cookie_domain: str = ""
     fief_admin_session_cookie_secure: bool = True
 

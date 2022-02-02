@@ -111,7 +111,7 @@ async def post_login(
     #         detail=ErrorCode.LOGIN_USER_NOT_VERIFIED,
     #     )
 
-    response = await authorization_code_flow.get_redirect(login_session, user)
+    response = await authorization_code_flow.get_success_redirect(login_session, user)
 
     return response
 

@@ -10,6 +10,7 @@ from fief.managers import (
     AuthorizationCodeManager,
     LoginSessionManager,
     RefreshTokenManager,
+    SessionTokenManager,
 )
 from fief.settings import settings
 from tests.conftest import TenantParams
@@ -285,6 +286,11 @@ class TestAuthPostLogin:
             login_session.token
         )
         assert used_login_session is None
+
+        session_cookie = response.cookies[settings.session_cookie_name]
+        session_token_manager = SessionTokenManager(account_session)
+        session_token = await session_token_manager.get_by_token(session_cookie)
+        assert session_token is not None
 
 
 @pytest.mark.asyncio

@@ -6,7 +6,7 @@ from fastapi import status
 from furl import furl
 
 from fief.db import AsyncSession
-from fief.managers import LoginSessionManager
+from fief.managers import LoginSessionManager, SessionTokenManager
 from fief.settings import settings
 from tests.conftest import TenantParams
 from tests.data import TestData
@@ -158,6 +158,11 @@ class TestPostRegister:
             login_session.token
         )
         assert used_login_session is None
+
+        session_cookie = response.cookies[settings.session_cookie_name]
+        session_token_manager = SessionTokenManager(account_session)
+        session_token = await session_token_manager.get_by_token(session_cookie)
+        assert session_token is not None
 
     async def test_no_email_conflict_on_another_tenant(
         self, test_client_auth: httpx.AsyncClient, test_data: TestData
