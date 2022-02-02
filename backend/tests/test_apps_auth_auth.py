@@ -160,7 +160,7 @@ class TestAuthAuthorize:
 @pytest.mark.asyncio
 @pytest.mark.account_host
 class TestAuthGetLogin:
-    @pytest.mark.parametrize("cookie", [None, "INVALID_SESSION_TOKEN"])
+    @pytest.mark.parametrize("cookie", [None, "INVALID_LOGIN_SESSION"])
     async def test_invalid_login_session(
         self,
         cookie: Optional[str],
@@ -199,7 +199,7 @@ class TestAuthGetLogin:
 @pytest.mark.asyncio
 @pytest.mark.account_host
 class TestAuthPostLogin:
-    @pytest.mark.parametrize("cookie", [None, "INVALID_SESSION_TOKEN"])
+    @pytest.mark.parametrize("cookie", [None, "INVALID_LOGIN_SESSION"])
     async def test_invalid_login_session(
         self,
         cookie: Optional[str],

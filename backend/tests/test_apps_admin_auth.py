@@ -5,8 +5,7 @@ import pytest
 from fastapi import status
 
 from fief.db import AsyncSession
-from fief.managers.session_token import SessionTokenManager
-from fief.models import session_token
+from fief.managers import AdminSessionTokenManager
 from fief.settings import settings
 from tests.data import TestData
 
@@ -59,13 +58,13 @@ class TestAuthCallback:
         session_cookie = response.cookies.get(settings.fief_admin_session_cookie_name)
         assert session_cookie is not None
 
-        session_token_manager = SessionTokenManager(global_session)
-        session_token = await session_token_manager.get_by_token(session_cookie)
+        admin_session_token_manager = AdminSessionTokenManager(global_session)
+        session_token = await admin_session_token_manager.get_by_token(session_cookie)
         assert session_token is not None
         assert session_token.userinfo == {"email": "anne@bretagne.duchy"}
 
 
-@pytest.mark.session_token(user="regular")
+@pytest.mark.admin_session_token(user="regular")
 async def test_auth_user(test_client_admin: httpx.AsyncClient, test_data: TestData):
     response = await test_client_admin.get("/auth/user")
 

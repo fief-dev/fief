@@ -5,9 +5,9 @@ from fastapi.responses import RedirectResponse
 from fief_client import FiefAsync
 
 from fief.dependencies.fief import get_fief, get_userinfo
-from fief.dependencies.global_managers import get_session_token_manager
-from fief.managers import SessionTokenManager
-from fief.models import SessionToken
+from fief.dependencies.global_managers import get_admin_session_token_manager
+from fief.managers import AdminSessionTokenManager
+from fief.models import AdminSessionToken
 from fief.settings import settings
 
 router = APIRouter()
@@ -26,12 +26,12 @@ async def callback(
     request: Request,
     code: str = Query(...),
     fief: FiefAsync = Depends(get_fief),
-    manager: SessionTokenManager = Depends(get_session_token_manager),
+    manager: AdminSessionTokenManager = Depends(get_admin_session_token_manager),
 ):
     tokens, userinfo = await fief.auth_callback(
         code, request.url_for("admin.auth:callback")
     )
-    session_token = SessionToken(
+    session_token = AdminSessionToken(
         raw_tokens=json.dumps(tokens), raw_userinfo=json.dumps(userinfo)
     )
     session_token = await manager.create(session_token)

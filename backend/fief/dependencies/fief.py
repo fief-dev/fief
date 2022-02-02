@@ -4,9 +4,9 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import APIKeyCookie
 from fief_client import FiefAsync
 
-from fief.dependencies.global_managers import get_session_token_manager
-from fief.managers import SessionTokenManager
-from fief.models import SessionToken
+from fief.dependencies.global_managers import get_admin_session_token_manager
+from fief.managers import AdminSessionTokenManager
+from fief.models import AdminSessionToken
 from fief.settings import settings
 
 fief = FiefAsync(
@@ -32,8 +32,8 @@ cookie_scheme = APIKeyCookie(name=settings.fief_admin_session_cookie_name)
 
 async def get_cookie_session_token(
     token: str = Depends(cookie_scheme),
-    manager: SessionTokenManager = Depends(get_session_token_manager),
-) -> SessionToken:
+    manager: AdminSessionTokenManager = Depends(get_admin_session_token_manager),
+) -> AdminSessionToken:
     session_token = await manager.get_by_token(token)
 
     if session_token is None:
@@ -43,6 +43,6 @@ async def get_cookie_session_token(
 
 
 async def get_userinfo(
-    session_token: SessionToken = Depends(get_cookie_session_token),
+    session_token: AdminSessionToken = Depends(get_cookie_session_token),
 ) -> Dict[str, Any]:
     return session_token.userinfo

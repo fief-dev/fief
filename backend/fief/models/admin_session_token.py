@@ -10,8 +10,8 @@ from fief.models.base import GlobalBase
 from fief.models.generics import CreatedUpdatedAt, UUIDModel
 
 
-class SessionToken(UUIDModel, CreatedUpdatedAt, GlobalBase):
-    __tablename__ = "session_tokens"
+class AdminSessionToken(UUIDModel, CreatedUpdatedAt, GlobalBase):
+    __tablename__ = "admin_session_tokens"
 
     token: str = Column(
         String(length=255), default=secrets.token_urlsafe, unique=True, nullable=False
@@ -20,7 +20,7 @@ class SessionToken(UUIDModel, CreatedUpdatedAt, GlobalBase):
     raw_userinfo: str = Column(Text, nullable=False)
 
     def __repr__(self) -> str:
-        return f"SessionToken(id={self.id})"
+        return f"AdminSessionToken(id={self.id})"
 
     @functools.cached_property
     def tokens(self) -> FiefTokenResponse:

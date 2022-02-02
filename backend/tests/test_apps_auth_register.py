@@ -15,7 +15,7 @@ from tests.data import TestData
 @pytest.mark.asyncio
 @pytest.mark.account_host
 class TestGetRegister:
-    @pytest.mark.parametrize("cookie", [None, "INVALID_SESSION_TOKEN"])
+    @pytest.mark.parametrize("cookie", [None, "INVALID_LOGIN_SESSION"])
     async def test_invalid_login_session(
         self,
         cookie: Optional[str],
@@ -56,7 +56,7 @@ class TestGetRegister:
 @pytest.mark.asyncio
 @pytest.mark.account_host
 class TestPostRegister:
-    @pytest.mark.parametrize("cookie", [None, "INVALID_SESSION_TOKEN"])
+    @pytest.mark.parametrize("cookie", [None, "INVALID_LOGIN_SESSION"])
     async def test_invalid_login_session(
         self,
         cookie: Optional[str],
