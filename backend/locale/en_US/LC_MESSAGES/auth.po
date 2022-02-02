@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  Fief\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2022-01-31 19:18+0100\n"
+"POT-Creation-Date: 2022-02-02 10:16+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -14,63 +14,99 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.9.1\n"
 
-#: fief/apps/auth/routers/auth.py:101
+#: fief/errors.py:18
+msgid "This field is required."
+msgstr ""
+
+#: fief/errors.py:19
+msgid "This email address is invalid."
+msgstr ""
+
+#: fief/apps/auth/routers/auth.py:105
 msgid "Invalid email or password"
 msgstr ""
 
-#: fief/dependencies/auth.py:33
+#: fief/apps/auth/routers/register.py:45
+msgid "A user with the same email address already exists."
+msgstr ""
+
+#: fief/dependencies/auth.py:34
 msgid "response_type is missing"
 msgstr ""
 
-#: fief/dependencies/auth.py:38
+#: fief/dependencies/auth.py:39
 msgid "response_type should be \"code\""
 msgstr ""
 
-#: fief/dependencies/auth.py:50
+#: fief/dependencies/auth.py:51
 msgid "client_id is missing"
 msgstr ""
 
-#: fief/dependencies/auth.py:56
+#: fief/dependencies/auth.py:57
 msgid "Unknown client"
 msgstr ""
 
-#: fief/dependencies/auth.py:66
+#: fief/dependencies/auth.py:67
 msgid "redirect_uri is missing"
 msgstr ""
 
-#: fief/dependencies/auth.py:77
+#: fief/dependencies/auth.py:78
 msgid "scope is missing"
 msgstr ""
 
-#: fief/dependencies/auth.py:84
+#: fief/dependencies/auth.py:85
 msgid "scope should contain \"openid\""
 msgstr ""
 
-#: fief/dependencies/auth.py:94
+#: fief/dependencies/auth.py:95
+msgid "screen should either be \"login\" or \"register\""
+msgstr ""
+
+#: fief/dependencies/auth.py:107
 msgid "Invalid login session"
+msgstr ""
+
+#: fief/dependencies/users.py:43
+msgid "The password should be at least 8 characters."
 msgstr ""
 
 #: templates/auth_layout.html:34
 msgid "Powered by"
 msgstr "Powered by"
 
-#: templates/authorize.html:3
+#: templates/authorize.html:3 templates/authorize.html:5
+msgid "Authorize"
+msgstr ""
+
+#: templates/login.html:3
 msgid "Login"
 msgstr "Login"
 
-#: templates/authorize.html:5
+#: templates/login.html:5
 msgid "Welcome back!"
 msgstr "Welcome back!"
 
-#: templates/authorize.html:11
+#: templates/login.html:11 templates/register.html:11
 msgid "Email address"
 msgstr "Email address"
 
-#: templates/authorize.html:18
+#: templates/login.html:18 templates/register.html:18
 msgid "Password"
 msgstr "Password"
 
-#: templates/authorize.html:29
+#: templates/login.html:29
 msgid "Sign in"
 msgstr "Sign in"
+
+#: templates/register.html:3 templates/register.html:5
+msgid "Register"
+msgstr ""
+
+#: templates/register.html:27
+msgid "I already have an account"
+msgstr ""
+
+#: templates/register.html:29
+msgid "Sign up"
+msgstr ""
 
