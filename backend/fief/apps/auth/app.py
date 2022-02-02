@@ -9,11 +9,13 @@ from fief.apps.auth.routers.well_known import router as well_known_router
 from fief.apps.auth.templates import templates
 from fief.errors import (
     AuthorizeException,
+    AuthorizeRedirectException,
     FormValidationError,
     LoginException,
     RegisterException,
     TokenRequestException,
 )
+from fief.services.authorization_code_flow import AuthorizationCodeFlow
 
 
 def include_routers(router: APIRouter) -> APIRouter:
@@ -77,6 +79,19 @@ async def authorize_exception_handler(request: Request, exc: AuthorizeException)
         },
         status_code=status.HTTP_400_BAD_REQUEST,
         headers={"X-Fief-Error": exc.error.error},
+    )
+
+
+@app.exception_handler(AuthorizeRedirectException)
+async def authorize_redirect_exception_handler(
+    request: Request, exc: AuthorizeRedirectException
+):
+    return AuthorizationCodeFlow.get_error_redirect(
+        exc.redirect_uri,
+        exc.error.error,
+        error_description=exc.error.error_description,
+        error_uri=exc.error.error_uri,
+        state=exc.state,
     )
 
 

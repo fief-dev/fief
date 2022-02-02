@@ -55,7 +55,12 @@ async def post_register(
         ) from e
 
     response = await authorization_code_flow.get_success_redirect(
-        login_session, created_user
+        login_session.redirect_uri,
+        login_session.scope,
+        login_session.state,
+        login_session.client,
+        created_user.id,
+        login_session=login_session,
     )
 
     return response

@@ -6,7 +6,12 @@ from pydantic import ValidationError
 from starlette.requests import FormData
 
 from fief.models import Tenant
-from fief.schemas.auth import AuthorizeError, LoginError, TokenError
+from fief.schemas.auth import (
+    AuthorizeError,
+    AuthorizeRedirectError,
+    LoginError,
+    TokenError,
+)
 from fief.schemas.register import RegisterError
 
 
@@ -51,6 +56,20 @@ class RegisterException(Exception):
 class AuthorizeException(Exception):
     def __init__(self, error: AuthorizeError, tenant: Optional[Tenant] = None) -> None:
         self.error = error
+        self.tenant = tenant
+
+
+class AuthorizeRedirectException(Exception):
+    def __init__(
+        self,
+        error: AuthorizeRedirectError,
+        redirect_uri: str,
+        state: Optional[str],
+        tenant: Optional[Tenant] = None,
+    ) -> None:
+        self.error = error
+        self.redirect_uri = redirect_uri
+        self.state = state
         self.tenant = tenant
 
 

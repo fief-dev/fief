@@ -11,35 +11,30 @@ from fief.dependencies.account_managers import (
     get_login_session_manager,
     get_refresh_token_manager,
 )
+from fief.dependencies.session_token import get_session_token
 from fief.dependencies.tenant import get_current_tenant
 from fief.dependencies.users import UserManager, get_user_manager
-from fief.errors import AuthorizeException, LoginException, TokenRequestException
+from fief.errors import (
+    AuthorizeException,
+    AuthorizeRedirectException,
+    LoginException,
+    TokenRequestException,
+)
 from fief.managers import (
     AuthorizationCodeManager,
     ClientManager,
     LoginSessionManager,
     RefreshTokenManager,
 )
-from fief.models import Client, LoginSession, Tenant
-from fief.schemas.auth import AuthorizeError, LoginError, TokenError
+from fief.models import Client, LoginSession, SessionToken, Tenant
+from fief.schemas.auth import (
+    AuthorizeError,
+    AuthorizeRedirectError,
+    LoginError,
+    TokenError,
+)
 from fief.schemas.user import UserDB
 from fief.settings import settings
-
-
-async def get_authorize_response_type(
-    response_type: Optional[str] = Query(None),
-) -> str:
-    if response_type is None:
-        raise AuthorizeException(
-            AuthorizeError.get_invalid_request(_("response_type is missing"))
-        )
-
-    if response_type != "code":
-        raise AuthorizeException(
-            AuthorizeError.get_invalid_request(_('response_type should be "code"'))
-        )
-
-    return response_type
 
 
 async def get_authorize_client(
@@ -48,7 +43,7 @@ async def get_authorize_client(
 ) -> Client:
     if client_id is None:
         raise AuthorizeException(
-            AuthorizeError.get_invalid_request(_("client_id is missing"))
+            AuthorizeError.get_invalid_client(_("client_id is missing"))
         )
 
     client = await manager.get_by_client_id(client_id)
@@ -64,36 +59,103 @@ async def get_authorize_redirect_uri(
 ) -> str:
     if redirect_uri is None:
         raise AuthorizeException(
-            AuthorizeError.get_invalid_request(_("redirect_uri is missing"))
+            AuthorizeError.get_invalid_redirect_uri(_("redirect_uri is missing"))
         )
 
     return redirect_uri
 
 
+async def get_authorize_state(state: Optional[str] = Query(None)) -> Optional[str]:
+    return state
+
+
+async def get_authorize_response_type(
+    response_type: Optional[str] = Query(None),
+    redirect_uri: str = Depends(get_authorize_redirect_uri),
+    state: Optional[str] = Depends(get_authorize_state),
+) -> str:
+    if response_type is None:
+        raise AuthorizeRedirectException(
+            AuthorizeRedirectError.get_invalid_request(_("response_type is missing")),
+            redirect_uri,
+            state,
+        )
+
+    if response_type != "code":
+        raise AuthorizeRedirectException(
+            AuthorizeRedirectError.get_invalid_request(
+                _('response_type should be "code"')
+            ),
+            redirect_uri,
+            state,
+        )
+
+    return response_type
+
+
 async def get_authorize_scope(
     scope: Optional[str] = Query(None),
+    redirect_uri: str = Depends(get_authorize_redirect_uri),
+    state: Optional[str] = Depends(get_authorize_state),
 ) -> List[str]:
     if scope is None:
-        raise AuthorizeException(
-            AuthorizeError.get_invalid_request(_("scope is missing"))
+        raise AuthorizeRedirectException(
+            AuthorizeRedirectError.get_invalid_request(_("scope is missing")),
+            redirect_uri,
+            state,
         )
 
     scope_list = scope.split()
 
     if "openid" not in scope_list:
-        raise AuthorizeException(
-            AuthorizeError.get_invalid_scope(_('scope should contain "openid"'))
+        raise AuthorizeRedirectException(
+            AuthorizeRedirectError.get_invalid_scope(
+                _('scope should contain "openid"')
+            ),
+            redirect_uri,
+            state,
         )
 
     return scope_list
 
 
-async def get_authorize_screen(screen: str = Query("login")) -> str:
+async def get_authorize_prompt(
+    prompt: Optional[str] = Query(None),
+    session_token: Optional[SessionToken] = Depends(get_session_token),
+    redirect_uri: str = Depends(get_authorize_redirect_uri),
+    state: Optional[str] = Depends(get_authorize_state),
+) -> Optional[str]:
+    if prompt is not None and prompt not in ["none", "login", "consent"]:
+        raise AuthorizeRedirectException(
+            AuthorizeRedirectError.get_invalid_request(
+                _('prompt should either be "none", "login" or "register"')
+            ),
+            redirect_uri,
+            state,
+        )
+
+    if prompt == "none" and session_token is None:
+        raise AuthorizeRedirectException(
+            AuthorizeRedirectError.get_login_required(_("User is not logged in")),
+            redirect_uri,
+            state,
+        )
+
+    return prompt
+
+
+async def get_authorize_screen(
+    screen: str = Query("login"),
+    redirect_uri: str = Depends(get_authorize_redirect_uri),
+    state: Optional[str] = Depends(get_authorize_state),
+) -> str:
     if screen not in ["login", "register"]:
-        raise AuthorizeException(
-            AuthorizeError.get_invalid_request(
+        raise AuthorizeRedirectException(
+            AuthorizeRedirectError.get_invalid_request(
                 _('screen should either be "login" or "register"')
-            )
+            ),
+            redirect_uri,
+            state,
         )
 
     return screen

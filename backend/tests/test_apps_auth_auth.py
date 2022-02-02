@@ -25,37 +25,18 @@ class TestAuthAuthorize:
         [
             pytest.param(
                 {
-                    "client_id": "DEFAULT_TENANT_CLIENT_ID",
-                    "redirect_uri": "REDIRECT_URI",
-                    "scope": "openid",
-                },
-                "invalid_request",
-                id="Missing response_type",
-            ),
-            pytest.param(
-                {
-                    "response_type": "magic_wand",
-                    "client_id": "DEFAULT_TENANT_CLIENT_ID",
-                    "redirect_uri": "REDIRECT_URI",
-                    "scope": "openid",
-                },
-                "invalid_request",
-                id="Invalid response_type",
-            ),
-            pytest.param(
-                {
                     "response_type": "code",
-                    "redirect_uri": "REDIRECT_URI",
+                    "redirect_uri": "https://nantes.city/callback",
                     "scope": "openid",
                 },
-                "invalid_request",
+                "invalid_client",
                 id="Missing client_id",
             ),
             pytest.param(
                 {
                     "response_type": "code",
                     "client_id": "INVALID_CLIENT_ID",
-                    "redirect_uri": "REDIRECT_URI",
+                    "redirect_uri": "https://nantes.city/callback",
                     "scope": "openid",
                 },
                 "invalid_client",
@@ -67,42 +48,12 @@ class TestAuthAuthorize:
                     "client_id": "DEFAULT_TENANT_CLIENT_ID",
                     "scope": "openid",
                 },
-                "invalid_request",
+                "invalid_redirect_uri",
                 id="Missing redirect_uri",
-            ),
-            pytest.param(
-                {
-                    "response_type": "code",
-                    "client_id": "DEFAULT_TENANT_CLIENT_ID",
-                    "redirect_uri": "REDIRECT_URI",
-                },
-                "invalid_request",
-                id="Missing scope",
-            ),
-            pytest.param(
-                {
-                    "response_type": "code",
-                    "client_id": "DEFAULT_TENANT_CLIENT_ID",
-                    "redirect_uri": "REDIRECT_URI",
-                    "scope": "user",
-                },
-                "invalid_scope",
-                id="Missing openid scope",
-            ),
-            pytest.param(
-                {
-                    "response_type": "code",
-                    "client_id": "DEFAULT_TENANT_CLIENT_ID",
-                    "redirect_uri": "REDIRECT_URI",
-                    "scope": "openid",
-                    "screen": "INVALID_SCREEN",
-                },
-                "invalid_request",
-                id="Invalid screen",
             ),
         ],
     )
-    async def test_invalid_request(
+    async def test_authorize_error(
         self,
         tenant_params: TenantParams,
         test_client_auth: httpx.AsyncClient,
@@ -117,6 +68,101 @@ class TestAuthAuthorize:
 
         headers = response.headers
         assert headers["X-Fief-Error"] == error
+
+    @pytest.mark.parametrize(
+        "params,error",
+        [
+            pytest.param(
+                {
+                    "client_id": "DEFAULT_TENANT_CLIENT_ID",
+                    "redirect_uri": "https://nantes.city/callback",
+                    "scope": "openid",
+                },
+                "invalid_request",
+                id="Missing response_type",
+            ),
+            pytest.param(
+                {
+                    "response_type": "magic_wand",
+                    "client_id": "DEFAULT_TENANT_CLIENT_ID",
+                    "redirect_uri": "https://nantes.city/callback",
+                    "scope": "openid",
+                },
+                "invalid_request",
+                id="Invalid response_type",
+            ),
+            pytest.param(
+                {
+                    "response_type": "code",
+                    "client_id": "DEFAULT_TENANT_CLIENT_ID",
+                    "redirect_uri": "https://nantes.city/callback",
+                },
+                "invalid_request",
+                id="Missing scope",
+            ),
+            pytest.param(
+                {
+                    "response_type": "code",
+                    "client_id": "DEFAULT_TENANT_CLIENT_ID",
+                    "redirect_uri": "https://nantes.city/callback",
+                    "scope": "user",
+                },
+                "invalid_scope",
+                id="Missing openid scope",
+            ),
+            pytest.param(
+                {
+                    "response_type": "code",
+                    "client_id": "DEFAULT_TENANT_CLIENT_ID",
+                    "redirect_uri": "https://nantes.city/callback",
+                    "scope": "openid",
+                    "prompt": "INVALID_PROMPT",
+                },
+                "invalid_request",
+                id="Invalid prompt",
+            ),
+            pytest.param(
+                {
+                    "response_type": "code",
+                    "client_id": "DEFAULT_TENANT_CLIENT_ID",
+                    "redirect_uri": "https://nantes.city/callback",
+                    "scope": "openid",
+                    "prompt": "none",
+                },
+                "login_required",
+                id="None prompt without session",
+            ),
+            pytest.param(
+                {
+                    "response_type": "code",
+                    "client_id": "DEFAULT_TENANT_CLIENT_ID",
+                    "redirect_uri": "https://nantes.city/callback",
+                    "scope": "openid",
+                    "screen": "INVALID_SCREEN",
+                },
+                "invalid_request",
+                id="Invalid screen",
+            ),
+        ],
+    )
+    async def test_authorize_redirect_error(
+        self,
+        tenant_params: TenantParams,
+        test_client_auth: httpx.AsyncClient,
+        params: Dict[str, str],
+        error: str,
+    ):
+        response = await test_client_auth.get(
+            f"{tenant_params.path_prefix}/authorize", params=params
+        )
+
+        assert response.status_code == status.HTTP_302_FOUND
+
+        redirect_uri = response.headers["Location"]
+
+        assert redirect_uri.startswith("https://nantes.city/callback")
+        parsed_location = furl(redirect_uri)
+        assert parsed_location.query.params["error"] == error
 
     @pytest.mark.parametrize(
         "screen,redirection",
@@ -137,7 +183,7 @@ class TestAuthAuthorize:
         params = {
             "response_type": "code",
             "client_id": tenant_params.client.client_id,
-            "redirect_uri": "REDIRECT_URI",
+            "redirect_uri": "https://nantes.city/callback",
             "scope": "openid",
         }
         if screen is not None:
@@ -156,6 +202,31 @@ class TestAuthAuthorize:
         login_session_manager = LoginSessionManager(account_session)
         login_session = await login_session_manager.get_by_token(login_session_cookie)
         assert login_session is not None
+
+    async def test_none_prompt_with_session(
+        self, tenant_params: TenantParams, test_client_auth: httpx.AsyncClient
+    ):
+        params = {
+            "response_type": "code",
+            "client_id": tenant_params.client.client_id,
+            "redirect_uri": "https://nantes.city/callback",
+            "scope": "openid",
+            "prompt": "none",
+        }
+
+        cookies = {}
+        cookies[settings.session_cookie_name] = tenant_params.session_token.token
+
+        response = await test_client_auth.get(
+            f"{tenant_params.path_prefix}/authorize", params=params, cookies=cookies
+        )
+
+        assert response.status_code == status.HTTP_302_FOUND
+
+        redirect_uri = response.headers["Location"]
+        assert redirect_uri.startswith("https://nantes.city/callback")
+        parsed_location = furl(redirect_uri)
+        assert "code" in parsed_location.query.params
 
 
 @pytest.mark.asyncio
@@ -304,7 +375,7 @@ class TestAuthTokenAuthorizationCode:
                     "grant_type": "authorization_code",
                     "client_secret": "DEFAULT_TENANT_CLIENT_SECRET",
                     "code": "CODE",
-                    "redirect_uri": "REDIRECT_URI",
+                    "redirect_uri": "https://nantes.city/callback",
                 },
                 "invalid_client",
                 id="Missing client_id",
@@ -314,7 +385,7 @@ class TestAuthTokenAuthorizationCode:
                     "grant_type": "authorization_code",
                     "client_id": "DEFAULT_TENANT_CLIENT_ID",
                     "code": "CODE",
-                    "redirect_uri": "REDIRECT_URI",
+                    "redirect_uri": "https://nantes.city/callback",
                 },
                 "invalid_client",
                 id="Missing client_secret",
@@ -325,7 +396,7 @@ class TestAuthTokenAuthorizationCode:
                     "client_id": "DEFAULT_TENANT_CLIENT_ID",
                     "client_secret": "INVALID_CLIENT_SECRET",
                     "code": "CODE",
-                    "redirect_uri": "REDIRECT_URI",
+                    "redirect_uri": "https://nantes.city/callback",
                 },
                 "invalid_client",
                 id="Invalid client_id/client_secret",
@@ -335,7 +406,7 @@ class TestAuthTokenAuthorizationCode:
                     "client_id": "DEFAULT_TENANT_CLIENT_ID",
                     "client_secret": "DEFAULT_TENANT_CLIENT_SECRET",
                     "code": "CODE",
-                    "redirect_uri": "REDIRECT_URI",
+                    "redirect_uri": "https://nantes.city/callback",
                 },
                 "invalid_request",
                 id="Missing grant_type",
@@ -346,7 +417,7 @@ class TestAuthTokenAuthorizationCode:
                     "client_id": "DEFAULT_TENANT_CLIENT_ID",
                     "client_secret": "DEFAULT_TENANT_CLIENT_SECRET",
                     "code": "CODE",
-                    "redirect_uri": "REDIRECT_URI",
+                    "redirect_uri": "https://nantes.city/callback",
                 },
                 "unsupported_grant_type",
                 id="Unsupported grant_type",
@@ -356,7 +427,7 @@ class TestAuthTokenAuthorizationCode:
                     "grant_type": "authorization_code",
                     "client_id": "DEFAULT_TENANT_CLIENT_ID",
                     "client_secret": "DEFAULT_TENANT_CLIENT_SECRET",
-                    "redirect_uri": "REDIRECT_URI",
+                    "redirect_uri": "https://nantes.city/callback",
                 },
                 "invalid_request",
                 id="Missing code",
@@ -377,7 +448,7 @@ class TestAuthTokenAuthorizationCode:
                     "client_id": "DEFAULT_TENANT_CLIENT_ID",
                     "client_secret": "DEFAULT_TENANT_CLIENT_SECRET",
                     "code": "CODE",
-                    "redirect_uri": "REDIRECT_URI",
+                    "redirect_uri": "https://nantes.city/callback",
                 },
                 "invalid_grant",
                 id="Invalid code",

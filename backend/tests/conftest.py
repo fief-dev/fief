@@ -34,6 +34,7 @@ from fief.models import (
     AuthorizationCode,
     Client,
     GlobalBase,
+    SessionToken,
     Tenant,
     User,
 )
@@ -226,6 +227,7 @@ class TenantParams:
     user: User
     login_session: LoginSession
     authorization_code: AuthorizationCode
+    session_token: SessionToken
 
 
 @pytest.fixture(
@@ -237,6 +239,7 @@ class TenantParams:
             "user_alias": "regular",
             "login_session_alias": "default",
             "authorization_code_alias": "default_regular",
+            "session_token_alias": "regular",
         },
         {
             "path_prefix": "/secondary",
@@ -245,6 +248,7 @@ class TenantParams:
             "user_alias": "regular_secondary",
             "login_session_alias": "secondary",
             "authorization_code_alias": "secondary_regular",
+            "session_token_alias": "regular_secondary",
         },
     ]
 )
@@ -259,6 +263,7 @@ def tenant_params(request, test_data: TestData) -> TenantParams:
         authorization_code=test_data["authorization_codes"][
             params["authorization_code_alias"]
         ],
+        session_token=test_data["session_tokens"][params["session_token_alias"]],
     )
 
 

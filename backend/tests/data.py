@@ -10,6 +10,7 @@ from fief.models import (
     LoginSession,
     M,
     RefreshToken,
+    SessionToken,
     Tenant,
     User,
 )
@@ -26,6 +27,7 @@ class TestData(TypedDict):
     login_sessions: ModelMapping[LoginSession]
     authorization_codes: ModelMapping[AuthorizationCode]
     refresh_tokens: ModelMapping[RefreshToken]
+    session_tokens: ModelMapping[SessionToken]
 
 
 tenants: ModelMapping[Tenant] = {
@@ -99,6 +101,17 @@ refresh_tokens: ModelMapping[RefreshToken] = {
     )
 }
 
+session_tokens: ModelMapping[SessionToken] = {
+    "regular": SessionToken(
+        expires_at=datetime.now(timezone.utc) + timedelta(seconds=3600),
+        user=users["regular"],
+    ),
+    "regular_secondary": SessionToken(
+        expires_at=datetime.now(timezone.utc) + timedelta(seconds=3600),
+        user=users["regular_secondary"],
+    ),
+}
+
 data_mapping: TestData = {
     "tenants": tenants,
     "clients": clients,
@@ -106,6 +119,7 @@ data_mapping: TestData = {
     "login_sessions": login_sessions,
     "authorization_codes": authorization_codes,
     "refresh_tokens": refresh_tokens,
+    "session_tokens": session_tokens,
 }
 
 __all__ = ["data_mapping", "TestData"]

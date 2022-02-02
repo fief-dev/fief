@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, timezone
 from gettext import gettext as _
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, cast
 
 from fastapi import APIRouter, Depends, Query, Request, status
 from fastapi.responses import RedirectResponse
@@ -17,6 +17,7 @@ from fief.dependencies.account_managers import (
 )
 from fief.dependencies.auth import (
     get_authorize_client,
+    get_authorize_prompt,
     get_authorize_redirect_uri,
     get_authorize_response_type,
     get_authorize_scope,
@@ -26,11 +27,13 @@ from fief.dependencies.auth import (
     validate_grant_request,
 )
 from fief.dependencies.authorization_code_flow import get_authorization_code_flow
+from fief.dependencies.session_token import get_session_token
 from fief.dependencies.tenant import get_current_tenant
 from fief.dependencies.users import UserManager, get_user_manager
 from fief.errors import LoginException
 from fief.managers import LoginSessionManager, RefreshTokenManager
 from fief.models import Account, Client, LoginSession, RefreshToken, Tenant
+from fief.models.session_token import SessionToken
 from fief.schemas.auth import LoginError, TokenResponse
 from fief.schemas.user import UserDB
 from fief.services.authorization_code_flow import AuthorizationCodeFlow
@@ -49,10 +52,25 @@ async def authorize(
     client: Client = Depends(get_authorize_client),
     redirect_uri: str = Depends(get_authorize_redirect_uri),
     scope: List[str] = Depends(get_authorize_scope),
+    prompt: Optional[str] = Depends(get_authorize_prompt),
     screen: str = Depends(get_authorize_screen),
     state: Optional[str] = Query(None),
     login_session_manager: LoginSessionManager = Depends(get_login_session_manager),
+    authorization_code_flow: AuthorizationCodeFlow = Depends(
+        get_authorization_code_flow
+    ),
+    session_token: Optional[SessionToken] = Depends(get_session_token),
 ):
+    if prompt == "none" and session_token is not None:
+        return await authorization_code_flow.get_success_redirect(
+            redirect_uri,
+            scope,
+            state,
+            client,
+            cast(UUID4, session_token.user_id),
+            create_session=False,
+        )
+
     login_session = LoginSession(
         response_type=response_type,
         redirect_uri=redirect_uri,
@@ -111,7 +129,14 @@ async def post_login(
     #         detail=ErrorCode.LOGIN_USER_NOT_VERIFIED,
     #     )
 
-    response = await authorization_code_flow.get_success_redirect(login_session, user)
+    response = await authorization_code_flow.get_success_redirect(
+        login_session.redirect_uri,
+        login_session.scope,
+        login_session.state,
+        login_session.client,
+        user.id,
+        login_session=login_session,
+    )
 
     return response
 
