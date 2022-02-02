@@ -1,5 +1,6 @@
-from typing import Optional
+from typing import Any, Optional
 
+from fastapi import Request
 from jwcrypto import jwk
 from sqlalchemy import Boolean, Column, String, Text
 
@@ -33,3 +34,9 @@ class Tenant(UUIDModel, CreatedUpdatedAt, AccountBase):
         if not self.default:
             host += f"/{self.slug}"
         return host
+
+    def url_for(self, request: Request, name: str, **path_params: Any) -> str:
+        if not self.default:
+            path_params["tenant_slug"] = self.slug
+        print(self.default, path_params)
+        return request.url_for(name, **path_params)

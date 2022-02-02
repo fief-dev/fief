@@ -11,6 +11,7 @@ from fief.dependencies.account_managers import (
     get_login_session_manager,
     get_refresh_token_manager,
 )
+from fief.dependencies.tenant import get_current_tenant
 from fief.dependencies.users import UserManager, get_user_manager
 from fief.errors import AuthorizeException, LoginException, TokenRequestException
 from fief.managers import (
@@ -19,7 +20,7 @@ from fief.managers import (
     LoginSessionManager,
     RefreshTokenManager,
 )
-from fief.models import Client, LoginSession
+from fief.models import Client, LoginSession, Tenant
 from fief.schemas.auth import AuthorizeError, LoginError, TokenError
 from fief.schemas.user import UserDB
 from fief.settings import settings
@@ -87,9 +88,21 @@ async def get_authorize_scope(
     return scope_list
 
 
+async def get_authorize_screen(screen: str = Query("login")) -> str:
+    if screen not in ["login", "register"]:
+        raise AuthorizeException(
+            AuthorizeError.get_invalid_request(
+                _('screen should either be "login" or "register"')
+            )
+        )
+
+    return screen
+
+
 async def get_login_session(
     token: Optional[str] = Cookie(None, alias=settings.login_session_cookie_name),
     login_session_manager: LoginSessionManager = Depends(get_login_session_manager),
+    tenant: Tenant = Depends(get_current_tenant),
 ) -> LoginSession:
     invalid_session_error = LoginError.get_invalid_session(_("Invalid login session"))
     if token is None:
@@ -97,6 +110,9 @@ async def get_login_session(
 
     login_session = await login_session_manager.get_by_token(token)
     if login_session is None:
+        raise LoginException(invalid_session_error, fatal=True)
+
+    if login_session.client.tenant_id != tenant.id:
         raise LoginException(invalid_session_error, fatal=True)
 
     return login_session

@@ -37,6 +37,7 @@ from fief.models import (
     Tenant,
     User,
 )
+from fief.models.login_session import LoginSession
 from fief.schemas.user import UserDB
 from fief.services.account_creation import AccountCreation
 from fief.services.account_db import AccountDatabase
@@ -221,6 +222,7 @@ class TenantParams:
     tenant: Tenant
     client: Client
     user: User
+    login_session: LoginSession
     authorization_code: AuthorizationCode
 
 
@@ -231,6 +233,7 @@ class TenantParams:
             "tenant_alias": "default",
             "client_alias": "default_tenant",
             "user_alias": "regular",
+            "login_session_alias": "default",
             "authorization_code_alias": "default_regular",
         },
         {
@@ -238,6 +241,7 @@ class TenantParams:
             "tenant_alias": "secondary",
             "client_alias": "secondary_tenant",
             "user_alias": "regular_secondary",
+            "login_session_alias": "secondary",
             "authorization_code_alias": "secondary_regular",
         },
     ]
@@ -249,6 +253,7 @@ def tenant_params(request, test_data: TestData) -> TenantParams:
         tenant=test_data["tenants"][params["tenant_alias"]],
         client=test_data["clients"][params["client_alias"]],
         user=test_data["users"][params["user_alias"]],
+        login_session=test_data["login_sessions"][params["login_session_alias"]],
         authorization_code=test_data["authorization_codes"][
             params["authorization_code_alias"]
         ],

@@ -66,6 +66,13 @@ login_sessions: ModelMapping[LoginSession] = {
         state="STATE",
         client=clients["default_tenant"],
     ),
+    "secondary": LoginSession(
+        response_type="code",
+        redirect_uri="https://nantes.city/callback",
+        scope=["openid", "offline_access"],
+        state="STATE",
+        client=clients["secondary_tenant"],
+    ),
 }
 
 authorization_codes: ModelMapping[AuthorizationCode] = {

@@ -39,10 +39,13 @@ class RegisterException(Exception):
         error: RegisterError,
         form_data: Optional[FormData] = None,
         tenant: Optional[Tenant] = None,
+        *,
+        fatal: bool = False,
     ) -> None:
         self.error = error
         self.form_data = form_data
         self.tenant = tenant
+        self.fatal = fatal
 
 
 class AuthorizeException(Exception):

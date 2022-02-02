@@ -1,22 +1,24 @@
 from gettext import gettext as _
 
-from fastapi import APIRouter, Depends, Request, status
-from fastapi.responses import RedirectResponse
+from fastapi import APIRouter, Depends, Request
 from fastapi_users.manager import InvalidPasswordException, UserAlreadyExists
 
 from fief.apps.auth.templates import templates
+from fief.dependencies.auth import get_login_session
+from fief.dependencies.authorization_code_flow import get_authorization_code_flow
 from fief.dependencies.register import get_user_create
 from fief.dependencies.tenant import get_current_tenant
 from fief.dependencies.users import UserManager, get_user_manager
 from fief.errors import RegisterException
-from fief.models import Tenant
+from fief.models import LoginSession, Tenant
 from fief.schemas.register import RegisterError
 from fief.schemas.user import UserCreate
+from fief.services.authorization_code_flow import AuthorizationCodeFlow
 
 router = APIRouter()
 
 
-@router.get("/register", name="register:get")
+@router.get("/register", name="register:get", dependencies=[Depends(get_login_session)])
 async def get_register(request: Request, tenant: Tenant = Depends(get_current_tenant)):
     return templates.TemplateResponse(
         "register.html",
@@ -30,6 +32,10 @@ async def post_register(
     user: UserCreate = Depends(get_user_create),
     user_manager: UserManager = Depends(get_user_manager),
     tenant: Tenant = Depends(get_current_tenant),
+    login_session: LoginSession = Depends(get_login_session),
+    authorization_code_flow: AuthorizationCodeFlow = Depends(
+        get_authorization_code_flow
+    ),
 ):
     try:
         created_user = await user_manager.create(user, safe=True, request=request)
@@ -48,4 +54,6 @@ async def post_register(
             tenant=tenant,
         ) from e
 
-    return RedirectResponse("/", status_code=status.HTTP_302_FOUND)
+    response = await authorization_code_flow.get_redirect(login_session, created_user)
+
+    return response

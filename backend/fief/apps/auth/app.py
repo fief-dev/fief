@@ -58,7 +58,7 @@ async def register_exception_handler(request: Request, exc: RegisterException):
             "error": exc.error.error_description,
             "form_data": exc.form_data,
             "tenant": exc.tenant,
-            "fatal_error": False,
+            "fatal_error": exc.fatal,
         },
         status_code=status.HTTP_400_BAD_REQUEST,
         headers={"X-Fief-Error": exc.error.error},
@@ -83,7 +83,7 @@ async def authorize_exception_handler(request: Request, exc: AuthorizeException)
 @app.exception_handler(LoginException)
 async def login_exception_handler(request: Request, exc: LoginException):
     return templates.TemplateResponse(
-        "authorize.html",
+        "login.html",
         {
             "request": request,
             "error": exc.error.error_description,
