@@ -7,7 +7,13 @@ from fief.apps.auth.routers.register import router as register_router
 from fief.apps.auth.routers.user import router as user_router
 from fief.apps.auth.routers.well_known import router as well_known_router
 from fief.apps.auth.templates import templates
-from fief.errors import AuthorizeException, LoginException, TokenRequestException
+from fief.errors import (
+    AuthorizeException,
+    FormValidationError,
+    LoginException,
+    RegisterException,
+    TokenRequestException,
+)
 
 
 def include_routers(router: APIRouter) -> APIRouter:
@@ -27,6 +33,36 @@ app = FastAPI()
 app.include_router(default_tenant_router)
 app.include_router(tenant_router)
 app.mount("/static", StaticFiles(directory="static"), name="static")
+
+
+@app.exception_handler(FormValidationError)
+async def form_validation_error_handler(request: Request, exc: FormValidationError):
+    return templates.TemplateResponse(
+        exc.template,
+        {
+            "request": request,
+            "form_errors": exc.form_errors(),
+            "tenant": exc.tenant,
+            "fatal_error": False,
+        },
+        status_code=status.HTTP_400_BAD_REQUEST,
+    )
+
+
+@app.exception_handler(RegisterException)
+async def register_exception_handler(request: Request, exc: RegisterException):
+    return templates.TemplateResponse(
+        "register.html",
+        {
+            "request": request,
+            "error": exc.error.error_description,
+            "form_data": exc.form_data,
+            "tenant": exc.tenant,
+            "fatal_error": False,
+        },
+        status_code=status.HTTP_400_BAD_REQUEST,
+        headers={"X-Fief-Error": exc.error.error},
+    )
 
 
 @app.exception_handler(AuthorizeException)

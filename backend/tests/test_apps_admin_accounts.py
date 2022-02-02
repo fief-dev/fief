@@ -4,7 +4,7 @@ import httpx
 import pytest
 from fastapi import status
 
-from fief.errors import ErrorCode
+from fief.errors import APIErrorCode
 from fief.models import Account
 from fief.services.account_db import AccountDatabaseConnectionError
 
@@ -24,7 +24,7 @@ class TestCreateAccount:
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 
         json = response.json()
-        assert json["detail"] == ErrorCode.ACCOUNT_DB_CONNECTION_ERROR
+        assert json["detail"] == APIErrorCode.ACCOUNT_DB_CONNECTION_ERROR
 
     async def test_success(
         self,

@@ -1,8 +1,9 @@
-from typing import AsyncGenerator, Dict, Optional, Type, cast
+from gettext import gettext as _
+from typing import AsyncGenerator, Dict, Optional, Type, Union, cast
 
 from fastapi import Depends, Request
 from fastapi.security import OAuth2AuthorizationCodeBearer
-from fastapi_users import BaseUserManager
+from fastapi_users import BaseUserManager, InvalidPasswordException
 from fastapi_users.authentication import (
     AuthenticationBackend,
     BearerTransport,
@@ -33,6 +34,14 @@ class UserManager(BaseUserManager[UserCreate, UserDB]):
     def __init__(self, user_db: SQLAlchemyUserDatabase[UserDB], tenant: Tenant):
         super().__init__(user_db)
         self.tenant = tenant
+
+    async def validate_password(
+        self, password: str, user: Union[UserCreate, UserDB]
+    ) -> None:
+        if len(password) < 8:
+            raise InvalidPasswordException(
+                reason=_("The password should be at least 8 characters.")
+            )
 
     async def create(
         self, user: UserCreate, safe: bool = False, request: Optional[Request] = None
