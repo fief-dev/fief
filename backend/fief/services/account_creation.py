@@ -1,6 +1,6 @@
 from typing import Optional
 
-from fief.db import get_account_session, get_global_async_session
+from fief.db import get_account_session, global_async_session_maker
 from fief.logging import logger
 from fief.managers import AccountManager, TenantManager
 from fief.models import Account, Client, Tenant
@@ -36,7 +36,11 @@ class AccountCreation:
         account = await self.account_manager.create(account)
 
         # Apply the database schema
-        self.account_db.migrate(account.get_database_url(False), str(account.id))
+        self.account_db.migrate(
+            account.get_database_url(False),
+            account.get_schema_name(),
+            create_schema=True,
+        )
 
         # Create a default tenant and client
         async with get_account_session(account) as session:
@@ -64,7 +68,7 @@ class AccountCreation:
 
 
 async def create_global_fief_account():
-    async for session in get_global_async_session():
+    async with global_async_session_maker() as session:
         account_manager = AccountManager(session)
         account = await account_manager.get_by_domain(settings.fief_domain)
 

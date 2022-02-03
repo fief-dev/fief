@@ -10,12 +10,13 @@ from fief.apps.auth.templates import templates
 from fief.errors import (
     AuthorizeException,
     AuthorizeRedirectException,
+    ConsentException,
     FormValidationError,
     LoginException,
     RegisterException,
     TokenRequestException,
 )
-from fief.services.authorization_code_flow import AuthorizationCodeFlow
+from fief.services.authentication_flow import AuthenticationFlow
 
 
 def include_routers(router: APIRouter) -> APIRouter:
@@ -86,7 +87,7 @@ async def authorize_exception_handler(request: Request, exc: AuthorizeException)
 async def authorize_redirect_exception_handler(
     request: Request, exc: AuthorizeRedirectException
 ):
-    return AuthorizationCodeFlow.get_error_redirect(
+    return AuthenticationFlow.get_authorization_code_error_redirect(
         exc.redirect_uri,
         exc.error.error,
         error_description=exc.error.error_description,
@@ -102,6 +103,23 @@ async def login_exception_handler(request: Request, exc: LoginException):
         {
             "request": request,
             "error": exc.error.error_description,
+            "tenant": exc.tenant,
+            "fatal_error": exc.fatal,
+        },
+        status_code=status.HTTP_400_BAD_REQUEST,
+        headers={"X-Fief-Error": exc.error.error},
+    )
+
+
+@app.exception_handler(ConsentException)
+async def consent_exception_handler(request: Request, exc: ConsentException):
+    return templates.TemplateResponse(
+        "consent.html",
+        {
+            "request": request,
+            "error": exc.error.error_description,
+            "client": exc.client,
+            "scopes": exc.scope,
             "tenant": exc.tenant,
             "fatal_error": exc.fatal,
         },

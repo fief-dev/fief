@@ -1,14 +1,15 @@
 from enum import Enum
 from gettext import gettext as _
-from typing import Dict, Optional, Union
+from typing import Dict, List, Optional, Union
 
 from pydantic import ValidationError
 from starlette.requests import FormData
 
-from fief.models import Tenant
+from fief.models import Client, Tenant
 from fief.schemas.auth import (
     AuthorizeError,
     AuthorizeRedirectError,
+    ConsentError,
     LoginError,
     TokenError,
 )
@@ -78,6 +79,23 @@ class LoginException(Exception):
         self, error: LoginError, tenant: Optional[Tenant] = None, *, fatal: bool = False
     ) -> None:
         self.error = error
+        self.tenant = tenant
+        self.fatal = fatal
+
+
+class ConsentException(Exception):
+    def __init__(
+        self,
+        error: ConsentError,
+        client: Client,
+        scope: List[str],
+        tenant: Optional[Tenant] = None,
+        *,
+        fatal: bool = False,
+    ) -> None:
+        self.error = error
+        self.client = client
+        self.scope = scope
         self.tenant = tenant
         self.fatal = fatal
 

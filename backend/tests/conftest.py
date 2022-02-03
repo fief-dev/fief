@@ -125,7 +125,9 @@ async def account(
     await global_session.commit()
 
     account_db = AccountDatabase()
-    account_db.migrate(account.get_database_url(False), str(account.id))
+    account_db.migrate(
+        account.get_database_url(False), account.get_schema_name(), create_schema=True
+    )
 
     yield account
 

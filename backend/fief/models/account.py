@@ -28,3 +28,9 @@ class Account(UUIDModel, CreatedUpdatedAt, GlobalBase):
             return settings.get_database_url()
 
         return get_database_url(self.database_url, asyncio)
+
+    def get_schema_name(self) -> str:
+        """
+        Return the SQL schema name where the data is stored.
+        """
+        return str(self.id)

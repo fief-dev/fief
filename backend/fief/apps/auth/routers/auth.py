@@ -22,22 +22,24 @@ from fief.dependencies.auth import (
     get_authorize_response_type,
     get_authorize_scope,
     get_authorize_screen,
+    get_consent_action,
+    get_consent_prompt,
     get_login_session,
+    get_needs_consent,
     get_user_from_grant_request,
     validate_grant_request,
 )
-from fief.dependencies.authorization_code_flow import get_authorization_code_flow
+from fief.dependencies.authentication_flow import get_authentication_flow
 from fief.dependencies.session_token import get_session_token
 from fief.dependencies.tenant import get_current_tenant
 from fief.dependencies.users import UserManager, get_user_manager
 from fief.errors import LoginException
-from fief.managers import LoginSessionManager, RefreshTokenManager
+from fief.managers import RefreshTokenManager
 from fief.models import Account, Client, LoginSession, RefreshToken, Tenant
 from fief.models.session_token import SessionToken
 from fief.schemas.auth import LoginError, TokenResponse
 from fief.schemas.user import UserDB
-from fief.services.authorization_code_flow import AuthorizationCodeFlow
-from fief.settings import settings
+from fief.services.authentication_flow import AuthenticationFlow
 
 TOKEN_LIFETIME = 3600
 REFRESH_TOKEN_LIFETIME = 3600 * 24 * 30
@@ -55,43 +57,25 @@ async def authorize(
     prompt: Optional[str] = Depends(get_authorize_prompt),
     screen: str = Depends(get_authorize_screen),
     state: Optional[str] = Query(None),
-    login_session_manager: LoginSessionManager = Depends(get_login_session_manager),
-    authorization_code_flow: AuthorizationCodeFlow = Depends(
-        get_authorization_code_flow
-    ),
+    authentication_flow: AuthenticationFlow = Depends(get_authentication_flow),
     session_token: Optional[SessionToken] = Depends(get_session_token),
 ):
-    if prompt == "none" and session_token is not None:
-        return await authorization_code_flow.get_success_redirect(
-            redirect_uri,
-            scope,
-            state,
-            client,
-            cast(UUID4, session_token.user_id),
-            create_session=False,
-        )
-
-    login_session = LoginSession(
-        response_type=response_type,
-        redirect_uri=redirect_uri,
-        scope=scope,
-        state=state,
-        client_id=client.id,
-    )
-    login_session = await login_session_manager.create(login_session)
-
     tenant = client.tenant
-    if screen == "register":
+    if session_token is not None and prompt != "login":
+        redirection = tenant.url_for(request, "auth:consent.get")
+    elif screen == "register":
         redirection = tenant.url_for(request, "register:get")
     else:
         redirection = tenant.url_for(request, "auth:login.get")
 
     response = RedirectResponse(url=redirection, status_code=status.HTTP_302_FOUND)
-    response.set_cookie(
-        settings.login_session_cookie_name,
-        login_session.token,
-        domain=settings.login_session_cookie_domain,
-        secure=settings.login_session_cookie_secure,
+    response = await authentication_flow.create_login_session(
+        response,
+        response_type=response_type,
+        redirect_uri=redirect_uri,
+        scope=scope,
+        state=state,
+        client=client,
     )
 
     return response
@@ -109,12 +93,13 @@ async def get_login(
 
 @router.post("/login", name="auth:login.post")
 async def post_login(
+    request: Request,
     credentials: OAuth2PasswordRequestForm = Depends(OAuth2PasswordRequestForm),
     login_session: LoginSession = Depends(get_login_session),
     user_manager: UserManager = Depends(get_user_manager),
-    authorization_code_flow: AuthorizationCodeFlow = Depends(
-        get_authorization_code_flow
-    ),
+    authentication_flow: AuthenticationFlow = Depends(get_authentication_flow),
+    session_token: Optional[SessionToken] = Depends(get_session_token),
+    tenant: Tenant = Depends(get_current_tenant),
 ):
     user = await user_manager.authenticate(credentials)
 
@@ -129,14 +114,91 @@ async def post_login(
     #         detail=ErrorCode.LOGIN_USER_NOT_VERIFIED,
     #     )
 
-    response = await authorization_code_flow.get_success_redirect(
-        login_session.redirect_uri,
-        login_session.scope,
-        login_session.state,
-        login_session.client,
-        user.id,
-        login_session=login_session,
+    response = RedirectResponse(
+        tenant.url_for(request, "auth:consent.get"),
+        status_code=status.HTTP_302_FOUND,
     )
+    if session_token is None:
+        response = await authentication_flow.create_session_token(response, user.id)
+
+    return response
+
+
+@router.get("/consent", name="auth:consent.get")
+async def get_consent(
+    request: Request,
+    login_session: LoginSession = Depends(get_login_session),
+    session_token: Optional[SessionToken] = Depends(get_session_token),
+    prompt: Optional[str] = Depends(get_consent_prompt),
+    needs_consent: bool = Depends(get_needs_consent),
+    tenant: Tenant = Depends(get_current_tenant),
+    authentication_flow: AuthenticationFlow = Depends(get_authentication_flow),
+):
+    if session_token is None:
+        return RedirectResponse(
+            tenant.url_for(request, "auth:login.get"), status_code=status.HTTP_302_FOUND
+        )
+
+    if not needs_consent and prompt != "consent":
+        user_id = cast(UUID4, session_token.user_id)
+        response = await authentication_flow.get_authorization_code_success_redirect(
+            login_session.redirect_uri,
+            login_session.scope,
+            login_session.state,
+            login_session.client,
+            user_id,
+        )
+        response = await authentication_flow.delete_login_session(
+            response, login_session
+        )
+        return response
+
+    return templates.TemplateResponse(
+        "consent.html",
+        {
+            "request": request,
+            "tenant": login_session.client.tenant,
+            "client": login_session.client,
+            "scopes": login_session.scope,
+        },
+    )
+
+
+@router.post("/consent", name="auth:consent.post")
+async def post_consent(
+    request: Request,
+    action: str = Depends(get_consent_action),
+    login_session: LoginSession = Depends(get_login_session),
+    session_token: Optional[SessionToken] = Depends(get_session_token),
+    tenant: Tenant = Depends(get_current_tenant),
+    authentication_flow: AuthenticationFlow = Depends(get_authentication_flow),
+):
+    if session_token is None:
+        return RedirectResponse(
+            tenant.url_for(request, "auth:login.get"), status_code=status.HTTP_302_FOUND
+        )
+
+    if action == "allow":
+        user_id = cast(UUID4, session_token.user_id)
+        await authentication_flow.create_or_update_grant(
+            user_id, login_session.client, login_session.scope
+        )
+        response = await authentication_flow.get_authorization_code_success_redirect(
+            login_session.redirect_uri,
+            login_session.scope,
+            login_session.state,
+            login_session.client,
+            user_id,
+        )
+    elif action == "deny":
+        response = AuthenticationFlow.get_authorization_code_error_redirect(
+            login_session.redirect_uri,
+            "access_denied",
+            error_description=_("The user denied access to their data."),
+            state=login_session.state,
+        )
+
+    response = await authentication_flow.delete_login_session(response, login_session)
 
     return response
 

@@ -23,11 +23,13 @@ class TestMigrate:
 
         with pytest.raises(AccountDatabaseConnectionError):
             account_db.migrate(
-                "postgresql://foo:bar@localhost:1234/foobar", "account-schema"
+                "postgresql://foo:bar@localhost:1234/foobar",
+                "account-schema",
+                create_schema=True,
             )
 
     def test_valid_db(self, account_db: AccountDatabase, test_database_url: str):
-        account_db.migrate(test_database_url, "account-schema")
+        account_db.migrate(test_database_url, "account-schema", create_schema=True)
 
         engine = create_engine(test_database_url)
         inspector = inspect(engine)

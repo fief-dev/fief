@@ -34,7 +34,7 @@ def generate_id_token(
     claims = {
         **user.get_claims(),
         "iss": host,
-        "aud": [str(client.client_id)],
+        "aud": [client.client_id],
         "exp": exp,
         "iat": iat,
         "azp": client.client_id,

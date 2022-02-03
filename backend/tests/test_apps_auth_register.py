@@ -143,21 +143,7 @@ class TestPostRegister:
         assert response.status_code == status.HTTP_302_FOUND
 
         redirect_uri = response.headers["Location"]
-
-        assert redirect_uri.startswith(login_session.redirect_uri)
-        parsed_location = furl(redirect_uri)
-        assert "code" in parsed_location.query.params
-        assert parsed_location.query.params["state"] == login_session.state
-
-        set_cookie_header = response.headers["Set-Cookie"]
-        assert set_cookie_header.startswith(f'{settings.login_session_cookie_name}=""')
-        assert "Max-Age=0" in set_cookie_header
-
-        login_session_manager = LoginSessionManager(account_session)
-        used_login_session = await login_session_manager.get_by_token(
-            login_session.token
-        )
-        assert used_login_session is None
+        assert redirect_uri.endswith("/consent")
 
         session_cookie = response.cookies[settings.session_cookie_name]
         session_token_manager = SessionTokenManager(account_session)

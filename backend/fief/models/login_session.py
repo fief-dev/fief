@@ -23,6 +23,7 @@ class LoginSession(UUIDModel, CreatedUpdatedAt, AccountBase):
     response_type: str = Column(String(length=255), nullable=False)
     redirect_uri: str = Column(String(length=2048), nullable=False)
     scope: List[str] = Column(JSON, nullable=False, default=list)
+    prompt: Optional[str] = Column(String(length=255), nullable=True)
     state: Optional[str] = Column(String(length=2048), nullable=True)
 
     client_id = Column(GUID, ForeignKey(Client.id, ondelete="CASCADE"), nullable=False)

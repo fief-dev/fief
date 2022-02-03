@@ -38,6 +38,10 @@ class AuthorizeRedirectError(BaseModel):
     def get_login_required(cls, error_description: Optional[str] = None):
         return cls(error="login_required", error_description=error_description)
 
+    @classmethod
+    def get_consent_required(cls, error_description: Optional[str] = None):
+        return cls(error="consent_required", error_description=error_description)
+
 
 class LoginError(BaseModel):
     error: str = Field(..., regex="invalid_session|bad_credentials")
@@ -51,6 +55,16 @@ class LoginError(BaseModel):
     @classmethod
     def get_bad_credentials(cls, error_description: Optional[str] = None):
         return cls(error="bad_credentials", error_description=error_description)
+
+
+class ConsentError(BaseModel):
+    error: str = Field(..., regex="invalid_action")
+    error_description: Optional[str] = None
+    error_uri: Optional[str] = None
+
+    @classmethod
+    def get_invalid_action(cls, error_description: Optional[str] = None):
+        return cls(error="invalid_action", error_description=error_description)
 
 
 class TokenResponse(BaseModel):

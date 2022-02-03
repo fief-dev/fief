@@ -1,28 +1,32 @@
 from gettext import gettext as _
 from typing import AsyncGenerator, List, Optional, Tuple, cast
 
-from fastapi import Cookie, Depends, Form, Query
+from fastapi import Cookie, Depends, Form, Query, Response
 from fastapi_users.manager import UserNotExists
 from pydantic import UUID4
 
 from fief.dependencies.account_managers import (
     get_authorization_code_manager,
     get_client_manager,
+    get_grant_manager,
     get_login_session_manager,
     get_refresh_token_manager,
 )
+from fief.dependencies.authentication_flow import get_authentication_flow
 from fief.dependencies.session_token import get_session_token
 from fief.dependencies.tenant import get_current_tenant
 from fief.dependencies.users import UserManager, get_user_manager
 from fief.errors import (
     AuthorizeException,
     AuthorizeRedirectException,
+    ConsentException,
     LoginException,
     TokenRequestException,
 )
 from fief.managers import (
     AuthorizationCodeManager,
     ClientManager,
+    GrantManager,
     LoginSessionManager,
     RefreshTokenManager,
 )
@@ -30,10 +34,12 @@ from fief.models import Client, LoginSession, SessionToken, Tenant
 from fief.schemas.auth import (
     AuthorizeError,
     AuthorizeRedirectError,
+    ConsentError,
     LoginError,
     TokenError,
 )
 from fief.schemas.user import UserDB
+from fief.services.authentication_flow import AuthenticationFlow
 from fief.settings import settings
 
 
@@ -134,7 +140,7 @@ async def get_authorize_prompt(
             state,
         )
 
-    if prompt == "none" and session_token is None:
+    if prompt in ["none", "consent"] and session_token is None:
         raise AuthorizeRedirectException(
             AuthorizeRedirectError.get_login_required(_("User is not logged in")),
             redirect_uri,
@@ -178,6 +184,63 @@ async def get_login_session(
         raise LoginException(invalid_session_error, fatal=True)
 
     return login_session
+
+
+async def get_consent_action(
+    action: Optional[str] = Form(None),
+    login_session: LoginSession = Depends(get_login_session),
+    tenant: Tenant = Depends(get_current_tenant),
+) -> str:
+    if action is None or action not in ["allow", "deny"]:
+        raise ConsentException(
+            ConsentError.get_invalid_action(
+                _('action should either be "allow" or "deny"')
+            ),
+            login_session.client,
+            login_session.scope,
+            tenant,
+        )
+
+    return action
+
+
+async def get_needs_consent(
+    login_session: LoginSession = Depends(get_login_session),
+    session_token: Optional[SessionToken] = Depends(get_session_token),
+    grant_manager: GrantManager = Depends(get_grant_manager),
+) -> bool:
+    if session_token is None:
+        return True
+
+    client_id = cast(UUID4, login_session.client.id)
+    user_id = cast(UUID4, session_token.user_id)
+    grant = await grant_manager.get_by_user_and_client(user_id, client_id)
+
+    if grant is None or not set(login_session.scope).issubset(set(grant.scope)):
+        return True
+
+    return False
+
+
+async def get_consent_prompt(
+    login_session: LoginSession = Depends(get_login_session),
+    needs_consent: bool = Depends(get_needs_consent),
+    tenant: Tenant = Depends(get_current_tenant),
+    authentication_flow: AuthenticationFlow = Depends(get_authentication_flow),
+) -> Optional[str]:
+    prompt = login_session.prompt
+    if needs_consent and prompt == "none":
+        await authentication_flow.delete_login_session(Response(), login_session)
+        raise AuthorizeRedirectException(
+            AuthorizeRedirectError.get_consent_required(
+                _("User consent is required for this scope")
+            ),
+            login_session.redirect_uri,
+            login_session.state,
+            tenant,
+        )
+
+    return prompt
 
 
 async def authenticate_client_secret_post(

@@ -1,0 +1,24 @@
+{% extends "auth_layout.html" %}
+
+{% block head_title %}{{ _('Consent') }}{% endblock %}
+
+{% block title %}{{ _('%(name)s wants to access your account', name=client.client_id) }}{% endblock %}
+
+{% block auth_form %}
+  <form method="POST" action="{{ url_for('auth:consent.post') }}">
+    <div class="space-y-4">
+      <div className="text-sm">{{ _('This will allow %(name)s to:', name=client.client_id) }}</div>
+      {% for scope in scopes %}
+        <div class="bg-white shadow-md rounded-sm border border-slate-200">
+          <div class="flex flex-col p-5">
+            {{ scope }}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+    <div class="flex items-center justify-between mt-6">
+      <button type="submit" class="btn border-slate-200 hover:border-slate-300 text-slate-600" name="action" value="deny">{{ _('Deny') }}</button>
+      <button type="submit" class="btn bg-primary hover:bg-primary-hover text-white" name="action" value="allow">{{ _('Allow') }}</button>
+    </div>
+  </form>
+{% endblock %}

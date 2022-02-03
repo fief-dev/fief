@@ -7,6 +7,7 @@ from fastapi_users.password import get_password_hash
 from fief.models import (
     AuthorizationCode,
     Client,
+    Grant,
     LoginSession,
     M,
     RefreshToken,
@@ -28,6 +29,7 @@ class TestData(TypedDict):
     authorization_codes: ModelMapping[AuthorizationCode]
     refresh_tokens: ModelMapping[RefreshToken]
     session_tokens: ModelMapping[SessionToken]
+    grants: ModelMapping[Grant]
 
 
 tenants: ModelMapping[Tenant] = {
@@ -41,6 +43,12 @@ clients: ModelMapping[Client] = {
         tenant=tenants["default"],
         client_id="DEFAULT_TENANT_CLIENT_ID",
         client_secret="DEFAULT_TENANT_CLIENT_SECRET",
+    ),
+    "granted_default_tenant": Client(
+        name="Granted default",
+        tenant=tenants["default"],
+        client_id="GRANTED_DEFAULT_TENANT_CLIENT_ID",
+        client_secret="GRANTED_DEFAULT_TENANT_CLIENT_SECRET",
     ),
     "secondary_tenant": Client(name="Secondary", tenant=tenants["secondary"]),
 }
@@ -67,6 +75,28 @@ login_sessions: ModelMapping[LoginSession] = {
         scope=["openid", "offline_access"],
         state="STATE",
         client=clients["default_tenant"],
+    ),
+    "default_none_prompt": LoginSession(
+        response_type="code",
+        redirect_uri="https://nantes.city/callback",
+        scope=["openid", "offline_access"],
+        state="STATE",
+        client=clients["default_tenant"],
+        prompt="none",
+    ),
+    "granted_default": LoginSession(
+        response_type="code",
+        redirect_uri="https://nantes.city/callback",
+        scope=["openid", "offline_access"],
+        state="STATE",
+        client=clients["granted_default_tenant"],
+    ),
+    "granted_default_larger_scope": LoginSession(
+        response_type="code",
+        redirect_uri="https://nantes.city/callback",
+        scope=["openid", "offline_access", "other"],
+        state="STATE",
+        client=clients["granted_default_tenant"],
     ),
     "secondary": LoginSession(
         response_type="code",
@@ -112,6 +142,14 @@ session_tokens: ModelMapping[SessionToken] = {
     ),
 }
 
+grants: ModelMapping[Grant] = {
+    "regular_default_granted": Grant(
+        scope=["openid", "offline_access"],
+        user=users["regular"],
+        client=clients["granted_default_tenant"],
+    ),
+}
+
 data_mapping: TestData = {
     "tenants": tenants,
     "clients": clients,
@@ -120,6 +158,7 @@ data_mapping: TestData = {
     "authorization_codes": authorization_codes,
     "refresh_tokens": refresh_tokens,
     "session_tokens": session_tokens,
+    "grants": grants,
 }
 
 __all__ = ["data_mapping", "TestData"]
