@@ -1,9 +1,10 @@
 from enum import Enum
 from typing import Optional
 
-from pydantic import BaseSettings
+from pydantic import BaseSettings, validator
 from sqlalchemy import engine
 
+from fief.crypto.encryption import is_valid_key
 from fief.db.types import DatabaseType, get_driver
 
 
@@ -13,12 +14,18 @@ class Environment(str, Enum):
     PRODUCTION = "production"
 
 
+class InvalidEncryptionKeyError(ValueError):
+    pass
+
+
 class Settings(BaseSettings):
     environment: Environment
     log_level: str = "DEBUG"
     unit_tests: bool = False
     root_domain: str
     allow_origin_regex: str
+
+    encryption_key: bytes
 
     database_type: DatabaseType
     database_host: str
@@ -52,6 +59,17 @@ class Settings(BaseSettings):
 
     class Config:
         env_file = ".env"
+
+    @validator("encryption_key", pre=True)
+    def validate_encryption_key(cls, value: Optional[str]) -> Optional[bytes]:
+        if value is None:
+            return value
+
+        key = value.encode("utf-8")
+        if not is_valid_key(key):
+            raise InvalidEncryptionKeyError()
+
+        return key
 
     def get_database_url(self, asyncio=True) -> engine.URL:
         """

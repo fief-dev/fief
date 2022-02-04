@@ -1,10 +1,12 @@
 from typing import Optional
 
-from pydantic import BaseModel, root_validator
+from pydantic import BaseModel, root_validator, validator
 
+from fief.crypto.encryption import decrypt
 from fief.db.types import DatabaseType
 from fief.errors import APIErrorCode
 from fief.schemas.generics import UUIDSchema
+from fief.settings import settings
 
 
 class AccountCreate(BaseModel):
@@ -40,6 +42,24 @@ class BaseAccount(UUIDSchema):
     database_username: Optional[str]
     database_password: Optional[str]
     database_name: Optional[str]
+
+    @validator(
+        "database_host",
+        "database_username",
+        "database_password",
+        "database_name",
+        pre=True,
+    )
+    def decrypt_database_setting(cls, value: Optional[str]) -> Optional[str]:
+        if value is None:
+            return value
+        return decrypt(value, settings.encryption_key)
+
+    @validator("database_port", pre=True)
+    def decrypt_database_port(cls, value: Optional[str]) -> Optional[int]:
+        if value is None:
+            return value
+        return int(decrypt(value, settings.encryption_key))
 
 
 class Account(BaseAccount):

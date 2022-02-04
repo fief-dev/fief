@@ -1,8 +1,8 @@
 """Initial migration
 
-Revision ID: 0620e346d22b
+Revision ID: d869327be6c4
 Revises:
-Create Date: 2022-02-04 11:00:07.805551
+Create Date: 2022-02-04 11:43:30.501952
 
 """
 import sqlalchemy as sa
@@ -11,7 +11,7 @@ import fief
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = "0620e346d22b"
+revision = "d869327be6c4"
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -41,11 +41,11 @@ def upgrade():
             sa.Enum("POSTGRESQL", "MYSQL", name="databasetype"),
             nullable=True,
         ),
-        sa.Column("database_host", sa.String(length=2048), nullable=True),
-        sa.Column("database_port", sa.Integer(), nullable=True),
-        sa.Column("database_username", sa.String(length=2048), nullable=True),
-        sa.Column("database_password", sa.String(length=2048), nullable=True),
-        sa.Column("database_name", sa.String(length=2048), nullable=True),
+        sa.Column("database_host", sa.Text(), nullable=True),
+        sa.Column("database_port", sa.Text(), nullable=True),
+        sa.Column("database_username", sa.Text(), nullable=True),
+        sa.Column("database_password", sa.Text(), nullable=True),
+        sa.Column("database_name", sa.Text(), nullable=True),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(
