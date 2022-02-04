@@ -31,6 +31,7 @@ jobs:
           MARIADB_ROOT_PASSWORD: fiefpassword
 
     strategy:
+      fail-fast: false
       matrix:
         include:
           - database_type: POSTGRESQL
