@@ -16,6 +16,7 @@
         </div>
       {% endfor %}
     </div>
+    {% block csrf %}{{ super() }}{% endblock %}
     <div class="flex items-center justify-between mt-6">
       <button type="submit" class="btn border-slate-200 hover:border-slate-300 text-slate-600" name="action" value="deny">{{ _('Deny') }}</button>
       <button type="submit" class="btn bg-primary hover:bg-primary-hover text-white" name="action" value="allow">{{ _('Allow') }}</button>

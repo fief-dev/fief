@@ -4,9 +4,11 @@ from fastapi.staticfiles import StaticFiles
 
 from fief.apps.auth.routers.auth import router as auth_router
 from fief.apps.auth.routers.register import router as register_router
+from fief.apps.auth.routers.token import router as token_router
 from fief.apps.auth.routers.user import router as user_router
 from fief.apps.auth.routers.well_known import router as well_known_router
 from fief.apps.auth.templates import templates
+from fief.csrf import CSRFCookieSetterMiddleware
 from fief.errors import (
     AuthorizeException,
     AuthorizeRedirectException,
@@ -22,6 +24,7 @@ from fief.services.authentication_flow import AuthenticationFlow
 def include_routers(router: APIRouter) -> APIRouter:
     router.include_router(auth_router)
     router.include_router(register_router)
+    router.include_router(token_router)
     router.include_router(user_router)
     router.include_router(well_known_router, prefix="/.well-known")
 
@@ -33,6 +36,7 @@ tenant_router = include_routers(APIRouter(prefix="/{tenant_slug}"))
 
 
 app = FastAPI()
+app.add_middleware(CSRFCookieSetterMiddleware)
 app.include_router(default_tenant_router)
 app.include_router(tenant_router)
 app.mount("/static", StaticFiles(directory="static"), name="static")

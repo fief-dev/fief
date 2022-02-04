@@ -22,6 +22,7 @@
         {% endif %}
       </div>
     </div>
+    {% block csrf %}{{ super() }}{% endblock %}
     <div class="flex items-center justify-between mt-6">
       <div class="mr-1">
         <a class="text-sm underline hover:no-underline" href="reset-password.html">Forgot Password?</a>

@@ -17,6 +17,7 @@ from fief.schemas.register import RegisterError
 
 
 class APIErrorCode(str, Enum):
+    CSRF_CHECK_FAILED = "CSRF_CHECK_FAILED"
     ACCOUNT_CREATE_MISSING_DATABASE_SETTINGS = (
         "ACCOUNT_CREATE_MISSING_DATABASE_SETTINGS"
     )

@@ -27,7 +27,11 @@
               </div>
             {% endif %}
             {% if not fatal_error %}
-              {% block auth_form %}{% endblock %}
+              {% block auth_form %}
+                {% block csrf %}
+                  <input type="hidden" name="csrftoken" value="{{ request.scope.csrftoken }}" />
+                {% endblock %}
+              {% endblock %}
             {% endif %}
             <div class="pt-5 mt-6 border-t border-gray-200">
               <div class="text-xs flex justify-center items-center">

@@ -25,6 +25,7 @@ class Settings(BaseSettings):
     root_domain: str
     allow_origin_regex: str
 
+    secret: str
     encryption_key: bytes
 
     database_type: DatabaseType

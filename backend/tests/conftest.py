@@ -16,6 +16,7 @@ from sqlalchemy_utils import create_database, drop_database
 
 from fief.apps import admin_app, auth_app
 from fief.crypto.access_token import generate_access_token
+from fief.csrf import check_csrf
 from fief.db import (
     AsyncConnection,
     AsyncEngine,
@@ -380,6 +381,7 @@ async def test_client_auth_generator(
         app.dependency_overrides[get_current_account_session] = lambda: account_session
         app.dependency_overrides[get_account_db] = lambda: account_db_mock
         app.dependency_overrides[get_account_creation] = lambda: account_creation_mock
+        app.dependency_overrides[check_csrf] = lambda: None
 
         headers = {}
         if account_host is not None:

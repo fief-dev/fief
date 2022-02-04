@@ -5,6 +5,7 @@ from fastapi.responses import RedirectResponse
 from fastapi_users.manager import InvalidPasswordException, UserAlreadyExists
 
 from fief.apps.auth.templates import templates
+from fief.csrf import check_csrf
 from fief.dependencies.auth import get_login_session
 from fief.dependencies.authentication_flow import get_authentication_flow
 from fief.dependencies.register import get_user_create
@@ -16,7 +17,7 @@ from fief.schemas.register import RegisterError
 from fief.schemas.user import UserCreate
 from fief.services.authentication_flow import AuthenticationFlow
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(check_csrf)])
 
 
 @router.get("/register", name="register:get", dependencies=[Depends(get_login_session)])
