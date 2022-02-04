@@ -1,8 +1,23 @@
 name: 'Test backend'
 description: 'Run the tests for the Python backend'
 inputs:
-  test_database_url:
-    description: 'URL to a test database'
+  database_type:
+    description: 'DB type'
+    required: true
+  database_host:
+    description: 'DB host'
+    required: true
+  database_port:
+    description: 'DB port'
+    required: true
+  database_username:
+    description: 'DB username'
+    required: true
+  database_password:
+    description: 'DB password'
+    required: true
+  database_name:
+    description: 'DB name'
     required: true
 
 runs:
@@ -35,8 +50,12 @@ runs:
       env:
         ENVIRONMENT: development
         UNIT_TESTS: "1"
-        TEST_DATABASE_URL: ${{ inputs.test_database_url }}
-        DATABASE_URL: postgresql://fief:fiefpassword@localhost:5432
+        DATABASE_TYPE: ${{ inputs.database_type }}
+        DATABASE_HOST: ${{ inputs.database_host }}
+        DATABASE_PORT: ${{ inputs.database_port }}
+        DATABASE_USERNAME: ${{ inputs.database_username }}
+        DATABASE_PASSWORD: ${{ inputs.database_password }}
+        DATABASE_NAME: ${{ inputs.database_name }}
         ROOT_DOMAIN: fief.dev
         ALLOW_ORIGIN_REGEX: http://localhost:3000
         FIEF_DOMAIN: fief-auth.localhost:3000

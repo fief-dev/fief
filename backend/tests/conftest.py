@@ -2,9 +2,8 @@ import asyncio
 import contextlib
 import dataclasses
 import json
-import os
 import uuid
-from typing import AsyncContextManager, AsyncGenerator, Callable, Optional
+from typing import AsyncContextManager, AsyncGenerator, Callable, Optional, Tuple
 from unittest.mock import MagicMock
 
 import asgi_lifespan
@@ -12,6 +11,7 @@ import httpx
 import pytest
 from fastapi import FastAPI
 from fief_client import Fief
+from sqlalchemy import engine
 from sqlalchemy_utils import create_database, drop_database
 
 from fief.apps import admin_app, auth_app
@@ -23,6 +23,7 @@ from fief.db import (
     create_engine,
     get_global_async_session,
 )
+from fief.db.types import DatabaseType, get_driver
 from fief.dependencies.account import get_current_account_session
 from fief.dependencies.account_creation import get_account_creation
 from fief.dependencies.account_db import get_account_db
@@ -43,12 +44,7 @@ from fief.schemas.user import UserDB
 from fief.services.account_creation import AccountCreation
 from fief.services.account_db import AccountDatabase
 from fief.settings import settings
-from fief.utils.db_connection import get_database_url
 from tests.data import TestData, data_mapping
-
-TEST_DATABASE_URL = os.getenv(
-    "TEST_DATABASE_URL", "postgresql://fief:fiefpassword@localhost:5432/fief-test"
-)
 
 
 @pytest.fixture(scope="session")
@@ -59,33 +55,41 @@ def event_loop():
     loop.close()
 
 
-@pytest.fixture(scope="session")
-def get_test_database():
-    base_url = os.getenv(
-        "TEST_DATABASE_URL", "postgresql://fief:fiefpassword@localhost:5432"
-    )
+GetTestDatabase = Callable[..., AsyncContextManager[Tuple[engine.URL, DatabaseType]]]
 
+
+@pytest.fixture(scope="session")
+def get_test_database() -> GetTestDatabase:
     @contextlib.asynccontextmanager
     async def _get_test_database(
         *, name: str = "fief-test"
-    ) -> AsyncGenerator[str, None]:
-        url = f"{base_url}/{name}"
+    ) -> AsyncGenerator[Tuple[engine.URL, DatabaseType], None]:
+        url = settings.get_database_url(False).set(database=name)
+        assert url.database == name
         create_database(url)
-        yield url
+        yield (url, settings.database_type)
         drop_database(url)
 
     return _get_test_database
 
 
 @pytest.fixture(scope="session")
-async def main_test_database(get_test_database):
-    async with get_test_database() as url:
-        yield url
+async def main_test_database(
+    get_test_database: GetTestDatabase,
+) -> AsyncGenerator[Tuple[engine.URL, DatabaseType], None]:
+    async with get_test_database() as (url, database_type):
+        url = url.set(drivername=get_driver(database_type, asyncio=True))
+        yield url, database_type
 
 
 @pytest.fixture(scope="session")
-async def global_engine(main_test_database) -> AsyncGenerator[AsyncEngine, None]:
-    yield create_engine(get_database_url(main_test_database))
+async def global_engine(
+    main_test_database: Tuple[engine.URL, DatabaseType],
+) -> AsyncGenerator[AsyncEngine, None]:
+    url, _ = main_test_database
+    engine = create_engine(url)
+    yield engine
+    await engine.dispose()
 
 
 @pytest.fixture(scope="session")
@@ -114,27 +118,35 @@ async def global_session(
 @pytest.fixture(scope="session", autouse=True)
 @pytest.mark.asyncio
 async def account(
-    main_test_database, global_session, create_global_db
+    main_test_database: Tuple[engine.URL, DatabaseType],
+    global_session,
+    create_global_db,
 ) -> AsyncGenerator[Account, None]:
+    url, database_type = main_test_database
     account = Account(
         name="Duché de Bretagne",
         domain="bretagne.fief.dev",
-        database_url=get_database_url(main_test_database, asyncio=False),
+        database_type=database_type,
+        database_host=url.host,
+        database_port=url.port,
+        database_username=url.username,
+        database_password=url.password,
+        database_name=url.database,
     )
     global_session.add(account)
     await global_session.commit()
 
     account_db = AccountDatabase()
-    account_db.migrate(
-        account.get_database_url(False), account.get_schema_name(), create_schema=True
-    )
+    account_db.migrate(account.get_database_url(False), account.get_schema_name())
 
     yield account
 
 
 @pytest.fixture(scope="session")
 async def account_engine(account: Account) -> AsyncGenerator[AsyncEngine, None]:
-    yield create_engine(account.get_database_url())
+    engine = create_engine(account.get_database_url())
+    yield engine
+    await engine.dispose()
 
 
 @pytest.fixture(scope="session")
@@ -143,7 +155,7 @@ async def account_connection(
 ) -> AsyncGenerator[AsyncConnection, None]:
     async with account_engine.connect() as connection:
         connection = await connection.execution_options(
-            schema_translate_map={None: str(account.id)}
+            schema_translate_map={None: account.get_schema_name()}
         )
         await connection.begin()
         yield connection

@@ -1,26 +1,42 @@
 import re
-from typing import AsyncGenerator
+from typing import AsyncGenerator, Tuple
 
 import pytest
-from sqlalchemy import select
+from sqlalchemy import engine, select
 
 from fief.db import AsyncSession, get_account_session
+from fief.db.types import DatabaseType
 from fief.managers import AccountManager, ClientManager, TenantManager
 from fief.models import Client, Tenant
 from fief.schemas.account import AccountCreate
 from fief.services.account_creation import AccountCreation
 from fief.services.account_db import AccountDatabase
+from tests.conftest import GetTestDatabase
 
 
 @pytest.fixture(scope="module")
-async def test_database_url(get_test_database) -> AsyncGenerator[str, None]:
-    async with get_test_database(name="fief-test-account-creation") as url:
-        yield url
+async def test_database_url(
+    get_test_database: GetTestDatabase,
+) -> AsyncGenerator[Tuple[engine.URL, DatabaseType], None]:
+    async with get_test_database(name="fief-test-account-creation") as (
+        url,
+        database_type,
+    ):
+        yield url, database_type
 
 
 @pytest.fixture
-def account_create(test_database_url: str) -> AccountCreate:
-    return AccountCreate(name="Burgundy", database_url=test_database_url)
+def account_create(test_database_url: Tuple[engine.URL, DatabaseType]) -> AccountCreate:
+    url, database_type = test_database_url
+    return AccountCreate(
+        name="Burgundy",
+        database_type=database_type,
+        database_host=url.host,
+        database_port=url.port,
+        database_username=url.username,
+        database_password=url.password,
+        database_name=url.database,
+    )
 
 
 @pytest.fixture

@@ -1,7 +1,8 @@
 import contextlib
 from functools import lru_cache
-from typing import AsyncGenerator
+from typing import AsyncGenerator, Dict
 
+from sqlalchemy import engine
 from sqlalchemy.ext.asyncio import (
     AsyncConnection,
     AsyncEngine,
@@ -10,11 +11,12 @@ from sqlalchemy.ext.asyncio import (
 )
 from sqlalchemy.orm import sessionmaker
 
+from fief.db.types import DatabaseType
 from fief.models import Account
 from fief.settings import settings
 
 
-def create_engine(database_url: str) -> AsyncEngine:
+def create_engine(database_url: engine.URL) -> AsyncEngine:
     return create_async_engine(database_url, echo=settings.log_level == "DEBUG")
 
 
@@ -35,17 +37,33 @@ async def get_global_async_session() -> AsyncGenerator[AsyncSession, None]:
         yield session
 
 
-@lru_cache
-def get_account_engine(database_url: str) -> AsyncEngine:
-    return create_engine(database_url)
+class AccountEngineManager:
+    def __init__(self) -> None:
+        self.engines: Dict[str, AsyncEngine] = {}
+
+    def get_engine(self, database_url: engine.URL) -> AsyncEngine:
+        key = str(database_url)
+        try:
+            return self.engines[key]
+        except KeyError:
+            engine = create_engine(database_url)
+            self.engines[key] = engine
+            return engine
+
+    async def close_all(self):
+        for engine in self.engines.values():
+            await engine.dispose()
+
+
+account_engine_manager = AccountEngineManager()
 
 
 @contextlib.asynccontextmanager
 async def get_account_session(account: Account) -> AsyncGenerator[AsyncSession, None]:
-    engine = get_account_engine(account.get_database_url())
+    engine = account_engine_manager.get_engine(account.get_database_url())
     async with engine.connect() as connection:
         connection = await connection.execution_options(
-            schema_translate_map={None: str(account.id)}
+            schema_translate_map={None: account.get_schema_name()}
         )
         async with AsyncSession(bind=connection, expire_on_commit=False) as session:
             yield session
@@ -55,6 +73,7 @@ __all__ = [
     "AsyncConnection",
     "AsyncEngine",
     "AsyncSession",
+    "account_engine_manager",
     "create_async_session_maker",
     "create_engine",
     "create_global_engine",

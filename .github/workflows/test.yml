@@ -23,12 +23,34 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
+      mariadb:
+        image: mariadb
+        ports:
+          - 3306:3306
+        env:
+          MARIADB_ROOT_PASSWORD: fiefpassword
+
+    strategy:
+      matrix:
+        include:
+          - database_type: POSTGRESQL
+            database_host: localhost
+            database_port: 5432
+          - database_type: MYSQL
+            database_host: localhost
+            database_port: 3306
+
     steps:
     - uses: actions/checkout@v2
-    - name: Test backend
+    - name: Test backend with ${{ matrix.database_type }} database
       uses: ./.github/actions/test-backend
       with:
-        test_database_url: postgresql://fief:fiefpassword@localhost:5432
+        database_type: ${{ matrix.database_type }}
+        database_host: ${{ matrix.database_host }}
+        database_port: ${{ matrix.database_port }}
+        database_username: fief
+        database_password: fiefpassword
+        database_name: fief
 
   test-auth-frontend:
     runs-on: ubuntu-latest

@@ -1,9 +1,10 @@
 from enum import Enum
 from typing import Optional
 
-from pydantic import BaseSettings, validator
+from pydantic import BaseSettings
+from sqlalchemy import engine
 
-from fief.utils.db_connection import get_database_url
+from fief.db.types import DatabaseType, get_driver
 
 
 class Environment(str, Enum):
@@ -16,9 +17,15 @@ class Settings(BaseSettings):
     environment: Environment
     log_level: str = "DEBUG"
     unit_tests: bool = False
-    database_url: str
     root_domain: str
     allow_origin_regex: str
+
+    database_type: DatabaseType
+    database_host: str
+    database_port: int
+    database_username: str
+    database_password: str
+    database_name: str
 
     account_table_prefix: str = "fief_"
 
@@ -46,23 +53,20 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
 
-    @validator("database_url")
-    def replace_postgres_scheme(cls, url: str) -> str:
-        """
-        Ensures scheme is compatible with newest version of SQLAlchemy.
-        Ref: https://help.heroku.com/ZKNTJQSK/why-is-sqlalchemy-1-4-x-not-connecting-to-heroku-postgres
-        """
-        if url.startswith("postgres://"):
-            url = url.replace("postgres://", "postgresql://", 1)
-        return url
-
-    def get_database_url(self, asyncio=True) -> str:
+    def get_database_url(self, asyncio=True) -> engine.URL:
         """
         Returns a proper database URL for async or not-async context.
 
         Some tools like Alembic still require a sync connection.
         """
-        return get_database_url(self.database_url, asyncio)
+        return engine.URL.create(
+            drivername=get_driver(self.database_type, asyncio=asyncio),
+            username=self.database_username,
+            password=self.database_password,
+            host=self.database_host,
+            port=self.database_port,
+            database=self.database_name,
+        )
 
 
 settings = Settings()

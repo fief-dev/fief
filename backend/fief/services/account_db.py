@@ -1,8 +1,9 @@
 import asyncio
 from os import path
+from typing import Optional
 
-from sqlalchemy import create_engine, exc, select
-from sqlalchemy.engine import Engine
+from sqlalchemy import create_engine, exc, inspect, select
+from sqlalchemy.engine import URL, Engine
 from sqlalchemy.schema import CreateSchema
 
 from alembic import command
@@ -25,14 +26,10 @@ class AccountDatabaseConnectionError(AccountDatabaseError):
 
 
 class AccountDatabase:
-    def migrate(
-        self, database_url: str, schema_name: str, *, create_schema: bool = False
-    ):
+    def migrate(self, database_url: URL, schema_name: str):
         try:
-            if create_schema:
-                self._create_schema(database_url, schema_name)
-
-            engine = self._get_schema_engine(database_url, schema_name)
+            self._ensure_schema(database_url, schema_name)
+            engine = self._get_engine(database_url, schema_name)
             with engine.begin() as connection:
                 alembic_config = Config(alembic_config_file, ini_section="account")
                 alembic_config.attributes["connection"] = connection
@@ -40,16 +37,22 @@ class AccountDatabase:
         except exc.OperationalError as e:
             raise AccountDatabaseConnectionError(str(e)) from e
 
-    def _create_schema(self, database_url: str, schema_name: str):
+    def _ensure_schema(self, database_url: URL, schema_name: str):
         engine = create_engine(database_url)
-        with engine.begin() as connection:
-            connection.execute(CreateSchema(schema_name))
+        inspector = inspect(engine)
+        schemas = inspector.get_schema_names()
+        if schema_name not in schemas:
+            with engine.begin() as connection:
+                connection.execute(CreateSchema(schema_name))
 
-    def _get_schema_engine(self, database_url: str, schema_name: str) -> Engine:
+    def _get_engine(self, database_url: URL, schema_name: str) -> Engine:
         connect_args = {}
 
-        if database_url.startswith("postgresql://"):
+        dialect_name = database_url.get_dialect().name
+        if dialect_name == "postgresql":
             connect_args["options"] = f"-csearch_path={schema_name}"
+        elif dialect_name == "mysql":
+            database_url = database_url.set(database=schema_name)
 
         return create_engine(database_url, connect_args=connect_args)
 

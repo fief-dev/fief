@@ -1,16 +1,18 @@
-from typing import AsyncGenerator
+from typing import AsyncGenerator, Tuple
 
 import pytest
-from sqlalchemy import create_engine, inspect
+from sqlalchemy import create_engine, engine, inspect
 
-from fief.models import Account
+from fief.db.types import DatabaseType
 from fief.services.account_db import AccountDatabase, AccountDatabaseConnectionError
 
 
 @pytest.fixture
-async def test_database_url(get_test_database) -> AsyncGenerator[str, None]:
-    async with get_test_database(name="fief-test-account-db") as url:
-        yield url
+async def test_database_url(
+    get_test_database,
+) -> AsyncGenerator[Tuple[engine.URL, DatabaseType], None]:
+    async with get_test_database(name="fief-test-account-db") as (url, database_type):
+        yield url, database_type
 
 
 @pytest.fixture
@@ -23,17 +25,22 @@ class TestMigrate:
 
         with pytest.raises(AccountDatabaseConnectionError):
             account_db.migrate(
-                "postgresql://foo:bar@localhost:1234/foobar",
+                engine.make_url("postgresql://foo:bar@localhost:1234/foobar"),
                 "account-schema",
-                create_schema=True,
             )
 
-    def test_valid_db(self, account_db: AccountDatabase, test_database_url: str):
-        account_db.migrate(test_database_url, "account-schema", create_schema=True)
+    def test_valid_db(
+        self,
+        account_db: AccountDatabase,
+        test_database_url: Tuple[engine.URL, DatabaseType],
+    ):
+        url, _ = test_database_url
+        schema = "account_schema"
+        account_db.migrate(url, schema)
 
-        engine = create_engine(test_database_url)
+        engine = create_engine(url)
         inspector = inspect(engine)
-        table_names = inspector.get_table_names("account-schema")
+        table_names = inspector.get_table_names(schema)
 
         assert "fief_alembic_version" in table_names
         assert "fief_tenants" in table_names

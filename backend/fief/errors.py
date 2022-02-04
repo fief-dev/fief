@@ -17,6 +17,9 @@ from fief.schemas.register import RegisterError
 
 
 class APIErrorCode(str, Enum):
+    ACCOUNT_CREATE_MISSING_DATABASE_SETTINGS = (
+        "ACCOUNT_CREATE_MISSING_DATABASE_SETTINGS"
+    )
     ACCOUNT_DB_CONNECTION_ERROR = "ACCOUNT_DB_CONNECTION_ERROR"
 
 

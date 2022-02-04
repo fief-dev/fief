@@ -37,9 +37,7 @@ class AccountCreation:
 
         # Apply the database schema
         self.account_db.migrate(
-            account.get_database_url(False),
-            account.get_schema_name(),
-            create_schema=True,
+            account.get_database_url(False), account.get_schema_name()
         )
 
         # Create a default tenant and client
@@ -76,9 +74,7 @@ async def create_global_fief_account():
             logger.debug(f"Global Fief account {account.domain} already exists")
             return
 
-        account_create = AccountCreate(
-            name="Fief", database_url=settings.get_database_url(asyncio=False)
-        )
+        account_create = AccountCreate(name="Fief")
         account_db = AccountDatabase()
         account_creation = AccountCreation(account_manager, account_db)
 
