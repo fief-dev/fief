@@ -1,6 +1,5 @@
 import contextlib
-from functools import lru_cache
-from typing import AsyncGenerator, Dict
+from typing import TYPE_CHECKING, AsyncGenerator, Dict
 
 from sqlalchemy import engine
 from sqlalchemy.ext.asyncio import (
@@ -11,9 +10,10 @@ from sqlalchemy.ext.asyncio import (
 )
 from sqlalchemy.orm import sessionmaker
 
-from fief.db.types import DatabaseType
-from fief.models import Account
 from fief.settings import settings
+
+if TYPE_CHECKING:
+    from fief.models import Account
 
 
 def create_engine(database_url: engine.URL) -> AsyncEngine:
@@ -59,7 +59,7 @@ account_engine_manager = AccountEngineManager()
 
 
 @contextlib.asynccontextmanager
-async def get_account_session(account: Account) -> AsyncGenerator[AsyncSession, None]:
+async def get_account_session(account: "Account") -> AsyncGenerator[AsyncSession, None]:
     engine = account_engine_manager.get_engine(account.get_database_url())
     async with engine.connect() as connection:
         connection = await connection.execution_options(
