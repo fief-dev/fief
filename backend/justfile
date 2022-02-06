@@ -49,3 +49,6 @@ start: start-db compile-translations build-css
 
 start-watch:
   watchexec -r --exts po,py,html -- just start
+
+bumpversion version:
+  bumpversion {{version}}

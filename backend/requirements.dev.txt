@@ -2,6 +2,7 @@
 
 asgi-lifespan
 black
+bumpversion
 coverage[toml]
 flit
 httpx
