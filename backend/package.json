@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "build:css": "sass ../styles/globals.scss | tailwindcss -i /dev/stdin -o static/output.css"
+    "build:css": "sass ../styles/globals.scss | tailwindcss -i /dev/stdin -o fief/static/output.css"
   },
   "dependencies": {
     "@tailwindcss/forms": "^0.4.0",

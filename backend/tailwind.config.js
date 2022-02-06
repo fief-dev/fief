@@ -3,7 +3,7 @@ const plugin = require('tailwindcss/plugin');
 
 module.exports = {
   content: [
-    './templates/**/*.html',
+    './fief/templates/**/*.html',
   ],
   theme: {
     extend: {

@@ -13,11 +13,11 @@ test $UNIT_TESTS="1":
   pytest --cov fief/ --cov-report=term-missing
 
 update-translations:
-  pybabel extract --mapping babel.cfg --output-file=locale/auth.pot .
-  pybabel update --domain=auth --input-file=locale/auth.pot --output-dir=locale
+  pybabel extract --mapping babel.cfg --output-file=fief/locale/auth.pot .
+  pybabel update --domain=auth --input-file=fief/locale/auth.pot --output-dir=fief/locale
 
 compile-translations:
-  pybabel compile --domain=auth --directory=locale
+  pybabel compile --domain=auth --directory=fief/locale
 
 build-css:
   npm run build:css
@@ -33,16 +33,16 @@ stop-db:
   docker rm -f fief-dev-db
 
 revision-global message: start-db
-  alembic -n global revision --autogenerate -m "{{message}}"
+  alembic -c fief/alembic.ini -n global revision --autogenerate -m "{{message}}"
 
 migrate-global: start-db
-  alembic -n global upgrade head
+  alembic -c fief/alembic.ini -n global upgrade head
 
 revision-account message: start-db
-  alembic -n account revision --autogenerate -m "{{message}}"
+  alembic -c fief/alembic.ini -n account revision --autogenerate -m "{{message}}"
 
 migrate-account: start-db
-  alembic -n account upgrade head
+  alembic -c fief/alembic.ini -n account upgrade head
 
 start: start-db compile-translations build-css
   uvicorn --host 0.0.0.0 --port 8000 fief.app:app

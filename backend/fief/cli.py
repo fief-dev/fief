@@ -1,19 +1,16 @@
-from os import path
-
 import typer
 import uvicorn
+from alembic import command
+from alembic.config import Config
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import sessionmaker
 
-from alembic import command
-from alembic.config import Config
 from fief import __version__
 from fief.app import app as fief_app
 from fief.models import Account
+from fief.paths import ALEMBIC_CONFIG_FILE
 from fief.services.account_db import AccountDatabase
 from fief.settings import settings
-
-alembic_config_file = path.join(path.dirname(__file__), "alembic.ini")
 
 app = typer.Typer()
 
@@ -32,7 +29,7 @@ def migrate_global():
     """Apply database migrations to the global database."""
     engine = create_engine(settings.get_database_url(False))
     with engine.begin() as connection:
-        alembic_config = Config(alembic_config_file, ini_section="global")
+        alembic_config = Config(ALEMBIC_CONFIG_FILE, ini_section="global")
         alembic_config.attributes["connection"] = connection
         command.upgrade(alembic_config, "head")
 

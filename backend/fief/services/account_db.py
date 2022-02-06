@@ -1,15 +1,10 @@
-from os import path
-
+from alembic import command
+from alembic.config import Config
 from sqlalchemy import create_engine, exc, inspect
 from sqlalchemy.engine import URL, Engine
 from sqlalchemy.schema import CreateSchema
 
-from alembic import command
-from alembic.config import Config
-
-alembic_config_file = path.join(
-    path.dirname(path.dirname(path.dirname(__file__))), "alembic.ini"
-)
+from fief.paths import ALEMBIC_CONFIG_FILE
 
 
 class AccountDatabaseError(Exception):
@@ -25,7 +20,7 @@ class AccountDatabase:
         try:
             engine = self.get_engine(database_url, schema_name)
             with engine.begin() as connection:
-                alembic_config = Config(alembic_config_file, ini_section="account")
+                alembic_config = Config(ALEMBIC_CONFIG_FILE, ini_section="account")
                 alembic_config.attributes["connection"] = connection
                 command.upgrade(alembic_config, "head")
         except exc.OperationalError as e:

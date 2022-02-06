@@ -10,6 +10,10 @@ module = "jwcrypto.*"
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
+module = "uvicorn"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
 module = "uvicorn.logging.*"
 ignore_missing_imports = true
 
@@ -18,7 +22,55 @@ profile = "black"
 
 [tool.coverage.run]
 concurrency = ["greenlet"]
+omit = ["fief/alembic/*"]
 
 [tool.pytest.ini_options]
 markers = ["test_data", "account_host", "access_token", "admin_session_token"]
 asyncio_mode = "auto"
+
+[build-system]
+requires = ["flit_core >=3.2,<4"]
+build-backend = "flit_core.buildapi"
+
+[tool.flit.module]
+name = "fief"
+
+[project]
+name = "fief-server"
+authors = [
+  { name = "François Voron", email = "contact@fief.dev" }
+]
+description = "Users and authentication management SaaS"
+classifiers = [
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3 :: Only",
+]
+dynamic = ["version"]
+requires-python = ">=3.10"
+dependencies = [
+    "aiomysql ==0.0.22",
+    "aiosqlite ==0.17.0",
+    "alembic ==1.7.5",
+    "asyncpg ==0.25.0",
+    "Babel ==2.9.1",
+    "fastapi ==0.73.0",
+    "fastapi-users[sqlalchemy2] ==9.2.3",
+    "fief-client ==0.3.3",
+    "furl ==2.1.3",
+    "gunicorn ==20.1.0",
+    "Jinja2 ==3.0.3",
+    "jwcrypto ==1.0",
+    "psycopg2 ==2.9.3",
+    "pydantic[dotenv] ==1.9.0",
+    "python-slugify ==5.0.2",
+    "sqlalchemy[mypy] ==1.4.31",
+    "typer ==0.4.0",
+    "uvicorn[standard ]==0.17.1",
+]
+
+[project.scripts]
+fief = "fief.cli:app"
+
+[project.urls]
+Documentation = "https://docs.fief.dev"

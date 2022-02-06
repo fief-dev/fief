@@ -18,6 +18,7 @@ from fief.errors import (
     RegisterException,
     TokenRequestException,
 )
+from fief.paths import STATIC_DIRECTORY
 from fief.services.authentication_flow import AuthenticationFlow
 
 
@@ -39,7 +40,7 @@ app = FastAPI()
 app.add_middleware(CSRFCookieSetterMiddleware)
 app.include_router(default_tenant_router)
 app.include_router(tenant_router)
-app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/static", StaticFiles(directory=STATIC_DIRECTORY), name="static")
 
 
 @app.exception_handler(FormValidationError)

@@ -3,7 +3,7 @@
 asgi-lifespan
 black
 coverage[toml]
-greenlet
+flit
 httpx
 isort
 mypy
