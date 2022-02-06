@@ -1,15 +1,11 @@
-import asyncio
 from os import path
 
-from sqlalchemy import create_engine, exc, inspect, select
+from sqlalchemy import create_engine, exc, inspect
 from sqlalchemy.engine import URL, Engine
 from sqlalchemy.schema import CreateSchema
 
 from alembic import command
 from alembic.config import Config
-from fief.db import global_async_session_maker
-from fief.managers import AccountManager
-from fief.models import Account
 
 alembic_config_file = path.join(
     path.dirname(path.dirname(path.dirname(__file__))), "alembic.ini"
@@ -62,20 +58,3 @@ class AccountDatabase:
         if schema_name not in schemas:
             with engine.begin() as connection:
                 connection.execute(CreateSchema(schema_name))
-
-
-def migrate_account_db(account_database: AccountDatabase, account: Account):
-    account_database.migrate(account.get_database_url(False), account.get_schema_name())
-
-
-async def migrate_accounts():
-    account_database = AccountDatabase()
-    async with global_async_session_maker() as session:
-        account_manager = AccountManager(session)
-        accounts = await account_manager.list(select(Account))
-        for account in accounts:
-            migrate_account_db(account_database, account)
-
-
-if __name__ == "__main__":
-    asyncio.run(migrate_accounts())

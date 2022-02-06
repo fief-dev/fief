@@ -32,16 +32,16 @@ start-db:
 stop-db:
   docker rm -f fief-dev-db
 
-revision-global-db message: start-db
+revision-global message: start-db
   alembic -n global revision --autogenerate -m "{{message}}"
 
-migrate-global-db: start-db
+migrate-global: start-db
   alembic -n global upgrade head
 
-revision-account-db message: start-db
+revision-account message: start-db
   alembic -n account revision --autogenerate -m "{{message}}"
 
-migrate-account-db: start-db
+migrate-account: start-db
   alembic -n account upgrade head
 
 start: start-db compile-translations build-css

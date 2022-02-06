@@ -14,4 +14,5 @@ psycopg2==2.9.3
 pydantic[dotenv]==1.9.0
 python-slugify==5.0.2
 sqlalchemy[mypy]==1.4.31
+typer==0.4.0
 uvicorn[standard]==0.17.1
