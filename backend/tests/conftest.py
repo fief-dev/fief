@@ -125,7 +125,16 @@ async def account(
     create_global_db,
 ) -> AsyncGenerator[Account, None]:
     url, database_type = main_test_database
-    account = Account(name="Duché de Bretagne", domain="bretagne.fief.dev")
+    account = Account(
+        name="Duché de Bretagne",
+        domain="bretagne.fief.dev",
+        database_type=database_type,
+        database_host=url.host,
+        database_port=url.port,
+        database_username=url.username,
+        database_password=url.password,
+        database_name=url.database,
+    )
     global_session.add(account)
     await global_session.commit()
 
