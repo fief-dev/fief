@@ -51,8 +51,18 @@ def migrate_accounts():
 
 
 @app.command("run-server")
-def run_server(host: str = "0.0.0.0", port: int = 8000):
+def run_server(
+    host: str = "0.0.0.0",
+    port: int = 8000,
+    migrate: bool = typer.Option(
+        True,
+        help="Run the migrations on global and accounts databases before starting.",
+    ),
+):
     """Run the Fief backend server."""
+    if migrate:
+        migrate_global()
+        migrate_accounts()
     uvicorn.run(fief_app, host=host, port=port)
 
 
