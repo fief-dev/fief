@@ -59,7 +59,7 @@ jobs:
         database_host: ${{ matrix.database_host }}
         database_port: ${{ matrix.database_port }}
         database_username: ${{ matrix.database_username }}
-        database_password: ${{ matrix.database_port }}
+        database_password: ${{ matrix.database_password }}
         database_name: fief
 
   test-auth-frontend:
