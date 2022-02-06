@@ -29,11 +29,11 @@ class Settings(BaseSettings):
     encryption_key: bytes
 
     database_type: DatabaseType
-    database_host: str
-    database_port: int
-    database_username: str
-    database_password: str
-    database_name: str
+    database_host: Optional[str] = None
+    database_port: Optional[int] = None
+    database_username: Optional[str] = None
+    database_password: Optional[str] = None
+    database_name: Optional[str] = None
 
     account_table_prefix: str = "fief_"
 

@@ -22,6 +22,7 @@ from fief.db import (
     AsyncEngine,
     AsyncSession,
     create_engine,
+    get_connection,
     get_global_async_session,
 )
 from fief.db.types import DatabaseType, get_driver
@@ -124,16 +125,7 @@ async def account(
     create_global_db,
 ) -> AsyncGenerator[Account, None]:
     url, database_type = main_test_database
-    account = Account(
-        name="Duché de Bretagne",
-        domain="bretagne.fief.dev",
-        database_type=database_type,
-        database_host=url.host,
-        database_port=url.port,
-        database_username=url.username,
-        database_password=url.password,
-        database_name=url.database,
-    )
+    account = Account(name="Duché de Bretagne", domain="bretagne.fief.dev")
     global_session.add(account)
     await global_session.commit()
 
@@ -154,10 +146,7 @@ async def account_engine(account: Account) -> AsyncGenerator[AsyncEngine, None]:
 async def account_connection(
     account_engine: AsyncEngine, account: Account
 ) -> AsyncGenerator[AsyncConnection, None]:
-    async with account_engine.connect() as connection:
-        connection = await connection.execution_options(
-            schema_translate_map={None: account.get_schema_name()}
-        )
+    async with get_connection(account_engine, account.get_schema_name()) as connection:
         await connection.begin()
         yield connection
         await connection.rollback()

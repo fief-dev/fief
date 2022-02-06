@@ -1,14 +1,14 @@
 """Initial migration
 
 Revision ID: 0863948660e4
-Revises: 
+Revises:
 Create Date: 2022-01-31 18:42:28.378578
 
 """
 import sqlalchemy as sa
 
 import fief
-from alembic import op
+from alembic import context, op
 
 # revision identifiers, used by Alembic.
 revision = "0863948660e4"
@@ -25,13 +25,13 @@ def upgrade():
         sa.Column(
             "created_at",
             sa.TIMESTAMP(timezone=True),
-            server_default=sa.text("now()"),
+            server_default=sa.func.now(),
             nullable=False,
         ),
         sa.Column(
             "updated_at",
             sa.TIMESTAMP(timezone=True),
-            server_default=sa.text("now()"),
+            server_default=sa.func.now(),
             nullable=False,
         ),
         sa.Column("name", sa.String(length=255), nullable=False),
@@ -54,13 +54,13 @@ def upgrade():
         sa.Column(
             "created_at",
             sa.TIMESTAMP(timezone=True),
-            server_default=sa.text("now()"),
+            server_default=sa.func.now(),
             nullable=False,
         ),
         sa.Column(
             "updated_at",
             sa.TIMESTAMP(timezone=True),
-            server_default=sa.text("now()"),
+            server_default=sa.func.now(),
             nullable=False,
         ),
         sa.Column("name", sa.String(length=255), nullable=False),
@@ -91,13 +91,13 @@ def upgrade():
         sa.Column(
             "created_at",
             sa.TIMESTAMP(timezone=True),
-            server_default=sa.text("now()"),
+            server_default=sa.func.now(),
             nullable=False,
         ),
         sa.Column(
             "updated_at",
             sa.TIMESTAMP(timezone=True),
-            server_default=sa.text("now()"),
+            server_default=sa.func.now(),
             nullable=False,
         ),
         sa.Column("email", sa.String(length=320), nullable=False),
@@ -123,13 +123,13 @@ def upgrade():
         sa.Column(
             "created_at",
             sa.TIMESTAMP(timezone=True),
-            server_default=sa.text("now()"),
+            server_default=sa.func.now(),
             nullable=False,
         ),
         sa.Column(
             "updated_at",
             sa.TIMESTAMP(timezone=True),
-            server_default=sa.text("now()"),
+            server_default=sa.func.now(),
             nullable=False,
         ),
         sa.Column("code", sa.String(length=255), nullable=False),
@@ -165,13 +165,13 @@ def upgrade():
         sa.Column(
             "created_at",
             sa.TIMESTAMP(timezone=True),
-            server_default=sa.text("now()"),
+            server_default=sa.func.now(),
             nullable=False,
         ),
         sa.Column(
             "updated_at",
             sa.TIMESTAMP(timezone=True),
-            server_default=sa.text("now()"),
+            server_default=sa.func.now(),
             nullable=False,
         ),
         sa.Column("token", sa.String(length=255), nullable=False),
@@ -207,13 +207,13 @@ def upgrade():
         sa.Column(
             "created_at",
             sa.TIMESTAMP(timezone=True),
-            server_default=sa.text("now()"),
+            server_default=sa.func.now(),
             nullable=False,
         ),
         sa.Column(
             "updated_at",
             sa.TIMESTAMP(timezone=True),
-            server_default=sa.text("now()"),
+            server_default=sa.func.now(),
             nullable=False,
         ),
         sa.Column("token", sa.String(length=255), nullable=False),

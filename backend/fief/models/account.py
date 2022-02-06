@@ -1,4 +1,4 @@
-from typing import Optional, Union, cast
+from typing import Optional, Union
 
 from sqlalchemy import Column, Enum, String, Text, engine, event
 
@@ -32,26 +32,40 @@ class Account(UUIDModel, CreatedUpdatedAt, GlobalBase):
         If it's not specified on the model, the instance database URL is returned.
         """
         if self.database_type is None:
-            return settings.get_database_url(asyncio)
+            url = settings.get_database_url(asyncio)
+        else:
+            url = engine.URL.create(
+                drivername=get_driver(self.database_type, asyncio=asyncio),
+                username=self._decrypt_database_setting("database_username"),
+                password=self._decrypt_database_setting("database_password"),
+                host=self._decrypt_database_setting("database_host"),
+                port=self._decrypt_database_port(),
+                database=self._decrypt_database_setting("database_name"),
+            )
 
-        return engine.URL.create(
-            drivername=get_driver(self.database_type, asyncio=asyncio),
-            username=decrypt(
-                cast(str, self.database_username), settings.encryption_key
-            ),
-            password=decrypt(
-                cast(str, self.database_password), settings.encryption_key
-            ),
-            host=decrypt(cast(str, self.database_host), settings.encryption_key),
-            port=int(decrypt(cast(str, self.database_port), settings.encryption_key)),
-            database=decrypt(cast(str, self.database_name), settings.encryption_key),
-        )
+        dialect_name = url.get_dialect().name
+        if dialect_name == "sqlite":
+            url = url.set(database=f"{self.get_schema_name()}.db")
+
+        return url
 
     def get_schema_name(self) -> str:
         """
         Return the SQL schema name where the data is stored.
         """
         return str(self.id)
+
+    def _decrypt_database_setting(self, attribute: str) -> Optional[str]:
+        value = getattr(self, attribute)
+        if value is None:
+            return value
+        return decrypt(value, settings.encryption_key)
+
+    def _decrypt_database_port(self) -> Optional[int]:
+        value = self._decrypt_database_setting("database_port")
+        if value is None:
+            return value
+        return int(value)
 
 
 def encrypt_database_setting(

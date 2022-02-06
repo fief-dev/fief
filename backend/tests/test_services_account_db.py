@@ -1,7 +1,7 @@
 from typing import AsyncGenerator, Tuple
 
 import pytest
-from sqlalchemy import create_engine, engine, inspect
+from sqlalchemy import engine, inspect
 
 from fief.db.types import DatabaseType
 from fief.services.account_db import AccountDatabase, AccountDatabaseConnectionError
@@ -38,9 +38,10 @@ class TestMigrate:
         schema = "account_schema"
         account_db.migrate(url, schema)
 
-        engine = create_engine(url)
+        engine = account_db.get_engine(url, schema)
         inspector = inspect(engine)
-        table_names = inspector.get_table_names(schema)
+
+        table_names = inspector.get_table_names()
 
         assert "fief_alembic_version" in table_names
         assert "fief_tenants" in table_names

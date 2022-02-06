@@ -38,10 +38,17 @@ jobs:
             database_host: localhost
             database_port: 5432
             database_username: fief
+            database_password: fiefpassword
           - database_type: MYSQL
             database_host: localhost
             database_port: 3306
             database_username: root
+            database_password: fiefpassword
+          - database_type: SQLITE
+            database_host: null
+            database_port: null
+            database_username: null
+            database_password: null
 
     steps:
     - uses: actions/checkout@v2
@@ -52,7 +59,7 @@ jobs:
         database_host: ${{ matrix.database_host }}
         database_port: ${{ matrix.database_port }}
         database_username: ${{ matrix.database_username }}
-        database_password: fiefpassword
+        database_password: ${{ matrix.database_port }}
         database_name: fief
 
   test-auth-frontend:

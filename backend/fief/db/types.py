@@ -5,16 +5,19 @@ from typing import Dict
 class DatabaseType(str, Enum):
     POSTGRESQL = "POSTGRESQL"
     MYSQL = "MYSQL"
+    SQLITE = "SQLITE"
 
 
 SYNC_DRIVERS: Dict[DatabaseType, str] = {
     DatabaseType.POSTGRESQL: "postgresql",
     DatabaseType.MYSQL: "mysql+pymysql",
+    DatabaseType.SQLITE: "sqlite",
 }
 
 ASYNC_DRIVERS: Dict[DatabaseType, str] = {
     DatabaseType.POSTGRESQL: "postgresql+asyncpg",
     DatabaseType.MYSQL: "mysql+aiomysql",
+    DatabaseType.SQLITE: "sqlite+aiosqlite",
 }
 
 
