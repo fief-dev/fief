@@ -2,11 +2,11 @@ name: Release
 
 on:
   release:
-    types: [created]
+    types: [published]
 
 jobs:
   publish:
-    name: 'Publish on PyPi'
+    name: Publish on PyPi
     runs-on: ubuntu-latest
 
     steps:
@@ -25,3 +25,10 @@ jobs:
         FLIT_PASSWORD: ${{ secrets.FLIT_PASSWORD }}
       run: |
         flit publish
+    - name: Update release
+      uses: ncipollo/release-action@v1
+      with:
+        allowUpdates: true
+        draft: false
+        token: ${{ secrets.GITHUB_TOKEN }}
+        artifacts: dist/*.whl,dist/*.tar.gz
