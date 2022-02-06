@@ -72,6 +72,12 @@ class Settings(BaseSettings):
 
         return key
 
+    @validator("database_port", pre=True)
+    def validate_empty_port(cls, value: Optional[str]) -> Optional[str]:
+        if value is None or value == "":
+            return None
+        return value
+
     def get_database_url(self, asyncio=True) -> engine.URL:
         """
         Returns a proper database URL for async or not-async context.
