@@ -111,6 +111,14 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
+    - name: Wait package to be truly available from PyPI
+      shell: bash
+      run: |
+        sleep 60
+    - name: Set raw version variable
+      shell: bash
+      run: |
+        echo "${{ github.ref_name }}" | sed "s/v/RAW_VERSION=$1/" >>  $GITHUB_ENV
     - name: Login to Docker Hub
       uses: docker/login-action@v1
       with:
@@ -124,11 +132,14 @@ jobs:
       uses: docker/metadata-action@v3
       with:
         images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+        tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
     - name: Build and push
       uses: docker/build-push-action@v2
       with:
         build-args: |
-          FIEF_VERSION=${{ github.ref_name }}
+          FIEF_VERSION=${{ env.RAW_VERSION }}
         context: .
         file: ./Dockerfile
         push: true
