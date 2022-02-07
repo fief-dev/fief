@@ -1,7 +1,8 @@
 <html lang="en">
   <head>
     {% block head %}
-      <title>{% block title %}{% endblock %}</title>
+      <title>{% block head_title %}{% endblock %} - {{ tenant.name if tenant is defined else "Fief" }}</title>
+      <link rel="icon" href="{{ url_for('static', path='/favicon.svg') }}" />
       <link href="{{ url_for('static', path='/output.css') }}" rel="stylesheet">
     {% endblock %}
   </head>
