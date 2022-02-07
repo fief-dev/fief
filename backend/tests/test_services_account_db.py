@@ -20,8 +20,9 @@ def account_db() -> AccountDatabase:
     return AccountDatabase()
 
 
+@pytest.mark.asyncio
 class TestMigrate:
-    def test_connection_error(self, account_db: AccountDatabase):
+    async def test_connection_error(self, account_db: AccountDatabase):
 
         with pytest.raises(AccountDatabaseConnectionError):
             account_db.migrate(
@@ -29,7 +30,7 @@ class TestMigrate:
                 "account-schema",
             )
 
-    def test_valid_db(
+    async def test_valid_db(
         self,
         account_db: AccountDatabase,
         test_database_url: Tuple[engine.URL, DatabaseType],
