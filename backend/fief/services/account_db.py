@@ -21,6 +21,7 @@ class AccountDatabase:
             engine = self.get_engine(database_url, schema_name)
             with engine.begin() as connection:
                 alembic_config = Config(ALEMBIC_CONFIG_FILE, ini_section="account")
+                alembic_config.attributes["configure_logger"] = False
                 alembic_config.attributes["connection"] = connection
                 command.upgrade(alembic_config, "head")
         except exc.OperationalError as e:

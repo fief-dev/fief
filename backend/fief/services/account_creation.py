@@ -78,7 +78,7 @@ async def create_global_fief_account():
         account_db = AccountDatabase()
         account_creation = AccountCreation(account_manager, account_db)
 
-        await account_creation.create(
+        account = await account_creation.create(
             account_create,
             default_domain=settings.fief_domain,
             default_client_id=settings.fief_client_id,
@@ -86,4 +86,4 @@ async def create_global_fief_account():
             default_encryption_key=settings.fief_encryption_key,
         )
 
-        logger.info(f"Global Fief account {account.domain} created")
+    logger.info(f"Global Fief account {account.domain} created")
