@@ -45,7 +45,7 @@ app.mount("/static", StaticFiles(directory=STATIC_DIRECTORY), name="static")
 
 @app.exception_handler(FormValidationError)
 async def form_validation_error_handler(request: Request, exc: FormValidationError):
-    return templates.TemplateResponse(
+    return templates.LocaleTemplateResponse(
         exc.template,
         {
             "request": request,
@@ -53,13 +53,14 @@ async def form_validation_error_handler(request: Request, exc: FormValidationErr
             "tenant": exc.tenant,
             "fatal_error": False,
         },
+        translations=request.scope["translations"],
         status_code=status.HTTP_400_BAD_REQUEST,
     )
 
 
 @app.exception_handler(RegisterException)
 async def register_exception_handler(request: Request, exc: RegisterException):
-    return templates.TemplateResponse(
+    return templates.LocaleTemplateResponse(
         "register.html",
         {
             "request": request,
@@ -68,6 +69,7 @@ async def register_exception_handler(request: Request, exc: RegisterException):
             "tenant": exc.tenant,
             "fatal_error": exc.fatal,
         },
+        translations=request.scope["translations"],
         status_code=status.HTTP_400_BAD_REQUEST,
         headers={"X-Fief-Error": exc.error.error},
     )
@@ -75,7 +77,7 @@ async def register_exception_handler(request: Request, exc: RegisterException):
 
 @app.exception_handler(AuthorizeException)
 async def authorize_exception_handler(request: Request, exc: AuthorizeException):
-    return templates.TemplateResponse(
+    return templates.LocaleTemplateResponse(
         "authorize.html",
         {
             "request": request,
@@ -83,6 +85,7 @@ async def authorize_exception_handler(request: Request, exc: AuthorizeException)
             "tenant": exc.tenant,
             "fatal_error": True,
         },
+        translations=request.scope["translations"],
         status_code=status.HTTP_400_BAD_REQUEST,
         headers={"X-Fief-Error": exc.error.error},
     )
@@ -103,7 +106,7 @@ async def authorize_redirect_exception_handler(
 
 @app.exception_handler(LoginException)
 async def login_exception_handler(request: Request, exc: LoginException):
-    return templates.TemplateResponse(
+    return templates.LocaleTemplateResponse(
         "login.html",
         {
             "request": request,
@@ -111,6 +114,7 @@ async def login_exception_handler(request: Request, exc: LoginException):
             "tenant": exc.tenant,
             "fatal_error": exc.fatal,
         },
+        translations=request.scope["translations"],
         status_code=status.HTTP_400_BAD_REQUEST,
         headers={"X-Fief-Error": exc.error.error},
     )
@@ -118,7 +122,7 @@ async def login_exception_handler(request: Request, exc: LoginException):
 
 @app.exception_handler(ConsentException)
 async def consent_exception_handler(request: Request, exc: ConsentException):
-    return templates.TemplateResponse(
+    return templates.LocaleTemplateResponse(
         "consent.html",
         {
             "request": request,
@@ -128,6 +132,7 @@ async def consent_exception_handler(request: Request, exc: ConsentException):
             "tenant": exc.tenant,
             "fatal_error": exc.fatal,
         },
+        translations=request.scope["translations"],
         status_code=status.HTTP_400_BAD_REQUEST,
         headers={"X-Fief-Error": exc.error.error},
     )

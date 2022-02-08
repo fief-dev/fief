@@ -5,6 +5,7 @@ from typing import Dict, List, Optional, Union
 from pydantic import ValidationError
 from starlette.requests import FormData
 
+from fief.locale import Translations
 from fief.models import Client, Tenant
 from fief.schemas.auth import (
     AuthorizeError,
@@ -31,15 +32,20 @@ PYDANTIC_ERROR_MESSAGES = {
 
 
 class FormValidationError(ValidationError):
-    def __init__(self, template: str, tenant: Tenant, *args, **kwargs) -> None:
+    def __init__(
+        self, template: str, tenant: Tenant, translations: Translations, *args, **kwargs
+    ) -> None:
         self.template = template
         self.tenant = tenant
+        self.translations = translations
         super().__init__(*args, **kwargs)
 
     def form_errors(self) -> Dict[Union[str, int], str]:
         form_errors = {}
         for error in self.errors():
-            form_errors[error["loc"][0]] = PYDANTIC_ERROR_MESSAGES[error["type"]]
+            form_errors[error["loc"][0]] = self.translations.gettext(
+                PYDANTIC_ERROR_MESSAGES[error["type"]]
+            )
         return form_errors
 
 

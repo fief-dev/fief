@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta, timezone
-from gettext import gettext as _
 from typing import List, Tuple
 
 from fastapi import APIRouter, Depends

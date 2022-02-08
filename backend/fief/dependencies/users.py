@@ -1,4 +1,3 @@
-from gettext import gettext as _
 from typing import AsyncGenerator, Dict, Optional, Type, Union, cast
 
 from fastapi import Depends, Request
@@ -21,7 +20,9 @@ from sqlalchemy.sql import Select
 from fief.crypto.access_token import InvalidAccessToken, read_access_token
 from fief.db import AsyncSession
 from fief.dependencies.account import get_current_account_session
+from fief.dependencies.locale import get_translations
 from fief.dependencies.tenant import get_current_tenant
+from fief.locale import Translations
 from fief.models import Tenant, User
 from fief.schemas.user import UserCreate, UserCreateInternal, UserDB
 
@@ -31,16 +32,24 @@ class UserManager(BaseUserManager[UserCreate, UserDB]):
     reset_password_token_secret = "SECRET"
     verification_token_secret = "SECRET"
 
-    def __init__(self, user_db: SQLAlchemyUserDatabase[UserDB], tenant: Tenant):
+    def __init__(
+        self,
+        user_db: SQLAlchemyUserDatabase[UserDB],
+        tenant: Tenant,
+        translations: Translations,
+    ):
         super().__init__(user_db)
         self.tenant = tenant
+        self.translations = translations
 
     async def validate_password(
         self, password: str, user: Union[UserCreate, UserDB]
     ) -> None:
         if len(password) < 8:
             raise InvalidPasswordException(
-                reason=_("The password should be at least 8 characters.")
+                reason=self.translations.gettext(
+                    "The password should be at least 8 characters."
+                )
             )
 
     async def create(
@@ -125,8 +134,9 @@ async def get_user_db(
 async def get_user_manager(
     user_db: SQLAlchemyUserDatabase[UserDB] = Depends(get_user_db),
     tenant: Tenant = Depends(get_current_tenant),
+    translations: Translations = Depends(get_translations),
 ):
-    yield UserManager(user_db, tenant)
+    yield UserManager(user_db, tenant, translations)
 
 
 class AuthorizationCodeBearerTransport(BearerTransport):

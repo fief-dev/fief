@@ -1,4 +1,3 @@
-from gettext import gettext as _
 from typing import AsyncGenerator, List, Optional, Tuple, cast
 
 from fastapi import Depends, Form

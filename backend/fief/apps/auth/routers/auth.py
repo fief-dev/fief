@@ -1,4 +1,3 @@
-from gettext import gettext as _
 from typing import List, Optional, cast
 
 from fastapi import APIRouter, Depends, Query, Request, status
@@ -21,16 +20,18 @@ from fief.dependencies.auth import (
     get_needs_consent,
 )
 from fief.dependencies.authentication_flow import get_authentication_flow
+from fief.dependencies.locale import get_gettext, get_translations
 from fief.dependencies.session_token import get_session_token
 from fief.dependencies.tenant import get_current_tenant
 from fief.dependencies.users import UserManager, get_user_manager
 from fief.errors import LoginException
+from fief.locale import Translations
 from fief.models import Client, LoginSession, Tenant
 from fief.models.session_token import SessionToken
 from fief.schemas.auth import LoginError
 from fief.services.authentication_flow import AuthenticationFlow
 
-router = APIRouter(dependencies=[Depends(check_csrf)])
+router = APIRouter(dependencies=[Depends(check_csrf), Depends(get_translations)])
 
 
 @router.get("/authorize", name="auth:authorize")
@@ -69,11 +70,14 @@ async def authorize(
 
 @router.get("/login", name="auth:login.get")
 async def get_login(
-    request: Request, login_session: LoginSession = Depends(get_login_session)
+    request: Request,
+    login_session: LoginSession = Depends(get_login_session),
+    translations: Translations = Depends(get_translations),
 ):
-    return templates.TemplateResponse(
+    return templates.LocaleTemplateResponse(
         "login.html",
         {"request": request, "tenant": login_session.client.tenant},
+        translations=translations,
     )
 
 
@@ -86,6 +90,7 @@ async def post_login(
     authentication_flow: AuthenticationFlow = Depends(get_authentication_flow),
     session_token: Optional[SessionToken] = Depends(get_session_token),
     tenant: Tenant = Depends(get_current_tenant),
+    _=Depends(get_gettext),
 ):
     user = await user_manager.authenticate(credentials)
 
@@ -119,6 +124,7 @@ async def get_consent(
     needs_consent: bool = Depends(get_needs_consent),
     tenant: Tenant = Depends(get_current_tenant),
     authentication_flow: AuthenticationFlow = Depends(get_authentication_flow),
+    translations: Translations = Depends(get_translations),
 ):
     if session_token is None:
         return RedirectResponse(
@@ -139,7 +145,7 @@ async def get_consent(
         )
         return response
 
-    return templates.TemplateResponse(
+    return templates.LocaleTemplateResponse(
         "consent.html",
         {
             "request": request,
@@ -147,6 +153,7 @@ async def get_consent(
             "client": login_session.client,
             "scopes": login_session.scope,
         },
+        translations=translations,
     )
 
 
@@ -158,6 +165,7 @@ async def post_consent(
     session_token: Optional[SessionToken] = Depends(get_session_token),
     tenant: Tenant = Depends(get_current_tenant),
     authentication_flow: AuthenticationFlow = Depends(get_authentication_flow),
+    _=Depends(get_gettext),
 ):
     if session_token is None:
         return RedirectResponse(

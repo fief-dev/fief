@@ -1,4 +1,3 @@
-from gettext import gettext as _
 from typing import List, Optional, cast
 
 from fastapi import Cookie, Depends, Form, Query, Response
@@ -10,6 +9,7 @@ from fief.dependencies.account_managers import (
     get_login_session_manager,
 )
 from fief.dependencies.authentication_flow import get_authentication_flow
+from fief.dependencies.locale import get_gettext
 from fief.dependencies.session_token import get_session_token
 from fief.dependencies.tenant import get_current_tenant
 from fief.errors import (
@@ -33,6 +33,7 @@ from fief.settings import settings
 async def get_authorize_client(
     client_id: Optional[str] = Query(None),
     manager: ClientManager = Depends(get_client_manager),
+    _=Depends(get_gettext),
 ) -> Client:
     if client_id is None:
         raise AuthorizeException(
@@ -49,6 +50,7 @@ async def get_authorize_client(
 
 async def get_authorize_redirect_uri(
     redirect_uri: Optional[str] = Query(None),
+    _=Depends(get_gettext),
 ) -> str:
     if redirect_uri is None:
         raise AuthorizeException(
@@ -66,6 +68,7 @@ async def get_authorize_response_type(
     response_type: Optional[str] = Query(None),
     redirect_uri: str = Depends(get_authorize_redirect_uri),
     state: Optional[str] = Depends(get_authorize_state),
+    _=Depends(get_gettext),
 ) -> str:
     if response_type is None:
         raise AuthorizeRedirectException(
@@ -90,6 +93,7 @@ async def get_authorize_scope(
     scope: Optional[str] = Query(None),
     redirect_uri: str = Depends(get_authorize_redirect_uri),
     state: Optional[str] = Depends(get_authorize_state),
+    _=Depends(get_gettext),
 ) -> List[str]:
     if scope is None:
         raise AuthorizeRedirectException(
@@ -117,6 +121,7 @@ async def get_authorize_prompt(
     session_token: Optional[SessionToken] = Depends(get_session_token),
     redirect_uri: str = Depends(get_authorize_redirect_uri),
     state: Optional[str] = Depends(get_authorize_state),
+    _=Depends(get_gettext),
 ) -> Optional[str]:
     if prompt is not None and prompt not in ["none", "login", "consent"]:
         raise AuthorizeRedirectException(
@@ -141,6 +146,7 @@ async def get_authorize_screen(
     screen: str = Query("login"),
     redirect_uri: str = Depends(get_authorize_redirect_uri),
     state: Optional[str] = Depends(get_authorize_state),
+    _=Depends(get_gettext),
 ) -> str:
     if screen not in ["login", "register"]:
         raise AuthorizeRedirectException(
@@ -158,6 +164,7 @@ async def get_login_session(
     token: Optional[str] = Cookie(None, alias=settings.login_session_cookie_name),
     login_session_manager: LoginSessionManager = Depends(get_login_session_manager),
     tenant: Tenant = Depends(get_current_tenant),
+    _=Depends(get_gettext),
 ) -> LoginSession:
     invalid_session_error = LoginError.get_invalid_session(_("Invalid login session"))
     if token is None:
@@ -177,6 +184,7 @@ async def get_consent_action(
     action: Optional[str] = Form(None),
     login_session: LoginSession = Depends(get_login_session),
     tenant: Tenant = Depends(get_current_tenant),
+    _=Depends(get_gettext),
 ) -> str:
     if action is None or action not in ["allow", "deny"]:
         raise ConsentException(
@@ -214,6 +222,7 @@ async def get_consent_prompt(
     needs_consent: bool = Depends(get_needs_consent),
     tenant: Tenant = Depends(get_current_tenant),
     authentication_flow: AuthenticationFlow = Depends(get_authentication_flow),
+    _=Depends(get_gettext),
 ) -> Optional[str]:
     prompt = login_session.prompt
     if needs_consent and prompt == "none":

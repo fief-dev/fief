@@ -13,11 +13,11 @@ test $UNIT_TESTS="1":
   pytest --cov fief/ --cov-report=term-missing
 
 update-translations:
-  pybabel extract --mapping babel.cfg --output-file=fief/locale/auth.pot .
-  pybabel update --domain=auth --input-file=fief/locale/auth.pot --output-dir=fief/locale
+  pybabel extract --mapping babel.cfg --output-file=fief/locale/messages.pot .
+  pybabel update --domain=messages --input-file=fief/locale/messages.pot --output-dir=fief/locale
 
 compile-translations:
-  pybabel compile --domain=auth --directory=fief/locale
+  pybabel compile --domain=messages --directory=fief/locale
 
 build-css:
   npm run build:css

@@ -17,6 +17,10 @@ ignore_missing_imports = true
 module = "uvicorn.logging.*"
 ignore_missing_imports = true
 
+[[tool.mypy.overrides]]
+module = "babel.*"
+ignore_missing_imports = true
+
 [tool.isort]
 profile = "black"
 
