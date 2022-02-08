@@ -15,7 +15,7 @@ class LocaleJinja2Templates(Jinja2Templates):
         self,
         name: str,
         context: dict,
-        translations: Translations = None,
+        translations: Translations,
         status_code: int = 200,
         headers: dict = None,
         media_type: str = None,
