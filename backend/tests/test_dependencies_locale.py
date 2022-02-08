@@ -1,11 +1,11 @@
-from typing import AsyncGenerator, Optional
+from typing import AsyncGenerator, List, Optional
 
 import httpx
 import pytest
 from fastapi import Depends, FastAPI, status
 
-from fief.dependencies.locale import get_translations
-from fief.locale import Translations
+from fief.dependencies.locale import get_accepted_languages
+from fief.locale import get_preferred_locale
 from tests.conftest import TestClientGeneratorType
 
 
@@ -13,11 +13,11 @@ from tests.conftest import TestClientGeneratorType
 def app() -> FastAPI:
     app = FastAPI()
 
-    @app.get("/translations")
-    async def translations(
-        translations: Translations = Depends(get_translations),
+    @app.get("/locale")
+    async def locale(
+        languages: List[str] = Depends(get_accepted_languages),
     ):
-        return {"language": translations.info()["language"]}
+        return {"locale": get_preferred_locale(languages)}
 
     return app
 
@@ -43,21 +43,21 @@ async def test_client(
             "en_US",
             id="English preferred not sorted",
         ),
-        pytest.param("fr;q=0.9", "fr_FR", id="Language only"),
-        pytest.param("fr,en", "fr_FR", id="No quality"),
-        pytest.param("fr-ZZ;q=0.9", "fr_FR", id="Unsupported territory"),
+        pytest.param("fr;q=0.9", "fr", id="Language only"),
+        pytest.param("fr,en", "fr", id="No quality"),
+        pytest.param("fr-ZZ;q=0.9", "fr", id="Unsupported territory"),
         pytest.param("eo;q=0.9", "en_US", id="Unsupported language"),
     ],
 )
-async def test_get_translations(
+async def test_get_locale(
     accept: Optional[str], expected: str, test_client: httpx.AsyncClient
 ):
     headers = {}
     if accept is not None:
         headers["Accept-Language"] = accept
-    response = await test_client.get("/translations", headers=headers)
+    response = await test_client.get("/locale", headers=headers)
 
     assert response.status_code == status.HTTP_200_OK
 
     json = response.json()
-    assert json["language"] == expected
+    assert json["locale"] == expected
