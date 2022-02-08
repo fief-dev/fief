@@ -133,7 +133,7 @@ msgstr "Consentement"
 
 #: fief/templates/consent.html:5
 msgid "%(name)s wants to access your account"
-msgstr "%(name)% veut accéder à votre compte"
+msgstr "%(name)s veut accéder à votre compte"
 
 #: fief/templates/consent.html:10
 msgid "This will allow %(name)s to:"
