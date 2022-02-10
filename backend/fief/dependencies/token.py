@@ -1,4 +1,4 @@
-from typing import AsyncGenerator, List, Optional, Tuple, cast
+from typing import AsyncGenerator, List, Optional, Tuple
 
 from fastapi import Depends, Form
 from fastapi_users.manager import UserNotExists
@@ -70,7 +70,7 @@ async def validate_grant_request(
             raise TokenRequestException(TokenError.get_invalid_grant())
 
         yield (
-            cast(UUID4, authorization_code.user_id),
+            authorization_code.user_id,
             authorization_code.scope,
             client,
         )
@@ -93,7 +93,7 @@ async def validate_grant_request(
         if not set(new_scope).issubset(set(refresh_token.scope)):
             raise TokenRequestException(TokenError.get_invalid_scope())
 
-        yield (cast(UUID4, refresh_token.user_id), new_scope, client)
+        yield (refresh_token.user_id, new_scope, client)
 
         await refresh_token_manager.delete(refresh_token)
         return

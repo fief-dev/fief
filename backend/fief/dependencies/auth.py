@@ -1,4 +1,4 @@
-from typing import List, Optional, cast
+from typing import List, Optional
 
 from fastapi import Cookie, Depends, Form, Query, Response
 from pydantic import UUID4
@@ -207,8 +207,8 @@ async def get_needs_consent(
     if session_token is None:
         return True
 
-    client_id = cast(UUID4, login_session.client.id)
-    user_id = cast(UUID4, session_token.user_id)
+    client_id = login_session.client.id
+    user_id = session_token.user_id
     grant = await grant_manager.get_by_user_and_client(user_id, client_id)
 
     if grant is None or not set(login_session.scope).issubset(set(grant.scope)):

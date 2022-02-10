@@ -1,13 +1,15 @@
 from typing import Dict, Optional
+from unittest.mock import MagicMock
 
 import httpx
 import pytest
 from fastapi import status
-from furl import furl
 
 from fief.db import AsyncSession
-from fief.managers import LoginSessionManager, SessionTokenManager
+from fief.managers import SessionTokenManager
+from fief.models import Account
 from fief.settings import settings
+from fief.tasks import on_after_register
 from tests.conftest import TenantParams
 from tests.data import TestData
 
@@ -128,7 +130,9 @@ class TestPostRegister:
         self,
         test_client_auth: httpx.AsyncClient,
         test_data: TestData,
+        account: Account,
         account_session: AsyncSession,
+        send_task_mock: MagicMock,
     ):
         login_session = test_data["login_sessions"]["default"]
         cookies = {}
@@ -149,6 +153,10 @@ class TestPostRegister:
         session_token_manager = SessionTokenManager(account_session)
         session_token = await session_token_manager.get_by_token(session_cookie)
         assert session_token is not None
+
+        send_task_mock.assert_called_once_with(
+            on_after_register, session_token.user_id, account.id
+        )
 
     async def test_no_email_conflict_on_another_tenant(
         self, test_client_auth: httpx.AsyncClient, test_data: TestData

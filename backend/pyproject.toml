@@ -21,6 +21,14 @@ ignore_missing_imports = true
 module = "babel.*"
 ignore_missing_imports = true
 
+[[tool.mypy.overrides]]
+module = "postmarker.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "dramatiq.*"
+ignore_missing_imports = true
+
 [tool.isort]
 profile = "black"
 
@@ -58,6 +66,7 @@ dependencies = [
     "alembic ==1.7.5",
     "asyncpg ==0.25.0",
     "Babel ==2.9.1",
+    "dramatiq[redis] ==1.12.3",
     "fastapi ==0.73.0",
     "fastapi-users[sqlalchemy2] ==9.2.3",
     "fief-client ==0.3.3",
@@ -66,6 +75,7 @@ dependencies = [
     "gunicorn ==20.1.0",
     "Jinja2 ==3.0.3",
     "jwcrypto ==1.0",
+    "postmarker ==1.0",
     "psycopg2 ==2.9.3",
     "pydantic[dotenv] ==1.9.0",
     "python-slugify ==5.0.2",

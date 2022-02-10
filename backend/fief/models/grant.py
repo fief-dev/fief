@@ -1,5 +1,6 @@
 from typing import List
 
+from pydantic import UUID4
 from sqlalchemy import JSON, Column, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.schema import UniqueConstraint
@@ -16,8 +17,8 @@ class Grant(UUIDModel, CreatedUpdatedAt, AccountBase):
 
     scope: List[str] = Column(JSON, nullable=False, default=list)
 
-    user_id = Column(GUID, ForeignKey(User.id, ondelete="CASCADE"), nullable=False)
+    user_id: UUID4 = Column(GUID, ForeignKey(User.id, ondelete="CASCADE"), nullable=False)  # type: ignore
     user: User = relationship("User")
 
-    client_id = Column(GUID, ForeignKey(Client.id, ondelete="CASCADE"), nullable=False)
+    client_id: UUID4 = Column(GUID, ForeignKey(Client.id, ondelete="CASCADE"), nullable=False)  # type: ignore
     client: Client = relationship("Client", lazy="joined")

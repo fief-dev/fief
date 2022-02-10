@@ -1,4 +1,4 @@
-from typing import List, Optional, cast
+from typing import List, Optional
 
 from fastapi import APIRouter, Depends, Query, Request, status
 from fastapi.responses import RedirectResponse
@@ -132,7 +132,7 @@ async def get_consent(
         )
 
     if not needs_consent and prompt != "consent":
-        user_id = cast(UUID4, session_token.user_id)
+        user_id = session_token.user_id
         response = await authentication_flow.get_authorization_code_success_redirect(
             login_session.redirect_uri,
             login_session.scope,
@@ -173,7 +173,7 @@ async def post_consent(
         )
 
     if action == "allow":
-        user_id = cast(UUID4, session_token.user_id)
+        user_id = session_token.user_id
         await authentication_flow.create_or_update_grant(
             user_id, login_session.client, login_session.scope
         )

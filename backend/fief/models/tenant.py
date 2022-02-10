@@ -38,5 +38,4 @@ class Tenant(UUIDModel, CreatedUpdatedAt, AccountBase):
     def url_for(self, request: Request, name: str, **path_params: Any) -> str:
         if not self.default:
             path_params["tenant_slug"] = self.slug
-        print(self.default, path_params)
         return request.url_for(name, **path_params)

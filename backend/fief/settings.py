@@ -1,11 +1,12 @@
 from enum import Enum
-from typing import Optional
+from typing import Any, Dict, Optional
 
-from pydantic import BaseSettings, validator
+from pydantic import BaseSettings, Field, validator
 from sqlalchemy import engine
 
 from fief.crypto.encryption import is_valid_key
 from fief.db.types import DatabaseType, get_driver
+from fief.services.email import EMAIL_PROVIDERS, AvailableEmailProvider, EmailProvider
 
 
 class Environment(str, Enum):
@@ -34,6 +35,11 @@ class Settings(BaseSettings):
     database_username: Optional[str] = None
     database_password: Optional[str] = None
     database_name: Optional[str] = None
+
+    redis_broker: str = "redis://localhost:6379"
+
+    email_provider: AvailableEmailProvider = AvailableEmailProvider.NULL
+    email_provider_params: Dict[str, Any] = Field(default_factory=dict)
 
     account_table_prefix: str = "fief_"
 
@@ -92,6 +98,10 @@ class Settings(BaseSettings):
             port=self.database_port,
             database=self.database_name,
         )
+
+    def get_email_provider(self) -> EmailProvider:
+        provider_class = EMAIL_PROVIDERS[self.email_provider]
+        return provider_class(**self.email_provider_params)
 
 
 settings = Settings()

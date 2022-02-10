@@ -9,7 +9,7 @@ from unittest.mock import MagicMock
 import asgi_lifespan
 import httpx
 import pytest
-from fastapi import FastAPI
+from fastapi import BackgroundTasks, FastAPI
 from fief_client import Fief
 from sqlalchemy import engine
 from sqlalchemy_utils import create_database, drop_database
@@ -30,6 +30,7 @@ from fief.dependencies.account import get_current_account_session
 from fief.dependencies.account_creation import get_account_creation
 from fief.dependencies.account_db import get_account_db
 from fief.dependencies.fief import get_fief
+from fief.dependencies.tasks import get_send_task
 from fief.managers import AdminSessionTokenManager
 from fief.models import (
     Account,
@@ -46,6 +47,7 @@ from fief.schemas.user import UserDB
 from fief.services.account_creation import AccountCreation
 from fief.services.account_db import AccountDatabase
 from fief.settings import settings
+from fief.tasks import send_task
 from tests.data import TestData, data_mapping
 
 
@@ -117,6 +119,15 @@ async def global_session(
         await session.rollback()
 
 
+@pytest.fixture(scope="session")
+def global_session_manager(global_session: AsyncSession):
+    @contextlib.asynccontextmanager
+    async def _global_session_manager(*args, **kwargs):
+        yield global_session
+
+    return _global_session_manager
+
+
 @pytest.fixture(scope="session", autouse=True)
 @pytest.mark.asyncio
 async def account(
@@ -173,7 +184,7 @@ async def test_data(account_connection: AsyncConnection) -> TestData:
     yield data_mapping
 
 
-@pytest.fixture()
+@pytest.fixture
 async def account_session(
     account_connection: AsyncConnection,
 ) -> AsyncGenerator[AsyncSession, None]:
@@ -181,6 +192,15 @@ async def account_session(
     async with AsyncSession(bind=account_connection, expire_on_commit=False) as session:
         yield session
     await account_connection.rollback()
+
+
+@pytest.fixture
+def account_session_manager(account_session: AsyncSession):
+    @contextlib.asynccontextmanager
+    async def _account_session_manager(*args, **kwargs):
+        yield account_session
+
+    return _account_session_manager
 
 
 @pytest.fixture
@@ -201,6 +221,11 @@ async def account_creation_mock() -> MagicMock:
 @pytest.fixture
 async def fief_client_mock() -> MagicMock:
     return MagicMock(spec=Fief)
+
+
+@pytest.fixture
+async def send_task_mock() -> MagicMock:
+    return MagicMock(spec=send_task)
 
 
 @pytest.fixture
@@ -369,6 +394,7 @@ async def test_client_auth_generator(
     account_session: AsyncSession,
     account_db_mock: MagicMock,
     account_creation_mock: MagicMock,
+    send_task_mock: MagicMock,
     account_host: Optional[str],
     access_token: Optional[str],
 ) -> TestClientGeneratorType:
@@ -380,6 +406,7 @@ async def test_client_auth_generator(
         app.dependency_overrides[get_account_db] = lambda: account_db_mock
         app.dependency_overrides[get_account_creation] = lambda: account_creation_mock
         app.dependency_overrides[check_csrf] = lambda: None
+        app.dependency_overrides[get_send_task] = lambda: send_task_mock
 
         headers = {}
         if account_host is not None:

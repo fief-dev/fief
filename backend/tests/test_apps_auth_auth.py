@@ -1,10 +1,9 @@
-from typing import Dict, Optional, cast
+from typing import Dict, Optional
 
 import httpx
 import pytest
 from fastapi import status
 from furl import furl
-from pydantic import UUID4
 
 from fief.db import AsyncSession
 from fief.managers import GrantManager, LoginSessionManager, SessionTokenManager
@@ -642,7 +641,7 @@ class TestAuthPostConsent:
 
         grant_manager = GrantManager(account_session)
         grant = await grant_manager.get_by_user_and_client(
-            cast(UUID4, session_token.user_id), cast(UUID4, client.id)
+            session_token.user_id, client.id
         )
         assert grant is not None
         assert grant.scope == login_session.scope

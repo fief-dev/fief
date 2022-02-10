@@ -140,7 +140,7 @@ jobs:
       with:
         build-args: |
           FIEF_VERSION=${{ env.RAW_VERSION }}
-        context: .
+        context: docker/
         file: ./Dockerfile
         push: true
         tags: ${{ steps.meta.outputs.tags }}

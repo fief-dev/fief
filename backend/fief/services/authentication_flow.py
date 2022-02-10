@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta, timezone
-from typing import List, Optional, TypeVar, cast
+from typing import List, Optional, TypeVar
 
 from fastapi import Response, status
 from fastapi.responses import RedirectResponse
@@ -93,9 +93,7 @@ class AuthenticationFlow:
     async def create_or_update_grant(
         self, user_id: UUID4, client: Client, scope: List[str]
     ) -> Grant:
-        grant = await self.grant_manager.get_by_user_and_client(
-            user_id, cast(UUID4, client.id)
-        )
+        grant = await self.grant_manager.get_by_user_and_client(user_id, client.id)
         if grant is not None:
             grant.scope = scope
             await self.grant_manager.update(grant)

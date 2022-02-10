@@ -53,7 +53,7 @@ class BaseModel:
 
 
 class UUIDModel(BaseModel):
-    id = Column(GUID, primary_key=True, default=uuid.uuid4)
+    id: UUID4 = Column(GUID, primary_key=True, default=uuid.uuid4)  # type: ignore
 
 
 def now_utc():

@@ -1,6 +1,7 @@
 import secrets
 from datetime import datetime
 
+from pydantic import UUID4
 from sqlalchemy import TIMESTAMP, Column, ForeignKey, String
 from sqlalchemy.orm import relationship
 
@@ -21,5 +22,5 @@ class SessionToken(UUIDModel, CreatedUpdatedAt, AccountBase):
     )
     expires_at: datetime = Column(TIMESTAMP(timezone=True), nullable=False, index=True)
 
-    user_id = Column(GUID, ForeignKey(User.id, ondelete="CASCADE"), nullable=False)
+    user_id: UUID4 = Column(GUID, ForeignKey(User.id, ondelete="CASCADE"), nullable=False)  # type: ignore
     user: User = relationship("User")

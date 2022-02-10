@@ -19,12 +19,14 @@ from sqlalchemy.sql import Select
 
 from fief.crypto.access_token import InvalidAccessToken, read_access_token
 from fief.db import AsyncSession
-from fief.dependencies.account import get_current_account_session
+from fief.dependencies.account import get_current_account, get_current_account_session
 from fief.dependencies.locale import get_translations
+from fief.dependencies.tasks import get_send_task
 from fief.dependencies.tenant import get_current_tenant
 from fief.locale import Translations
-from fief.models import Tenant, User
+from fief.models import Account, Tenant, User
 from fief.schemas.user import UserCreate, UserCreateInternal, UserDB
+from fief.tasks import SendTask, on_after_register
 
 
 class UserManager(BaseUserManager[UserCreate, UserDB]):
@@ -35,12 +37,16 @@ class UserManager(BaseUserManager[UserCreate, UserDB]):
     def __init__(
         self,
         user_db: SQLAlchemyUserDatabase[UserDB],
+        account: Account,
         tenant: Tenant,
         translations: Translations,
+        send_task: SendTask,
     ):
         super().__init__(user_db)
+        self.account = account
         self.tenant = tenant
         self.translations = translations
+        self.send_task = send_task
 
     async def validate_password(
         self, password: str, user: Union[UserCreate, UserDB]
@@ -62,7 +68,7 @@ class UserManager(BaseUserManager[UserCreate, UserDB]):
         return await super().create(user_create, safe=safe, request=request)
 
     async def on_after_register(self, user: UserDB, request: Optional[Request] = None):
-        print(f"User {user.id} has registered.")
+        self.send_task(on_after_register, str(user.id), str(self.account.id))
 
     async def on_after_forgot_password(
         self, user: UserDB, token: str, request: Optional[Request] = None
@@ -134,9 +140,11 @@ async def get_user_db(
 async def get_user_manager(
     user_db: SQLAlchemyUserDatabase[UserDB] = Depends(get_user_db),
     tenant: Tenant = Depends(get_current_tenant),
+    account: Account = Depends(get_current_account),
     translations: Translations = Depends(get_translations),
+    send_task: SendTask = Depends(get_send_task),
 ):
-    yield UserManager(user_db, tenant, translations)
+    yield UserManager(user_db, account, tenant, translations, send_task)
 
 
 class AuthorizationCodeBearerTransport(BearerTransport):

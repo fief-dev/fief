@@ -1,5 +1,6 @@
 import secrets
 
+from pydantic import UUID4
 from sqlalchemy import Column, ForeignKey, String
 from sqlalchemy.orm import relationship
 
@@ -20,7 +21,7 @@ class Client(UUIDModel, CreatedUpdatedAt, AccountBase):
         String(length=255), default=secrets.token_urlsafe, nullable=False, index=True
     )
 
-    tenant_id = Column(GUID, ForeignKey(Tenant.id, ondelete="CASCADE"), nullable=False)
+    tenant_id: UUID4 = Column(GUID, ForeignKey(Tenant.id, ondelete="CASCADE"), nullable=False)  # type: ignore
     tenant: Tenant = relationship("Tenant", lazy="joined")
 
     def __repr__(self) -> str:

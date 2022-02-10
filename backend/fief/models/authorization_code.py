@@ -1,6 +1,7 @@
 import secrets
-from typing import List, Optional
+from typing import List
 
+from pydantic import UUID4
 from sqlalchemy import Column, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.sqltypes import JSON, String
@@ -24,8 +25,8 @@ class AuthorizationCode(UUIDModel, CreatedUpdatedAt, AccountBase):
     redirect_uri: str = Column(String(length=2048), nullable=False)
     scope: List[str] = Column(JSON, nullable=False, default=list)
 
-    user_id = Column(GUID, ForeignKey(User.id, ondelete="CASCADE"), nullable=False)
+    user_id: UUID4 = Column(GUID, ForeignKey(User.id, ondelete="CASCADE"), nullable=False)  # type: ignore
     user: User = relationship("User")
 
-    client_id = Column(GUID, ForeignKey(Client.id, ondelete="CASCADE"), nullable=False)
+    client_id: UUID4 = Column(GUID, ForeignKey(Client.id, ondelete="CASCADE"), nullable=False)  # type: ignore
     client: Client = relationship("Client", lazy="joined")

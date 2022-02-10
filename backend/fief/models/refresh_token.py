@@ -2,6 +2,7 @@ import secrets
 from datetime import datetime
 from typing import List
 
+from pydantic import UUID4
 from sqlalchemy import JSON, TIMESTAMP, Column, ForeignKey, String
 from sqlalchemy.orm import relationship
 
@@ -24,8 +25,8 @@ class RefreshToken(UUIDModel, CreatedUpdatedAt, AccountBase):
     expires_at: datetime = Column(TIMESTAMP(timezone=True), nullable=False, index=True)
     scope: List[str] = Column(JSON, nullable=False, default=list)
 
-    user_id = Column(GUID, ForeignKey(User.id, ondelete="CASCADE"), nullable=False)
+    user_id: UUID4 = Column(GUID, ForeignKey(User.id, ondelete="CASCADE"), nullable=False)  # type: ignore
     user: User = relationship("User")
 
-    client_id = Column(GUID, ForeignKey(Client.id, ondelete="CASCADE"), nullable=False)
+    client_id: UUID4 = Column(GUID, ForeignKey(Client.id, ondelete="CASCADE"), nullable=False)  # type: ignore
     client: Client = relationship("Client", lazy="joined")

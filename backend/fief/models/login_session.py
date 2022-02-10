@@ -1,6 +1,7 @@
 import secrets
 from typing import List, Optional
 
+from pydantic import UUID4
 from sqlalchemy import Column, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.sqltypes import JSON, String
@@ -26,5 +27,5 @@ class LoginSession(UUIDModel, CreatedUpdatedAt, AccountBase):
     prompt: Optional[str] = Column(String(length=255), nullable=True)
     state: Optional[str] = Column(String(length=2048), nullable=True)
 
-    client_id = Column(GUID, ForeignKey(Client.id, ondelete="CASCADE"), nullable=False)
+    client_id: UUID4 = Column(GUID, ForeignKey(Client.id, ondelete="CASCADE"), nullable=False)  # type: ignore
     client: Client = relationship("Client", lazy="joined")

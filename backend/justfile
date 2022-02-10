@@ -32,6 +32,15 @@ start-db:
 stop-db:
   docker rm -f fief-dev-db
 
+create-redis:
+  docker run -d --rm -p 6379:6379 --name fief-dev-redis redis:alpine
+
+start-redis:
+  docker start fief-dev-redis
+
+stop-redis:
+  docker rm -f fief-dev-redis
+
 revision-global message: start-db
   alembic -c fief/alembic.ini -n global revision --autogenerate -m "{{message}}"
 
@@ -44,11 +53,14 @@ revision-account message: start-db
 migrate-account: start-db
   alembic -c fief/alembic.ini -n account upgrade head
 
-start: start-db compile-translations build-css
+start-server: start-db start-redis compile-translations build-css
   uvicorn --host 0.0.0.0 --port 8000 fief.app:app
 
-start-watch:
-  watchexec -r --exts po,py,html -- just start
+start-server-watch:
+  watchexec -r --exts po,py,html -- just start-server
+
+start-worker: start-db start-redis
+  dramatiq fief.worker -p 1 -t 1
 
 bumpversion version:
   bumpversion {{version}}
