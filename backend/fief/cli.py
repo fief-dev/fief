@@ -1,11 +1,12 @@
 from typing import List
+
 import typer
 import uvicorn
 from alembic import command
 from alembic.config import Config
+from dramatiq import cli as dramatiq_cli
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import sessionmaker
-from dramatiq import cli as dramatiq_cli
 
 from fief import __version__
 from fief.app import app as fief_app
