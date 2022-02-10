@@ -155,7 +155,7 @@ class TestPostRegister:
         assert session_token is not None
 
         send_task_mock.assert_called_once_with(
-            on_after_register, session_token.user_id, account.id
+            on_after_register, str(session_token.user_id), str(account.id)
         )
 
     async def test_no_email_conflict_on_another_tenant(

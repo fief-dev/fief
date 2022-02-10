@@ -24,6 +24,6 @@ class TestTasksOnAfterRegister:
         )
 
         user = test_data["users"]["regular"]
-        await on_after_register.run(user.id, account.id)
+        await on_after_register.run(str(user.id), str(account.id))
 
         email_provider_mock.send_email.assert_called_once()
