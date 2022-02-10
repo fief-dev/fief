@@ -1,9 +1,11 @@
+from typing import List
 import typer
 import uvicorn
 from alembic import command
 from alembic.config import Config
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import sessionmaker
+from dramatiq import cli as dramatiq_cli
 
 from fief import __version__
 from fief.app import app as fief_app
@@ -64,6 +66,22 @@ def run_server(
         migrate_global()
         migrate_accounts()
     uvicorn.run(fief_app, host=host, port=port)
+
+
+@app.command(
+    "run-worker",
+    context_settings={"allow_extra_args": True, "ignore_unknown_options": True},
+    add_help_option=False,
+)
+def run_worker(ctx: typer.Context):
+    """
+    Run the Fief worker.
+
+    Just forwards the options to the Dramatiq CLI.
+    """
+    parser = dramatiq_cli.make_argument_parser()
+    args = parser.parse_args(ctx.args)
+    dramatiq_cli.main(args)
 
 
 if __name__ == "__main__":
