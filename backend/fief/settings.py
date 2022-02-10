@@ -29,12 +29,12 @@ class Settings(BaseSettings):
     secret: str
     encryption_key: bytes
 
-    database_type: DatabaseType
+    database_type: DatabaseType = DatabaseType.SQLITE
     database_host: Optional[str] = None
     database_port: Optional[int] = None
     database_username: Optional[str] = None
     database_password: Optional[str] = None
-    database_name: Optional[str] = None
+    database_name: Optional[str] = "fief.db"
 
     redis_broker: str = "redis://localhost:6379"
 
