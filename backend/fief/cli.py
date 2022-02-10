@@ -1,5 +1,3 @@
-from typing import List
-
 import typer
 import uvicorn
 from alembic import command
@@ -81,7 +79,7 @@ def run_worker(ctx: typer.Context):
     Just forwards the options to the Dramatiq CLI.
     """
     parser = dramatiq_cli.make_argument_parser()
-    args = parser.parse_args(ctx.args)
+    args = parser.parse_args(ctx.args + ["fief.worker"])
     dramatiq_cli.main(args)
 
 
