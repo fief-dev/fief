@@ -1,5 +1,6 @@
 import asyncio
 from typing import Any, AsyncContextManager, Callable, ClassVar, Dict, Protocol
+from urllib.parse import urlparse
 
 import dramatiq
 import jinja2
@@ -15,7 +16,16 @@ from fief.paths import EMAIL_TEMPLATES_DIRECTORY
 from fief.services.email import EmailProvider
 from fief.settings import settings
 
-redis_broker = RedisBroker(url=settings.redis_broker)
+redis_parameters = urlparse(settings.redis_url)
+redis_broker = RedisBroker(
+    host=redis_parameters.hostname,
+    port=redis_parameters.port,
+    username=redis_parameters.username,
+    password=redis_parameters.password,
+    # Heroku Redis with TLS use self-signed certs, so we need to tinker a bit
+    ssl=redis_parameters.scheme == "rediss",
+    ssl_cert_reqs=None,
+)
 dramatiq.set_broker(redis_broker)
 
 

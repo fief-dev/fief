@@ -36,7 +36,7 @@ class Settings(BaseSettings):
     database_password: Optional[str] = None
     database_name: Optional[str] = "fief.db"
 
-    redis_broker: str = "redis://localhost:6379"
+    redis_url: str = "redis://localhost:6379"
 
     email_provider: AvailableEmailProvider = AvailableEmailProvider.NULL
     email_provider_params: Dict[str, Any] = Field(default_factory=dict)
