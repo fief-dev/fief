@@ -1,7 +1,9 @@
+import os
 from enum import Enum
 from typing import Any, Dict, Optional
+from urllib.parse import urlparse
 
-from pydantic import BaseSettings, Field, validator
+from pydantic import BaseSettings, Field, root_validator, validator
 from sqlalchemy import engine
 
 from fief.crypto.encryption import is_valid_key
@@ -30,6 +32,7 @@ class Settings(BaseSettings):
     encryption_key: bytes
 
     database_type: DatabaseType = DatabaseType.SQLITE
+    database_url: Optional[str] = None
     database_host: Optional[str] = None
     database_port: Optional[int] = None
     database_username: Optional[str] = None
@@ -66,6 +69,18 @@ class Settings(BaseSettings):
 
     class Config:
         env_file = ".env"
+
+    @root_validator(pre=True)
+    def parse_database_url(cls, values):
+        database_url = values.get("database_url")
+        if database_url is not None:
+            parsed_database_url = urlparse(database_url)
+            values["database_host"] = parsed_database_url.hostname
+            values["database_port"] = parsed_database_url.port
+            values["database_username"] = parsed_database_url.username
+            values["database_password"] = parsed_database_url.password
+            values["database_name"] = parsed_database_url.path[1:]
+        return values
 
     @validator("encryption_key", pre=True)
     def validate_encryption_key(cls, value: Optional[str]) -> Optional[bytes]:
