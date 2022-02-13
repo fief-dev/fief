@@ -1,7 +1,9 @@
+<!DOCTYPE html>
 <html lang="en">
   <head>
     {% block head %}
       <title>{% block head_title %}{% endblock %} - {{ tenant.name if tenant is defined else "Fief" }}</title>
+      <meta name="viewport" content="width=device-width, initial-scale=1">
       <link rel="icon" href="{{ url_for('static', path='/favicon.svg') }}" />
       <link href="{{ url_for('static', path='/output.css') }}" rel="stylesheet">
     {% endblock %}
