@@ -7,7 +7,6 @@ from sqlalchemy import create_engine, select
 from sqlalchemy.orm import sessionmaker
 
 from fief import __version__
-from fief.app import app as fief_app
 from fief.models import Account
 from fief.paths import ALEMBIC_CONFIG_FILE
 from fief.services.account_db import AccountDatabase
@@ -64,7 +63,7 @@ def run_server(
     if migrate:
         migrate_global()
         migrate_accounts()
-    uvicorn.run(fief_app, host=host, port=port)
+    uvicorn.run("fief.app:app", host=host, port=port)
 
 
 @app.command(
