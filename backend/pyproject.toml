@@ -89,3 +89,7 @@ fief = "fief.cli:app"
 
 [project.urls]
 Documentation = "https://docs.fief.dev"
+
+[tool.flit.sdist]
+include = ["fief/static", "fief/locale"]
+exclude = ["tests"]
