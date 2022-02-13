@@ -9,7 +9,7 @@ install:
 lint:
 	isort . && black . && mypy fief/ && tryceratops fief/
 
-test $UNIT_TESTS="1":
+test $UNIT_TESTS="1": start-db
   pytest --cov fief/ --cov-report=term-missing
 
 update-translations:
@@ -33,7 +33,7 @@ stop-db:
   docker rm -f fief-dev-db
 
 create-redis:
-  docker run -d --rm -p 6379:6379 --name fief-dev-redis redis:alpine
+  docker run -d -p 6379:6379 --name fief-dev-redis redis:alpine
 
 start-redis:
   docker start fief-dev-redis

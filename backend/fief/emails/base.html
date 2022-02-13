@@ -493,7 +493,7 @@
                 role="presentation">
                 <tr>
                   <td class="content-cell" align="center">
-                    <p class="f-fallback sub align-center">{% block copyright %}{% endblock %}</p>
+                    <p class="f-fallback sub align-center">{% block copyright %}{{ _('&copy; %(year)d %(tenant)s. All rights reserved.', year=2022, tenant=tenant.name) }}{% endblock %}</p>
                     <p class="f-fallback sub align-center">
                       {% block legal %}{% endblock %}
                     </p>

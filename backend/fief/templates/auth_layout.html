@@ -26,6 +26,18 @@
                 </div>
               </div>
             {% endif %}
+            {% if success is defined %}
+              <div class="my-4 px-4 py-2 rounded-sm text-sm bg-emerald-100 border border-emerald-200 text-emerald-600">
+                <div class="flex w-full justify-between items-start">
+                  <div class="flex">
+                    <svg class="w-4 h-4 shrink-0 fill-current opacity-80 mt-[3px] mr-3" viewBox="0 0 16 16">
+                      <path d="M8 0C3.6 0 0 3.6 0 8s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8zM7 11.4L3.6 8 5 6.6l2 2 4-4L12.4 6 7 11.4z" />
+                    </svg>
+                    <div>{{success}}</div>
+                  </div>
+                </div>
+              </div>
+            {% endif %}
             {% if not fatal_error %}
               {% block auth_form %}
                 {% block csrf %}

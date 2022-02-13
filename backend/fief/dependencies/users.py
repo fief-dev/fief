@@ -14,6 +14,7 @@ from fastapi_users_db_sqlalchemy import (
     SQLAlchemyBaseUserTable,
     SQLAlchemyUserDatabase,
 )
+from furl import furl
 from jwcrypto import jwk
 from sqlalchemy.sql import Select
 
@@ -26,7 +27,7 @@ from fief.dependencies.tenant import get_current_tenant
 from fief.locale import Translations
 from fief.models import Account, Tenant, User
 from fief.schemas.user import UserCreate, UserCreateInternal, UserDB
-from fief.tasks import SendTask, on_after_register
+from fief.tasks import SendTask, on_after_forgot_password, on_after_register
 
 
 class UserManager(BaseUserManager[UserCreate, UserDB]):
@@ -73,7 +74,11 @@ class UserManager(BaseUserManager[UserCreate, UserDB]):
     async def on_after_forgot_password(
         self, user: UserDB, token: str, request: Optional[Request] = None
     ):
-        print(f"User {user.id} has forgot their password. Reset token: {token}")
+        reset_url = furl(self.tenant.url_for(cast(Request, request), "reset:reset.get"))
+        reset_url.add(query_params={"token": token})
+        self.send_task(
+            on_after_forgot_password, str(user.id), str(self.account.id), reset_url.url
+        )
 
     async def on_after_request_verify(
         self, user: UserDB, token: str, request: Optional[Request] = None

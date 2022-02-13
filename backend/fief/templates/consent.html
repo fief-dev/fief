@@ -5,7 +5,7 @@
 {% block title %}{{ _('%(name)s wants to access your account', name=client.client_id) }}{% endblock %}
 
 {% block auth_form %}
-  <form method="POST" action="{{ url_for('auth:consent.post') }}">
+  <form method="POST" action="{{ tenant.url_for(request, 'auth:consent.post') }}">
     <div class="space-y-4">
       <div className="text-sm">{{ _('This will allow %(name)s to:', name=client.client_id) }}</div>
       {% for scope in scopes %}

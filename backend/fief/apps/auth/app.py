@@ -4,6 +4,7 @@ from fastapi.staticfiles import StaticFiles
 
 from fief.apps.auth.routers.auth import router as auth_router
 from fief.apps.auth.routers.register import router as register_router
+from fief.apps.auth.routers.reset import router as reset_router
 from fief.apps.auth.routers.token import router as token_router
 from fief.apps.auth.routers.user import router as user_router
 from fief.apps.auth.routers.well_known import router as well_known_router
@@ -25,6 +26,7 @@ from fief.services.authentication_flow import AuthenticationFlow
 def include_routers(router: APIRouter) -> APIRouter:
     router.include_router(auth_router)
     router.include_router(register_router)
+    router.include_router(reset_router)
     router.include_router(token_router)
     router.include_router(user_router)
     router.include_router(well_known_router, prefix="/.well-known")
