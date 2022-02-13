@@ -15,6 +15,7 @@ from fief.schemas.auth import (
     TokenError,
 )
 from fief.schemas.register import RegisterError
+from fief.schemas.reset import ResetPasswordError
 
 
 class APIErrorCode(str, Enum):
@@ -113,3 +114,18 @@ class ConsentException(Exception):
 class TokenRequestException(Exception):
     def __init__(self, error: TokenError) -> None:
         self.error = error
+
+
+class ResetPasswordException(Exception):
+    def __init__(
+        self,
+        error: ResetPasswordError,
+        form_data: Optional[FormData] = None,
+        tenant: Optional[Tenant] = None,
+        *,
+        fatal: bool = False,
+    ) -> None:
+        self.error = error
+        self.form_data = form_data
+        self.tenant = tenant
+        self.fatal = fatal

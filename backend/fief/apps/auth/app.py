@@ -17,6 +17,7 @@ from fief.errors import (
     FormValidationError,
     LoginException,
     RegisterException,
+    ResetPasswordException,
     TokenRequestException,
 )
 from fief.paths import STATIC_DIRECTORY
@@ -145,6 +146,25 @@ async def token_request_exception_handler(request: Request, exc: TokenRequestExc
     return JSONResponse(
         status_code=status.HTTP_400_BAD_REQUEST,
         content=exc.error.dict(exclude_none=True),
+    )
+
+
+@app.exception_handler(ResetPasswordException)
+async def reset_password_exception_handler(
+    request: Request, exc: ResetPasswordException
+):
+    return templates.LocaleTemplateResponse(
+        "reset_password.html",
+        {
+            "request": request,
+            "error": exc.error.error_description,
+            "form_data": exc.form_data,
+            "tenant": exc.tenant,
+            "fatal_error": exc.fatal,
+        },
+        translations=request.scope["translations"],
+        status_code=status.HTTP_400_BAD_REQUEST,
+        headers={"X-Fief-Error": exc.error.error},
     )
 
 

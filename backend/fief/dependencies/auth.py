@@ -160,22 +160,32 @@ async def get_authorize_screen(
     return screen
 
 
-async def get_login_session(
+async def get_optional_login_session(
     token: Optional[str] = Cookie(None, alias=settings.login_session_cookie_name),
     login_session_manager: LoginSessionManager = Depends(get_login_session_manager),
     tenant: Tenant = Depends(get_current_tenant),
-    _=Depends(get_gettext),
-) -> LoginSession:
-    invalid_session_error = LoginError.get_invalid_session(_("Invalid login session"))
+) -> Optional[LoginSession]:
     if token is None:
-        raise LoginException(invalid_session_error, fatal=True)
+        return None
 
     login_session = await login_session_manager.get_by_token(token)
     if login_session is None:
-        raise LoginException(invalid_session_error, fatal=True)
+        return None
 
     if login_session.client.tenant_id != tenant.id:
-        raise LoginException(invalid_session_error, fatal=True)
+        return None
+
+    return login_session
+
+
+async def get_login_session(
+    login_session: Optional[LoginSession] = Depends(get_optional_login_session),
+    _=Depends(get_gettext),
+) -> LoginSession:
+    if login_session is None:
+        raise LoginException(
+            LoginError.get_invalid_session(_("Invalid login session")), fatal=True
+        )
 
     return login_session
 
