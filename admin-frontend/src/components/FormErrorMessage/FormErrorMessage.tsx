@@ -5,7 +5,8 @@ const FormErrorMessage: typeof ErrorMessage = ({ errors, name }) => {
     <ErrorMessage
       errors={errors}
       name={name}
-      render={({ message }) => <div id={`${name}-errors`} className="text-xs mt-1 text-red-500">{message}</div>} />
+      render={({ message }) => <div id={`${name}-errors`} className="text-xs mt-1 text-red-500">{message}</div>}
+    />
   );
 };
 

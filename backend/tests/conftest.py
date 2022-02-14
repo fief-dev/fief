@@ -360,6 +360,7 @@ async def test_client_admin_generator(
         app.dependency_overrides[get_account_db] = lambda: account_db_mock
         app.dependency_overrides[get_account_creation] = lambda: account_creation_mock
         app.dependency_overrides[get_fief] = lambda: fief_client_mock
+        settings.fief_admin_session_cookie_domain = ""
 
         headers = {}
         cookies = {}

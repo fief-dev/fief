@@ -48,6 +48,6 @@ async def callback(
     return response
 
 
-@router.get("/user", name="admin.auth:user")
-async def user(userinfo=Depends(get_userinfo)):
+@router.get("/userinfo", name="admin.auth:userinfo")
+async def userinfo(userinfo=Depends(get_userinfo)):
     return userinfo

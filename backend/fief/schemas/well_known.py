@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from pydantic import BaseModel, HttpUrl
+from pydantic import AnyUrl, BaseModel
 
 
 class OpenIDConfiguration(BaseModel):
@@ -11,12 +11,12 @@ class OpenIDConfiguration(BaseModel):
     https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata
     """
 
-    issuer: HttpUrl
-    authorization_endpoint: HttpUrl
-    token_endpoint: HttpUrl
-    userinfo_endpoint: HttpUrl
-    jwks_uri: HttpUrl
-    registration_endpoint: HttpUrl
+    issuer: AnyUrl
+    authorization_endpoint: AnyUrl
+    token_endpoint: AnyUrl
+    userinfo_endpoint: AnyUrl
+    jwks_uri: AnyUrl
+    registration_endpoint: AnyUrl
     scopes_supported: List[str]
     response_types_supported: List[str]
     response_modes_supported: Optional[List[str]] = None
@@ -37,12 +37,12 @@ class OpenIDConfiguration(BaseModel):
     display_values_supported: Optional[List[str]] = None
     claim_types_supported: Optional[List[str]] = None
     claims_supported: Optional[List[str]] = None
-    service_documentation: Optional[HttpUrl] = None
+    service_documentation: Optional[AnyUrl] = None
     claims_locales_supported: Optional[List[str]] = None
     ui_locales_supported: Optional[List[str]] = None
     claims_parameter_supported: Optional[bool] = None
     request_parameter_supported: Optional[bool] = None
     request_uri_parameter_supported: Optional[bool] = None
     require_request_uri_registration: Optional[bool] = None
-    op_policy_uri: Optional[HttpUrl] = None
-    op_tos_uri: Optional[HttpUrl] = None
+    op_policy_uri: Optional[AnyUrl] = None
+    op_tos_uri: Optional[AnyUrl] = None

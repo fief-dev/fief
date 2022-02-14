@@ -1,7 +1,7 @@
-import * as auth from './auth';
 import * as tenant from './tenant';
+import * as user from './user';
 
 export {
-  auth,
   tenant,
+  user,
 };

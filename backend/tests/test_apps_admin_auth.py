@@ -65,8 +65,8 @@ class TestAuthCallback:
 
 
 @pytest.mark.admin_session_token(user="regular")
-async def test_auth_user(test_client_admin: httpx.AsyncClient, test_data: TestData):
-    response = await test_client_admin.get("/auth/user")
+async def test_auth_userinfo(test_client_admin: httpx.AsyncClient, test_data: TestData):
+    response = await test_client_admin.get("/auth/userinfo")
 
     assert response.status_code == status.HTTP_200_OK
 
