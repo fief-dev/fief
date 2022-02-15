@@ -4,7 +4,6 @@ import { Column } from 'react-table';
 
 import DataTable from '../../components/DataTable/DataTable';
 import Layout from '../../components/Layout/Layout';
-import Pagination from '../../components/Pagination/Pagination';
 import { usePaginationAPI } from '../../hooks/api';
 import * as schemas from '../../schemas';
 
@@ -52,7 +51,6 @@ const Tenants: React.FunctionComponent = () => {
     <Layout>
       <div className="sm:flex sm:justify-between sm:items-center mb-8">
 
-        {/* Left: Title */}
         <div className="mb-4 sm:mb-0">
           <h1 className="text-2xl md:text-3xl text-slate-800 font-bold">{t('tenants:list.title')}</h1>
         </div>

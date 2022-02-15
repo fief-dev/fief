@@ -3,6 +3,8 @@ from typing import Any, Dict
 from fastapi_users import models
 from pydantic import UUID4
 
+from fief.schemas.tenant import TenantEmbedded
+
 
 class User(models.BaseUser):
     tenant_id: UUID4
@@ -34,3 +36,10 @@ class UserDB(User, models.BaseUserDB):
             "email": self.email,
             "tenant_id": str(self.tenant_id),
         }
+
+
+class UserRead(User):
+    tenant: TenantEmbedded
+
+    class Config:
+        orm_mode = True

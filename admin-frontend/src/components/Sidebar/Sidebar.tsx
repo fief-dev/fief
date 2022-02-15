@@ -2,8 +2,10 @@ import { Dispatch, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { NavLink, useLocation } from 'react-router-dom';
 
+import { ReactComponent as ClientsIcon } from '../../icons/clients.svg';
 import { ReactComponent as DashboardIcon } from '../../icons/dashboard.svg';
 import { ReactComponent as TenantsIcon } from '../../icons/tenants.svg';
+import { ReactComponent as UsersIcon } from '../../icons/users.svg';
 
 interface SidebarProps {
   open: boolean;
@@ -84,6 +86,22 @@ const Sidebar: React.FunctionComponent<SidebarProps> = ({ open, setOpen }) => {
                   <div className="flex items-center">
                     <TenantsIcon className="shrink-0 h-6 w-6" />
                     <span className="text-sm font-medium ml-3 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">{t('sidebar.tenants')}</span>
+                  </div>
+                </NavLink>
+              </li>
+              <li className={`px-3 py-2 rounded-sm mb-0.5 last:mb-0 ${pathname === '/clients' && 'bg-slate-900'}`}>
+                <NavLink end to="/clients" className={`block text-slate-200 hover:text-white truncate transition duration-150 ${pathname === '/clients' && 'hover:text-slate-200'}`}>
+                  <div className="flex items-center">
+                    <ClientsIcon className="shrink-0 h-6 w-6" />
+                    <span className="text-sm font-medium ml-3 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">{t('sidebar.clients')}</span>
+                  </div>
+                </NavLink>
+              </li>
+              <li className={`px-3 py-2 rounded-sm mb-0.5 last:mb-0 ${pathname === '/users' && 'bg-slate-900'}`}>
+                <NavLink end to="/users" className={`block text-slate-200 hover:text-white truncate transition duration-150 ${pathname === '/users' && 'hover:text-slate-200'}`}>
+                  <div className="flex items-center">
+                    <UsersIcon className="shrink-0 h-6 w-6" />
+                    <span className="text-sm font-medium ml-3 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">{t('sidebar.users')}</span>
                   </div>
                 </NavLink>
               </li>

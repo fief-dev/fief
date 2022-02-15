@@ -11,6 +11,8 @@
   "sidebar": {
     "close": "Close sidebar",
     "dashboard": "Dashboard",
-    "tenants": "Tenants"
+    "tenants": "Tenants",
+    "clients": "Clients",
+    "users": "Users"
   }
 }

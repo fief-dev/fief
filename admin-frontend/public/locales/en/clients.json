@@ -1,0 +1,8 @@
+{
+  "list": {
+    "title": "Clients",
+    "name": "Name",
+    "tenant": "Tenant",
+    "client_id": "Client ID"
+  }
+}

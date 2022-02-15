@@ -12,7 +12,7 @@ from fief.dependencies.pagination import (
     get_pagination,
 )
 from fief.managers import TenantManager
-from fief.models.tenant import Tenant
+from fief.models import Tenant
 
 
 async def get_current_tenant(

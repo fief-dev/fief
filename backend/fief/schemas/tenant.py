@@ -1,14 +1,15 @@
-from fief.schemas.generics import UUIDSchema
+from fief.schemas.generics import CreatedUpdatedAt, UUIDSchema
 
 
-class BaseTenant(UUIDSchema):
+class BaseTenant(UUIDSchema, CreatedUpdatedAt):
     name: str
     default: bool
-
-
-class Tenant(BaseTenant):
     slug: str
 
 
-class TenantReadPublic(BaseTenant):
+class Tenant(BaseTenant):
+    pass
+
+
+class TenantEmbedded(BaseTenant):
     pass
