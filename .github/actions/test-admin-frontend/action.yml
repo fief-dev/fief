@@ -18,7 +18,7 @@ runs:
       shell: bash
       working-directory: admin-frontend
       run: npm run lint
-    - name: Test
-      shell: bash
-      working-directory: admin-frontend
-      run: npm run test
+    # - name: Test
+    #   shell: bash
+    #   working-directory: admin-frontend
+    #   run: npm run test
