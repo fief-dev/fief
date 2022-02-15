@@ -62,7 +62,7 @@ jobs:
         database_password: ${{ matrix.database_password }}
         database_name: fief
 
-  test-admin-fronted:
+  test-admin-frontend:
     runs-on: ubuntu-latest
 
     steps:
