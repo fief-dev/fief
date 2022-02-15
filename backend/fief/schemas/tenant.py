@@ -1,5 +1,3 @@
-from pydantic import SecretStr
-
 from fief.schemas.generics import UUIDSchema
 
 
@@ -9,8 +7,7 @@ class BaseTenant(UUIDSchema):
 
 
 class Tenant(BaseTenant):
-    client_id: SecretStr
-    client_secret: SecretStr
+    slug: str
 
 
 class TenantReadPublic(BaseTenant):

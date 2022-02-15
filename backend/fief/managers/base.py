@@ -150,7 +150,9 @@ class BaseManager(BaseManagerProtocol, Generic[M]):
         await self.session.commit()
 
     async def _count(self, statement: Select) -> int:
-        count_statement = statement.order_by(None).with_only_columns([func.count()])
+        count_statement = statement.with_only_columns(
+            [func.count()], maintain_column_froms=True  # type: ignore
+        ).order_by(None)
         results = await self._execute_statement(count_statement)
         return results.scalar_one()
 

@@ -5,3 +5,5 @@ export {
   tenant,
   user,
 };
+
+export type { PaginatedResults, PaginationParameters } from './generics';

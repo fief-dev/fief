@@ -4,6 +4,7 @@ import { Routes, Route } from 'react-router-dom';
 import './i18n';
 import UserContextProvider from './components/UserContextProvider/UserContextProvider';
 import Dashboard from './routes/Dashboard/Dashboard';
+import Tenants from './routes/Tenants/Tenants';
 
 function App() {
   return (
@@ -11,6 +12,7 @@ function App() {
       <UserContextProvider>
         <Routes>
           <Route path="/" element={<Dashboard />} />
+          <Route path="/tenants" element={<Tenants />} />
         </Routes>
       </UserContextProvider>
     </Suspense>

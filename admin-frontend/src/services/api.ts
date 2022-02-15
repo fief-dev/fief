@@ -22,6 +22,10 @@ export class APIClient {
   public getUserinfo(): Promise<AxiosResponse<schemas.user.CurrentUser>> {
     return this.client.get('/admin/auth/userinfo');
   }
+
+  public listTenants(params: schemas.PaginationParameters = {}): Promise<AxiosResponse<schemas.PaginatedResults<schemas.tenant.Tenant>>> {
+    return this.client.get('/admin/tenants/', { params });
+  }
 }
 
 export const isAxiosException = (e: unknown): e is AxiosError<{ detail: string }> => R.has('isAxiosError', e);
