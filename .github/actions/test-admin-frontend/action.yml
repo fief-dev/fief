@@ -1,5 +1,5 @@
-name: 'Test auth frontend'
-description: 'Run the tests for the React auth frontend'
+name: 'Test admin frontend'
+description: 'Run the tests for the React admin frontend'
 
 runs:
   using: "composite"
@@ -12,13 +12,13 @@ runs:
         node-version: 14.x
     - name: Install dependencies
       shell: bash
-      working-directory: auth-frontend
+      working-directory: admin-frontend
       run: npm ci
     - name: Lint
       shell: bash
-      working-directory: auth-frontend
+      working-directory: admin-frontend
       run: npm run lint
     - name: Test
       shell: bash
-      working-directory: auth-frontend
+      working-directory: admin-frontend
       run: npm run test
