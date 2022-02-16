@@ -26,9 +26,9 @@ from fief.db import (
     get_global_async_session,
 )
 from fief.db.types import DatabaseType, get_driver
-from fief.dependencies.account import get_current_account_session
 from fief.dependencies.account_creation import get_account_creation
 from fief.dependencies.account_db import get_account_db
+from fief.dependencies.current_account import get_current_account_session
 from fief.dependencies.fief import get_fief
 from fief.dependencies.tasks import get_send_task
 from fief.managers import AdminSessionTokenManager

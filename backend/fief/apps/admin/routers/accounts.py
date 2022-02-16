@@ -1,14 +1,28 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
+from fief.dependencies.account import get_paginated_accounts
 from fief.dependencies.account_creation import get_account_creation
 from fief.dependencies.admin_session import get_admin_session_token
+from fief.dependencies.pagination import PaginatedObjects
 from fief.errors import APIErrorCode
-from fief.models import AdminSessionToken
+from fief.models import Account, AdminSessionToken
 from fief.schemas.account import AccountCreate, AccountRead
+from fief.schemas.generics import PaginatedResults
 from fief.services.account_creation import AccountCreation
 from fief.services.account_db import AccountDatabaseConnectionError
 
 router = APIRouter(dependencies=[Depends(get_admin_session_token)])
+
+
+@router.get("/", name="accounts:list")
+async def list_accounts(
+    paginated_accounts: PaginatedObjects[Account] = Depends(get_paginated_accounts),
+) -> PaginatedResults[AccountRead]:
+    accounts, count = paginated_accounts
+    return PaginatedResults(
+        count=count,
+        results=[AccountRead.from_orm(account) for account in accounts],
+    )
 
 
 @router.post("/", name="accounts:create", status_code=status.HTTP_201_CREATED)

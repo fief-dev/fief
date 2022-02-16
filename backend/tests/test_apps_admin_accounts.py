@@ -11,6 +11,24 @@ from fief.services.account_db import AccountDatabaseConnectionError
 
 
 @pytest.mark.asyncio
+class TestListAccounts:
+    async def test_unauthorized(self, test_client_admin: httpx.AsyncClient):
+        response = await test_client_admin.get("/accounts/")
+
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+    @pytest.mark.admin_session_token
+    async def test_valid(self, test_client_admin: httpx.AsyncClient, account: Account):
+        response = await test_client_admin.get("/accounts/")
+
+        assert response.status_code == status.HTTP_200_OK
+
+        json = response.json()
+        assert json["count"] == 1
+        assert json["results"][0]["id"] == str(account.id)
+
+
+@pytest.mark.asyncio
 class TestCreateAccount:
     async def test_unauthorized(self, test_client_admin: httpx.AsyncClient):
         response = await test_client_admin.post("/accounts/")

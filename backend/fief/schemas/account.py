@@ -49,6 +49,9 @@ class AccountCreate(BaseModel):
 class BaseAccount(UUIDSchema):
     name: str
     domain: str
+
+
+class Account(BaseAccount):
     database_type: Optional[DatabaseType]
     database_host: Optional[str]
     database_port: Optional[int]
@@ -73,10 +76,6 @@ class BaseAccount(UUIDSchema):
         if value is None:
             return value
         return int(decrypt(value, settings.encryption_key))
-
-
-class Account(BaseAccount):
-    pass
 
 
 class AccountRead(BaseAccount):

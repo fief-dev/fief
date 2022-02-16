@@ -6,8 +6,8 @@ from pydantic import UUID4
 
 from fief.crypto.access_token import generate_access_token
 from fief.crypto.id_token import generate_id_token
-from fief.dependencies.account import get_current_account
 from fief.dependencies.account_managers import get_refresh_token_manager
+from fief.dependencies.current_account import get_current_account
 from fief.dependencies.tenant import get_current_tenant
 from fief.dependencies.token import get_user_from_grant_request, validate_grant_request
 from fief.managers import RefreshTokenManager

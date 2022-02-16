@@ -22,8 +22,11 @@ from sqlalchemy.sql import Select
 
 from fief.crypto.access_token import InvalidAccessToken, read_access_token
 from fief.db import AsyncSession
-from fief.dependencies.account import get_current_account, get_current_account_session
 from fief.dependencies.account_managers import get_user_manager as get_user_db_manager
+from fief.dependencies.current_account import (
+    get_current_account,
+    get_current_account_session,
+)
 from fief.dependencies.locale import get_translations
 from fief.dependencies.pagination import (
     Ordering,

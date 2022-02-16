@@ -6,7 +6,10 @@ from fastapi import Depends, FastAPI, status
 from sqlalchemy import select
 
 from fief.db import AsyncSession
-from fief.dependencies.account import get_current_account, get_current_account_session
+from fief.dependencies.current_account import (
+    get_current_account,
+    get_current_account_session,
+)
 from fief.models import Account, Tenant
 from tests.conftest import TestClientGeneratorType
 

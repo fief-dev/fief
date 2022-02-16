@@ -2,7 +2,7 @@ from fastapi import APIRouter, Request
 from fastapi.param_functions import Depends
 from jwcrypto import jwk
 
-from fief.dependencies.account import get_current_account
+from fief.dependencies.current_account import get_current_account
 from fief.dependencies.tenant import get_current_tenant
 from fief.models import Account, Tenant
 from fief.schemas.well_known import OpenIDConfiguration

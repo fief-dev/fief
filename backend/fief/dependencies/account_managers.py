@@ -1,7 +1,7 @@
 from fastapi import Depends
 
 from fief.db import AsyncSession
-from fief.dependencies.account import get_current_account_session
+from fief.dependencies.current_account import get_current_account_session
 from fief.managers import (
     AuthorizationCodeManager,
     ClientManager,
