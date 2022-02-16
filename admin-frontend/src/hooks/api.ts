@@ -10,6 +10,7 @@ export const useAPI = (): APIClient => {
   return useMemo(() => new APIClient(), []);
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 type ListMethodKeys<Set> = Set extends `list${infer _X}` ? Set : never;
 type APIClientListMethods = Pick<APIClient, ListMethodKeys<keyof APIClient>>;
 

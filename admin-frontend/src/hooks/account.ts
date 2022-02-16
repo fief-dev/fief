@@ -3,7 +3,6 @@ import { Dispatch, useCallback, useEffect, useState } from 'react';
 
 import { APIClient, isAxiosException } from '../services/api';
 import * as schemas from '../schemas';
-import { useAPI } from './api';
 
 const getAccountCookie = (): string | undefined => {
   const cookies = document.cookie.split(';');
