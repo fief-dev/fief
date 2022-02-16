@@ -1,17 +1,15 @@
-from pydantic import SecretStr
-
-from fief.schemas.generics import UUIDSchema
+from fief.schemas.generics import CreatedUpdatedAt, UUIDSchema
 
 
-class BaseTenant(UUIDSchema):
+class BaseTenant(UUIDSchema, CreatedUpdatedAt):
     name: str
     default: bool
+    slug: str
 
 
 class Tenant(BaseTenant):
-    client_id: SecretStr
-    client_secret: SecretStr
+    pass
 
 
-class TenantReadPublic(BaseTenant):
+class TenantEmbedded(BaseTenant):
     pass

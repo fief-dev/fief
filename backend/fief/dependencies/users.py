@@ -16,15 +16,27 @@ from fastapi_users_db_sqlalchemy import (
 )
 from furl import furl
 from jwcrypto import jwk
+from sqlalchemy import select
+from sqlalchemy.orm import joinedload
 from sqlalchemy.sql import Select
 
 from fief.crypto.access_token import InvalidAccessToken, read_access_token
 from fief.db import AsyncSession
 from fief.dependencies.account import get_current_account, get_current_account_session
+from fief.dependencies.account_managers import get_user_manager as get_user_db_manager
 from fief.dependencies.locale import get_translations
+from fief.dependencies.pagination import (
+    Ordering,
+    PaginatedObjects,
+    Pagination,
+    get_ordering,
+    get_paginated_objects,
+    get_pagination,
+)
 from fief.dependencies.tasks import get_send_task
 from fief.dependencies.tenant import get_current_tenant
 from fief.locale import Translations
+from fief.managers import UserManager as UserDBManager
 from fief.models import Account, Tenant, User
 from fief.schemas.user import UserCreate, UserCreateInternal, UserDB
 from fief.tasks import SendTask, on_after_forgot_password, on_after_register
@@ -174,3 +186,12 @@ authentication_backend = AuthenticationBackend[UserCreate, UserDB](
     ),
     get_jwt_access_token_strategy,
 )
+
+
+async def get_paginated_users(
+    pagination: Pagination = Depends(get_pagination),
+    ordering: Ordering = Depends(get_ordering),
+    manager: UserDBManager = Depends(get_user_db_manager),
+) -> PaginatedObjects[User]:
+    statement = select(User).options(joinedload(User.tenant))
+    return await get_paginated_objects(statement, pagination, ordering, manager)

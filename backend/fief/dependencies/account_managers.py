@@ -10,6 +10,7 @@ from fief.managers import (
     RefreshTokenManager,
     SessionTokenManager,
     TenantManager,
+    UserManager,
     get_manager,
 )
 
@@ -24,6 +25,12 @@ async def get_client_manager(
     session: AsyncSession = Depends(get_current_account_session),
 ) -> ClientManager:
     return get_manager(ClientManager, session)
+
+
+async def get_user_manager(
+    session: AsyncSession = Depends(get_current_account_session),
+) -> UserManager:
+    return get_manager(UserManager, session)
 
 
 async def get_login_session_manager(

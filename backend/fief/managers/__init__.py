@@ -8,6 +8,7 @@ from fief.managers.login_session import LoginSessionManager
 from fief.managers.refresh_token import RefreshTokenManager
 from fief.managers.session_token import SessionTokenManager
 from fief.managers.tenant import TenantManager
+from fief.managers.user import UserManager
 
 __all__ = [
     "AccountManager",
@@ -19,5 +20,6 @@ __all__ = [
     "RefreshTokenManager",
     "SessionTokenManager",
     "TenantManager",
+    "UserManager",
     "get_manager",
 ]

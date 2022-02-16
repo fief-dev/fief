@@ -1,8 +1,13 @@
-import { UUIDSchema } from './generics';
+import { CreatedUpdatedAt, UUIDSchema } from './generics';
 
-interface BaseTenant extends UUIDSchema {
+interface BaseTenant extends UUIDSchema, CreatedUpdatedAt {
   name: string;
   default: boolean;
+  slug: string;
 }
 
-export interface TenantReadPublic extends BaseTenant {}
+export interface Tenant extends BaseTenant {
+}
+
+export interface TenantEmbedded extends BaseTenant {
+}
