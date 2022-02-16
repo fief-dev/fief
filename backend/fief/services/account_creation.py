@@ -1,9 +1,11 @@
 from typing import Optional
 
+from pydantic import UUID4
+
 from fief.db import get_account_session, global_async_session_maker
 from fief.logging import logger
-from fief.managers import AccountManager, TenantManager
-from fief.models import Account, Client, Tenant
+from fief.managers import AccountManager, AccountUserManager, TenantManager
+from fief.models import Account, AccountUser, Client, Tenant
 from fief.schemas.account import AccountCreate
 from fief.services.account_db import AccountDatabase
 from fief.settings import settings
@@ -11,14 +13,19 @@ from fief.settings import settings
 
 class AccountCreation:
     def __init__(
-        self, account_manager: AccountManager, account_db: AccountDatabase
+        self,
+        account_manager: AccountManager,
+        account_user_manager: AccountUserManager,
+        account_db: AccountDatabase,
     ) -> None:
         self.account_manager = account_manager
+        self.account_user_manager = account_user_manager
         self.account_db = account_db
 
     async def create(
         self,
         account_create: AccountCreate,
+        user_id: Optional[UUID4] = None,
         default_domain: Optional[str] = None,
         default_client_id: Optional[str] = None,
         default_client_secret: Optional[str] = None,
@@ -39,6 +46,11 @@ class AccountCreation:
         self.account_db.migrate(
             account.get_database_url(False), account.get_schema_name()
         )
+
+        # Link the user to this account
+        if user_id is not None:
+            account_user = AccountUser(account_id=account.id, user_id=user_id)
+            await self.account_user_manager.create(account_user)
 
         # Create a default tenant and client
         async with get_account_session(account) as session:

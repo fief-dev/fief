@@ -6,9 +6,15 @@ from sqlalchemy import engine, select
 
 from fief.db import AsyncSession, get_account_session
 from fief.db.types import DatabaseType
-from fief.managers import AccountManager, ClientManager, TenantManager
+from fief.managers import (
+    AccountManager,
+    AccountUserManager,
+    ClientManager,
+    TenantManager,
+)
 from fief.models import Client, Tenant
 from fief.schemas.account import AccountCreate
+from fief.schemas.user import UserDB
 from fief.services.account_creation import AccountCreation
 from fief.services.account_db import AccountDatabase
 from tests.conftest import GetTestDatabase
@@ -42,8 +48,9 @@ def account_create(test_database_url: Tuple[engine.URL, DatabaseType]) -> Accoun
 @pytest.fixture
 def account_creation(global_session: AsyncSession) -> AccountCreation:
     account_manager = AccountManager(global_session)
+    account_user_manager = AccountUserManager(global_session)
     account_db = AccountDatabase()
-    return AccountCreation(account_manager, account_db)
+    return AccountCreation(account_manager, account_user_manager, account_db)
 
 
 @pytest.mark.asyncio
@@ -69,6 +76,21 @@ class TestAccountCreationCreate:
             assert len(clients) == 1
             client = clients[0]
             assert client.tenant_id == tenant.id
+
+    async def test_user_id(
+        self,
+        account_create: AccountCreate,
+        account_creation: AccountCreation,
+        account_admin_user: UserDB,
+        global_session: AsyncSession,
+    ):
+        account = await account_creation.create(account_create, account_admin_user.id)
+
+        account_user_manager = AccountUserManager(global_session)
+        account_user = await account_user_manager.get_by_account_and_user(
+            account.id, account_admin_user.id
+        )
+        assert account_user is not None
 
     async def test_default_parameters(
         self, account_create: AccountCreate, account_creation: AccountCreation
