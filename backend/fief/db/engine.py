@@ -17,7 +17,9 @@ if TYPE_CHECKING:
 
 
 def create_engine(database_url: engine.URL) -> AsyncEngine:
-    engine = create_async_engine(database_url, echo=settings.log_level == "DEBUG")
+    engine = create_async_engine(
+        database_url, echo=False and settings.log_level == "DEBUG"
+    )
     dialect_name = engine.dialect.name
 
     # Special tweak for SQLite to better handle transaction

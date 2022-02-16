@@ -34,15 +34,16 @@ from fief.dependencies.tasks import get_send_task
 from fief.managers import AdminSessionTokenManager
 from fief.models import (
     Account,
+    AccountUser,
     AdminSessionToken,
     AuthorizationCode,
     Client,
     GlobalBase,
+    LoginSession,
     SessionToken,
     Tenant,
     User,
 )
-from fief.models.login_session import LoginSession
 from fief.schemas.user import UserDB
 from fief.services.account_creation import AccountCreation
 from fief.services.account_db import AccountDatabase
@@ -237,21 +238,32 @@ def account_host(request: pytest.FixtureRequest, account: Account) -> Optional[s
 
 
 @pytest.fixture
+def account_admin_user() -> UserDB:
+    return UserDB(
+        email="dev@bretagne.duchy", hashed_password="dev", tenant_id=uuid.uuid4()
+    )
+
+
+@pytest.fixture
 async def admin_session_token(
-    request: pytest.FixtureRequest, test_data: TestData, global_session: AsyncSession
+    request: pytest.FixtureRequest,
+    global_session: AsyncSession,
+    account: Account,
+    account_admin_user: UserDB,
 ) -> Optional[str]:
     marker = request.node.get_closest_marker("admin_session_token")
     if marker:
-        user_alias = marker.kwargs["user"]
-        user = test_data["users"][user_alias]
-
-        userinfo = UserDB.from_orm(user).get_claims()
-        session_token = AdminSessionToken(
-            raw_tokens="{}", raw_userinfo=json.dumps(userinfo)
+        account_session = AccountUser(
+            account_id=account.id, user_id=account_admin_user.id
         )
+        global_session.add(account_session)
 
-        admin_session_token_manager = AdminSessionTokenManager(global_session)
-        await admin_session_token_manager.create(session_token)
+        session_token = AdminSessionToken(
+            raw_tokens="{}", raw_userinfo=json.dumps(account_admin_user.get_claims())
+        )
+        global_session.add(session_token)
+
+        await global_session.commit()
 
         return session_token.token
     return None
@@ -349,7 +361,6 @@ async def test_client_admin_generator(
     account_db_mock: MagicMock,
     account_creation_mock: MagicMock,
     fief_client_mock: MagicMock,
-    account_host: Optional[str],
     admin_session_token: Optional[str],
 ) -> TestClientGeneratorType:
     @contextlib.asynccontextmanager
@@ -362,10 +373,7 @@ async def test_client_admin_generator(
         app.dependency_overrides[get_fief] = lambda: fief_client_mock
         settings.fief_admin_session_cookie_domain = ""
 
-        headers = {}
         cookies = {}
-        if account_host is not None:
-            headers["Host"] = account_host
         if admin_session_token is not None:
             cookies[settings.fief_admin_session_cookie_name] = admin_session_token
 
@@ -373,7 +381,6 @@ async def test_client_admin_generator(
             async with httpx.AsyncClient(
                 app=app,
                 base_url="http://api.fief.dev",
-                headers=headers,
                 cookies=cookies,
             ) as test_client:
                 yield test_client

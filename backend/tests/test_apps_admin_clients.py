@@ -12,7 +12,7 @@ class TestListClients:
 
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
-    @pytest.mark.admin_session_token(user="regular")
+    @pytest.mark.admin_session_token()
     async def test_valid(
         self, test_client_admin: httpx.AsyncClient, test_data: TestData
     ):

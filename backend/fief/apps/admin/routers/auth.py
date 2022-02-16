@@ -4,7 +4,8 @@ from fastapi import APIRouter, Depends, Query, Request, status
 from fastapi.responses import RedirectResponse
 from fief_client import FiefAsync
 
-from fief.dependencies.fief import get_fief, get_userinfo
+from fief.dependencies.admin_session import get_userinfo
+from fief.dependencies.fief import get_fief
 from fief.dependencies.global_managers import get_admin_session_token_manager
 from fief.managers import AdminSessionTokenManager
 from fief.models import AdminSessionToken

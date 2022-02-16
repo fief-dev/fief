@@ -1,9 +1,11 @@
 import functools
 import json
 import secrets
+import uuid
 from typing import Any, Dict
 
 from fief_client import FiefTokenResponse
+from pydantic import UUID4
 from sqlalchemy import Column, String, Text
 
 from fief.models.base import GlobalBase
@@ -29,3 +31,7 @@ class AdminSessionToken(UUIDModel, CreatedUpdatedAt, GlobalBase):
     @functools.cached_property
     def userinfo(self) -> Dict[str, Any]:
         return json.loads(self.raw_userinfo)
+
+    @functools.cached_property
+    def user_id(self) -> UUID4:
+        return uuid.UUID(self.userinfo["sub"])

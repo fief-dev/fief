@@ -1,12 +1,16 @@
-from typing import Optional, Union
+from typing import TYPE_CHECKING, List, Optional, Union
 
 from sqlalchemy import Column, Enum, String, Text, engine, event
+from sqlalchemy.orm import relationship
 
 from fief.crypto.encryption import decrypt, encrypt
 from fief.db.types import DatabaseType, get_driver
 from fief.models.base import GlobalBase
 from fief.models.generics import CreatedUpdatedAt, UUIDModel
 from fief.settings import settings
+
+if TYPE_CHECKING:
+    from fief.models.account_user import AccountUser
 
 
 class Account(UUIDModel, CreatedUpdatedAt, GlobalBase):
@@ -21,6 +25,10 @@ class Account(UUIDModel, CreatedUpdatedAt, GlobalBase):
     database_username: Optional[str] = Column(Text, nullable=True)
     database_password: Optional[str] = Column(Text, nullable=True)
     database_name: Optional[str] = Column(Text, nullable=True)
+
+    account_users: List["AccountUser"] = relationship(
+        "AccountUser", back_populates="account"
+    )
 
     def __repr__(self) -> str:
         return f"Account(id={self.id}, name={self.name}, domain={self.domain})"

@@ -6,8 +6,8 @@ from fastapi import status
 
 from fief.db import AsyncSession
 from fief.managers import AdminSessionTokenManager
+from fief.schemas.user import UserDB
 from fief.settings import settings
-from tests.data import TestData
 
 
 @pytest.mark.asyncio
@@ -64,14 +64,14 @@ class TestAuthCallback:
         assert session_token.userinfo == {"email": "anne@bretagne.duchy"}
 
 
-@pytest.mark.admin_session_token(user="regular")
-async def test_auth_userinfo(test_client_admin: httpx.AsyncClient, test_data: TestData):
+@pytest.mark.admin_session_token()
+async def test_auth_userinfo(
+    test_client_admin: httpx.AsyncClient, account_admin_user: UserDB
+):
     response = await test_client_admin.get("/auth/userinfo")
 
     assert response.status_code == status.HTTP_200_OK
 
-    user = test_data["users"]["regular"]
-
     json = response.json()
-    assert json["sub"] == str(user.id)
-    assert json["email"] == user.email
+    assert json["sub"] == str(account_admin_user.id)
+    assert json["email"] == account_admin_user.email
