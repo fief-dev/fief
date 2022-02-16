@@ -9,7 +9,7 @@ from unittest.mock import MagicMock
 import asgi_lifespan
 import httpx
 import pytest
-from fastapi import BackgroundTasks, FastAPI
+from fastapi import FastAPI
 from fief_client import Fief
 from sqlalchemy import engine
 from sqlalchemy_utils import create_database, drop_database

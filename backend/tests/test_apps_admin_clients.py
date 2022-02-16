@@ -7,6 +7,12 @@ from tests.data import TestData
 
 @pytest.mark.asyncio
 class TestListClients:
+    async def test_unauthorized(self, test_client_admin: httpx.AsyncClient):
+        response = await test_client_admin.get("/clients/")
+
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+    @pytest.mark.admin_session_token(user="regular")
     async def test_valid(
         self, test_client_admin: httpx.AsyncClient, test_data: TestData
     ):

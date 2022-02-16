@@ -2,11 +2,12 @@ from fastapi import APIRouter, Depends
 
 from fief import schemas
 from fief.dependencies.client import get_paginated_clients
+from fief.dependencies.fief import get_cookie_session_token
 from fief.dependencies.pagination import PaginatedObjects
 from fief.models import Client
 from fief.schemas.generics import PaginatedResults
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(get_cookie_session_token)])
 
 
 @router.get("/")
