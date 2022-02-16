@@ -78,5 +78,5 @@ class Account(BaseAccount):
         return int(decrypt(value, settings.encryption_key))
 
 
-class AccountRead(BaseAccount):
+class AccountPublic(BaseAccount):
     pass

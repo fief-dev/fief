@@ -23,6 +23,10 @@ export class APIClient {
     return this.client.get('/admin/auth/userinfo');
   }
 
+  public listAccounts(params: schemas.PaginationParameters = {}): Promise<AxiosResponse<schemas.PaginatedResults<schemas.account.AccountPublic>>> {
+    return this.client.get('/admin/accounts/', { params });
+  }
+
   public listTenants(params: schemas.PaginationParameters = {}): Promise<AxiosResponse<schemas.PaginatedResults<schemas.tenant.Tenant>>> {
     return this.client.get('/admin/tenants/', { params });
   }

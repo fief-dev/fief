@@ -1,5 +1,6 @@
 import { Dispatch } from 'react';
 
+import AccountSwitcher from '../AccountSwitcher/AccountSwitcher';
 import UserMenu from '../UserMenu/UserMenu';
 
 interface HeaderProps {
@@ -12,6 +13,7 @@ const Header: React.FunctionComponent<HeaderProps> = ({ sidebarOpen, setSidebarO
     <header className="sticky top-0 bg-white border-b border-slate-200 z-30">
       <div className="px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 -mb-px">
+
 
           <div className="flex">
 
@@ -32,6 +34,8 @@ const Header: React.FunctionComponent<HeaderProps> = ({ sidebarOpen, setSidebarO
           </div>
 
           <div className="flex items-center space-x-3">
+            <AccountSwitcher />
+            <hr className="w-px h-6 bg-slate-200 mx-3" />
             <UserMenu />
           </div>
 

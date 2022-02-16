@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useToggle } from '../../hooks/toggle';
 
 import { useCurrentUser } from '../../hooks/user';
+import UserAvatar from '../UserAvatar/UserAvatar';
 
 interface UserMenuProps {
 }
@@ -24,10 +25,7 @@ const UserMenu: React.FunctionComponent<UserMenuProps> = () => {
         aria-expanded={dropdownOpen}
       >
         <div className="flex items-center truncate">
-          <span className="truncate ml-2 text-sm font-medium group-hover:text-slate-800">{user.email}</span>
-          <svg className="w-3 h-3 shrink-0 ml-1 fill-current text-slate-400" viewBox="0 0 12 12">
-            <path d="M5.9 11.4L.5 6l1.4-1.4 4 4 4-4L11.3 6z" />
-          </svg>
+          <UserAvatar user={user} />
         </div>
       </button>
 
@@ -39,7 +37,6 @@ const UserMenu: React.FunctionComponent<UserMenuProps> = () => {
       >
         <div className="pt-0.5 pb-2 px-3 mb-1 border-b border-slate-200">
           <div className="font-medium text-slate-800">{user.email}</div>
-          <div className="text-xs text-slate-500 italic">ACCOUNT</div>
         </div>
         <ul>
           <li>

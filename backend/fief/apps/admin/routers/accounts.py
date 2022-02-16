@@ -6,7 +6,7 @@ from fief.dependencies.admin_session import get_admin_session_token
 from fief.dependencies.pagination import PaginatedObjects
 from fief.errors import APIErrorCode
 from fief.models import Account, AdminSessionToken
-from fief.schemas.account import AccountCreate, AccountRead
+from fief.schemas.account import AccountCreate, AccountPublic
 from fief.schemas.generics import PaginatedResults
 from fief.services.account_creation import AccountCreation
 from fief.services.account_db import AccountDatabaseConnectionError
@@ -17,11 +17,11 @@ router = APIRouter(dependencies=[Depends(get_admin_session_token)])
 @router.get("/", name="accounts:list")
 async def list_accounts(
     paginated_accounts: PaginatedObjects[Account] = Depends(get_paginated_accounts),
-) -> PaginatedResults[AccountRead]:
+) -> PaginatedResults[AccountPublic]:
     accounts, count = paginated_accounts
     return PaginatedResults(
         count=count,
-        results=[AccountRead.from_orm(account) for account in accounts],
+        results=[AccountPublic.from_orm(account) for account in accounts],
     )
 
 
@@ -30,7 +30,7 @@ async def create_account(
     account_create: AccountCreate,
     account_creation: AccountCreation = Depends(get_account_creation),
     admin_session_token: AdminSessionToken = Depends(get_admin_session_token),
-) -> AccountRead:
+) -> AccountPublic:
     try:
         account = await account_creation.create(
             account_create, user_id=admin_session_token.user_id
@@ -41,4 +41,4 @@ async def create_account(
             detail=APIErrorCode.ACCOUNT_DB_CONNECTION_ERROR,
         ) from e
 
-    return AccountRead.from_orm(account)
+    return AccountPublic.from_orm(account)
