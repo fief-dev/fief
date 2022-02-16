@@ -1,4 +1,4 @@
-from typing import AsyncGenerator, Dict, Optional, Type, Union, cast
+from typing import Dict, Optional, Type, Union, cast
 
 from fastapi import Depends, Request
 from fastapi.security import OAuth2AuthorizationCodeBearer
@@ -150,8 +150,8 @@ async def get_jwt_access_token_strategy(
 async def get_user_db(
     session: AsyncSession = Depends(get_current_account_session),
     tenant: Tenant = Depends(get_current_tenant),
-) -> AsyncGenerator[SQLAlchemyUserDatabase[UserDB], None]:
-    yield SQLAlchemyUserTenantDatabase(UserDB, session, tenant, User)
+) -> SQLAlchemyUserDatabase[UserDB]:
+    return SQLAlchemyUserTenantDatabase(UserDB, session, tenant, User)
 
 
 async def get_user_manager(
@@ -161,7 +161,7 @@ async def get_user_manager(
     translations: Translations = Depends(get_translations),
     send_task: SendTask = Depends(get_send_task),
 ):
-    yield UserManager(user_db, account, tenant, translations, send_task)
+    return UserManager(user_db, account, tenant, translations, send_task)
 
 
 class AuthorizationCodeBearerTransport(BearerTransport):

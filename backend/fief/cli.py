@@ -1,3 +1,5 @@
+import asyncio
+
 import typer
 import uvicorn
 from alembic import command
@@ -9,6 +11,12 @@ from sqlalchemy.orm import sessionmaker
 from fief import __version__
 from fief.models import Account
 from fief.paths import ALEMBIC_CONFIG_FILE
+from fief.services.account_creation import (
+    CreateGlobalFiefUserError,
+    GlobalAccountAlreadyExists,
+    create_global_fief_account,
+    create_global_fief_user,
+)
 from fief.services.account_db import AccountDatabase
 from fief.settings import settings
 
@@ -48,6 +56,43 @@ def migrate_accounts():
             account_db.migrate(
                 account.get_database_url(False), account.get_schema_name()
             )
+
+
+@app.command("create-global-account")
+def create_global_account():
+    """Create a global Fief account following the environment settings."""
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
+    try:
+        loop.run_until_complete(create_global_fief_account())
+        typer.echo("Global Fief account created")
+    except GlobalAccountAlreadyExists as e:
+        typer.echo("Global Fief account already exists")
+        raise typer.Exit(code=1) from e
+
+
+@app.command("create-global-user")
+def create_global_user(
+    user_email: str = typer.Option(..., help="The admin user email"),
+    user_password: str = typer.Option(
+        ...,
+        prompt=True,
+        confirmation_prompt=True,
+        hide_input=True,
+        help="The admin user password",
+    ),
+):
+    """Create a global Fief account user."""
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
+    try:
+        loop.run_until_complete(create_global_fief_user(user_email, user_password))
+        typer.echo("Global Fief user created")
+    except CreateGlobalFiefUserError as e:
+        typer.echo("An error occured")
+        raise typer.Exit(code=1) from e
 
 
 @app.command("run-server")

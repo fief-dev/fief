@@ -3,12 +3,15 @@ from typing import Optional
 from pydantic import UUID4
 
 from fief.db import get_account_session, global_async_session_maker
-from fief.logging import logger
+from fief.dependencies.users import get_user_db, get_user_manager
+from fief.locale import get_preferred_translations
 from fief.managers import AccountManager, AccountUserManager, TenantManager
 from fief.models import Account, AccountUser, Client, Tenant
 from fief.schemas.account import AccountCreate
+from fief.schemas.user import UserCreate, UserDB
 from fief.services.account_db import AccountDatabase
 from fief.settings import settings
+from fief.tasks import send_task
 
 
 class AccountCreation:
@@ -77,18 +80,24 @@ class AccountCreation:
         return account
 
 
-async def create_global_fief_account():
+class GlobalAccountAlreadyExists(Exception):
+    pass
+
+
+async def create_global_fief_account() -> Account:
     async with global_async_session_maker() as session:
         account_manager = AccountManager(session)
+        account_user_manager = AccountUserManager(session)
         account = await account_manager.get_by_domain(settings.fief_domain)
 
         if account is not None:
-            logger.debug(f"Global Fief account {account.domain} already exists")
-            return
+            raise GlobalAccountAlreadyExists()
 
         account_create = AccountCreate(name="Fief")
         account_db = AccountDatabase()
-        account_creation = AccountCreation(account_manager, account_db)
+        account_creation = AccountCreation(
+            account_manager, account_user_manager, account_db
+        )
 
         account = await account_creation.create(
             account_create,
@@ -98,4 +107,44 @@ async def create_global_fief_account():
             default_encryption_key=settings.fief_encryption_key,
         )
 
-    logger.info(f"Global Fief account {account.domain} created")
+    return account
+
+
+class CreateGlobalFiefUserError(Exception):
+    pass
+
+
+class GlobalAccountDoesNotExist(Exception):
+    pass
+
+
+class GlobalAccountDoesNotHaveDefaultTenant(Exception):
+    pass
+
+
+async def create_global_fief_user(email: str, password: str) -> UserDB:
+    async with global_async_session_maker() as session:
+        account_manager = AccountManager(session)
+        account_user_manager = AccountUserManager(session)
+        account = await account_manager.get_by_domain(settings.fief_domain)
+
+        if account is None:
+            raise GlobalAccountDoesNotExist()
+
+        async with get_account_session(account) as session:
+            tenant_manager = TenantManager(session)
+            tenant = await tenant_manager.get_default()
+
+            if tenant is None:
+                raise GlobalAccountDoesNotHaveDefaultTenant()
+
+            user_db = await get_user_db(session, tenant)
+            user_manager = await get_user_manager(
+                user_db, tenant, account, get_preferred_translations(["en"]), send_task
+            )
+            user = await user_manager.create(UserCreate(email=email, password=password))
+
+        account_user = AccountUser(account_id=account.id, user_id=user.id)
+        await account_user_manager.create(account_user)
+
+    return user
