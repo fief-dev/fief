@@ -26,4 +26,4 @@ runs:
       with:
         name: admin-frontend-build
         path: |
-          build
+          admin-frontend/build
