@@ -11,13 +11,17 @@ app = FastAPI()
 
 app.mount(
     "/static",
-    StaticFiles(directory=STATIC_DIRECTORY / "frontend" / "static", html=True),
+    StaticFiles(
+        directory=STATIC_DIRECTORY / "frontend" / "static", html=True, check_dir=False
+    ),
     name="admin_frontend:static",
 )
 
 app.mount(
     "/locales",
-    StaticFiles(directory=STATIC_DIRECTORY / "frontend" / "locales", html=True),
+    StaticFiles(
+        directory=STATIC_DIRECTORY / "frontend" / "locales", html=True, check_dir=False
+    ),
     name="admin_frontend:locales",
 )
 
