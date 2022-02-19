@@ -37,7 +37,7 @@ async def callback(
     )
     session_token = await manager.create(session_token)
 
-    response = RedirectResponse(url="/admin", status_code=status.HTTP_302_FOUND)
+    response = RedirectResponse(url="/admin/", status_code=status.HTTP_302_FOUND)
     response.set_cookie(
         settings.fief_admin_session_cookie_name,
         session_token.token,
