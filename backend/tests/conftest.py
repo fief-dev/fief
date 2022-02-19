@@ -139,7 +139,7 @@ async def account(
     url, database_type = main_test_database
     account = Account(
         name="Duché de Bretagne",
-        domain="bretagne.fief.dev",
+        domain="bretagne.localhost",
         database_type=database_type,
         database_host=url.host,
         database_port=url.port,

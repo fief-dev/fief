@@ -2,6 +2,7 @@
   "name": "auth-frontend",
   "version": "0.1.0",
   "private": true,
+  "homepage": "/admin",
   "dependencies": {
     "@hookform/error-message": "^2.0.0",
     "@react-hook/cache": "^1.1.0",

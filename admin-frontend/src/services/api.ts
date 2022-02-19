@@ -3,40 +3,41 @@ import * as R from 'ramda';
 
 import * as schemas from '../schemas';
 
+const API_PORT =  process.env.REACT_APP_API_PORT;
+const BASE_URL = `${window.location.protocol}//${window.location.hostname}${API_PORT ? `:${API_PORT}` : ''}/api`;
+
 export class APIClient {
-  baseURL: string;
   client: AxiosInstance;
 
-  constructor() {
-    this.baseURL = process.env.REACT_APP_API_HOST as string;
+  constructor(accountId?: string) {
     this.client = axios.create({
-      baseURL: this.baseURL,
+      baseURL: BASE_URL,
       withCredentials: true,
     });
   }
 
-  public getLoginURL(): string {
-    return this.baseURL + '/admin/auth/login';
+  public static getLoginURL(): string {
+    return `${BASE_URL}/auth/login?redirect_uri=${encodeURIComponent(window.location.href)}`;
   }
 
   public getUserinfo(): Promise<AxiosResponse<schemas.user.CurrentUser>> {
-    return this.client.get('/admin/auth/userinfo');
+    return this.client.get('/auth/userinfo');
   }
 
   public listAccounts(params: schemas.PaginationParameters = {}): Promise<AxiosResponse<schemas.PaginatedResults<schemas.account.AccountPublic>>> {
-    return this.client.get('/admin/accounts/', { params });
+    return this.client.get('/accounts/', { params });
   }
 
   public listTenants(params: schemas.PaginationParameters = {}): Promise<AxiosResponse<schemas.PaginatedResults<schemas.tenant.Tenant>>> {
-    return this.client.get('/admin/tenants/', { params });
+    return this.client.get('/tenants/', { params });
   }
 
   public listClients(params: schemas.PaginationParameters = {}): Promise<AxiosResponse<schemas.PaginatedResults<schemas.client.Client>>> {
-    return this.client.get('/admin/clients/', { params });
+    return this.client.get('/clients/', { params });
   }
 
   public listUsers(params: schemas.PaginationParameters = {}): Promise<AxiosResponse<schemas.PaginatedResults<schemas.user.User>>> {
-    return this.client.get('/admin/users/', { params });
+    return this.client.get('/users/', { params });
   }
 }
 

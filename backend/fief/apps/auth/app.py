@@ -43,7 +43,7 @@ app = FastAPI()
 app.add_middleware(CSRFCookieSetterMiddleware)
 app.include_router(default_tenant_router)
 app.include_router(tenant_router)
-app.mount("/static", StaticFiles(directory=STATIC_DIRECTORY), name="static")
+app.mount("/static", StaticFiles(directory=STATIC_DIRECTORY), name="auth:static")
 
 
 @app.exception_handler(FormValidationError)

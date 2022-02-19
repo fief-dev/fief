@@ -2,10 +2,11 @@ import { Dispatch, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { NavLink, useLocation } from 'react-router-dom';
 
-import { ReactComponent as ClientsIcon } from '../../icons/clients.svg';
-import { ReactComponent as DashboardIcon } from '../../icons/dashboard.svg';
-import { ReactComponent as TenantsIcon } from '../../icons/tenants.svg';
-import { ReactComponent as UsersIcon } from '../../icons/users.svg';
+import { ReactComponent as ClientsIcon } from '../../images/icons/clients.svg';
+import { ReactComponent as DashboardIcon } from '../../images/icons/dashboard.svg';
+import { ReactComponent as TenantsIcon } from '../../images/icons/tenants.svg';
+import { ReactComponent as UsersIcon } from '../../images/icons/users.svg';
+import { ReactComponent as FiefLogo } from '../../images/logos/fief-logo-red.svg';
 
 interface SidebarProps {
   open: boolean;
@@ -66,7 +67,7 @@ const Sidebar: React.FunctionComponent<SidebarProps> = ({ open, setOpen }) => {
           </button>
 
           <NavLink end to="/" className="block">
-            <img src="/fief-logo-red.svg" alt="Fief" width={60} />
+            <FiefLogo className="w-[60px]" />
           </NavLink>
         </div>
 

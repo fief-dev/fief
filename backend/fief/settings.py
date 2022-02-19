@@ -1,4 +1,3 @@
-import os
 from enum import Enum
 from typing import Any, Dict, Optional
 from urllib.parse import urlparse
@@ -56,8 +55,8 @@ class Settings(BaseSettings):
     session_cookie_secure: bool = True
     session_lifetime_seconds: int = 86400 * 30
 
-    fief_domain: str
-    fief_base_url: str
+    fief_domain: str = "localhost"
+    fief_base_url: str = "http://localhost:8000"
     fief_client_id: str
     fief_client_secret: str
     fief_encryption_key: Optional[str] = None

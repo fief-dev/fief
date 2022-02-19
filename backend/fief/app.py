@@ -5,7 +5,7 @@ from sentry_sdk.integrations.asgi import SentryAsgiMiddleware
 from sentry_sdk.integrations.redis import RedisIntegration
 
 from fief import __version__
-from fief.apps import admin_app, auth_app
+from fief.apps import admin_app, admin_frontend_app, auth_app
 from fief.db import account_engine_manager
 from fief.settings import settings
 
@@ -27,7 +27,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.mount("/admin", admin_app)
+app.mount("/admin", admin_frontend_app)
+app.mount("/api", admin_app)
 app.mount("/", auth_app)
 
 

@@ -7,7 +7,6 @@ fief = FiefAsync(
     settings.fief_client_id,
     settings.fief_client_secret,
     encryption_key=settings.fief_encryption_key,
-    host=settings.fief_domain,
 )
 
 

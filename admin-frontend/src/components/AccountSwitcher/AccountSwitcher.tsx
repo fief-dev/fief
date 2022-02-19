@@ -19,7 +19,7 @@ const AccountSwitcher: React.FunctionComponent<AccountSwitcherProps> = () => {
   const switchAccount = useCallback((account: schemas.account.AccountPublic) => {
     setAccount(account);
     setDropdownOpen(false);
-    window.location.reload();
+    window.location.hostname = account.domain;
   }, [setAccount, setDropdownOpen]);
 
   return (

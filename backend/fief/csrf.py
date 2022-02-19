@@ -1,8 +1,11 @@
+import functools
+import http.cookies
 import secrets
 from typing import Optional
 
 from fastapi import Cookie, Form, HTTPException, Request, status
-from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
+from starlette.datastructures import MutableHeaders
+from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 from fief.errors import APIErrorCode
 
@@ -33,11 +36,31 @@ async def check_csrf(
     request.scope[CSRF_ATTRIBUTE_NAME] = secrets.token_urlsafe()
 
 
-class CSRFCookieSetterMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint):
-        response = await call_next(request)
-        if csrftoken := request.scope.get(CSRF_ATTRIBUTE_NAME):
-            response.set_cookie(
-                CSRF_ATTRIBUTE_NAME, csrftoken, secure=True, httponly=True
-            )
-        return response
+class CSRFCookieSetterMiddleware:
+    def __init__(self, app: ASGIApp):
+        self.app = app
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] != "http":  # pragma: no cover
+            await self.app(scope, receive, send)
+            return
+
+        send = functools.partial(self.send, send=send, scope=scope)
+        await self.app(scope, receive, send)
+
+    async def send(self, message: Message, send: Send, scope: Scope) -> None:
+        if message["type"] != "http.response.start":
+            await send(message)
+            return
+
+        if csrftoken := scope.get(CSRF_ATTRIBUTE_NAME):
+            message.setdefault("headers", [])
+            headers = MutableHeaders(scope=message)
+
+            cookie: http.cookies.BaseCookie = http.cookies.SimpleCookie()
+            cookie[CSRF_ATTRIBUTE_NAME] = csrftoken
+            cookie[CSRF_ATTRIBUTE_NAME]["secure"] = True
+            cookie[CSRF_ATTRIBUTE_NAME]["httponly"] = True
+            headers.append("set-cookie", cookie.output(header="").strip())
+
+        await send(message)

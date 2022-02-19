@@ -63,12 +63,12 @@ requires-python = ">=3.10"
 dependencies = [
     "aiomysql ==0.0.22",
     "aiosqlite ==0.17.0",
-    "alembic ==1.7.5",
+    "alembic ==1.7.6",
     "asyncpg ==0.25.0",
     "Babel ==2.9.1",
     "dramatiq[redis] ==1.12.3",
-    "fastapi ==0.73.0",
-    "fastapi-users[sqlalchemy2] ==9.2.3",
+    "fastapi ==0.74.0",
+    "fastapi-users[sqlalchemy2] ==9.2.5",
     "fief-client ==0.3.3",
     "furl ==2.1.3",
     "greenlet==1.1.2",
@@ -82,7 +82,7 @@ dependencies = [
     "sentry-sdk ==1.5.5",
     "sqlalchemy[mypy] ==1.4.31",
     "typer ==0.4.0",
-    "uvicorn[standard]==0.17.4",
+    "uvicorn[standard]==0.17.5",
 ]
 
 [project.scripts]

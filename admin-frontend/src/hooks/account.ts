@@ -4,21 +4,6 @@ import { Dispatch, useCallback, useEffect, useState } from 'react';
 import { APIClient, isAxiosException } from '../services/api';
 import * as schemas from '../schemas';
 
-const getAccountCookie = (): string | undefined => {
-  const cookies = document.cookie.split(';');
-  for (const cookie of cookies) {
-    const [key, value] = cookie.trim().split('=');
-    if (key === 'fief_account_id') {
-      return value;
-    }
-  }
-  return undefined;
-}
-
-const setAccountCookie = (value: string) => {
-  document.cookie = `fief_account_id=${value}`;
-};
-
 const accountsCache = createCache<schemas.account.AccountPublic[]>((async (key: string) => {
   const api = new APIClient();
   try {
@@ -28,7 +13,7 @@ const accountsCache = createCache<schemas.account.AccountPublic[]>((async (key: 
     if (isAxiosException(err)) {
       const response = err.response;
       if (response && (response.status === 401 || response.status === 403)) {
-        window.location.href = api.getLoginURL();
+        window.location.href = APIClient.getLoginURL();
       }
     }
   }
@@ -58,10 +43,11 @@ export const useCurrentAccount = (): [schemas.account.AccountPublic | undefined,
   const [account, setAccount] = useState<schemas.account.AccountPublic | undefined>();
 
   const getAccount = useCallback(async () => {
-    const accountId = getAccountCookie();
+    const accountDomain = window.location.hostname;
+    console.log(accountDomain);
     let account: schemas.account.AccountPublic | undefined;
-    if (accountId) {
-      account = accounts.find((account) => account.id === accountId);
+    if (accountDomain) {
+      account = accounts.find((account) => account.domain === accountDomain);
     }
     if (!account) {
       account = accounts[0];
@@ -74,12 +60,6 @@ export const useCurrentAccount = (): [schemas.account.AccountPublic | undefined,
       getAccount().then((account) => setAccount(account));
     }
   }, [getAccount, account]);
-
-  useEffect(() => {
-    if (account) {
-      setAccountCookie(account.id);
-    }
-  }, [account]);
 
   return [account, setAccount];
 };

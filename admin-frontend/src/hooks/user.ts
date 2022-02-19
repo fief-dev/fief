@@ -2,7 +2,7 @@ import { useCallback, useContext } from 'react';
 
 import UserContext from '../contexts/user';
 import * as schemas from '../schemas';
-import { isAxiosException } from '../services/api';
+import { APIClient, isAxiosException } from '../services/api';
 import { useAPI } from './api';
 
 export const useGetCurrentUser = (): () => Promise<schemas.user.CurrentUser> => {
@@ -16,7 +16,7 @@ export const useGetCurrentUser = (): () => Promise<schemas.user.CurrentUser> => 
       if (isAxiosException(err)) {
         const response = err.response;
         if (response && (response.status === 401 || response.status === 403)) {
-          window.location.href = api.getLoginURL();
+          window.location.href = APIClient.getLoginURL();
         }
       }
     }

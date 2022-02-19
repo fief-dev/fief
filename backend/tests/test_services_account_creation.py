@@ -60,7 +60,7 @@ class TestAccountCreationCreate:
     ):
         account = await account_creation.create(account_create)
 
-        assert account.domain == "burgundy.fief.dev"
+        assert account.domain == "burgundy.localhost"
 
         async with get_account_session(account) as session:
             tenant_manager = TenantManager(session)
@@ -125,4 +125,4 @@ class TestAccountCreationCreate:
         account_create.name = "Bretagne"
         account = await account_creation.create(account_create)
 
-        assert re.match(r"bretagne-\w+\.fief\.dev", account.domain)
+        assert re.match(r"bretagne-\w+\.localhost", account.domain)

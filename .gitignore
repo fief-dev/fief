@@ -121,3 +121,4 @@ node_modules/
 
 # Generated files
 backend/fief/static/output.css
+backend/fief/static/frontend/
