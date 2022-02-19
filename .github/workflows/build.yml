@@ -118,10 +118,7 @@ jobs:
       uses: actions/download-artifact@v2
       with:
         name: admin-frontend-build
-    - name: Copy frontend build to static folder
-      shell: bash
-      run: |
-        cp admin-frontend-build backend/fief/static/frontend
+        path: backend/fief/static/frontend
     - name: Publish on PyPI
       working-directory: backend
       env:
