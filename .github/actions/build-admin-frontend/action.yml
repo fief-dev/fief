@@ -1,0 +1,29 @@
+name: 'Build admin frontend'
+description: 'Build the React admin frontend'
+
+runs:
+  using: "composite"
+
+  steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js
+      uses: actions/setup-node@v1
+      with:
+        node-version: 14.x
+    - name: Install dependencies
+      shell: bash
+      working-directory: admin-frontend
+      run: npm ci
+    - name: Build
+      shell: bash
+      working-directory: admin-frontend
+      env:
+        NODE_ENV: production
+        REACT_APP_API_PORT: ''
+      run: npm run build
+    - name: Upload build artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: admin-frontend-build
+        path: |
+          build
