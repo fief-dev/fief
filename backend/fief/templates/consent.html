@@ -2,12 +2,12 @@
 
 {% block head_title %}{{ _('Consent') }}{% endblock %}
 
-{% block title %}{{ _('%(name)s wants to access your account', name=client.client_id) }}{% endblock %}
+{% block title %}{{ _('%(name)s wants to access your account', name=client.name) }}{% endblock %}
 
 {% block auth_form %}
   <form method="POST" action="{{ tenant.url_for(request, 'auth:consent.post') }}">
     <div class="space-y-4">
-      <div className="text-sm">{{ _('This will allow %(name)s to:', name=client.client_id) }}</div>
+      <div className="text-sm">{{ _('This will allow %(name)s to:', name=client.name) }}</div>
       {% for scope in scopes %}
         <div class="bg-white shadow-md rounded-sm border border-slate-200">
           <div class="flex flex-col p-5">
