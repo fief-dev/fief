@@ -43,7 +43,7 @@ class AccountDatabase:
         return create_engine(database_url, connect_args=connect_args)
 
     def _ensure_schema(self, database_url: URL, schema_name: str):
-        engine = create_engine(database_url)
+        engine = create_engine(database_url, connect_args={"connect_timeout": 5})
 
         dialect_name = database_url.get_dialect().name
         if dialect_name == "sqlite":

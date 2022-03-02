@@ -20,10 +20,10 @@ const Pagination: React.FunctionComponent<PaginationProps> = ({ current, max, pa
       <nav className="mb-4 sm:mb-0 sm:order-1" role="navigation" aria-label="Navigation">
         <ul className="flex justify-center">
           <li className="ml-3 first:ml-0">
-            <button type="button" className={current === 1 ? 'btn bg-white border-slate-200 text-slate-300 cursor-not-allowed' : 'btn bg-white border-slate-200 hover:border-slate-300 text-indigo-500'} onClick={() => onPageChanged(current - 1)} disabled={current === 1}>&lt;- {t('pagination.previous')}</button>
+            <button type="button" className={current === 1 ? 'btn bg-white border-slate-200 text-slate-300 cursor-not-allowed' : 'btn bg-white border-slate-200 hover:border-slate-300 text-primary-500'} onClick={() => onPageChanged(current - 1)} disabled={current === 1}>&lt;- {t('pagination.previous')}</button>
           </li>
           <li className="ml-3 first:ml-0">
-            <button type="button" className={current >= max ? 'btn bg-white border-slate-200 text-slate-300 cursor-not-allowed' : 'btn bg-white border-slate-200 hover:border-slate-300 text-indigo-500'} onClick={() => onPageChanged(current + 1)} disabled={current === max}>{t('pagination.next')} -&gt;</button>
+            <button type="button" className={current >= max ? 'btn bg-white border-slate-200 text-slate-300 cursor-not-allowed' : 'btn bg-white border-slate-200 hover:border-slate-300 text-primary-500'} onClick={() => onPageChanged(current + 1)} disabled={current === max}>{t('pagination.next')} -&gt;</button>
           </li>
         </ul>
       </nav>

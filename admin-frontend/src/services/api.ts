@@ -28,6 +28,10 @@ export class APIClient {
     return this.client.get('/accounts/', { params });
   }
 
+  public createAccount(data: schemas.account.AccountCreate): Promise<AxiosResponse<schemas.account.AccountPublic>> {
+    return this.client.post('/accounts/', data);
+  }
+
   public listTenants(params: schemas.PaginationParameters = {}): Promise<AxiosResponse<schemas.PaginatedResults<schemas.tenant.Tenant>>> {
     return this.client.get('/tenants/', { params });
   }

@@ -9,7 +9,7 @@ interface AccountSwitcherProps {
 }
 
 const AccountSwitcher: React.FunctionComponent<AccountSwitcherProps> = () => {
-  const accounts = useAccountsCache();
+  const [accounts] = useAccountsCache();
   const [account, setAccount] = useContext(AccountContext);
 
   const trigger = useRef<HTMLButtonElement>(null);

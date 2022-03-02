@@ -1,5 +1,3 @@
-import React from 'react';
-
 import AccountContext from '../../contexts/account';
 import { useCurrentAccount } from '../../hooks/account';
 
@@ -8,7 +6,7 @@ const AccountContextProvider: React.FunctionComponent = ({ children }) => {
 
   return (
     <AccountContext.Provider value={[account, setCurrentAccount]}>
-      {account && children}
+      {children}
     </AccountContext.Provider>
   );
 };
