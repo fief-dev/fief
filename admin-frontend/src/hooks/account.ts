@@ -1,4 +1,4 @@
-import { createCache, useCache, UseCacheStatus } from '@react-hook/cache';
+import { createCache, useCache } from '@react-hook/cache';
 import { Dispatch, useCallback, useEffect, useState } from 'react';
 
 import { APIClient, isAxiosException } from '../services/api';
