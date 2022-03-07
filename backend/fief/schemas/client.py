@@ -1,4 +1,5 @@
-from pydantic import UUID4
+from typing import Optional
+from pydantic import UUID4, SecretStr
 
 from fief.schemas.generics import CreatedUpdatedAt, UUIDSchema
 from fief.schemas.tenant import TenantEmbedded
@@ -14,3 +15,4 @@ class BaseClient(UUIDSchema, CreatedUpdatedAt):
 
 class Client(BaseClient):
     tenant: TenantEmbedded
+    encrypt_jwk: Optional[SecretStr]

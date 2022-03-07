@@ -6,7 +6,8 @@ interface BaseClient extends UUIDSchema, CreatedUpdatedAt {
   first_party: boolean;
   client_id: string;
   client_secret: string;
-  tenant_id: string
+  encrypt_jwk: string | null;
+  tenant_id: string;
 }
 
 export interface Client extends BaseClient {

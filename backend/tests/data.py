@@ -1,9 +1,11 @@
+import secrets
 import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Mapping, TypedDict
 
 from fastapi_users.password import get_password_hash
 
+from fief.crypto.jwk import generate_jwk
 from fief.models import (
     AuthorizationCode,
     Client,
@@ -56,6 +58,13 @@ clients: ModelMapping[Client] = {
         tenant=tenants["default"],
         client_id="FIRST_PARTY_DEFAULT_TENANT_CLIENT_ID",
         client_secret="FIRST_PARTY_DEFAULT_TENANT_CLIENT_SECRET",
+    ),
+    "encryption_default_tenant": Client(
+        name="Encryption default",
+        tenant=tenants["default"],
+        client_id="ENCRYPTION_DEFAULT_TENANT_CLIENT_ID",
+        client_secret="ENCRYPTION_DEFAULT_TENANT_CLIENT_SECRET",
+        encrypt_jwk=generate_jwk(secrets.token_urlsafe(), "enc").export_public(),
     ),
     "secondary_tenant": Client(name="Secondary", tenant=tenants["secondary"]),
 }

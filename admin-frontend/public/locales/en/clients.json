@@ -8,6 +8,13 @@
   },
   "details": {
     "client_id": "ID",
-    "client_secret": "Secret"
+    "client_secret": "Secret",
+    "id_token_encryption": "ID Token encryption",
+    "id_token_encryption_disabled": "Disabled",
+    "id_token_encryption_enabled": "Enabled",
+    "id_token_encryption_generate_key": "Generate key",
+    "id_token_encryption_regenerate_key": "Regenerate key",
+    "id_token_encryption_shown_once": "The key below will be shown only once. Make sure to copy it and store it somewhere safe.",
+    "id_token_encryption_close_modal": "Close"
   }
 }

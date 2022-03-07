@@ -28,6 +28,7 @@ class TestListClients:
 
         for result in json["results"]:
             assert "tenant" in result
+            assert result["encrypt_jwk"] in [None, "**********"]
 
 
 @pytest.mark.asyncio

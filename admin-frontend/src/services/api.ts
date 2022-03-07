@@ -40,6 +40,10 @@ export class APIClient {
     return this.client.get('/clients/', { params });
   }
 
+  public createClientEncryptionKey(id: string): Promise<AxiosResponse<Record<string, string>>> {
+    return this.client.post(`/clients/${id}/encryption-key`);
+  }
+
   public listUsers(params: schemas.PaginationParameters = {}): Promise<AxiosResponse<schemas.PaginatedResults<schemas.user.User>>> {
     return this.client.get('/users/', { params });
   }
