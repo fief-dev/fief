@@ -217,7 +217,12 @@ async def get_needs_consent(
     if session_token is None:
         return True
 
-    client_id = login_session.client.id
+    client = login_session.client
+
+    if client.first_party:
+        return False
+
+    client_id = client.id
     user_id = session_token.user_id
     grant = await grant_manager.get_by_user_and_client(user_id, client_id)
 

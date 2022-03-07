@@ -6,6 +6,7 @@ from fief.schemas.tenant import TenantEmbedded
 
 class BaseClient(UUIDSchema, CreatedUpdatedAt):
     name: str
+    first_party: bool
     client_id: str
     client_secret: str
     tenant_id: UUID4

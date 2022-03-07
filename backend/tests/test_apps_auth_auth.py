@@ -523,6 +523,42 @@ class TestAuthGetConsent:
 
         assert response.status_code == status.HTTP_200_OK
 
+    async def test_first_party(
+        self,
+        test_client_auth: httpx.AsyncClient,
+        test_data: TestData,
+        account_session: AsyncSession,
+    ):
+        login_session = test_data["login_sessions"]["first_party_default"]
+        client = login_session.client
+        tenant = client.tenant
+        path_prefix = tenant.slug if not tenant.default else ""
+        session_token = test_data["session_tokens"]["regular"]
+
+        cookies = {}
+        cookies[settings.login_session_cookie_name] = login_session.token
+        cookies[settings.session_cookie_name] = session_token.token
+
+        response = await test_client_auth.get(f"{path_prefix}/consent", cookies=cookies)
+
+        assert response.status_code == status.HTTP_302_FOUND
+
+        redirect_uri = response.headers["Location"]
+        assert redirect_uri.startswith(login_session.redirect_uri)
+        parsed_location = furl(redirect_uri)
+        assert "code" in parsed_location.query.params
+        assert parsed_location.query.params["state"] == login_session.state
+
+        set_cookie_header = response.headers["Set-Cookie"]
+        assert set_cookie_header.startswith(f'{settings.login_session_cookie_name}=""')
+        assert "Max-Age=0" in set_cookie_header
+
+        login_session_manager = LoginSessionManager(account_session)
+        used_login_session = await login_session_manager.get_by_token(
+            login_session.token
+        )
+        assert used_login_session is None
+
 
 @pytest.mark.asyncio
 @pytest.mark.account_host

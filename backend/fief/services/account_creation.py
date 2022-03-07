@@ -66,7 +66,9 @@ class AccountCreation:
 
             session.add(tenant)
 
-            client = Client(name=f"{tenant.name}'s client", tenant=tenant)
+            client = Client(
+                name=f"{tenant.name}'s client", first_party=True, tenant=tenant
+            )
 
             if default_client_id is not None:
                 client.client_id = default_client_id

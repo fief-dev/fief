@@ -1,7 +1,7 @@
 import secrets
 
 from pydantic import UUID4
-from sqlalchemy import Column, ForeignKey, String
+from sqlalchemy import Boolean, Column, ForeignKey, String
 from sqlalchemy.orm import relationship
 
 from fief.models.base import AccountBase
@@ -13,6 +13,7 @@ class Client(UUIDModel, CreatedUpdatedAt, AccountBase):
     __tablename__ = "clients"
 
     name: str = Column(String(length=255), nullable=False)
+    first_party: bool = Column(Boolean, nullable=False, default=False)
 
     client_id: str = Column(
         String(length=255), default=secrets.token_urlsafe, nullable=False, index=True

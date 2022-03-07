@@ -75,6 +75,7 @@ class TestAccountCreationCreate:
 
             assert len(clients) == 1
             client = clients[0]
+            assert client.first_party
             assert client.tenant_id == tenant.id
 
     async def test_user_id(

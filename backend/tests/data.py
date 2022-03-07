@@ -50,6 +50,13 @@ clients: ModelMapping[Client] = {
         client_id="GRANTED_DEFAULT_TENANT_CLIENT_ID",
         client_secret="GRANTED_DEFAULT_TENANT_CLIENT_SECRET",
     ),
+    "first_party_default_tenant": Client(
+        name="First-party default",
+        first_party=True,
+        tenant=tenants["default"],
+        client_id="FIRST_PARTY_DEFAULT_TENANT_CLIENT_ID",
+        client_secret="FIRST_PARTY_DEFAULT_TENANT_CLIENT_SECRET",
+    ),
     "secondary_tenant": Client(name="Secondary", tenant=tenants["secondary"]),
 }
 
@@ -97,6 +104,13 @@ login_sessions: ModelMapping[LoginSession] = {
         scope=["openid", "offline_access", "other"],
         state="STATE",
         client=clients["granted_default_tenant"],
+    ),
+    "first_party_default": LoginSession(
+        response_type="code",
+        redirect_uri="https://nantes.city/callback",
+        scope=["openid", "offline_access", "other"],
+        state="STATE",
+        client=clients["first_party_default_tenant"],
     ),
     "secondary": LoginSession(
         response_type="code",
