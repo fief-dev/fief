@@ -42,13 +42,14 @@ from fief.locale import Translations
 from fief.managers import UserManager as UserDBManager
 from fief.models import Account, Tenant, User
 from fief.schemas.user import UserCreate, UserCreateInternal, UserDB
+from fief.settings import settings
 from fief.tasks import SendTask, on_after_forgot_password, on_after_register
 
 
 class UserManager(BaseUserManager[UserCreate, UserDB]):
     user_db_model = UserDB
-    reset_password_token_secret = "SECRET"
-    verification_token_secret = "SECRET"
+    reset_password_token_secret = settings.secret.get_secret_value()
+    verification_token_secret = settings.secret.get_secret_value()
 
     def __init__(
         self,

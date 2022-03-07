@@ -2,7 +2,7 @@ from enum import Enum
 from typing import Any, Dict, Optional
 from urllib.parse import urlparse
 
-from pydantic import BaseSettings, Field, root_validator, validator
+from pydantic import BaseSettings, Field, SecretStr, root_validator, validator
 from sqlalchemy import engine
 
 from fief.crypto.encryption import is_valid_key
@@ -28,7 +28,7 @@ class Settings(BaseSettings):
     root_domain: str
     allow_origin_regex: str
 
-    secret: str
+    secret: SecretStr
     encryption_key: bytes
 
     database_type: DatabaseType = DatabaseType.SQLITE
