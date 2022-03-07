@@ -24,6 +24,16 @@ const Clients: React.FunctionComponent = () => {
       {
         Header: t('clients:list.name') as string,
         accessor: 'name',
+        Cell: ({ cell: { value }, row: { original } }) => (
+          <>
+            {value}
+            {original.first_party &&
+              <div className="inline-flex font-medium rounded-full text-center ml-2 px-2.5 py-0.5 bg-green-100 text-green-600">
+                {t('clients:list.first_party')}
+              </div>
+            }
+          </>
+        )
       },
       {
         Header: t('clients:list.tenant') as string,

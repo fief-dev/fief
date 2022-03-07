@@ -2,6 +2,7 @@
   "list": {
     "title": "Clients",
     "name": "Name",
+    "first_party": "First-party",
     "tenant": "Tenant",
     "client_id": "Client ID"
   }
