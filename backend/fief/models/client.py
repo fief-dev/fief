@@ -1,9 +1,12 @@
 import secrets
+from typing import Optional
 
+from jwcrypto import jwk
 from pydantic import UUID4
-from sqlalchemy import Boolean, Column, ForeignKey, String
+from sqlalchemy import Boolean, Column, ForeignKey, String, Text
 from sqlalchemy.orm import relationship
 
+from fief.crypto.jwk import load_jwk
 from fief.models.base import AccountBase
 from fief.models.generics import GUID, CreatedUpdatedAt, UUIDModel
 from fief.models.tenant import Tenant
@@ -21,9 +24,15 @@ class Client(UUIDModel, CreatedUpdatedAt, AccountBase):
     client_secret: str = Column(
         String(length=255), default=secrets.token_urlsafe, nullable=False, index=True
     )
+    encrypt_jwk: str = Column(Text, nullable=True)
 
     tenant_id: UUID4 = Column(GUID, ForeignKey(Tenant.id, ondelete="CASCADE"), nullable=False)  # type: ignore
     tenant: Tenant = relationship("Tenant", lazy="joined")
 
     def __repr__(self) -> str:
         return f"Client(id={self.id}, name={self.name}, client_id={self.client_id})"
+
+    def get_encrypt_jwk(self) -> Optional[jwk.JWK]:
+        if self.encrypt_jwk is None:
+            return None
+        return load_jwk(self.encrypt_jwk)

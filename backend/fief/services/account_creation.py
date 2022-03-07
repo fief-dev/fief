@@ -61,9 +61,6 @@ class AccountCreation:
             tenant_slug = await TenantManager(session).get_available_slug(tenant_name)
             tenant = Tenant(name=account.name, slug=tenant_slug, default=True)
 
-            if default_encryption_key is not None:
-                tenant.encrypt_jwk = default_encryption_key
-
             session.add(tenant)
 
             client = Client(
@@ -74,6 +71,8 @@ class AccountCreation:
                 client.client_id = default_client_id
             if default_client_secret is not None:
                 client.client_secret = default_client_secret
+            if default_encryption_key is not None:
+                client.encrypt_jwk = default_encryption_key
 
             session.add(client)
 

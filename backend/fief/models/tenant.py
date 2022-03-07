@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any
 
 from fastapi import Request
 from jwcrypto import jwk
@@ -16,18 +16,12 @@ class Tenant(UUIDModel, CreatedUpdatedAt, AccountBase):
     slug: str = Column(String(length=255), nullable=False, unique=True)
     default: bool = Column(Boolean, default=False, nullable=False)
     sign_jwk: str = Column(Text, nullable=False, default=generate_signature_jwk_string)
-    encrypt_jwk: str = Column(Text, nullable=True)
 
     def __repr__(self) -> str:
         return f"Tenant(id={self.id}, name={self.name}, slug={self.slug}, default={self.default})"
 
     def get_sign_jwk(self) -> jwk.JWK:
         return load_jwk(self.sign_jwk)
-
-    def get_encrypt_jwk(self) -> Optional[jwk.JWK]:
-        if self.encrypt_jwk is None:
-            return None
-        return load_jwk(self.encrypt_jwk)
 
     def get_host(self, domain: str) -> str:
         host = f"https://{domain}"

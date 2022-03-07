@@ -33,7 +33,7 @@ ignore_missing_imports = true
 profile = "black"
 
 [tool.coverage.run]
-concurrency = ["greenlet"]
+concurrency = ["thread", "gevent"]
 omit = ["fief/alembic/*"]
 
 [tool.pytest.ini_options]

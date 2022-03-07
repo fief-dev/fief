@@ -41,7 +41,7 @@ async def token(
         client,
         user,
         TOKEN_LIFETIME,
-        encryption_key=tenant.get_encrypt_jwk(),
+        encryption_key=client.get_encrypt_jwk(),
     )
     token_response = TokenResponse(
         access_token=access_token, id_token=id_token, expires_in=TOKEN_LIFETIME

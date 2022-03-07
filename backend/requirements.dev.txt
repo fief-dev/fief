@@ -5,6 +5,7 @@ black
 bumpversion
 coverage[toml]
 flit
+gevent
 httpx
 isort
 mypy
