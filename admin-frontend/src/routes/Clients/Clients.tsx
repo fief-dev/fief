@@ -1,6 +1,7 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Column } from 'react-table';
+import ClientDetails from '../../components/ClientDetails/ClientDetails';
 
 import DataTable from '../../components/DataTable/DataTable';
 import Layout from '../../components/Layout/Layout';
@@ -19,6 +20,16 @@ const Clients: React.FunctionComponent = () => {
     onSortingChange,
   } = usePaginationAPI<'listClients'>({ method: 'listClients', limit: 10 });
 
+  const [selected, setSelected] = useState<schemas.client.Client | undefined>();
+
+  const onClientSelected = useCallback((client: schemas.client.Client) => {
+    if (selected && selected.id === client.id) {
+      setSelected(undefined);
+    } else {
+      setSelected(client);
+    }
+  }, [selected]);
+
   const columns = useMemo<Column<schemas.client.Client>[]>(() => {
     return [
       {
@@ -26,7 +37,7 @@ const Clients: React.FunctionComponent = () => {
         accessor: 'name',
         Cell: ({ cell: { value }, row: { original } }) => (
           <>
-            {value}
+            <span className="font-medium text-slate-800 hover:text-slate-900 cursor-pointer" onClick={() => onClientSelected(original)}>{value}</span>
             {original.first_party &&
               <div className="inline-flex font-medium rounded-full text-center ml-2 px-2.5 py-0.5 bg-green-100 text-green-600">
                 {t('clients:list.first_party')}
@@ -38,7 +49,7 @@ const Clients: React.FunctionComponent = () => {
       {
         Header: t('clients:list.tenant') as string,
         accessor: 'tenant',
-        Cell: ({ cell: { value: tenant }}) => (
+        Cell: ({ cell: { value: tenant } }) => (
           <>{tenant.name}</>
         ),
       },
@@ -47,10 +58,10 @@ const Clients: React.FunctionComponent = () => {
         accessor: 'client_id',
       },
     ];
-  }, [t]);
+  }, [t, onClientSelected]);
 
   return (
-    <Layout>
+    <Layout sidebar={selected ? <ClientDetails client={selected} /> : undefined}>
       <div className="sm:flex sm:justify-between sm:items-center mb-8">
 
         <div className="mb-4 sm:mb-0">

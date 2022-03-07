@@ -5,5 +5,9 @@
     "first_party": "First-party",
     "tenant": "Tenant",
     "client_id": "Client ID"
+  },
+  "details": {
+    "client_id": "ID",
+    "client_secret": "Secret"
   }
 }
