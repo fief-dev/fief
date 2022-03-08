@@ -37,11 +37,14 @@ from fief.dependencies.pagination import (
     get_pagination,
 )
 from fief.dependencies.tasks import get_send_task
-from fief.dependencies.tenant import get_current_tenant
+from fief.dependencies.tenant import (
+    get_current_tenant,
+    get_tenant_from_create_user_internal,
+)
 from fief.locale import Translations
 from fief.managers import UserManager as UserDBManager
 from fief.models import Account, Tenant, User
-from fief.schemas.user import UserCreate, UserCreateInternal, UserDB
+from fief.schemas.user import UserCreate, UserDB
 from fief.settings import settings
 from fief.tasks import SendTask, on_after_forgot_password, on_after_register
 
@@ -74,15 +77,6 @@ class UserManager(BaseUserManager[UserCreate, UserDB]):
                     "The password should be at least 8 characters."
                 )
             )
-
-    async def create(
-        self, user: UserCreate, safe: bool = False, request: Optional[Request] = None
-    ) -> UserDB:
-        user_dict = (
-            user.create_update_dict() if safe else user.create_update_dict_superuser()
-        )
-        user_create = UserCreateInternal(**user_dict, tenant_id=self.tenant.id)
-        return await super().create(user_create, safe=safe, request=request)
 
     async def on_after_register(self, user: UserDB, request: Optional[Request] = None):
         self.send_task(on_after_register, str(user.id), str(self.account.id))
@@ -161,6 +155,25 @@ async def get_user_db(
 async def get_user_manager(
     user_db: SQLAlchemyUserDatabase[UserDB] = Depends(get_user_db),
     tenant: Tenant = Depends(get_current_tenant),
+    account: Account = Depends(get_current_account),
+    translations: Translations = Depends(get_translations),
+    send_task: SendTask = Depends(get_send_task),
+):
+    return UserManager(user_db, account, tenant, translations, send_task)
+
+
+async def get_user_db_from_create_user_internal(
+    session: AsyncSession = Depends(get_current_account_session),
+    tenant: Tenant = Depends(get_tenant_from_create_user_internal),
+) -> SQLAlchemyUserDatabase[UserDB]:
+    return SQLAlchemyUserTenantDatabase(UserDB, session, tenant, User)
+
+
+async def get_user_manager_from_create_user_internal(
+    user_db: SQLAlchemyUserDatabase[UserDB] = Depends(
+        get_user_db_from_create_user_internal
+    ),
+    tenant: Tenant = Depends(get_tenant_from_create_user_internal),
     account: Account = Depends(get_current_account),
     translations: Translations = Depends(get_translations),
     send_task: SendTask = Depends(get_send_task),

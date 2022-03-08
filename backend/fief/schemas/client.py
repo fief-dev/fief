@@ -1,4 +1,5 @@
 from typing import Optional
+
 from pydantic import UUID4, SecretStr
 
 from fief.schemas.generics import CreatedUpdatedAt, UUIDSchema

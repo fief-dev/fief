@@ -27,6 +27,8 @@ class APIErrorCode(str, Enum):
     )
     ACCOUNT_DB_CONNECTION_ERROR = "ACCOUNT_DB_CONNECTION_ERROR"
 
+    USER_CREATE_UNKNOWN_TENANT = "USER_CREATE_UNKNOWN_TENANT"
+
 
 PYDANTIC_ERROR_MESSAGES = {
     "value_error.missing": _("This field is required."),

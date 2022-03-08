@@ -13,7 +13,7 @@ from fief.dependencies.users import UserManager, get_user_manager
 from fief.errors import RegisterException
 from fief.models import Tenant
 from fief.schemas.register import RegisterError
-from fief.schemas.user import UserCreate
+from fief.schemas.user import UserCreate, UserCreateInternal
 from fief.services.authentication_flow import AuthenticationFlow
 
 router = APIRouter(dependencies=[Depends(check_csrf), Depends(get_translations)])
@@ -44,7 +44,10 @@ async def post_register(
     _=Depends(get_gettext),
 ):
     try:
-        created_user = await user_manager.create(user, safe=True, request=request)
+        user_create = UserCreateInternal(**user.dict(), tenant_id=tenant.id)
+        created_user = await user_manager.create(
+            user_create, safe=True, request=request
+        )
     except UserAlreadyExists as e:
         raise RegisterException(
             RegisterError.get_user_already_exists(

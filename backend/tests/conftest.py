@@ -360,8 +360,10 @@ async def test_client_admin_generator(
     account_session: AsyncSession,
     account_db_mock: MagicMock,
     account_creation_mock: MagicMock,
+    send_task_mock: MagicMock,
     fief_client_mock: MagicMock,
     admin_session_token: Optional[str],
+    account_host: Optional[str],
 ) -> TestClientGeneratorType:
     @contextlib.asynccontextmanager
     async def _test_client_generator(app: FastAPI):
@@ -370,6 +372,7 @@ async def test_client_admin_generator(
         app.dependency_overrides[get_current_account_session] = lambda: account_session
         app.dependency_overrides[get_account_db] = lambda: account_db_mock
         app.dependency_overrides[get_account_creation] = lambda: account_creation_mock
+        app.dependency_overrides[get_send_task] = lambda: send_task_mock
         app.dependency_overrides[get_fief] = lambda: fief_client_mock
         settings.fief_admin_session_cookie_domain = ""
 
@@ -377,11 +380,16 @@ async def test_client_admin_generator(
         if admin_session_token is not None:
             cookies[settings.fief_admin_session_cookie_name] = admin_session_token
 
+        headers = {}
+        if account_host is not None:
+            headers["Host"] = account_host
+
         async with asgi_lifespan.LifespanManager(app):
             async with httpx.AsyncClient(
                 app=app,
                 base_url="http://api.fief.dev",
                 cookies=cookies,
+                headers=headers,
             ) as test_client:
                 yield test_client
 
