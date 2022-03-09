@@ -1,6 +1,7 @@
 import { Dispatch, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { NavLink, useLocation } from 'react-router-dom';
+import { ArrowLeftIcon } from '@heroicons/react/solid';
 
 import { ReactComponent as ClientsIcon } from '../../images/icons/clients.svg';
 import { ReactComponent as DashboardIcon } from '../../images/icons/dashboard.svg';
@@ -61,9 +62,7 @@ const Sidebar: React.FunctionComponent<SidebarProps> = ({ open, setOpen }) => {
             aria-expanded={open}
           >
             <span className="sr-only">{t('sidebar.close')}</span>
-            <svg className="w-6 h-6 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path d="M10.7 18.7l1.4-1.4L7.8 13H20v-2H7.8l4.3-4.3-1.4-1.4L4 12z" />
-            </svg>
+            <ArrowLeftIcon className="w-6 h-6 fill-current" />
           </button>
 
           <NavLink end to="/" className="block">

@@ -7,6 +7,18 @@ export interface CurrentUser {
   email: string;
 }
 
+interface UserCreate {
+  email: string;
+  password: string;
+  is_active?: boolean;
+  is_superuser?: boolean;
+  is_verified?: boolean;
+}
+
+export interface UserCreateInternal extends UserCreate {
+  tenant_id: string;
+}
+
 interface BaseUser extends UUIDSchema {
   email: string;
   is_active: boolean;

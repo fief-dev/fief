@@ -1,7 +1,10 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Column } from 'react-table';
+import { PlusIcon } from '@heroicons/react/solid';
 
+
+import CreateUserModal from '../../components/CreateUserModal/CreateUserModal';
 import DataTable from '../../components/DataTable/DataTable';
 import Layout from '../../components/Layout/Layout';
 import { usePaginationAPI } from '../../hooks/api';
@@ -17,6 +20,7 @@ const Users: React.FunctionComponent = () => {
     onPageChange,
     sorting,
     onSortingChange,
+    refresh,
   } = usePaginationAPI<'listUsers'>({ method: 'listUsers', limit: 10 });
 
   const columns = useMemo<Column<schemas.user.User>[]>(() => {
@@ -28,12 +32,18 @@ const Users: React.FunctionComponent = () => {
       {
         Header: t('users:list.tenant') as string,
         accessor: 'tenant',
-        Cell: ({ cell: { value: tenant }}) => (
+        Cell: ({ cell: { value: tenant } }) => (
           <>{tenant.name}</>
         ),
       },
     ];
   }, [t]);
+
+  const [showCreateUserModal, setShowCreateUserModal] = useState(false);
+  const onUserCreated = useCallback(() => {
+    setShowCreateUserModal(false);
+    refresh();
+  }, [refresh]);
 
   return (
     <Layout>
@@ -41,6 +51,16 @@ const Users: React.FunctionComponent = () => {
 
         <div className="mb-4 sm:mb-0">
           <h1 className="text-2xl md:text-3xl text-slate-800 font-bold">{t('users:list.title')}</h1>
+        </div>
+
+        <div className="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
+          <button
+            className="btn bg-primary-500 hover:bg-primary-600 text-white"
+            onClick={() => setShowCreateUserModal(true)}
+          >
+            <PlusIcon width="16" height="16" />
+            <span className="hidden xs:block ml-2">{t('users:list.create')}</span>
+          </button>
         </div>
 
       </div>
@@ -56,6 +76,12 @@ const Users: React.FunctionComponent = () => {
         page={page}
         maxPage={maxPage}
         onPageChange={onPageChange}
+      />
+
+      <CreateUserModal
+        open={showCreateUserModal}
+        onUserCreated={onUserCreated}
+        onClose={() => setShowCreateUserModal(false)}
       />
     </Layout>
   );

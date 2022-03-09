@@ -1,6 +1,7 @@
-import { useRef } from 'react';
+import { Fragment } from 'react';
 import { Link } from 'react-router-dom';
-import { useToggle } from '../../hooks/toggle';
+import { Menu, Transition } from '@headlessui/react'
+
 
 import { useCurrentUser } from '../../hooks/user';
 import UserAvatar from '../UserAvatar/UserAvatar';
@@ -11,46 +12,54 @@ interface UserMenuProps {
 const UserMenu: React.FunctionComponent<UserMenuProps> = () => {
   const user = useCurrentUser();
 
-  const trigger = useRef<HTMLButtonElement>(null);
-  const dropdown = useRef<HTMLDivElement>(null);
-  const [dropdownOpen, setDropdownOpen] = useToggle(trigger, dropdown, false);
-
   return (
-    <div className="relative inline-flex">
-      <button
-        ref={trigger}
-        className="inline-flex justify-center items-center group"
-        aria-haspopup="true"
-        onClick={() => setDropdownOpen(!dropdownOpen)}
-        aria-expanded={dropdownOpen}
-      >
-        <div className="flex items-center truncate">
-          <UserAvatar user={user} />
-        </div>
-      </button>
-
-      <div
-        ref={dropdown}
-        onFocus={() => setDropdownOpen(true)}
-        onBlur={() => setDropdownOpen(false)}
-        className={`origin-top-right z-10 absolute top-full min-w-44 bg-white border border-slate-200 py-1.5 rounded shadow-lg overflow-hidden mt-1 right-0 ${dropdownOpen ? '' : 'hidden'}`}
-      >
-        <div className="pt-0.5 pb-2 px-3 mb-1 border-b border-slate-200">
-          <div className="font-medium text-slate-800">{user.email}</div>
-        </div>
-        <ul>
-          <li>
-            <Link
-              className="font-medium text-sm text-primary-500 hover:text-primary-600 flex items-center py-1 px-3"
-              to="/signin"
-              onClick={() => setDropdownOpen(!dropdownOpen)}
-            >
-              Sign Out
-            </Link>
-          </li>
-        </ul>
+    <Menu as="div" className="relative inline-block text-left">
+      <div>
+        <Menu.Button className="inline-flex justify-center items-center group">
+          <div className="flex items-center truncate">
+            <UserAvatar user={user} />
+          </div>
+        </Menu.Button>
       </div>
-    </div>
+      <Transition
+        as={Fragment}
+        enter="transition ease-out duration-100"
+        enterFrom="transform opacity-0 scale-95"
+        enterTo="transform opacity-100 scale-100"
+        leave="transition ease-in duration-75"
+        leaveFrom="transform opacity-100 scale-100"
+        leaveTo="transform opacity-0 scale-95"
+      >
+        <Menu.Items className="absolute right-0 w-56 mt-2 origin-top-right bg-white divide-y divide-gray-100 rounded shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+          <div className="px-1 py-1">
+            <Menu.Item>
+              {() => (
+                <div
+                  className="flex flex-col rounded w-full px-2 py-2 text-sm"
+                >
+                  <div className="font-medium text-slate-800">{user.email}</div>
+                </div>
+              )}
+            </Menu.Item>
+          </div>
+          <div className="px-1 py-1">
+            <Menu.Item>
+              {({ active }) => (
+                <Link
+                  to="/signout"
+                  className={`
+                    flex flex-col rounded w-full px-2 py-2 text-sm
+                    ${active ? 'bg-slate-100' : ''}
+                    `}
+                >
+                  Sign Out
+                </Link>
+              )}
+            </Menu.Item>
+          </div>
+        </Menu.Items>
+      </Transition>
+    </Menu >
   );
 };
 

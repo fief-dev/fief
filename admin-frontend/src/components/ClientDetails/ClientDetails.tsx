@@ -61,31 +61,29 @@ const ClientDetails: React.FunctionComponent<ClientDetailsProps> = ({ client }) 
             {client.encrypt_jwk === null && t('details.id_token_encryption_generate_key')}
             {client.encrypt_jwk !== null && t('details.id_token_encryption_regenerate_key')}
           </LoadingButton>
-          {showEncryptionKeyModal &&
-            <Modal
-              show={showEncryptionKeyModal}
-              onClose={() => setShowEncryptionKeyModal(false)}
-            >
-              <Modal.Body>
-                <WarningAlert message={t('details.id_token_encryption_shown_once')} />
-                <div className="flex justify-end my-2">
-                  <ClipboardButton text={encryptionKey as string} />
-                </div>
-                <pre className="relative overflow-scroll p-1 bg-slate-100 rounded border border-slate-300">
-                  {encryptionKey}
-                </pre>
-              </Modal.Body>
-              <Modal.Footer>
-                <button
-                  className="btn-sm border-slate-200 hover:border-slate-300 text-slate-600"
-                  onClick={() => setShowEncryptionKeyModal(false)}
-                >
-                  {t('details.id_token_encryption_close_modal')}
-                </button>
+          <Modal
+            open={showEncryptionKeyModal}
+            onClose={() => setShowEncryptionKeyModal(false)}
+          >
+            <Modal.Body>
+              <WarningAlert message={t('details.id_token_encryption_shown_once')} />
+              <div className="flex justify-end my-2">
+                <ClipboardButton text={encryptionKey as string} />
+              </div>
+              <pre className="relative overflow-scroll p-1 bg-slate-100 rounded border border-slate-300">
+                {encryptionKey}
+              </pre>
+            </Modal.Body>
+            <Modal.Footer>
+              <button
+                className="btn-sm border-slate-200 hover:border-slate-300 text-slate-600"
+                onClick={() => setShowEncryptionKeyModal(false)}
+              >
+                {t('details.id_token_encryption_close_modal')}
+              </button>
 
-              </Modal.Footer>
-            </Modal>
-          }
+            </Modal.Footer>
+          </Modal>
         </div>
       </div>
     </>

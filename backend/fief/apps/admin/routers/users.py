@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Depends, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi.responses import JSONResponse
+from fastapi_users.manager import InvalidPasswordException, UserAlreadyExists
 from sqlalchemy.orm import joinedload
 
 from fief import schemas
@@ -10,6 +12,7 @@ from fief.dependencies.users import (
     get_paginated_users,
     get_user_manager_from_create_user_internal,
 )
+from fief.errors import APIErrorCode
 from fief.managers import UserManager as UserDBManager
 from fief.models import User
 from fief.schemas.generics import PaginatedResults
@@ -39,8 +42,23 @@ async def create_user(
     request: Request,
     user_manager: UserManager = Depends(get_user_manager_from_create_user_internal),
     user_db_manager: UserDBManager = Depends(get_user_db_manager),
-) -> schemas.user.UserRead:
-    created_user = await user_manager.create(user_create, request=request)
+):
+    try:
+        created_user = await user_manager.create(user_create, request=request)
+    except UserAlreadyExists as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=APIErrorCode.USER_CREATE_ALREADY_EXISTS,
+        ) from e
+    except InvalidPasswordException as e:
+        # Build a JSON response manually to fine-tune the response structure
+        return JSONResponse(
+            content={
+                "detail": APIErrorCode.USER_CREATE_INVALID_PASSWORD,
+                "reason": e.reason,
+            },
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
 
     user = await user_db_manager.get_by_id(created_user.id, (joinedload(User.tenant),))
 

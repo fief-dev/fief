@@ -32,7 +32,7 @@ export class APIClient {
     return this.client.post('/accounts/', data);
   }
 
-  public listTenants(params: schemas.PaginationParameters = {}): Promise<AxiosResponse<schemas.PaginatedResults<schemas.tenant.Tenant>>> {
+  public listTenants(params: schemas.tenant.TenantListParameters = {}): Promise<AxiosResponse<schemas.PaginatedResults<schemas.tenant.Tenant>>> {
     return this.client.get('/tenants/', { params });
   }
 
@@ -47,9 +47,13 @@ export class APIClient {
   public listUsers(params: schemas.PaginationParameters = {}): Promise<AxiosResponse<schemas.PaginatedResults<schemas.user.User>>> {
     return this.client.get('/users/', { params });
   }
+
+  public createUser(data: schemas.user.UserCreateInternal): Promise<AxiosResponse<schemas.user.User>> {
+    return this.client.post('/users', data);
+  }
 }
 
-export const isAxiosException = (e: unknown): e is AxiosError<{ detail: string }> => R.has('isAxiosError', e);
+export const isAxiosException = (e: unknown): e is AxiosError<{ detail: any }> => R.has('isAxiosError', e);
 
 export const handleAPIError = (err: unknown): string => {
   if (isAxiosException(err)) {

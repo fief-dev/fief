@@ -58,6 +58,47 @@ class TestCreateUser:
 
     @pytest.mark.admin_session_token()
     @pytest.mark.account_host()
+    async def test_existing_user(
+        self, test_client_admin: httpx.AsyncClient, test_data: TestData
+    ):
+        tenant = test_data["tenants"]["default"]
+        response = await test_client_admin.post(
+            "/users/",
+            json={
+                "email": "anne@bretagne.duchy",
+                "password": "hermine1",
+                "tenant_id": str(tenant.id),
+            },
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+        json = response.json()
+        assert json["detail"] == APIErrorCode.USER_CREATE_ALREADY_EXISTS
+
+    @pytest.mark.admin_session_token()
+    @pytest.mark.account_host()
+    async def test_invalid_password(
+        self, test_client_admin: httpx.AsyncClient, test_data: TestData
+    ):
+        tenant = test_data["tenants"]["default"]
+        response = await test_client_admin.post(
+            "/users/",
+            json={
+                "email": "louis@bretagne.duchy",
+                "password": "h",
+                "tenant_id": str(tenant.id),
+            },
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+        json = response.json()
+        assert json["detail"] == APIErrorCode.USER_CREATE_INVALID_PASSWORD
+        assert "reason" in json
+
+    @pytest.mark.admin_session_token()
+    @pytest.mark.account_host()
     async def test_valid(
         self, test_client_admin: httpx.AsyncClient, test_data: TestData
     ):

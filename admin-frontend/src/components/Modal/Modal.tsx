@@ -1,4 +1,6 @@
-import { createContext, useContext, useEffect, useRef } from 'react';
+import React, { createContext, Fragment, useContext } from 'react';
+import { Dialog, Transition } from '@headlessui/react'
+import { XIcon } from '@heroicons/react/solid';
 
 interface ModalContextType {
   onClose: () => void;
@@ -9,52 +11,56 @@ const ModalContext = createContext<ModalContextType>({
 });
 
 interface ModalProps {
-  show: boolean;
+  open: boolean;
   onClose: () => void;
 }
 
-const Modal: React.FunctionComponent<ModalProps> = ({ show, onClose, children }) => {
-  const elementRef = useRef<HTMLDivElement>(null);
-
-  // Outside click
-  useEffect(() => {
-    const clickHandler = ({ target }: MouseEvent) => {
-      if (!target || !elementRef.current) return;
-      console.log(show, elementRef.current, target);
-      if (!show || elementRef.current.contains(target as Node)) return;
-      onClose();
-    };
-    document.addEventListener('click', clickHandler);
-    return () => document.removeEventListener('click', clickHandler);
-  });
-
-  // Esc key
-  useEffect(() => {
-    const keyHandler = ({ code }: KeyboardEvent) => {
-      if (!show || code !== 'Escape') return;
-      onClose();
-    };
-    document.addEventListener('keydown', keyHandler);
-    return () => document.removeEventListener('keydown', keyHandler);
-  });
-
+const Modal: React.FunctionComponent<ModalProps> = ({ open, onClose, children }) => {
   return (
-    <>
-      {show && <div className="fixed inset-0 bg-slate-900 bg-opacity-30 z-30"></div>}
-      {show &&
-        <div
-          className="fixed inset-0 z-30 overflow-hidden flex items-center my-4 justify-center transform px-4 sm:px-6"
-          role="dialog"
-          aria-modal="true"
-        >
-          <div ref={elementRef} className="bg-white rounded shadow-lg overflow-auto max-w-lg w-full max-h-full">
-            <ModalContext.Provider value={{ onClose }}>
-              {children}
-            </ModalContext.Provider>
-          </div>
+    <Transition appear show={open} as={Fragment}>
+      <Dialog
+        as="div"
+        className="fixed inset-0 z-10 overflow-y-auto"
+        onClose={onClose}
+      >
+        <div className="min-h-screen px-4 text-center">
+          <Transition.Child
+            as={Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <Dialog.Overlay className="fixed inset-0 bg-slate-900 bg-opacity-30" />
+          </Transition.Child>
+
+          {/* This element is to trick the browser into centering the modal contents. */}
+          <span
+            className="inline-block h-screen align-middle"
+            aria-hidden="true"
+          >
+            &#8203;
+          </span>
+          <Transition.Child
+            as={Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0 scale-95"
+            enterTo="opacity-100 scale-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100 scale-100"
+            leaveTo="opacity-0 scale-95"
+          >
+            <div className="inline-block w-full max-w-md overflow-hidden text-left align-middle transition-all transform bg-white rounded shadow-lg">
+              <ModalContext.Provider value={{ onClose }}>
+                {children}
+              </ModalContext.Provider>
+            </div>
+          </Transition.Child>
         </div>
-      }
-    </>
+      </Dialog>
+    </Transition>
   );
 };
 
@@ -70,11 +76,9 @@ const ModalHeader: React.FunctionComponent<ModalHeaderProps> = ({ children, clos
       <div className="flex justify-between items-center">
         {children}
         {closeButton &&
-          <button className="text-slate-400 hover:text-slate-500" onClick={() => onClose()}>
+          <button type="button" className="text-slate-400 hover:text-slate-500" onClick={() => onClose()}>
             <div className="sr-only">Close</div>
-            <svg className="w-4 h-4 fill-current">
-              <path d="M7.95 6.536l4.242-4.243a1 1 0 111.415 1.414L9.364 7.95l4.243 4.242a1 1 0 11-1.415 1.415L7.95 9.364l-4.243 4.243a1 1 0 01-1.414-1.415L6.536 7.95 2.293 3.707a1 1 0 011.414-1.414L7.95 6.536z" />
-            </svg>
+            <XIcon className="w-4 h-4 fill-current" />
           </button>
         }
       </div>
@@ -88,7 +92,7 @@ ModalHeader.defaultProps = {
 
 const ModalTitle: React.FunctionComponent = ({ children }) => {
   return (
-    <div className="font-semibold text-slate-800">{children}</div>
+    <Dialog.Title className="font-semibold text-slate-800">{children}</Dialog.Title>
   )
 };
 

@@ -1,4 +1,6 @@
 import { Dispatch } from 'react';
+import { MenuIcon } from '@heroicons/react/solid';
+
 
 import AccountSwitcher from '../AccountSwitcher/AccountSwitcher';
 import UserMenu from '../UserMenu/UserMenu';
@@ -24,11 +26,7 @@ const Header: React.FunctionComponent<HeaderProps> = ({ sidebarOpen, setSidebarO
               onClick={() => setSidebarOpen(!sidebarOpen)}
             >
               <span className="sr-only">Open sidebar</span>
-              <svg className="w-6 h-6 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <rect x="4" y="5" width="16" height="2" />
-                <rect x="4" y="11" width="16" height="2" />
-                <rect x="4" y="17" width="16" height="2" />
-              </svg>
+              <MenuIcon className="w-6 h-6 fill-current" />
             </button>
 
           </div>

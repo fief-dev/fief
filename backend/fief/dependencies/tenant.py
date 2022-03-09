@@ -48,9 +48,14 @@ async def get_tenant_from_create_user_internal(
 
 
 async def get_paginated_tenants(
+    query: Optional[str] = Query(None),
     pagination: Pagination = Depends(get_pagination),
     ordering: Ordering = Depends(get_ordering),
     manager: TenantManager = Depends(get_tenant_manager),
 ) -> Tuple[List[Tenant], int]:
     statement = select(Tenant)
+
+    if query is not None:
+        statement = statement.where(Tenant.name.ilike(f"%{query}%"))
+
     return await get_paginated_objects(statement, pagination, ordering, manager)

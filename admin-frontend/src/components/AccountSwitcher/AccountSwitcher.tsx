@@ -1,8 +1,9 @@
-import { useCallback, useContext, useRef } from 'react';
+import { Fragment, useCallback, useContext } from 'react';
+import { Menu, Transition } from '@headlessui/react'
+import { ChevronDownIcon } from '@heroicons/react/solid';
 
 import AccountContext from '../../contexts/account';
 import { useAccountsCache } from '../../hooks/account';
-import { useToggle } from '../../hooks/toggle';
 import * as schemas from '../../schemas';
 
 interface AccountSwitcherProps {
@@ -12,51 +13,51 @@ const AccountSwitcher: React.FunctionComponent<AccountSwitcherProps> = () => {
   const [accounts] = useAccountsCache();
   const [account, setAccount] = useContext(AccountContext);
 
-  const trigger = useRef<HTMLButtonElement>(null);
-  const dropdown = useRef<HTMLDivElement>(null);
-  const [dropdownOpen, setDropdownOpen] = useToggle(trigger, dropdown, false);
-
   const switchAccount = useCallback((account: schemas.account.AccountPublic) => {
     setAccount(account);
-    setDropdownOpen(false);
     window.location.hostname = account.domain;
-  }, [setAccount, setDropdownOpen]);
+  }, [setAccount]);
 
   return (
-    <div className="relative inline-flex">
-      <button
-        ref={trigger}
-        className="inline-flex justify-center items-center group"
-        aria-haspopup="true"
-        onClick={() => setDropdownOpen(!dropdownOpen)}
-        aria-expanded={dropdownOpen}
-      >
-        <div className="flex items-center truncate">
-          <span className="truncate text-sm font-medium group-hover:text-slate-800">{account?.name}</span>
-          <svg className="w-3 h-3 shrink-0 ml-1 fill-current text-slate-400" viewBox="0 0 12 12">
-            <path d="M5.9 11.4L.5 6l1.4-1.4 4 4 4-4L11.3 6z" />
-          </svg>
-        </div>
-      </button>
-
-      <div
-        ref={dropdown}
-        onFocus={() => setDropdownOpen(true)}
-        onBlur={() => setDropdownOpen(false)}
-        className={`origin-top-right z-10 absolute top-full min-w-44 bg-white border border-slate-200 rounded shadow-lg overflow-hidden mt-1 right-0 ${dropdownOpen ? '' : 'hidden'}`}
-      >
-        {accounts.map((account) =>
-          <div
-            key={account.id}
-            className="py-2 px-3 border-b border-slate-200 cursor-pointer hover:bg-slate-100"
-            onClick={() => switchAccount(account)}
-          >
-            <div className="font-medium text-slate-800">{account.name}</div>
-            <div className="text-xs text-slate-500 italic">{account.domain}</div>
-          </div>
-        )}
+    <Menu as="div" className="relative inline-block text-left">
+      <div>
+        <Menu.Button className="inline-flex justify-center items-center group">
+          <span className="truncate text-sm font-medium group-hover:text-slate-800 mr-1">{account?.name}</span>
+          <ChevronDownIcon width={16} height={16} className="fill-slate-400" />
+        </Menu.Button>
       </div>
-    </div>
+      <Transition
+        as={Fragment}
+        enter="transition ease-out duration-100"
+        enterFrom="transform opacity-0 scale-95"
+        enterTo="transform opacity-100 scale-100"
+        leave="transition ease-in duration-75"
+        leaveFrom="transform opacity-100 scale-100"
+        leaveTo="transform opacity-0 scale-95"
+      >
+        <Menu.Items className="absolute right-0 w-56 mt-2 origin-top-right bg-white divide-y divide-gray-100 rounded shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+          {accounts.map((account) =>
+            <div key={account.id} className="px-1 py-1">
+              <Menu.Item>
+                {({ active }) => (
+                  <button
+                    type="button"
+                    className={`
+                      flex flex-col rounded w-full px-2 py-2 text-sm
+                      ${active ? 'bg-slate-100' : ''}
+                      `}
+                    onClick={() => switchAccount(account)}
+                  >
+                    <div className="font-medium text-slate-800">{account.name}</div>
+                    <div className="text-xs text-slate-500">{account.domain}</div>
+                  </button>
+                )}
+              </Menu.Item>
+            </div>
+          )}
+        </Menu.Items>
+      </Transition>
+    </Menu>
   );
 };
 
