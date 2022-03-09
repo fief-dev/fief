@@ -1,14 +1,15 @@
 import secrets
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, HTTPException, status
 
 from fief import schemas
 from fief.crypto.jwk import generate_jwk
-from fief.dependencies.account_managers import get_client_manager
+from fief.dependencies.account_managers import get_client_manager, get_tenant_manager
 from fief.dependencies.admin_session import get_admin_session_token
 from fief.dependencies.client import get_client_by_id_or_404, get_paginated_clients
 from fief.dependencies.pagination import PaginatedObjects
-from fief.managers import ClientManager
+from fief.errors import APIErrorCode
+from fief.managers import ClientManager, TenantManager
 from fief.models import Client
 from fief.schemas.generics import PaginatedResults
 
@@ -24,6 +25,30 @@ async def list_clients(
         count=count,
         results=[schemas.client.Client.from_orm(client) for client in clients],
     )
+
+
+@router.post(
+    "/",
+    name="clients:create",
+    response_model=schemas.client.Client,
+    status_code=status.HTTP_201_CREATED,
+)
+async def create_client(
+    client_create: schemas.client.ClientCreate,
+    manager: ClientManager = Depends(get_client_manager),
+    tenant_manager: TenantManager = Depends(get_tenant_manager),
+) -> schemas.client.Client:
+    tenant = await tenant_manager.get_by_id(client_create.tenant_id)
+    if tenant is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=APIErrorCode.CLIENT_CREATE_UNKNOWN_TENANT,
+        )
+
+    client = Client(**client_create.dict())
+    client = await manager.create(client)
+
+    return schemas.client.Client.from_orm(client)
 
 
 @router.post(

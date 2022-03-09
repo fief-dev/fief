@@ -1,9 +1,12 @@
+import uuid
+
 import httpx
 import pytest
 from fastapi import status
 from jwcrypto import jwk
 
 from fief.db import AsyncSession
+from fief.errors import APIErrorCode
 from fief.managers import ClientManager
 from tests.data import TestData
 
@@ -29,6 +32,56 @@ class TestListClients:
         for result in json["results"]:
             assert "tenant" in result
             assert result["encrypt_jwk"] in [None, "**********"]
+
+
+@pytest.mark.asyncio
+class TestCreateClient:
+    async def test_unauthorized(self, test_client_admin: httpx.AsyncClient):
+        response = await test_client_admin.post("/clients/", json={})
+
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+    @pytest.mark.admin_session_token()
+    @pytest.mark.account_host()
+    async def test_unknown_tenant(
+        self, test_client_admin: httpx.AsyncClient, not_existing_uuid: uuid.UUID
+    ):
+        response = await test_client_admin.post(
+            "/clients/",
+            json={
+                "name": "New client",
+                "first_party": True,
+                "tenant_id": str(not_existing_uuid),
+            },
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+        json = response.json()
+        assert json["detail"] == APIErrorCode.CLIENT_CREATE_UNKNOWN_TENANT
+
+    @pytest.mark.admin_session_token()
+    async def test_valid(
+        self, test_client_admin: httpx.AsyncClient, test_data: TestData
+    ):
+        tenant = test_data["tenants"]["default"]
+        response = await test_client_admin.post(
+            "/clients/",
+            json={
+                "name": "New client",
+                "first_party": True,
+                "tenant_id": str(tenant.id),
+            },
+        )
+
+        assert response.status_code == status.HTTP_201_CREATED
+
+        json = response.json()
+        assert json["name"] == "New client"
+        assert json["first_party"] is True
+        assert json["client_id"] is not None
+        assert json["client_secret"] is not None
+        assert json["tenant_id"] == str(tenant.id)
 
 
 @pytest.mark.asyncio
