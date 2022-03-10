@@ -39,9 +39,9 @@ const Users: React.FunctionComponent = () => {
     ];
   }, [t]);
 
-  const [showCreateUserModal, setShowCreateUserModal] = useState(false);
-  const onUserCreated = useCallback(() => {
-    setShowCreateUserModal(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const onCreated = useCallback(() => {
+    setShowCreateModal(false);
     refresh();
   }, [refresh]);
 
@@ -56,7 +56,7 @@ const Users: React.FunctionComponent = () => {
         <div className="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
           <button
             className="btn bg-primary-500 hover:bg-primary-600 text-white"
-            onClick={() => setShowCreateUserModal(true)}
+            onClick={() => setShowCreateModal(true)}
           >
             <PlusIcon width="16" height="16" />
             <span className="hidden xs:block ml-2">{t('users:list.create')}</span>
@@ -79,9 +79,9 @@ const Users: React.FunctionComponent = () => {
       />
 
       <CreateUserModal
-        open={showCreateUserModal}
-        onUserCreated={onUserCreated}
-        onClose={() => setShowCreateUserModal(false)}
+        open={showCreateModal}
+        onCreated={onCreated}
+        onClose={() => setShowCreateModal(false)}
       />
     </Layout>
   );

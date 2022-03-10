@@ -21,5 +21,8 @@
     "tenants": "Tenants",
     "clients": "Clients",
     "users": "Users"
+  },
+  "tenant_combobox": {
+    "no_matching_tenant": "No tenant is matching your query."
   }
 }

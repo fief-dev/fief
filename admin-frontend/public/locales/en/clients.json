@@ -4,7 +4,8 @@
     "name": "Name",
     "first_party": "First-party",
     "tenant": "Tenant",
-    "client_id": "Client ID"
+    "client_id": "Client ID",
+    "create": "Create Client"
   },
   "details": {
     "client_id": "ID",
@@ -16,5 +17,13 @@
     "id_token_encryption_regenerate_key": "Regenerate key",
     "id_token_encryption_shown_once": "The key below will be shown only once. Make sure to copy it and store it somewhere safe.",
     "id_token_encryption_close_modal": "Close"
+  },
+  "create": {
+    "title": "Create Client",
+    "name": "Name",
+    "first_party": "First-party",
+    "tenant": "Tenant",
+    "cancel": "Cancel",
+    "submit": "Create"
   }
 }

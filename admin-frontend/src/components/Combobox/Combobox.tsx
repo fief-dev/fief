@@ -16,8 +16,8 @@ interface ComboboxProps {
 }
 
 const Combobox: React.FunctionComponent<ComboboxProps> = ({ initialOptions, noOptionLabel, onSearch, value, onChange: _onChange }) => {
-  const [selected, setSelected] = useState<ComboboxOption | undefined>(value ? initialOptions?.find((option) => option.value === value) : undefined);
-  const [options, setOptions] = useState<ComboboxOption[]>(initialOptions ? initialOptions : []);
+  const [selected, setSelected] = useState<ComboboxOption | undefined>(undefined);
+  const [options, setOptions] = useState<ComboboxOption[]>([]);
   const [query, setQuery] = useState('');
 
   const onChange = useCallback((option: ComboboxOption) => {
@@ -26,6 +26,19 @@ const Combobox: React.FunctionComponent<ComboboxProps> = ({ initialOptions, noOp
       _onChange(option.value);
     }
   }, [_onChange]);
+
+  useEffect(() => {
+    if (value && selected?.value !== value) {
+      const option = options.find((option) => option.value === value);
+      setSelected(option);
+    }
+  }, [value, selected, options]);
+
+  useEffect(() => {
+    if (initialOptions && initialOptions.length > 0) {
+      setOptions(initialOptions);
+    }
+  }, [initialOptions]);
 
   useEffect(() => {
     if (query && onSearch) {

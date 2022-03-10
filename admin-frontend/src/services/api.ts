@@ -40,6 +40,10 @@ export class APIClient {
     return this.client.get('/clients/', { params });
   }
 
+  public createClient(data: schemas.client.ClientCreate): Promise<AxiosResponse<schemas.client.Client>> {
+    return this.client.post('/clients/', data);
+  }
+
   public createClientEncryptionKey(id: string): Promise<AxiosResponse<Record<string, string>>> {
     return this.client.post(`/clients/${id}/encryption-key`);
   }
@@ -49,7 +53,7 @@ export class APIClient {
   }
 
   public createUser(data: schemas.user.UserCreateInternal): Promise<AxiosResponse<schemas.user.User>> {
-    return this.client.post('/users', data);
+    return this.client.post('/users/', data);
   }
 }
 

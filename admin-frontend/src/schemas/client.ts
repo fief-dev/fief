@@ -1,6 +1,12 @@
 import { CreatedUpdatedAt, UUIDSchema } from './generics';
 import { TenantEmbedded } from './tenant';
 
+export interface ClientCreate {
+  name: string;
+  first_party: boolean;
+  tenant_id: string;
+}
+
 interface BaseClient extends UUIDSchema, CreatedUpdatedAt {
   name: string;
   first_party: boolean;
