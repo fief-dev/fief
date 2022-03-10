@@ -6,6 +6,7 @@ from tests.data import TestData
 
 
 @pytest.mark.asyncio
+@pytest.mark.account_host()
 class TestListTenants:
     async def test_unauthorized(self, test_client_admin: httpx.AsyncClient):
         response = await test_client_admin.get("/tenants/")

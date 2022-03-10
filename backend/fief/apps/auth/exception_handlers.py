@@ -4,7 +4,7 @@ from fastapi import Request, status
 from fastapi.responses import JSONResponse
 
 from fief.apps.auth.templates import templates
-from fief.errors import (
+from fief.exceptions import (
     AuthorizeException,
     AuthorizeRedirectException,
     ConsentException,

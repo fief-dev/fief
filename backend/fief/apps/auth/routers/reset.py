@@ -19,7 +19,7 @@ from fief.dependencies.reset import (
 )
 from fief.dependencies.tenant import get_current_tenant
 from fief.dependencies.users import UserManager, get_user_manager
-from fief.errors import ResetPasswordException
+from fief.exceptions import ResetPasswordException
 from fief.models import LoginSession, Tenant
 from fief.schemas.reset import (
     ForgotPasswordRequest,

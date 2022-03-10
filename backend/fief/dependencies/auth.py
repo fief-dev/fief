@@ -12,7 +12,7 @@ from fief.dependencies.authentication_flow import get_authentication_flow
 from fief.dependencies.locale import get_gettext
 from fief.dependencies.session_token import get_session_token
 from fief.dependencies.tenant import get_current_tenant
-from fief.errors import (
+from fief.exceptions import (
     AuthorizeException,
     AuthorizeRedirectException,
     ConsentException,

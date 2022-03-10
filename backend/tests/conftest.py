@@ -253,10 +253,8 @@ async def admin_session_token(
 ) -> Optional[str]:
     marker = request.node.get_closest_marker("admin_session_token")
     if marker:
-        account_session = AccountUser(
-            account_id=account.id, user_id=account_admin_user.id
-        )
-        global_session.add(account_session)
+        account_user = AccountUser(account_id=account.id, user_id=account_admin_user.id)
+        global_session.add(account_user)
 
         session_token = AdminSessionToken(
             raw_tokens="{}", raw_userinfo=json.dumps(account_admin_user.get_claims())

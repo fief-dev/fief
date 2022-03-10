@@ -24,7 +24,7 @@ from fief.dependencies.locale import get_gettext, get_translations
 from fief.dependencies.session_token import get_session_token
 from fief.dependencies.tenant import get_current_tenant
 from fief.dependencies.users import UserManager, get_user_manager
-from fief.errors import LoginException
+from fief.exceptions import LoginException
 from fief.locale import Translations
 from fief.models import Client, LoginSession, Tenant
 from fief.models.session_token import SessionToken

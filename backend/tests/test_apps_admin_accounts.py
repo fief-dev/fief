@@ -11,6 +11,7 @@ from fief.services.account_db import AccountDatabaseConnectionError
 
 
 @pytest.mark.asyncio
+@pytest.mark.account_host()
 class TestListAccounts:
     async def test_unauthorized(self, test_client_admin: httpx.AsyncClient):
         response = await test_client_admin.get("/accounts/")

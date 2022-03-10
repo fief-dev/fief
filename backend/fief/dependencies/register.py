@@ -3,7 +3,7 @@ from pydantic import ValidationError
 
 from fief.dependencies.locale import get_translations
 from fief.dependencies.tenant import get_current_tenant
-from fief.errors import FormValidationError
+from fief.exceptions import FormValidationError
 from fief.locale import Translations
 from fief.models import Tenant
 from fief.schemas.user import UserCreate

@@ -5,7 +5,7 @@ from sqlalchemy.orm import joinedload
 
 from fief import schemas
 from fief.dependencies.account_managers import get_user_manager as get_user_db_manager
-from fief.dependencies.admin_session import get_admin_session_token
+from fief.dependencies.account_user import get_current_account_user
 from fief.dependencies.pagination import PaginatedObjects
 from fief.dependencies.users import (
     UserManager,
@@ -17,7 +17,7 @@ from fief.managers import UserManager as UserDBManager
 from fief.models import User
 from fief.schemas.generics import PaginatedResults
 
-router = APIRouter(dependencies=[Depends(get_admin_session_token)])
+router = APIRouter(dependencies=[Depends(get_current_account_user)])
 
 
 @router.get("/", name="users:list")

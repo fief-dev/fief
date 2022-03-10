@@ -10,7 +10,7 @@ from fief.dependencies.locale import Translations, get_gettext, get_translations
 from fief.dependencies.register import get_user_create
 from fief.dependencies.tenant import get_current_tenant
 from fief.dependencies.users import UserManager, get_user_manager
-from fief.errors import RegisterException
+from fief.exceptions import RegisterException
 from fief.models import Tenant
 from fief.schemas.register import RegisterError
 from fief.schemas.user import UserCreate, UserCreateInternal

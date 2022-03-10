@@ -10,7 +10,7 @@ from fief.dependencies.account_managers import (
     get_refresh_token_manager,
 )
 from fief.dependencies.users import UserManager, get_user_manager
-from fief.errors import TokenRequestException
+from fief.exceptions import TokenRequestException
 from fief.managers import AuthorizationCodeManager, ClientManager, RefreshTokenManager
 from fief.models import Client
 from fief.schemas.auth import TokenError

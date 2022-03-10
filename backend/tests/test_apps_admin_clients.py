@@ -12,6 +12,7 @@ from tests.data import TestData
 
 
 @pytest.mark.asyncio
+@pytest.mark.account_host()
 class TestListClients:
     async def test_unauthorized(self, test_client_admin: httpx.AsyncClient):
         response = await test_client_admin.get("/clients/")
@@ -35,6 +36,7 @@ class TestListClients:
 
 
 @pytest.mark.asyncio
+@pytest.mark.account_host()
 class TestCreateClient:
     async def test_unauthorized(self, test_client_admin: httpx.AsyncClient):
         response = await test_client_admin.post("/clients/", json={})
@@ -42,7 +44,6 @@ class TestCreateClient:
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
     @pytest.mark.admin_session_token()
-    @pytest.mark.account_host()
     async def test_unknown_tenant(
         self, test_client_admin: httpx.AsyncClient, not_existing_uuid: uuid.UUID
     ):
@@ -85,6 +86,7 @@ class TestCreateClient:
 
 
 @pytest.mark.asyncio
+@pytest.mark.account_host()
 class TestCreateEncryptionKey:
     async def test_unauthorized(
         self, test_client_admin: httpx.AsyncClient, test_data: TestData
