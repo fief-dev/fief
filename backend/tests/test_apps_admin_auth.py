@@ -64,7 +64,7 @@ class TestAuthCallback:
         assert session_token.userinfo == {"email": "anne@bretagne.duchy"}
 
 
-@pytest.mark.admin_session_token()
+@pytest.mark.authenticated_admin(mode="session")
 async def test_auth_userinfo(
     test_client_admin: httpx.AsyncClient, account_admin_user: UserDB
 ):

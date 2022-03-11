@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from fief.dependencies.account import get_paginated_accounts
 from fief.dependencies.account_creation import get_account_creation
-from fief.dependencies.account_user import get_current_account_user
+from fief.dependencies.admin_authentication import is_authenticated_admin
 from fief.dependencies.admin_session import get_admin_session_token
 from fief.dependencies.pagination import PaginatedObjects
 from fief.errors import APIErrorCode
@@ -15,7 +15,7 @@ from fief.services.account_db import AccountDatabaseConnectionError
 router = APIRouter()
 
 
-@router.get("/", name="accounts:list", dependencies=[Depends(get_current_account_user)])
+@router.get("/", name="accounts:list", dependencies=[Depends(get_admin_session_token)])
 async def list_accounts(
     paginated_accounts: PaginatedObjects[Account] = Depends(get_paginated_accounts),
 ) -> PaginatedResults[AccountPublic]:

@@ -18,7 +18,15 @@ class TestListAccounts:
 
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
-    @pytest.mark.admin_session_token
+    @pytest.mark.authenticated_admin(mode="api_key")
+    async def test_unauthorized_with_api_key(
+        self, test_client_admin: httpx.AsyncClient
+    ):
+        response = await test_client_admin.get("/accounts/")
+
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+    @pytest.mark.authenticated_admin(mode="session")
     async def test_valid(self, test_client_admin: httpx.AsyncClient, account: Account):
         response = await test_client_admin.get("/accounts/")
 
@@ -36,7 +44,15 @@ class TestCreateAccount:
 
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
-    @pytest.mark.admin_session_token
+    @pytest.mark.authenticated_admin(mode="api_key")
+    async def test_unauthorized_with_api_key(
+        self, test_client_admin: httpx.AsyncClient
+    ):
+        response = await test_client_admin.post("/accounts/")
+
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+    @pytest.mark.authenticated_admin(mode="session")
     async def test_db_connection_error(
         self, test_client_admin: httpx.AsyncClient, account_creation_mock: MagicMock
     ):
@@ -52,7 +68,7 @@ class TestCreateAccount:
         json = response.json()
         assert json["detail"] == APIErrorCode.ACCOUNT_DB_CONNECTION_ERROR
 
-    @pytest.mark.admin_session_token
+    @pytest.mark.authenticated_admin(mode="session")
     async def test_success(
         self,
         test_client_admin: httpx.AsyncClient,

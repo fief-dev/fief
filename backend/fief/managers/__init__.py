@@ -1,5 +1,6 @@
 from fief.managers.account import AccountManager
 from fief.managers.account_user import AccountUserManager
+from fief.managers.admin_api_key import AdminAPIKeyManager
 from fief.managers.admin_session_token import AdminSessionTokenManager
 from fief.managers.authorization_code import AuthorizationCodeManager
 from fief.managers.base import get_manager
@@ -14,6 +15,7 @@ from fief.managers.user import UserManager
 __all__ = [
     "AccountManager",
     "AccountUserManager",
+    "AdminAPIKeyManager",
     "AdminSessionTokenManager",
     "AuthorizationCodeManager",
     "ClientManager",

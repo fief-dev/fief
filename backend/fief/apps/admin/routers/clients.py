@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fief import schemas
 from fief.crypto.jwk import generate_jwk
 from fief.dependencies.account_managers import get_client_manager, get_tenant_manager
-from fief.dependencies.account_user import get_current_account_user
+from fief.dependencies.admin_authentication import is_authenticated_admin
 from fief.dependencies.client import get_client_by_id_or_404, get_paginated_clients
 from fief.dependencies.pagination import PaginatedObjects
 from fief.errors import APIErrorCode
@@ -13,7 +13,7 @@ from fief.managers import ClientManager, TenantManager
 from fief.models import Client
 from fief.schemas.generics import PaginatedResults
 
-router = APIRouter(dependencies=[Depends(get_current_account_user)])
+router = APIRouter(dependencies=[Depends(is_authenticated_admin)])
 
 
 @router.get("/", name="clients:list")

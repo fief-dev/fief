@@ -19,7 +19,7 @@ class TestListClients:
 
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
-    @pytest.mark.admin_session_token()
+    @pytest.mark.authenticated_admin
     async def test_valid(
         self, test_client_admin: httpx.AsyncClient, test_data: TestData
     ):
@@ -43,7 +43,7 @@ class TestCreateClient:
 
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
-    @pytest.mark.admin_session_token()
+    @pytest.mark.authenticated_admin
     async def test_unknown_tenant(
         self, test_client_admin: httpx.AsyncClient, not_existing_uuid: uuid.UUID
     ):
@@ -61,7 +61,7 @@ class TestCreateClient:
         json = response.json()
         assert json["detail"] == APIErrorCode.CLIENT_CREATE_UNKNOWN_TENANT
 
-    @pytest.mark.admin_session_token()
+    @pytest.mark.authenticated_admin
     async def test_valid(
         self, test_client_admin: httpx.AsyncClient, test_data: TestData
     ):
@@ -96,7 +96,7 @@ class TestCreateEncryptionKey:
 
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
-    @pytest.mark.admin_session_token()
+    @pytest.mark.authenticated_admin
     async def test_success(
         self,
         test_client_admin: httpx.AsyncClient,

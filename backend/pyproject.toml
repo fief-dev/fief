@@ -37,7 +37,7 @@ concurrency = ["thread", "gevent"]
 omit = ["fief/alembic/*"]
 
 [tool.pytest.ini_options]
-markers = ["test_data", "account_host", "access_token", "admin_session_token"]
+markers = ["test_data", "account_host", "access_token", "authenticated_admin"]
 asyncio_mode = "auto"
 
 [build-system]

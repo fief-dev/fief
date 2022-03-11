@@ -1,5 +1,6 @@
 from fief.models.account import Account
 from fief.models.account_user import AccountUser
+from fief.models.admin_api_key import AdminAPIKey
 from fief.models.admin_session_token import AdminSessionToken
 from fief.models.authorization_code import AuthorizationCode
 from fief.models.base import AccountBase, GlobalBase
@@ -16,6 +17,7 @@ __all__ = [
     "Account",
     "AccountBase",
     "AccountUser",
+    "AdminAPIKey",
     "AdminSessionToken",
     "AuthorizationCode",
     "Client",

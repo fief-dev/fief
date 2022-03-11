@@ -27,7 +27,7 @@ class Account(UUIDModel, CreatedUpdatedAt, GlobalBase):
     database_name: Optional[str] = Column(Text, nullable=True)
 
     account_users: List["AccountUser"] = relationship(
-        "AccountUser", back_populates="account"
+        "AccountUser", back_populates="account", cascade="all, delete"
     )
 
     def __repr__(self) -> str:

@@ -1,13 +1,13 @@
 from fastapi import APIRouter, Depends
 
 from fief import schemas
-from fief.dependencies.account_user import get_current_account_user
+from fief.dependencies.admin_authentication import is_authenticated_admin
 from fief.dependencies.pagination import PaginatedObjects
 from fief.dependencies.tenant import get_paginated_tenants
 from fief.models import Tenant
 from fief.schemas.generics import PaginatedResults
 
-router = APIRouter(dependencies=[Depends(get_current_account_user)])
+router = APIRouter(dependencies=[Depends(is_authenticated_admin)])
 
 
 @router.get("/")

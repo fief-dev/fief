@@ -13,7 +13,7 @@ class TestListTenants:
 
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
-    @pytest.mark.admin_session_token()
+    @pytest.mark.authenticated_admin
     async def test_valid(
         self, test_client_admin: httpx.AsyncClient, test_data: TestData
     ):
@@ -24,7 +24,7 @@ class TestListTenants:
         json = response.json()
         assert json["count"] == len(test_data["tenants"])
 
-    @pytest.mark.admin_session_token()
+    @pytest.mark.authenticated_admin
     @pytest.mark.parametrize(
         "query,nb_results",
         [("default", 1), ("de", 1), ("SECONDARY", 1), ("unknown", 0)],
