@@ -8,7 +8,6 @@ from typing import (
     AsyncContextManager,
     AsyncGenerator,
     Callable,
-    Coroutine,
     Dict,
     Optional,
     Tuple,
@@ -52,7 +51,6 @@ from fief.models import (
     SessionToken,
     Tenant,
     User,
-    admin_session_token,
 )
 from fief.schemas.user import UserDB
 from fief.services.account_creation import AccountCreation
@@ -255,61 +253,57 @@ def account_admin_user() -> UserDB:
 
 
 @pytest.fixture
-async def create_admin_session_token(
+async def admin_session_token(
     global_session: AsyncSession,
     account: Account,
     account_admin_user: UserDB,
-) -> Callable[[], Coroutine[None, None, AdminSessionToken]]:
-    async def _create_admin_session_token() -> AdminSessionToken:
-        account_user = AccountUser(account_id=account.id, user_id=account_admin_user.id)
-        global_session.add(account_user)
-        await global_session.commit()
+) -> AsyncGenerator[AdminSessionToken, None]:
+    account_user = AccountUser(account_id=account.id, user_id=account_admin_user.id)
+    global_session.add(account_user)
+    await global_session.commit()
 
-        session_token = AdminSessionToken(
-            raw_tokens="{}", raw_userinfo=json.dumps(account_admin_user.get_claims())
-        )
-        global_session.add(session_token)
+    session_token = AdminSessionToken(
+        raw_tokens="{}", raw_userinfo=json.dumps(account_admin_user.get_claims())
+    )
+    global_session.add(session_token)
 
-        await global_session.commit()
+    await global_session.commit()
 
-        return session_token
+    yield session_token
 
-    return _create_admin_session_token
+    await global_session.delete(session_token)
+    await global_session.delete(account_user)
 
 
 @pytest.fixture
-async def create_admin_api_key(
+async def admin_api_key(
     global_session: AsyncSession, account: Account
-) -> Callable[[], Coroutine[None, None, AdminAPIKey]]:
-    async def _create_admin_api_key() -> AdminAPIKey:
-        admin_api_key = AdminAPIKey(name="Token", account_id=account.id)
-        global_session.add(admin_api_key)
+) -> AsyncGenerator[AdminAPIKey, None]:
+    admin_api_key = AdminAPIKey(name="API Key", account_id=account.id)
+    global_session.add(admin_api_key)
+    await global_session.commit()
 
-        await global_session.commit()
+    yield admin_api_key
 
-        return admin_api_key
-
-    return _create_admin_api_key
+    await global_session.delete(admin_api_key)
 
 
 @pytest.fixture
 async def authenticated_admin(
     request: pytest.FixtureRequest,
-    create_admin_session_token: Callable[[], Coroutine[None, None, AdminSessionToken]],
-    create_admin_api_key: Callable[[], Coroutine[None, None, AdminAPIKey]],
+    admin_session_token: AdminSessionToken,
+    admin_api_key: AdminAPIKey,
 ) -> Dict[str, Any]:
     marker = request.node.get_closest_marker("authenticated_admin")
     headers = {}
     if marker:
         mode = marker.kwargs.get("mode", "api_key")
         if mode == "session":
-            admin_session_token = await create_admin_session_token()
             headers[
                 "Cookie"
             ] = f"{settings.fief_admin_session_cookie_name}={admin_session_token.token}"
         elif mode == "api_key":
-            api_key = await create_admin_api_key()
-            headers["Authorization"] = f"Bearer {api_key.token}"
+            headers["Authorization"] = f"Bearer {admin_api_key.token}"
     return headers
 
 

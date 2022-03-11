@@ -1,5 +1,6 @@
 from fief.schemas import (
     account,
+    admin_api_key,
     auth,
     client,
     generics,
@@ -11,6 +12,7 @@ from fief.schemas import (
 
 __all__ = [
     "account",
+    "admin_api_key",
     "auth",
     "client",
     "generics",
