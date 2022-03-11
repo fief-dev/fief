@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Generic, List, TypeVar
 
 from pydantic import UUID4, BaseModel
+from pydantic.generics import GenericModel
 
 PM = TypeVar("PM", bound=BaseModel)
 
@@ -18,6 +19,6 @@ class CreatedUpdatedAt(BaseModel):
     updated_at: datetime
 
 
-class PaginatedResults(Generic[PM], BaseModel):
+class PaginatedResults(GenericModel, Generic[PM]):
     count: int
     results: List[PM]

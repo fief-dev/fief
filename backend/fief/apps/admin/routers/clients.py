@@ -16,10 +16,12 @@ from fief.schemas.generics import PaginatedResults
 router = APIRouter(dependencies=[Depends(is_authenticated_admin)])
 
 
-@router.get("/", name="clients:list")
+@router.get(
+    "/", name="clients:list", response_model=PaginatedResults[schemas.client.Client]
+)
 async def list_clients(
     paginated_clients: PaginatedObjects[Client] = Depends(get_paginated_clients),
-) -> PaginatedResults[schemas.tenant.Tenant]:
+) -> PaginatedResults[schemas.client.Client]:
     clients, count = paginated_clients
     return PaginatedResults(
         count=count,
