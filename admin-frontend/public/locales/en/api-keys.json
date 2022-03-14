@@ -1,0 +1,27 @@
+{
+  "list": {
+    "title": "API Keys",
+    "create": "Create API Key",
+    "name": "Name",
+    "created_at": "Created at",
+    "actions": "Actions",
+    "delete": "Delete"
+  },
+  "create": {
+    "title": "Create API Key",
+    "name": "Name",
+    "cancel": "Cancel",
+    "submit": "Create"
+  },
+  "token": {
+    "title": "Save your API Key token",
+    "shown_once_alert": "The token below will be shown only once. Be sure to store it somewhere safe.",
+    "close": "Close"
+  },
+  "delete": {
+    "title": "Delete the API Key \"{{name}}\"?",
+    "notice": "If you delete this key, every applications using this key won't be able to access the API anymore.",
+    "cancel": "Cancel",
+    "submit": "Delete"
+  }
+}

@@ -3,16 +3,14 @@ import { Dialog, Transition } from '@headlessui/react'
 import { XIcon } from '@heroicons/react/solid';
 
 interface ModalContextType {
-  onClose: () => void;
+  onClose?: () => void;
 }
 
-const ModalContext = createContext<ModalContextType>({
-  onClose: () => { },
-});
+const ModalContext = createContext<ModalContextType>({});
 
 interface ModalProps {
   open: boolean;
-  onClose: () => void;
+  onClose?: () => void;
 }
 
 const Modal: React.FunctionComponent<ModalProps> = ({ open, onClose, children }) => {
@@ -21,7 +19,11 @@ const Modal: React.FunctionComponent<ModalProps> = ({ open, onClose, children })
       <Dialog
         as="div"
         className="fixed inset-0 z-10 overflow-y-auto"
-        onClose={onClose}
+        onClose={() => {
+          if (onClose) {
+            onClose();
+          }
+        }}
       >
         <div className="min-h-screen px-4 text-center">
           <Transition.Child
@@ -75,7 +77,7 @@ const ModalHeader: React.FunctionComponent<ModalHeaderProps> = ({ children, clos
     <div className="px-5 py-3 border-b border-slate-200">
       <div className="flex justify-between items-center">
         {children}
-        {closeButton &&
+        {closeButton && onClose &&
           <button type="button" className="text-slate-400 hover:text-slate-500" onClick={() => onClose()}>
             <div className="sr-only">Close</div>
             <XIcon className="w-4 h-4 fill-current" />

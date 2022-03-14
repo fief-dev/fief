@@ -5,6 +5,7 @@ import './i18n';
 import AccountContextProvider from './components/AccountContextProvider/AccountContextProvider';
 import UserContextProvider from './components/UserContextProvider/UserContextProvider';
 import { useAccountsCache } from './hooks/account';
+import APIKeys from './routes/APIKeys/APIKeys';
 import Clients from './routes/Clients/Clients';
 import CreateAccount from './routes/CreateAccount/CreateAccount';
 import CreateAccountStep1 from './routes/CreateAccountStep1/CreateAccountStep1';
@@ -41,6 +42,7 @@ function App() {
             <Route path="/tenants" element={<Tenants />} />
             <Route path="/clients" element={<Clients />} />
             <Route path="/users" element={<Users />} />
+            <Route path="/api-keys" element={<APIKeys />} />
             <Route path="/create-account" element={<CreateAccount />}>
               <Route path="step1" element={<CreateAccountStep1 />} />
               <Route path="step2" element={<CreateAccountStep2 />} />

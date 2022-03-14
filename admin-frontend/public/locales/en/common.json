@@ -20,7 +20,8 @@
     "dashboard": "Dashboard",
     "tenants": "Tenants",
     "clients": "Clients",
-    "users": "Users"
+    "users": "Users",
+    "api_keys": "API Keys"
   },
   "tenant_combobox": {
     "no_matching_tenant": "No tenant is matching your query."

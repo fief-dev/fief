@@ -55,6 +55,18 @@ export class APIClient {
   public createUser(data: schemas.user.UserCreateInternal): Promise<AxiosResponse<schemas.user.User>> {
     return this.client.post('/users/', data);
   }
+
+  public listAPIKeys(params: schemas.PaginationParameters = {}): Promise<AxiosResponse<schemas.PaginatedResults<schemas.adminAPIKey.AdminAPIKey>>> {
+    return this.client.get('/api-keys/', { params });
+  }
+
+  public createAPIKey(data: schemas.adminAPIKey.AdminAPIKeyCreate): Promise<AxiosResponse<schemas.adminAPIKey.AdminAPIKeyCreateResponse>> {
+    return this.client.post('/api-keys/', data);
+  }
+
+  public deleteAPIKey(id: string): Promise<AxiosResponse<void>> {
+    return this.client.delete(`/api-keys/${id}`);
+  }
 }
 
 export const isAxiosException = (e: unknown): e is AxiosError<{ detail: any }> => R.has('isAxiosError', e);
