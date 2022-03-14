@@ -44,11 +44,11 @@ jobs:
             database_port: 3306
             database_username: root
             database_password: fiefpassword
-          - database_type: SQLITE
-            database_host: null
-            database_port: null
-            database_username: null
-            database_password: null
+          # - database_type: SQLITE
+          #   database_host: null
+          #   database_port: null
+          #   database_username: null
+          #   database_password: null
 
     steps:
     - uses: actions/checkout@v2
