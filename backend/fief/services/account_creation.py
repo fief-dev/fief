@@ -9,7 +9,7 @@ from fief.locale import get_preferred_translations
 from fief.managers import AccountManager, AccountUserManager, TenantManager
 from fief.models import Account, AccountUser, Client, Tenant
 from fief.schemas.account import AccountCreate
-from fief.schemas.user import UserCreate, UserDB
+from fief.schemas.user import UserCreateInternal, UserDB
 from fief.services.account_db import AccountDatabase
 from fief.settings import settings
 from fief.tasks import send_task
@@ -144,7 +144,7 @@ async def create_main_fief_user(email: str, password: str) -> UserDB:
             user_manager = await get_user_manager(
                 user_db, tenant, account, get_preferred_translations(["en"]), send_task
             )
-            user = await user_manager.create(UserCreate(email=email, password=password))
+            user = await user_manager.create(UserCreateInternal(email=email, password=password, tenant_id=tenant.id))
 
         account_user = AccountUser(account_id=account.id, user_id=user.id)
         await account_user_manager.create(account_user)

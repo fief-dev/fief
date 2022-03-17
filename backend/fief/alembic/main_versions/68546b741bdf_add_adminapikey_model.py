@@ -25,13 +25,13 @@ def upgrade():
         sa.Column(
             "created_at",
             sa.TIMESTAMP(timezone=True),
-            server_default=sa.text("now()"),
+            server_default=sa.func.now(),
             nullable=False,
         ),
         sa.Column(
             "updated_at",
             sa.TIMESTAMP(timezone=True),
-            server_default=sa.text("now()"),
+            server_default=sa.func.now(),
             nullable=False,
         ),
         sa.Column("name", sa.String(length=255), nullable=False),
