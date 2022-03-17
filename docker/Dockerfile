@@ -11,7 +11,7 @@ RUN apk update \
     && python --version \
     && pip install fief-server==${FIEF_VERSION} \
     && apk del build-deps && \
-    mkdir /data/db
+    mkdir -p /data/db
 
 COPY supervisord.conf /etc/supervisord.conf
 
