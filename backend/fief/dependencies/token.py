@@ -4,12 +4,12 @@ from fastapi import Depends, Form
 from fastapi_users.manager import UserNotExists
 from pydantic import UUID4
 
-from fief.dependencies.account_managers import (
+from fief.dependencies.users import UserManager, get_user_manager
+from fief.dependencies.workspace_managers import (
     get_authorization_code_manager,
     get_client_manager,
     get_refresh_token_manager,
 )
-from fief.dependencies.users import UserManager, get_user_manager
 from fief.exceptions import TokenRequestException
 from fief.managers import AuthorizationCodeManager, ClientManager, RefreshTokenManager
 from fief.models import Client

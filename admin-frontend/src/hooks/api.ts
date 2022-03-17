@@ -1,20 +1,13 @@
 import { AxiosResponse } from 'axios';
 import * as R from 'ramda';
-import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { SortingRule } from 'react-table';
 
-import AccountContext from '../contexts/account';
 import { APIClient } from '../services/api';
 import * as schemas from '../schemas';
 
-export const useAPI = (accountId?: string): APIClient => {
-  return useMemo(() => new APIClient(accountId), [accountId]);
-};
-
-export const useAccountAPI = (): APIClient => {
-  const [account] = useContext(AccountContext);
-  const api = useAPI(account ? account.id : undefined);
-  return api;
+export const useAPI = (): APIClient => {
+  return useMemo(() => new APIClient(), []);
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -47,7 +40,7 @@ type UsePaginationAPIReturnProps = { [M in keyof APIClientListMethods]: {
 } };
 
 export const usePaginationAPI = <M extends keyof APIClientListMethods>({ method, limit, filters: _filters, initialPage, initialSorting, manual }: UsePaginationAPIProps[M]): UsePaginationAPIReturnProps[M] => {
-  const api = useAccountAPI();
+  const api = useAPI();
   const [data, setData] = useState<any[]>([]);
   const [count, setCount] = useState(0);
   const [filters, setFilters] = useState<typeof _filters | undefined>(_filters);

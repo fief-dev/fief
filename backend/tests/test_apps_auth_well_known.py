@@ -5,16 +5,16 @@ import pytest
 from fastapi import status
 from jwcrypto import jwk
 
-from fief.models import Account
+from fief.models import Workspace
 from tests.conftest import TenantParams
 
 
 @pytest.mark.asyncio
-@pytest.mark.account_host
+@pytest.mark.workspace_host
 class TestWellKnownOpenIDConfiguration:
     async def test_return_configuration(
         self,
-        account: Account,
+        workspace: Workspace,
         tenant_params: TenantParams,
         test_client_auth: httpx.AsyncClient,
     ):
@@ -26,13 +26,13 @@ class TestWellKnownOpenIDConfiguration:
 
         json = response.json()
 
-        assert json["issuer"] == tenant_params.tenant.get_host(account.domain)
+        assert json["issuer"] == tenant_params.tenant.get_host(workspace.domain)
         for key in json:
             assert json[key] is not None
 
 
 @pytest.mark.asyncio
-@pytest.mark.account_host
+@pytest.mark.workspace_host
 class TestWellKnownJWKS:
     async def test_return_public_keys(
         self,

@@ -4,10 +4,10 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from fief import schemas
 from fief.crypto.jwk import generate_jwk
-from fief.dependencies.account_managers import get_client_manager, get_tenant_manager
 from fief.dependencies.admin_authentication import is_authenticated_admin
 from fief.dependencies.client import get_client_by_id_or_404, get_paginated_clients
 from fief.dependencies.pagination import PaginatedObjects
+from fief.dependencies.workspace_managers import get_client_manager, get_tenant_manager
 from fief.errors import APIErrorCode
 from fief.managers import ClientManager, TenantManager
 from fief.models import Client

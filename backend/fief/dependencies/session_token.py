@@ -2,7 +2,7 @@ from typing import Optional
 
 from fastapi import Cookie, Depends
 
-from fief.dependencies.account_managers import get_session_token_manager
+from fief.dependencies.workspace_managers import get_session_token_manager
 from fief.managers import SessionTokenManager
 from fief.models import SessionToken
 from fief.settings import settings

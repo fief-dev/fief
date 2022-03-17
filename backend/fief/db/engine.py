@@ -7,7 +7,7 @@ from sqlalchemy.orm import sessionmaker
 from fief.settings import settings
 
 if TYPE_CHECKING:
-    from fief.models import Account
+    from fief.models import Workspace
 
 
 def create_engine(database_url: engine.URL) -> AsyncEngine:

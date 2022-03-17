@@ -4,7 +4,6 @@ from fastapi_users.manager import InvalidPasswordException, UserAlreadyExists
 from sqlalchemy.orm import joinedload
 
 from fief import schemas
-from fief.dependencies.account_managers import get_user_manager as get_user_db_manager
 from fief.dependencies.admin_authentication import is_authenticated_admin
 from fief.dependencies.pagination import PaginatedObjects
 from fief.dependencies.users import (
@@ -12,6 +11,7 @@ from fief.dependencies.users import (
     get_paginated_users,
     get_user_manager_from_create_user_internal,
 )
+from fief.dependencies.workspace_managers import get_user_manager as get_user_db_manager
 from fief.errors import APIErrorCode
 from fief.managers import UserManager as UserDBManager
 from fief.models import User

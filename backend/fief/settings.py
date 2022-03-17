@@ -44,7 +44,7 @@ class Settings(BaseSettings):
     email_provider: AvailableEmailProvider = AvailableEmailProvider.NULL
     email_provider_params: Dict[str, Any] = Field(default_factory=dict)
 
-    account_table_prefix: str = "fief_"
+    workspace_table_prefix: str = "fief_"
 
     login_session_cookie_name: str = "fief_login_session"
     login_session_cookie_domain: str = ""

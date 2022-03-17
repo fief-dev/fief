@@ -8,7 +8,7 @@ from fastapi_users.jwt import generate_jwt
 
 from fief.db import AsyncSession
 from fief.dependencies.users import UserManager
-from fief.models import Account
+from fief.models import Workspace
 from fief.settings import settings
 from fief.tasks import on_after_forgot_password
 from tests.conftest import TenantParams
@@ -16,7 +16,7 @@ from tests.data import TestData
 
 
 @pytest.mark.asyncio
-@pytest.mark.account_host
+@pytest.mark.workspace_host
 class TestGetForgotPassword:
     async def test_valid(
         self, tenant_params: TenantParams, test_client_auth: httpx.AsyncClient
@@ -27,7 +27,7 @@ class TestGetForgotPassword:
 
 
 @pytest.mark.asyncio
-@pytest.mark.account_host
+@pytest.mark.workspace_host
 class TestPostForgotPassword:
     @pytest.mark.parametrize(
         "data",
@@ -67,7 +67,7 @@ class TestPostForgotPassword:
         self,
         test_client_auth: httpx.AsyncClient,
         test_data: TestData,
-        account: Account,
+        workspace: Workspace,
         send_task_mock: MagicMock,
     ):
         user = test_data["users"]["regular"]
@@ -82,13 +82,13 @@ class TestPostForgotPassword:
         send_task_call_args = send_task_mock.call_args[0]
         assert send_task_call_args[0] == on_after_forgot_password
         assert send_task_call_args[1] == str(user.id)
-        assert send_task_call_args[2] == str(account.id)
+        assert send_task_call_args[2] == str(workspace.id)
         assert "/reset" in send_task_call_args[3]
         assert "token=" in send_task_call_args[3]
 
 
 @pytest.mark.asyncio
-@pytest.mark.account_host
+@pytest.mark.workspace_host
 class TestGetResetPassword:
     async def test_missing_token(
         self, tenant_params: TenantParams, test_client_auth: httpx.AsyncClient
@@ -111,7 +111,7 @@ class TestGetResetPassword:
 
 
 @pytest.mark.asyncio
-@pytest.mark.account_host
+@pytest.mark.workspace_host
 class TestPostResetPassword:
     @pytest.mark.parametrize(
         "data",

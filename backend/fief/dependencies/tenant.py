@@ -4,7 +4,6 @@ from fastapi import Depends, HTTPException, Query, status
 from sqlalchemy import select
 
 from fief import schemas
-from fief.dependencies.account_managers import get_tenant_manager
 from fief.dependencies.pagination import (
     Ordering,
     Pagination,
@@ -12,6 +11,7 @@ from fief.dependencies.pagination import (
     get_paginated_objects,
     get_pagination,
 )
+from fief.dependencies.workspace_managers import get_tenant_manager
 from fief.errors import APIErrorCode
 from fief.managers import TenantManager
 from fief.models import Tenant

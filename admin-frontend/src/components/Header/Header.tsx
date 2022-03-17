@@ -1,8 +1,7 @@
 import { Dispatch } from 'react';
 import { MenuIcon } from '@heroicons/react/solid';
 
-
-import AccountSwitcher from '../AccountSwitcher/AccountSwitcher';
+import WorkspaceSwitcher from '../WorkspaceSwitcher/WorkspaceSwitcher';
 import UserMenu from '../UserMenu/UserMenu';
 
 interface HeaderProps {
@@ -32,7 +31,7 @@ const Header: React.FunctionComponent<HeaderProps> = ({ sidebarOpen, setSidebarO
           </div>
 
           <div className="flex items-center space-x-3">
-            <AccountSwitcher />
+            <WorkspaceSwitcher />
             <hr className="w-px h-6 bg-slate-200 mx-3" />
             <UserMenu />
           </div>

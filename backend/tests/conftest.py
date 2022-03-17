@@ -26,18 +26,16 @@ from fief.apps import admin_app, auth_app
 from fief.crypto.access_token import generate_access_token
 from fief.csrf import check_csrf
 from fief.db import AsyncConnection, AsyncEngine, AsyncSession
-from fief.db.account import get_connection
 from fief.db.engine import create_engine
 from fief.db.main import get_main_async_session
 from fief.db.types import DatabaseType, get_driver
-from fief.dependencies.account_creation import get_account_creation
-from fief.dependencies.account_db import get_account_db
-from fief.dependencies.current_account import get_current_account_session
+from fief.db.workspace import get_connection
+from fief.dependencies.current_workspace import get_current_workspace_session
 from fief.dependencies.fief import get_fief
 from fief.dependencies.tasks import get_send_task
+from fief.dependencies.workspace_creation import get_workspace_creation
+from fief.dependencies.workspace_db import get_workspace_db
 from fief.models import (
-    Account,
-    AccountUser,
     AdminAPIKey,
     AdminSessionToken,
     AuthorizationCode,
@@ -47,10 +45,12 @@ from fief.models import (
     SessionToken,
     Tenant,
     User,
+    Workspace,
+    WorkspaceUser,
 )
 from fief.schemas.user import UserDB
-from fief.services.account_creation import AccountCreation
-from fief.services.account_db import AccountDatabase
+from fief.services.workspace_creation import WorkspaceCreation
+from fief.services.workspace_db import WorkspaceDatabase
 from fief.settings import settings
 from fief.tasks import send_task
 from tests.data import TestData, data_mapping
@@ -135,13 +135,13 @@ def main_session_manager(main_session: AsyncSession):
 
 @pytest.fixture(scope="session", autouse=True)
 @pytest.mark.asyncio
-async def account(
+async def workspace(
     main_test_database: Tuple[engine.URL, DatabaseType],
     main_session,
     create_main_db,
-) -> AsyncGenerator[Account, None]:
+) -> AsyncGenerator[Workspace, None]:
     url, database_type = main_test_database
-    account = Account(
+    workspace = Workspace(
         name="Duché de Bretagne",
         domain="bretagne.localhost",
         database_type=database_type,
@@ -151,27 +151,29 @@ async def account(
         database_password=url.password,
         database_name=url.database,
     )
-    main_session.add(account)
+    main_session.add(workspace)
     await main_session.commit()
 
-    account_db = AccountDatabase()
-    account_db.migrate(account.get_database_url(False), account.get_schema_name())
+    workspace_db = WorkspaceDatabase()
+    workspace_db.migrate(workspace.get_database_url(False), workspace.get_schema_name())
 
-    yield account
+    yield workspace
 
 
 @pytest.fixture(scope="session")
-async def account_engine(account: Account) -> AsyncGenerator[AsyncEngine, None]:
-    engine = create_engine(account.get_database_url())
+async def workspace_engine(workspace: Workspace) -> AsyncGenerator[AsyncEngine, None]:
+    engine = create_engine(workspace.get_database_url())
     yield engine
     await engine.dispose()
 
 
 @pytest.fixture(scope="session")
-async def account_connection(
-    account_engine: AsyncEngine, account: Account
+async def workspace_connection(
+    workspace_engine: AsyncEngine, workspace: Workspace
 ) -> AsyncGenerator[AsyncConnection, None]:
-    async with get_connection(account_engine, account.get_schema_name()) as connection:
+    async with get_connection(
+        workspace_engine, workspace.get_schema_name()
+    ) as connection:
         await connection.begin()
         yield connection
         await connection.rollback()
@@ -179,33 +181,37 @@ async def account_connection(
 
 @pytest.fixture(scope="session")
 @pytest.mark.asyncio
-async def test_data(account_connection: AsyncConnection) -> TestData:
-    async with AsyncSession(bind=account_connection, expire_on_commit=False) as session:
+async def test_data(workspace_connection: AsyncConnection) -> TestData:
+    async with AsyncSession(
+        bind=workspace_connection, expire_on_commit=False
+    ) as session:
         for model in data_mapping.values():
             for object in model.values():
                 session.add(object)
         await session.commit()
-    await account_connection.commit()
+    await workspace_connection.commit()
     yield data_mapping
 
 
 @pytest.fixture
-async def account_session(
-    account_connection: AsyncConnection,
+async def workspace_session(
+    workspace_connection: AsyncConnection,
 ) -> AsyncGenerator[AsyncSession, None]:
-    await account_connection.begin_nested()
-    async with AsyncSession(bind=account_connection, expire_on_commit=False) as session:
+    await workspace_connection.begin_nested()
+    async with AsyncSession(
+        bind=workspace_connection, expire_on_commit=False
+    ) as session:
         yield session
-    await account_connection.rollback()
+    await workspace_connection.rollback()
 
 
 @pytest.fixture
-def account_session_manager(account_session: AsyncSession):
+def workspace_session_manager(workspace_session: AsyncSession):
     @contextlib.asynccontextmanager
-    async def _account_session_manager(*args, **kwargs):
-        yield account_session
+    async def _workspace_session_manager(*args, **kwargs):
+        yield workspace_session
 
-    return _account_session_manager
+    return _workspace_session_manager
 
 
 @pytest.fixture
@@ -214,13 +220,13 @@ def not_existing_uuid() -> uuid.UUID:
 
 
 @pytest.fixture
-async def account_db_mock() -> MagicMock:
-    return MagicMock(spec=AccountDatabase)
+async def workspace_db_mock() -> MagicMock:
+    return MagicMock(spec=WorkspaceDatabase)
 
 
 @pytest.fixture
-async def account_creation_mock() -> MagicMock:
-    return MagicMock(spec=AccountCreation)
+async def workspace_creation_mock() -> MagicMock:
+    return MagicMock(spec=WorkspaceCreation)
 
 
 @pytest.fixture
@@ -234,15 +240,17 @@ async def send_task_mock() -> MagicMock:
 
 
 @pytest.fixture
-def account_host(request: pytest.FixtureRequest, account: Account) -> Optional[str]:
-    marker = request.node.get_closest_marker("account_host")
+def workspace_host(
+    request: pytest.FixtureRequest, workspace: Workspace
+) -> Optional[str]:
+    marker = request.node.get_closest_marker("workspace_host")
     if marker:
-        return account.domain
+        return workspace.domain
     return None
 
 
 @pytest.fixture
-def account_admin_user() -> UserDB:
+def workspace_admin_user() -> UserDB:
     return UserDB(
         email="dev@bretagne.duchy", hashed_password="dev", tenant_id=uuid.uuid4()
     )
@@ -251,15 +259,17 @@ def account_admin_user() -> UserDB:
 @pytest.fixture
 async def admin_session_token(
     main_session: AsyncSession,
-    account: Account,
-    account_admin_user: UserDB,
+    workspace: Workspace,
+    workspace_admin_user: UserDB,
 ) -> AsyncGenerator[AdminSessionToken, None]:
-    account_user = AccountUser(account_id=account.id, user_id=account_admin_user.id)
-    main_session.add(account_user)
+    workspace_user = WorkspaceUser(
+        workspace_id=workspace.id, user_id=workspace_admin_user.id
+    )
+    main_session.add(workspace_user)
     await main_session.commit()
 
     session_token = AdminSessionToken(
-        raw_tokens="{}", raw_userinfo=json.dumps(account_admin_user.get_claims())
+        raw_tokens="{}", raw_userinfo=json.dumps(workspace_admin_user.get_claims())
     )
     main_session.add(session_token)
 
@@ -268,14 +278,14 @@ async def admin_session_token(
     yield session_token
 
     await main_session.delete(session_token)
-    await main_session.delete(account_user)
+    await main_session.delete(workspace_user)
 
 
 @pytest.fixture
 async def admin_api_key(
-    main_session: AsyncSession, account: Account
+    main_session: AsyncSession, workspace: Workspace
 ) -> AsyncGenerator[AdminAPIKey, None]:
-    admin_api_key = AdminAPIKey(name="API Key", account_id=account.id)
+    admin_api_key = AdminAPIKey(name="API Key", workspace_id=workspace.id)
     main_session.add(admin_api_key)
     await main_session.commit()
 
@@ -356,7 +366,7 @@ def access_token(
     request: pytest.FixtureRequest,
     test_data: TestData,
     tenant_params: TenantParams,
-    account: Account,
+    workspace: Workspace,
 ) -> Optional[str]:
     marker = request.node.get_closest_marker("access_token")
     if marker:
@@ -376,7 +386,7 @@ def access_token(
 
         return generate_access_token(
             user_tenant.get_sign_jwk(),
-            user_tenant.get_host(account.domain),
+            user_tenant.get_host(workspace.domain),
             client,
             UserDB.from_orm(user),
             ["openid"],
@@ -391,28 +401,32 @@ TestClientGeneratorType = Callable[[FastAPI], AsyncContextManager[httpx.AsyncCli
 @pytest.fixture
 async def test_client_admin_generator(
     main_session: AsyncSession,
-    account_session: AsyncSession,
-    account_db_mock: MagicMock,
-    account_creation_mock: MagicMock,
+    workspace_session: AsyncSession,
+    workspace_db_mock: MagicMock,
+    workspace_creation_mock: MagicMock,
     send_task_mock: MagicMock,
     fief_client_mock: MagicMock,
     authenticated_admin: Dict[str, Any],
-    account_host: Optional[str],
+    workspace_host: Optional[str],
 ) -> TestClientGeneratorType:
     @contextlib.asynccontextmanager
     async def _test_client_generator(app: FastAPI):
         app.dependency_overrides = {}
         app.dependency_overrides[get_main_async_session] = lambda: main_session
-        app.dependency_overrides[get_current_account_session] = lambda: account_session
-        app.dependency_overrides[get_account_db] = lambda: account_db_mock
-        app.dependency_overrides[get_account_creation] = lambda: account_creation_mock
+        app.dependency_overrides[
+            get_current_workspace_session
+        ] = lambda: workspace_session
+        app.dependency_overrides[get_workspace_db] = lambda: workspace_db_mock
+        app.dependency_overrides[
+            get_workspace_creation
+        ] = lambda: workspace_creation_mock
         app.dependency_overrides[get_send_task] = lambda: send_task_mock
         app.dependency_overrides[get_fief] = lambda: fief_client_mock
         settings.fief_admin_session_cookie_domain = ""
 
         headers = {**authenticated_admin}
-        if account_host is not None:
-            headers["Host"] = account_host
+        if workspace_host is not None:
+            headers["Host"] = workspace_host
 
         async with asgi_lifespan.LifespanManager(app):
             async with httpx.AsyncClient(
@@ -436,26 +450,30 @@ async def test_client_admin(
 @pytest.fixture
 async def test_client_auth_generator(
     main_session: AsyncSession,
-    account_session: AsyncSession,
-    account_db_mock: MagicMock,
-    account_creation_mock: MagicMock,
+    workspace_session: AsyncSession,
+    workspace_db_mock: MagicMock,
+    workspace_creation_mock: MagicMock,
     send_task_mock: MagicMock,
-    account_host: Optional[str],
+    workspace_host: Optional[str],
     access_token: Optional[str],
 ) -> TestClientGeneratorType:
     @contextlib.asynccontextmanager
     async def _test_client_generator(app: FastAPI):
         app.dependency_overrides = {}
         app.dependency_overrides[get_main_async_session] = lambda: main_session
-        app.dependency_overrides[get_current_account_session] = lambda: account_session
-        app.dependency_overrides[get_account_db] = lambda: account_db_mock
-        app.dependency_overrides[get_account_creation] = lambda: account_creation_mock
+        app.dependency_overrides[
+            get_current_workspace_session
+        ] = lambda: workspace_session
+        app.dependency_overrides[get_workspace_db] = lambda: workspace_db_mock
+        app.dependency_overrides[
+            get_workspace_creation
+        ] = lambda: workspace_creation_mock
         app.dependency_overrides[check_csrf] = lambda: None
         app.dependency_overrides[get_send_task] = lambda: send_task_mock
 
         headers = {}
-        if account_host is not None:
-            headers["Host"] = account_host
+        if workspace_host is not None:
+            headers["Host"] = workspace_host
         if access_token is not None:
             headers["Authorization"] = f"Bearer {access_token}"
 

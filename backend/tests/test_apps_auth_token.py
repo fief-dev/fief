@@ -11,7 +11,7 @@ from tests.data import TestData
 
 
 @pytest.mark.asyncio
-@pytest.mark.account_host
+@pytest.mark.workspace_host
 class TestAuthTokenAuthorizationCode:
     @pytest.mark.parametrize(
         "data,error",
@@ -173,7 +173,7 @@ class TestAuthTokenAuthorizationCode:
         authorization_code_alias: str,
         test_client_auth: httpx.AsyncClient,
         test_data: TestData,
-        account_session: AsyncSession,
+        workspace_session: AsyncSession,
     ):
         authorization_code = test_data["authorization_codes"][authorization_code_alias]
         client = authorization_code.client
@@ -199,7 +199,7 @@ class TestAuthTokenAuthorizationCode:
         assert json["token_type"] == "bearer"
         assert json["expires_in"] == 3600
 
-        authorization_code_manager = AuthorizationCodeManager(account_session)
+        authorization_code_manager = AuthorizationCodeManager(workspace_session)
         used_authorization_code = await authorization_code_manager.get_by_code(
             authorization_code.code
         )
@@ -212,7 +212,7 @@ class TestAuthTokenAuthorizationCode:
 
 
 @pytest.mark.asyncio
-@pytest.mark.account_host
+@pytest.mark.workspace_host
 class TestAuthTokenRefreshToken:
     @pytest.mark.parametrize(
         "data,error",
@@ -352,7 +352,7 @@ class TestAuthTokenRefreshToken:
         self,
         test_client_auth: httpx.AsyncClient,
         test_data: TestData,
-        account_session: AsyncSession,
+        workspace_session: AsyncSession,
     ):
         refresh_token = test_data["refresh_tokens"]["default_regular"]
         client = refresh_token.client
@@ -381,7 +381,7 @@ class TestAuthTokenRefreshToken:
             assert json["refresh_token"] is not None
 
             assert json["refresh_token"] != refresh_token.token
-            refresh_token_manager = RefreshTokenManager(account_session)
+            refresh_token_manager = RefreshTokenManager(workspace_session)
             old_refresh_token = await refresh_token_manager.get_by_token(
                 refresh_token.token
             )

@@ -2,8 +2,8 @@ import uuid
 
 import dramatiq
 
-from fief.db.account import get_account_session
 from fief.db.main import main_async_session_maker
+from fief.db.workspace import get_workspace_session
 from fief.settings import settings
 from fief.tasks.base import TaskBase
 
@@ -11,10 +11,10 @@ from fief.tasks.base import TaskBase
 class OnAfterRegisterTask(TaskBase):
     __name__ = "on_after_register"
 
-    async def run(self, user_id: str, account_id: str):
-        account = await self._get_account(uuid.UUID(account_id))
-        user = await self._get_user(uuid.UUID(user_id), account)
-        tenant = await self._get_tenant(user.tenant_id, account)
+    async def run(self, user_id: str, workspace_id: str):
+        workspace = await self._get_workspace(uuid.UUID(workspace_id))
+        user = await self._get_user(uuid.UUID(user_id), workspace)
+        tenant = await self._get_tenant(user.tenant_id, workspace)
 
         translations = user.get_preferred_translations()
         title = translations.gettext("Welcome to %(tenant)s!") % {"tenant": tenant.name}
@@ -30,6 +30,6 @@ class OnAfterRegisterTask(TaskBase):
 
 on_after_register = dramatiq.actor(
     OnAfterRegisterTask(
-        main_async_session_maker, get_account_session, settings.get_email_provider()
+        main_async_session_maker, get_workspace_session, settings.get_email_provider()
     )
 )

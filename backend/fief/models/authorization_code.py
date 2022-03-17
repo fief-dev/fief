@@ -6,13 +6,13 @@ from sqlalchemy import Column, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.sqltypes import JSON, String
 
-from fief.models.base import AccountBase
+from fief.models.base import WorkspaceBase
 from fief.models.client import Client
 from fief.models.generics import GUID, CreatedUpdatedAt, UUIDModel
 from fief.models.user import User
 
 
-class AuthorizationCode(UUIDModel, CreatedUpdatedAt, AccountBase):
+class AuthorizationCode(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
     __tablename__ = "authorization_codes"
 
     code: str = Column(

@@ -7,12 +7,12 @@ from sqlalchemy import Boolean, Column, ForeignKey, String, Text
 from sqlalchemy.orm import relationship
 
 from fief.crypto.jwk import load_jwk
-from fief.models.base import AccountBase
+from fief.models.base import WorkspaceBase
 from fief.models.generics import GUID, CreatedUpdatedAt, UUIDModel
 from fief.models.tenant import Tenant
 
 
-class Client(UUIDModel, CreatedUpdatedAt, AccountBase):
+class Client(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
     __tablename__ = "clients"
 
     name: str = Column(String(length=255), nullable=False)

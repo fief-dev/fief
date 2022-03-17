@@ -7,7 +7,7 @@ from tests.data import TestData
 
 
 @pytest.mark.asyncio
-@pytest.mark.account_host
+@pytest.mark.workspace_host
 class TestUserUserinfo:
     async def test_unauthorized(
         self, tenant_params: TenantParams, test_client_auth: httpx.AsyncClient

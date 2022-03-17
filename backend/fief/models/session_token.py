@@ -5,12 +5,12 @@ from pydantic import UUID4
 from sqlalchemy import TIMESTAMP, Column, ForeignKey, String
 from sqlalchemy.orm import relationship
 
-from fief.models.base import AccountBase
+from fief.models.base import WorkspaceBase
 from fief.models.generics import GUID, CreatedUpdatedAt, UUIDModel
 from fief.models.user import User
 
 
-class SessionToken(UUIDModel, CreatedUpdatedAt, AccountBase):
+class SessionToken(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
     __tablename__ = "session_tokens"
 
     token: str = Column(

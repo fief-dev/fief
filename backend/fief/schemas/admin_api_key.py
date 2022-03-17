@@ -9,7 +9,7 @@ class AdminAPIKeyCreate(BaseModel):
 
 class BaseAdminApiKey(UUIDSchema, CreatedUpdatedAt):
     name: str
-    account_id: UUID4
+    workspace_id: UUID4
 
 
 class AdminAPIKeyCreateResponse(BaseAdminApiKey):

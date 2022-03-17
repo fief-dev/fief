@@ -6,12 +6,12 @@ from sqlalchemy import Column, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.sqltypes import JSON, String
 
-from fief.models.base import AccountBase
+from fief.models.base import WorkspaceBase
 from fief.models.client import Client
 from fief.models.generics import GUID, CreatedUpdatedAt, UUIDModel
 
 
-class LoginSession(UUIDModel, CreatedUpdatedAt, AccountBase):
+class LoginSession(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
     __tablename__ = "login_sessions"
 
     token: str = Column(

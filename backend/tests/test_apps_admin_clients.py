@@ -12,7 +12,7 @@ from tests.data import TestData
 
 
 @pytest.mark.asyncio
-@pytest.mark.account_host()
+@pytest.mark.workspace_host()
 class TestListClients:
     async def test_unauthorized(self, test_client_admin: httpx.AsyncClient):
         response = await test_client_admin.get("/clients/")
@@ -36,7 +36,7 @@ class TestListClients:
 
 
 @pytest.mark.asyncio
-@pytest.mark.account_host()
+@pytest.mark.workspace_host()
 class TestCreateClient:
     async def test_unauthorized(self, test_client_admin: httpx.AsyncClient):
         response = await test_client_admin.post("/clients/", json={})
@@ -86,7 +86,7 @@ class TestCreateClient:
 
 
 @pytest.mark.asyncio
-@pytest.mark.account_host()
+@pytest.mark.workspace_host()
 class TestCreateEncryptionKey:
     async def test_unauthorized(
         self, test_client_admin: httpx.AsyncClient, test_data: TestData
@@ -101,7 +101,7 @@ class TestCreateEncryptionKey:
         self,
         test_client_admin: httpx.AsyncClient,
         test_data: TestData,
-        account_session: AsyncSession,
+        workspace_session: AsyncSession,
     ):
         client = test_data["clients"]["default_tenant"]
         response = await test_client_admin.post(f"/clients/{client.id}/encryption-key")
@@ -113,7 +113,7 @@ class TestCreateEncryptionKey:
         assert key.has_private == True
         assert key.has_public == True
 
-        manager = ClientManager(account_session)
+        manager = ClientManager(workspace_session)
         updated_client = await manager.get_by_id(client.id)
         assert updated_client is not None
         assert updated_client.encrypt_jwk is not None

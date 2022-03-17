@@ -9,7 +9,7 @@ const BASE_URL = `${window.location.protocol}//${window.location.hostname}${API_
 export class APIClient {
   client: AxiosInstance;
 
-  constructor(accountId?: string) {
+  constructor() {
     this.client = axios.create({
       baseURL: BASE_URL,
       withCredentials: true,
@@ -24,12 +24,12 @@ export class APIClient {
     return this.client.get('/auth/userinfo');
   }
 
-  public listAccounts(params: schemas.PaginationParameters = {}): Promise<AxiosResponse<schemas.PaginatedResults<schemas.account.AccountPublic>>> {
-    return this.client.get('/accounts/', { params });
+  public listWorkspaces(params: schemas.PaginationParameters = {}): Promise<AxiosResponse<schemas.PaginatedResults<schemas.workspace.WorkspacePublic>>> {
+    return this.client.get('/workspaces/', { params });
   }
 
-  public createAccount(data: schemas.account.AccountCreate): Promise<AxiosResponse<schemas.account.AccountPublic>> {
-    return this.client.post('/accounts/', data);
+  public createWorkspace(data: schemas.workspace.WorkspaceCreate): Promise<AxiosResponse<schemas.workspace.WorkspacePublic>> {
+    return this.client.post('/workspaces/', data);
   }
 
   public listTenants(params: schemas.tenant.TenantListParameters = {}): Promise<AxiosResponse<schemas.PaginatedResults<schemas.tenant.Tenant>>> {

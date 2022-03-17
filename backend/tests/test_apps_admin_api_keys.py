@@ -6,11 +6,11 @@ from fastapi import status
 
 from fief.db import AsyncSession
 from fief.managers import AdminAPIKeyManager
-from fief.models import Account, AdminAPIKey
+from fief.models import AdminAPIKey, Workspace
 
 
 @pytest.mark.asyncio
-@pytest.mark.account_host()
+@pytest.mark.workspace_host()
 class TestListAPIKeys:
     async def test_unauthorized(self, test_client_admin: httpx.AsyncClient):
         response = await test_client_admin.get("/api-keys/")
@@ -41,7 +41,7 @@ class TestListAPIKeys:
 
 
 @pytest.mark.asyncio
-@pytest.mark.account_host()
+@pytest.mark.workspace_host()
 class TestCreateAPIKey:
     async def test_unauthorized(self, test_client_admin: httpx.AsyncClient):
         response = await test_client_admin.post("/api-keys/", json={})
@@ -57,7 +57,9 @@ class TestCreateAPIKey:
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
     @pytest.mark.authenticated_admin(mode="session")
-    async def test_valid(self, test_client_admin: httpx.AsyncClient, account: Account):
+    async def test_valid(
+        self, test_client_admin: httpx.AsyncClient, workspace: Workspace
+    ):
         response = await test_client_admin.post(
             "/api-keys/", json={"name": "New API Key"}
         )
@@ -66,11 +68,11 @@ class TestCreateAPIKey:
 
         json = response.json()
         assert json["token"] != "**********"
-        assert json["account_id"] == str(account.id)
+        assert json["workspace_id"] == str(workspace.id)
 
 
 @pytest.mark.asyncio
-@pytest.mark.account_host()
+@pytest.mark.workspace_host()
 class TestDeleteAPIKey:
     async def test_unauthorized(
         self, test_client_admin: httpx.AsyncClient, admin_api_key: AdminAPIKey
@@ -100,10 +102,10 @@ class TestDeleteAPIKey:
         self,
         test_client_admin: httpx.AsyncClient,
         main_session: AsyncSession,
-        account: Account,
+        workspace: Workspace,
     ):
         api_key_manager = AdminAPIKeyManager(main_session)
-        api_key = AdminAPIKey(name="New API Key", account_id=account.id)
+        api_key = AdminAPIKey(name="New API Key", workspace_id=workspace.id)
         api_key = await api_key_manager.create(api_key)
 
         response = await test_client_admin.delete(f"/api-keys/{api_key.id}")

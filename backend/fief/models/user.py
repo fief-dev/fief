@@ -4,12 +4,12 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql.schema import UniqueConstraint
 
 from fief.locale import Translations, get_preferred_translations
-from fief.models.base import AccountBase
+from fief.models.base import WorkspaceBase
 from fief.models.generics import GUID, CreatedUpdatedAt, UUIDModel
 from fief.models.tenant import Tenant
 
 
-class User(UUIDModel, CreatedUpdatedAt, AccountBase):
+class User(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
     __tablename__ = "users"
     __table_args__ = (UniqueConstraint("email", "tenant_id"),)
 

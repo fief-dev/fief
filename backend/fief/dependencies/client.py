@@ -4,7 +4,6 @@ from fastapi import Depends, HTTPException, status
 from pydantic import UUID4
 from sqlalchemy import select
 
-from fief.dependencies.account_managers import get_client_manager
 from fief.dependencies.pagination import (
     Ordering,
     Pagination,
@@ -12,6 +11,7 @@ from fief.dependencies.pagination import (
     get_paginated_objects,
     get_pagination,
 )
+from fief.dependencies.workspace_managers import get_client_manager
 from fief.managers import ClientManager
 from fief.models import Client
 

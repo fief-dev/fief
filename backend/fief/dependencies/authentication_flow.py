@@ -1,6 +1,6 @@
 from fastapi import Depends
 
-from fief.dependencies.account_managers import (
+from fief.dependencies.workspace_managers import (
     get_authorization_code_manager,
     get_grant_manager,
     get_login_session_manager,

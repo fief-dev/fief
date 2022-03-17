@@ -5,11 +5,11 @@ from jwcrypto import jwk
 from sqlalchemy import Boolean, Column, String, Text
 
 from fief.crypto.jwk import generate_signature_jwk_string, load_jwk
-from fief.models.base import AccountBase
+from fief.models.base import WorkspaceBase
 from fief.models.generics import CreatedUpdatedAt, UUIDModel
 
 
-class Tenant(UUIDModel, CreatedUpdatedAt, AccountBase):
+class Tenant(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
     __tablename__ = "tenants"
 
     name: str = Column(String(length=255), nullable=False)

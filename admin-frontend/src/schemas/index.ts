@@ -1,11 +1,11 @@
 import * as client from './client';
-import * as account from './account';
+import * as workspace from './workspace';
 import * as adminAPIKey from './admin-api-key';
 import * as tenant from './tenant';
 import * as user from './user';
 
 export {
-  account,
+  workspace,
   adminAPIKey,
   client,
   tenant,

@@ -7,7 +7,7 @@ from fastapi import status
 
 from fief.db import AsyncSession
 from fief.managers import SessionTokenManager
-from fief.models import Account
+from fief.models import Workspace
 from fief.settings import settings
 from fief.tasks import on_after_register
 from tests.conftest import TenantParams
@@ -15,7 +15,7 @@ from tests.data import TestData
 
 
 @pytest.mark.asyncio
-@pytest.mark.account_host
+@pytest.mark.workspace_host
 class TestGetRegister:
     @pytest.mark.parametrize("cookie", [None, "INVALID_LOGIN_SESSION"])
     async def test_invalid_login_session(
@@ -56,7 +56,7 @@ class TestGetRegister:
 
 
 @pytest.mark.asyncio
-@pytest.mark.account_host
+@pytest.mark.workspace_host
 class TestPostRegister:
     @pytest.mark.parametrize("cookie", [None, "INVALID_LOGIN_SESSION"])
     async def test_invalid_login_session(
@@ -130,8 +130,8 @@ class TestPostRegister:
         self,
         test_client_auth: httpx.AsyncClient,
         test_data: TestData,
-        account: Account,
-        account_session: AsyncSession,
+        workspace: Workspace,
+        workspace_session: AsyncSession,
         send_task_mock: MagicMock,
     ):
         login_session = test_data["login_sessions"]["default"]
@@ -150,12 +150,12 @@ class TestPostRegister:
         assert redirect_uri.endswith("/consent")
 
         session_cookie = response.cookies[settings.session_cookie_name]
-        session_token_manager = SessionTokenManager(account_session)
+        session_token_manager = SessionTokenManager(workspace_session)
         session_token = await session_token_manager.get_by_token(session_cookie)
         assert session_token is not None
 
         send_task_mock.assert_called_once_with(
-            on_after_register, str(session_token.user_id), str(account.id)
+            on_after_register, str(session_token.user_id), str(workspace.id)
         )
 
     async def test_no_email_conflict_on_another_tenant(

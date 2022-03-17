@@ -66,12 +66,12 @@ class TestAuthCallback:
 
 @pytest.mark.authenticated_admin(mode="session")
 async def test_auth_userinfo(
-    test_client_admin: httpx.AsyncClient, account_admin_user: UserDB
+    test_client_admin: httpx.AsyncClient, workspace_admin_user: UserDB
 ):
     response = await test_client_admin.get("/auth/userinfo")
 
     assert response.status_code == status.HTTP_200_OK
 
     json = response.json()
-    assert json["sub"] == str(account_admin_user.id)
-    assert json["email"] == account_admin_user.email
+    assert json["sub"] == str(workspace_admin_user.id)
+    assert json["email"] == workspace_admin_user.email

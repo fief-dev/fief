@@ -3,9 +3,9 @@ import secrets
 from pydantic import UUID4
 from sqlalchemy import Column, ForeignKey, String
 
-from fief.models.account import Account
 from fief.models.base import MainBase
 from fief.models.generics import GUID, CreatedUpdatedAt, UUIDModel
+from fief.models.workspace import Workspace
 
 
 class AdminAPIKey(UUIDModel, CreatedUpdatedAt, MainBase):
@@ -15,7 +15,7 @@ class AdminAPIKey(UUIDModel, CreatedUpdatedAt, MainBase):
     token: str = Column(
         String(length=255), default=secrets.token_urlsafe, unique=True, nullable=False
     )
-    account_id: UUID4 = Column(GUID, ForeignKey(Account.id, ondelete="CASCADE"), nullable=False)  # type: ignore
+    workspace_id: UUID4 = Column(GUID, ForeignKey(Workspace.id, ondelete="CASCADE"), nullable=False)  # type: ignore
 
     def __repr__(self) -> str:
         return f"AdminAPIKey(id={self.id})"

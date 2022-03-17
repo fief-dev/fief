@@ -7,7 +7,7 @@ from fastapi import Depends, FastAPI, status
 
 from fief.db import AsyncSession
 from fief.dependencies.admin_authentication import is_authenticated_admin
-from fief.models import Account, AccountUser, AdminAPIKey, AdminSessionToken
+from fief.models import AdminAPIKey, AdminSessionToken, Workspace, WorkspaceUser
 from fief.settings import settings
 from tests.conftest import TestClientGeneratorType
 
@@ -24,21 +24,20 @@ def app() -> FastAPI:
 
 
 @pytest.fixture
-async def another_account(
+async def another_workspace(
     main_session: AsyncSession,
-) -> AsyncGenerator[Account, None]:
-    account = Account(name="Gascony", domain="gascony.localhost")
-    main_session.add(account)
+) -> AsyncGenerator[Workspace, None]:
+    workspace = Workspace(name="Gascony", domain="gascony.localhost")
+    main_session.add(workspace)
     await main_session.commit()
 
-    yield account
+    yield workspace
 
-    await main_session.delete(account)
-    # await main_session.commit()
+    await main_session.delete(workspace)
 
 
 @pytest.mark.asyncio
-@pytest.mark.account_host
+@pytest.mark.workspace_host
 async def test_no_authentication(
     test_client_admin_generator: TestClientGeneratorType, app: FastAPI
 ):
@@ -49,16 +48,18 @@ async def test_no_authentication(
 
 
 @pytest.mark.asyncio
-@pytest.mark.account_host
-async def test_admin_session_for_another_account(
+@pytest.mark.workspace_host
+async def test_admin_session_for_another_workspace(
     main_session: AsyncSession,
     not_existing_uuid: uuid.UUID,
     test_client_admin_generator: TestClientGeneratorType,
-    another_account: Account,
+    another_workspace: Workspace,
     app: FastAPI,
 ):
-    account_user = AccountUser(account_id=another_account.id, user_id=not_existing_uuid)
-    main_session.add(account_user)
+    workspace_user = WorkspaceUser(
+        workspace_id=another_workspace.id, user_id=not_existing_uuid
+    )
+    main_session.add(workspace_user)
     session_token = AdminSessionToken(
         raw_tokens="{}", raw_userinfo=json.dumps({"sub": str(not_existing_uuid)})
     )
@@ -74,7 +75,7 @@ async def test_admin_session_for_another_account(
 
 
 @pytest.mark.asyncio
-@pytest.mark.account_host
+@pytest.mark.workspace_host
 @pytest.mark.authenticated_admin(mode="session")
 async def test_valid_admin_session(
     test_client_admin_generator: TestClientGeneratorType, app: FastAPI
@@ -86,14 +87,14 @@ async def test_valid_admin_session(
 
 
 @pytest.mark.asyncio
-@pytest.mark.account_host
-async def test_admin_api_key_for_another_account(
+@pytest.mark.workspace_host
+async def test_admin_api_key_for_another_workspace(
     main_session: AsyncSession,
     test_client_admin_generator: TestClientGeneratorType,
-    another_account: Account,
+    another_workspace: Workspace,
     app: FastAPI,
 ):
-    api_key = AdminAPIKey(name="Default", account_id=another_account.id)
+    api_key = AdminAPIKey(name="Default", workspace_id=another_workspace.id)
     main_session.add(api_key)
     await main_session.commit()
 
@@ -105,7 +106,7 @@ async def test_admin_api_key_for_another_account(
 
 
 @pytest.mark.asyncio
-@pytest.mark.account_host
+@pytest.mark.workspace_host
 @pytest.mark.authenticated_admin(mode="api_key")
 async def test_valid_admin_api_key(
     test_client_admin_generator: TestClientGeneratorType, app: FastAPI

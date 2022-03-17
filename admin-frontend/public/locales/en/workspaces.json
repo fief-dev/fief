@@ -1,0 +1,27 @@
+{
+  "database_type": {
+    "POSTGRESQL": "PostgreSQL",
+    "MYSQL": "MySQL"
+  },
+  "create": {
+    "next": "Next",
+    "back": "Back",
+    "step1_title": "Let's create your workspace!",
+    "name": "Name of your workspace",
+    "step2_title": "Where do you want to store your data?",
+    "cloud_database": "Fief's cloud database",
+    "cloud_database_details": "Your data will be stored securely on our infrastructure.",
+    "custom_database": "My own database",
+    "custom_database_details": "Fief will connect to your own database to store your data.",
+    "step3_title": "Connection to your database",
+    "database_credentials_security_notice": "Your database credentials will be safely stored and encrypted.",
+    "database_type": "Database type",
+    "database_host": "Host",
+    "database_port": "Port",
+    "database_username": "Username",
+    "database_password": "Password",
+    "database_name": "Database name",
+    "step4_title": "Everything is ready!",
+    "create_workspace": "Create workspace"
+  }
+}

@@ -13,7 +13,7 @@ from tests.data import TestData
 
 
 @pytest.mark.asyncio
-@pytest.mark.account_host
+@pytest.mark.workspace_host
 class TestAuthAuthorize:
     @pytest.mark.parametrize(
         "params,error",
@@ -192,7 +192,7 @@ class TestAuthAuthorize:
         redirection: str,
         tenant_params: TenantParams,
         test_client_auth: httpx.AsyncClient,
-        account_session: AsyncSession,
+        workspace_session: AsyncSession,
     ):
         params = {
             "response_type": "code",
@@ -219,13 +219,13 @@ class TestAuthAuthorize:
         assert location.endswith(f"{tenant_params.path_prefix}{redirection}")
 
         login_session_cookie = response.cookies[settings.login_session_cookie_name]
-        login_session_manager = LoginSessionManager(account_session)
+        login_session_manager = LoginSessionManager(workspace_session)
         login_session = await login_session_manager.get_by_token(login_session_cookie)
         assert login_session is not None
 
 
 @pytest.mark.asyncio
-@pytest.mark.account_host
+@pytest.mark.workspace_host
 class TestAuthGetLogin:
     @pytest.mark.parametrize("cookie", [None, "INVALID_LOGIN_SESSION"])
     async def test_invalid_login_session(
@@ -264,7 +264,7 @@ class TestAuthGetLogin:
 
 
 @pytest.mark.asyncio
-@pytest.mark.account_host
+@pytest.mark.workspace_host
 class TestAuthPostLogin:
     @pytest.mark.parametrize("cookie", [None, "INVALID_LOGIN_SESSION"])
     async def test_invalid_login_session(
@@ -315,7 +315,7 @@ class TestAuthPostLogin:
         self,
         test_client_auth: httpx.AsyncClient,
         test_data: TestData,
-        account_session: AsyncSession,
+        workspace_session: AsyncSession,
     ):
         login_session = test_data["login_sessions"]["default"]
         client = login_session.client
@@ -340,7 +340,7 @@ class TestAuthPostLogin:
         assert redirect_uri.endswith(f"{path_prefix}/consent")
 
         session_cookie = response.cookies[settings.session_cookie_name]
-        session_token_manager = SessionTokenManager(account_session)
+        session_token_manager = SessionTokenManager(workspace_session)
         session_token = await session_token_manager.get_by_token(session_cookie)
         assert session_token is not None
 
@@ -375,7 +375,7 @@ class TestAuthPostLogin:
 
 
 @pytest.mark.asyncio
-@pytest.mark.account_host
+@pytest.mark.workspace_host
 class TestAuthGetConsent:
     @pytest.mark.parametrize("cookie", [None, "INVALID_LOGIN_SESSION"])
     async def test_invalid_login_session(
@@ -442,7 +442,7 @@ class TestAuthGetConsent:
         self,
         test_client_auth: httpx.AsyncClient,
         test_data: TestData,
-        account_session: AsyncSession,
+        workspace_session: AsyncSession,
     ):
         login_session = test_data["login_sessions"]["default_none_prompt"]
         client = login_session.client
@@ -464,7 +464,7 @@ class TestAuthGetConsent:
         assert parsed_location.query.params["error"] == "consent_required"
         assert parsed_location.query.params["state"] == login_session.state
 
-        login_session_manager = LoginSessionManager(account_session)
+        login_session_manager = LoginSessionManager(workspace_session)
         used_login_session = await login_session_manager.get_by_token(
             login_session.token
         )
@@ -474,7 +474,7 @@ class TestAuthGetConsent:
         self,
         test_client_auth: httpx.AsyncClient,
         test_data: TestData,
-        account_session: AsyncSession,
+        workspace_session: AsyncSession,
     ):
         login_session = test_data["login_sessions"]["granted_default"]
         client = login_session.client
@@ -500,7 +500,7 @@ class TestAuthGetConsent:
         assert set_cookie_header.startswith(f'{settings.login_session_cookie_name}=""')
         assert "Max-Age=0" in set_cookie_header
 
-        login_session_manager = LoginSessionManager(account_session)
+        login_session_manager = LoginSessionManager(workspace_session)
         used_login_session = await login_session_manager.get_by_token(
             login_session.token
         )
@@ -527,7 +527,7 @@ class TestAuthGetConsent:
         self,
         test_client_auth: httpx.AsyncClient,
         test_data: TestData,
-        account_session: AsyncSession,
+        workspace_session: AsyncSession,
     ):
         login_session = test_data["login_sessions"]["first_party_default"]
         client = login_session.client
@@ -553,7 +553,7 @@ class TestAuthGetConsent:
         assert set_cookie_header.startswith(f'{settings.login_session_cookie_name}=""')
         assert "Max-Age=0" in set_cookie_header
 
-        login_session_manager = LoginSessionManager(account_session)
+        login_session_manager = LoginSessionManager(workspace_session)
         used_login_session = await login_session_manager.get_by_token(
             login_session.token
         )
@@ -561,7 +561,7 @@ class TestAuthGetConsent:
 
 
 @pytest.mark.asyncio
-@pytest.mark.account_host
+@pytest.mark.workspace_host
 class TestAuthPostConsent:
     @pytest.mark.parametrize("cookie", [None, "INVALID_LOGIN_SESSION"])
     async def test_invalid_login_session(
@@ -641,7 +641,7 @@ class TestAuthPostConsent:
         self,
         test_client_auth: httpx.AsyncClient,
         test_data: TestData,
-        account_session: AsyncSession,
+        workspace_session: AsyncSession,
     ):
         login_session = test_data["login_sessions"]["default"]
         client = login_session.client
@@ -669,13 +669,13 @@ class TestAuthPostConsent:
         assert set_cookie_header.startswith(f'{settings.login_session_cookie_name}=""')
         assert "Max-Age=0" in set_cookie_header
 
-        login_session_manager = LoginSessionManager(account_session)
+        login_session_manager = LoginSessionManager(workspace_session)
         used_login_session = await login_session_manager.get_by_token(
             login_session.token
         )
         assert used_login_session is None
 
-        grant_manager = GrantManager(account_session)
+        grant_manager = GrantManager(workspace_session)
         grant = await grant_manager.get_by_user_and_client(
             session_token.user_id, client.id
         )
@@ -686,7 +686,7 @@ class TestAuthPostConsent:
         self,
         test_client_auth: httpx.AsyncClient,
         test_data: TestData,
-        account_session: AsyncSession,
+        workspace_session: AsyncSession,
     ):
         login_session = test_data["login_sessions"]["default"]
         client = login_session.client
@@ -714,7 +714,7 @@ class TestAuthPostConsent:
         assert set_cookie_header.startswith(f'{settings.login_session_cookie_name}=""')
         assert "Max-Age=0" in set_cookie_header
 
-        login_session_manager = LoginSessionManager(account_session)
+        login_session_manager = LoginSessionManager(workspace_session)
         used_login_session = await login_session_manager.get_by_token(
             login_session.token
         )

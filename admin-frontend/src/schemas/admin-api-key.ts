@@ -6,7 +6,7 @@ export interface AdminAPIKeyCreate {
 
 export interface AdminAPIKeyBase extends UUIDSchema, CreatedUpdatedAt {
   name: string;
-  account_id: string;
+  workspace_id: string;
 }
 
 export interface AdminAPIKeyCreateResponse extends AdminAPIKeyBase {

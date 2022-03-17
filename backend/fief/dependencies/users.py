@@ -22,10 +22,9 @@ from sqlalchemy.sql import Select
 
 from fief.crypto.access_token import InvalidAccessToken, read_access_token
 from fief.db import AsyncSession
-from fief.dependencies.account_managers import get_user_manager as get_user_db_manager
-from fief.dependencies.current_account import (
-    get_current_account,
-    get_current_account_session,
+from fief.dependencies.current_workspace import (
+    get_current_workspace,
+    get_current_workspace_session,
 )
 from fief.dependencies.locale import get_translations
 from fief.dependencies.pagination import (
@@ -41,9 +40,10 @@ from fief.dependencies.tenant import (
     get_current_tenant,
     get_tenant_from_create_user_internal,
 )
+from fief.dependencies.workspace_managers import get_user_manager as get_user_db_manager
 from fief.locale import Translations
 from fief.managers import UserManager as UserDBManager
-from fief.models import Account, Tenant, User
+from fief.models import Tenant, User, Workspace
 from fief.schemas.user import UserCreate, UserDB
 from fief.settings import settings
 from fief.tasks import SendTask, on_after_forgot_password, on_after_register
@@ -57,13 +57,13 @@ class UserManager(BaseUserManager[UserCreate, UserDB]):
     def __init__(
         self,
         user_db: SQLAlchemyUserDatabase[UserDB],
-        account: Account,
+        workspace: Workspace,
         tenant: Tenant,
         translations: Translations,
         send_task: SendTask,
     ):
         super().__init__(user_db)
-        self.account = account
+        self.workspace = workspace
         self.tenant = tenant
         self.translations = translations
         self.send_task = send_task
@@ -79,7 +79,7 @@ class UserManager(BaseUserManager[UserCreate, UserDB]):
             )
 
     async def on_after_register(self, user: UserDB, request: Optional[Request] = None):
-        self.send_task(on_after_register, str(user.id), str(self.account.id))
+        self.send_task(on_after_register, str(user.id), str(self.workspace.id))
 
     async def on_after_forgot_password(
         self, user: UserDB, token: str, request: Optional[Request] = None
@@ -87,7 +87,10 @@ class UserManager(BaseUserManager[UserCreate, UserDB]):
         reset_url = furl(self.tenant.url_for(cast(Request, request), "reset:reset.get"))
         reset_url.add(query_params={"token": token})
         self.send_task(
-            on_after_forgot_password, str(user.id), str(self.account.id), reset_url.url
+            on_after_forgot_password,
+            str(user.id),
+            str(self.workspace.id),
+            reset_url.url,
         )
 
     async def on_after_request_verify(
@@ -146,7 +149,7 @@ async def get_jwt_access_token_strategy(
 
 
 async def get_user_db(
-    session: AsyncSession = Depends(get_current_account_session),
+    session: AsyncSession = Depends(get_current_workspace_session),
     tenant: Tenant = Depends(get_current_tenant),
 ) -> SQLAlchemyUserDatabase[UserDB]:
     return SQLAlchemyUserTenantDatabase(UserDB, session, tenant, User)
@@ -155,15 +158,15 @@ async def get_user_db(
 async def get_user_manager(
     user_db: SQLAlchemyUserDatabase[UserDB] = Depends(get_user_db),
     tenant: Tenant = Depends(get_current_tenant),
-    account: Account = Depends(get_current_account),
+    workspace: Workspace = Depends(get_current_workspace),
     translations: Translations = Depends(get_translations),
     send_task: SendTask = Depends(get_send_task),
 ):
-    return UserManager(user_db, account, tenant, translations, send_task)
+    return UserManager(user_db, workspace, tenant, translations, send_task)
 
 
 async def get_user_db_from_create_user_internal(
-    session: AsyncSession = Depends(get_current_account_session),
+    session: AsyncSession = Depends(get_current_workspace_session),
     tenant: Tenant = Depends(get_tenant_from_create_user_internal),
 ) -> SQLAlchemyUserDatabase[UserDB]:
     return SQLAlchemyUserTenantDatabase(UserDB, session, tenant, User)
@@ -174,11 +177,11 @@ async def get_user_manager_from_create_user_internal(
         get_user_db_from_create_user_internal
     ),
     tenant: Tenant = Depends(get_tenant_from_create_user_internal),
-    account: Account = Depends(get_current_account),
+    workspace: Workspace = Depends(get_current_workspace),
     translations: Translations = Depends(get_translations),
     send_task: SendTask = Depends(get_send_task),
 ):
-    return UserManager(user_db, account, tenant, translations, send_task)
+    return UserManager(user_db, workspace, tenant, translations, send_task)
 
 
 class AuthorizationCodeBearerTransport(BearerTransport):

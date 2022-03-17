@@ -6,13 +6,13 @@ from pydantic import UUID4
 from sqlalchemy import JSON, TIMESTAMP, Column, ForeignKey, String
 from sqlalchemy.orm import relationship
 
-from fief.models.base import AccountBase
+from fief.models.base import WorkspaceBase
 from fief.models.client import Client
 from fief.models.generics import GUID, CreatedUpdatedAt, UUIDModel
 from fief.models.user import User
 
 
-class RefreshToken(UUIDModel, CreatedUpdatedAt, AccountBase):
+class RefreshToken(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
     __tablename__ = "refresh_tokens"
 
     token: str = Column(

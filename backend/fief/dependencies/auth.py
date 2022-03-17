@@ -3,15 +3,15 @@ from typing import List, Optional
 from fastapi import Cookie, Depends, Form, Query, Response
 from pydantic import UUID4
 
-from fief.dependencies.account_managers import (
-    get_client_manager,
-    get_grant_manager,
-    get_login_session_manager,
-)
 from fief.dependencies.authentication_flow import get_authentication_flow
 from fief.dependencies.locale import get_gettext
 from fief.dependencies.session_token import get_session_token
 from fief.dependencies.tenant import get_current_tenant
+from fief.dependencies.workspace_managers import (
+    get_client_manager,
+    get_grant_manager,
+    get_login_session_manager,
+)
 from fief.exceptions import (
     AuthorizeException,
     AuthorizeRedirectException,

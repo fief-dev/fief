@@ -13,7 +13,7 @@ from sqlalchemy.orm import sessionmaker
 from fief import __version__
 from fief.crypto.encryption import generate_key
 from fief.paths import ALEMBIC_CONFIG_FILE
-from fief.services.account_db import AccountDatabase
+from fief.services.workspace_db import WorkspaceDatabase
 
 app = typer.Typer()
 
@@ -92,42 +92,42 @@ def migrate_main():
         command.upgrade(alembic_config, "head")
 
 
-@app.command("migrate-accounts")
-def migrate_accounts():
-    """Apply database migrations to each account database."""
-    from fief.models import Account
+@app.command("migrate-workspaces")
+def migrate_workspaces():
+    """Apply database migrations to each workspace database."""
+    from fief.models import Workspace
 
     settings = get_settings()
 
     engine = create_engine(settings.get_database_url(False))
     Session = sessionmaker(engine)
     with Session() as session:
-        account_db = AccountDatabase()
-        accounts = select(Account)
-        for [account] in session.execute(accounts):
-            assert isinstance(account, Account)
-            typer.secho(f"Migrating {account.name}", bold=True)
-            account_db.migrate(
-                account.get_database_url(False), account.get_schema_name()
+        workspace_db = WorkspaceDatabase()
+        workspaces = select(Workspace)
+        for [workspace] in session.execute(workspaces):
+            assert isinstance(workspace, Workspace)
+            typer.secho(f"Migrating {workspace.name}", bold=True)
+            workspace_db.migrate(
+                workspace.get_database_url(False), workspace.get_schema_name()
             )
 
 
-@app.command("create-main-account")
-def create_main_account():
-    """Create a main Fief account following the environment settings."""
-    from fief.services.account_creation import (
-        MainAccountAlreadyExists,
-        create_main_fief_account,
+@app.command("create-main-workspace")
+def create_main_workspace():
+    """Create a main Fief workspace following the environment settings."""
+    from fief.services.workspace_creation import (
+        MainWorkspaceAlreadyExists,
+        create_main_fief_workspace,
     )
 
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
 
     try:
-        loop.run_until_complete(create_main_fief_account())
-        typer.echo("Main Fief account created")
-    except MainAccountAlreadyExists as e:
-        typer.echo("Main Fief account already exists")
+        loop.run_until_complete(create_main_fief_workspace())
+        typer.echo("Main Fief workspace created")
+    except MainWorkspaceAlreadyExists as e:
+        typer.echo("Main Fief workspace already exists")
         raise typer.Exit(code=1) from e
 
 
@@ -142,8 +142,8 @@ def create_main_user(
         help="The admin user password",
     ),
 ):
-    """Create a main Fief account user."""
-    from fief.services.account_creation import (
+    """Create a main Fief workspace user."""
+    from fief.services.workspace_creation import (
         CreateMainFiefUserError,
         create_main_fief_user,
     )
@@ -165,13 +165,13 @@ def run_server(
     port: int = 8000,
     migrate: bool = typer.Option(
         True,
-        help="Run the migrations on main and accounts databases before starting.",
+        help="Run the migrations on main and workspaces databases before starting.",
     ),
 ):
     """Run the Fief backend server."""
     if migrate:
         migrate_main()
-        migrate_accounts()
+        migrate_workspaces()
     uvicorn.run("fief.app:app", host=host, port=port)
 
 

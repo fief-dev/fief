@@ -10,8 +10,8 @@ from sqlalchemy import select
 
 from fief.db import AsyncSession
 from fief.locale import Translations
-from fief.managers import AccountManager, TenantManager
-from fief.models import Account, Tenant, User
+from fief.managers import TenantManager, WorkspaceManager
+from fief.models import Tenant, User, Workspace
 from fief.paths import EMAIL_TEMPLATES_DIRECTORY
 from fief.services.email import EmailProvider
 from fief.settings import settings
@@ -46,11 +46,11 @@ class TaskBase:
     def __init__(
         self,
         get_main_session: Callable[..., AsyncContextManager[AsyncSession]],
-        get_account_session: Callable[..., AsyncContextManager[AsyncSession]],
+        get_workspace_session: Callable[..., AsyncContextManager[AsyncSession]],
         email_provider: EmailProvider,
     ) -> None:
         self.get_main_session = get_main_session
-        self.get_account_session = get_account_session
+        self.get_workspace_session = get_workspace_session
         self.email_provider = email_provider
 
         self.jinja_env = jinja2.Environment(
@@ -68,16 +68,16 @@ class TaskBase:
             asyncio.set_event_loop(loop)
         return loop.run_until_complete(self.run(*args, **kwargs))
 
-    async def _get_account(self, account_id: UUID4) -> Account:
+    async def _get_workspace(self, workspace_id: UUID4) -> Workspace:
         async with self.get_main_session() as session:
-            manager = AccountManager(session)
-            account = await manager.get_by_id(account_id)
-            if account is None:
+            manager = WorkspaceManager(session)
+            workspace = await manager.get_by_id(workspace_id)
+            if workspace is None:
                 raise TaskError()
-            return account
+            return workspace
 
-    async def _get_user(self, user_id: UUID4, account: Account) -> User:
-        async with self.get_account_session(account) as session:
+    async def _get_user(self, user_id: UUID4, workspace: Workspace) -> User:
+        async with self.get_workspace_session(workspace) as session:
             statement = select(User).where(User.id == user_id)
             results = await session.execute(statement)
             row = results.first()
@@ -86,8 +86,8 @@ class TaskBase:
             user = row[0]
             return user
 
-    async def _get_tenant(self, tenant_id: UUID4, account: Account) -> Tenant:
-        async with self.get_account_session(account) as session:
+    async def _get_tenant(self, tenant_id: UUID4, workspace: Workspace) -> Tenant:
+        async with self.get_workspace_session(workspace) as session:
             manager = TenantManager(session)
             tenant = await manager.get_by_id(tenant_id)
             if tenant is None:
