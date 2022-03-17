@@ -10,9 +10,12 @@ RUN apk update \
     && pip install --upgrade pip \
     && python --version \
     && pip install fief-server==${FIEF_VERSION} \
-    && apk del build-deps
+    && apk del build-deps && \
+    mkdir /data/db
 
 COPY supervisord.conf /etc/supervisord.conf
+
+ENV DATABASE_LOCATION=/data/db
 
 ENV PORT=80
 EXPOSE ${PORT}
