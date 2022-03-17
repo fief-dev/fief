@@ -13,14 +13,14 @@ class TestTasksOnAfterForgotPassword:
     async def test_send_forgot_password_email(
         self,
         account: Account,
-        global_session_manager,
+        main_session_manager,
         account_session_manager,
         test_data: TestData,
     ):
         email_provider_mock = MagicMock(spec=EmailProvider)
 
         on_after_forgot_password = OnAfterForgotPasswordTask(
-            global_session_manager, account_session_manager, email_provider_mock
+            main_session_manager, account_session_manager, email_provider_mock
         )
 
         user = test_data["users"]["regular"]

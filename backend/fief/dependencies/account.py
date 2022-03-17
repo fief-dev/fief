@@ -2,7 +2,7 @@ from fastapi import Depends
 from sqlalchemy import select
 
 from fief.dependencies.admin_session import get_admin_session_token
-from fief.dependencies.global_managers import get_account_manager
+from fief.dependencies.main_managers import get_account_manager
 from fief.dependencies.pagination import (
     Ordering,
     PaginatedObjects,

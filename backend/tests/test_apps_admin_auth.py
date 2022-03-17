@@ -40,7 +40,7 @@ class TestAuthCallback:
         self,
         test_client_admin: httpx.AsyncClient,
         fief_client_mock: MagicMock,
-        global_session: AsyncSession,
+        main_session: AsyncSession,
     ):
         fief_client_mock.auth_callback.side_effect = AsyncMock(
             return_value=(
@@ -58,7 +58,7 @@ class TestAuthCallback:
         session_cookie = response.cookies.get(settings.fief_admin_session_cookie_name)
         assert session_cookie is not None
 
-        admin_session_token_manager = AdminSessionTokenManager(global_session)
+        admin_session_token_manager = AdminSessionTokenManager(main_session)
         session_token = await admin_session_token_manager.get_by_token(session_cookie)
         assert session_token is not None
         assert session_token.userinfo == {"email": "anne@bretagne.duchy"}

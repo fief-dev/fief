@@ -99,10 +99,10 @@ class TestDeleteAPIKey:
     async def test_valid(
         self,
         test_client_admin: httpx.AsyncClient,
-        global_session: AsyncSession,
+        main_session: AsyncSession,
         account: Account,
     ):
-        api_key_manager = AdminAPIKeyManager(global_session)
+        api_key_manager = AdminAPIKeyManager(main_session)
         api_key = AdminAPIKey(name="New API Key", account_id=account.id)
         api_key = await api_key_manager.create(api_key)
 

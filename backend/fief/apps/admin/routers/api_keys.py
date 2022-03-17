@@ -7,7 +7,7 @@ from fief.dependencies.admin_api_key import (
 )
 from fief.dependencies.admin_session import get_admin_session_token
 from fief.dependencies.current_account import get_current_account
-from fief.dependencies.global_managers import get_admin_api_key_manager
+from fief.dependencies.main_managers import get_admin_api_key_manager
 from fief.dependencies.pagination import PaginatedObjects
 from fief.managers import AdminAPIKeyManager
 from fief.models import Account, AdminAPIKey

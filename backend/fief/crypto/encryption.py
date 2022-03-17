@@ -3,6 +3,10 @@ import binascii
 from cryptography import fernet
 
 
+def generate_key() -> bytes:
+    return fernet.Fernet.generate_key()
+
+
 def is_valid_key(key: bytes) -> bool:
     try:
         fernet.Fernet(key)

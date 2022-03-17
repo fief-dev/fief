@@ -1,7 +1,7 @@
 from fastapi import Depends
 
 from fief.dependencies.account_db import get_account_db
-from fief.dependencies.global_managers import (
+from fief.dependencies.main_managers import (
     get_account_manager,
     get_account_user_manager,
 )

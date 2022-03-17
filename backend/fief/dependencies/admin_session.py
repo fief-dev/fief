@@ -3,7 +3,7 @@ from typing import Any, Dict, Optional
 from fastapi import Depends, HTTPException, status
 from fastapi.security import APIKeyCookie
 
-from fief.dependencies.global_managers import get_admin_session_token_manager
+from fief.dependencies.main_managers import get_admin_session_token_manager
 from fief.managers import AdminSessionTokenManager
 from fief.models import AdminSessionToken
 from fief.settings import settings

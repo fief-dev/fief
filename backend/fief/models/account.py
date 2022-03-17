@@ -5,7 +5,7 @@ from sqlalchemy.orm import relationship
 
 from fief.crypto.encryption import decrypt, encrypt
 from fief.db.types import DatabaseType, get_driver
-from fief.models.base import GlobalBase
+from fief.models.base import MainBase
 from fief.models.generics import CreatedUpdatedAt, UUIDModel
 from fief.settings import settings
 
@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from fief.models.account_user import AccountUser
 
 
-class Account(UUIDModel, CreatedUpdatedAt, GlobalBase):
+class Account(UUIDModel, CreatedUpdatedAt, MainBase):
     __tablename__ = "accounts"
 
     name: str = Column(String(length=255), nullable=False)

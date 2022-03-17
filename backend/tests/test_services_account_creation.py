@@ -4,7 +4,8 @@ from typing import AsyncGenerator, Tuple
 import pytest
 from sqlalchemy import engine, select
 
-from fief.db import AsyncSession, get_account_session
+from fief.db import AsyncSession
+from fief.db.account import get_account_session
 from fief.db.types import DatabaseType
 from fief.managers import (
     AccountManager,
@@ -46,9 +47,9 @@ def account_create(test_database_url: Tuple[engine.URL, DatabaseType]) -> Accoun
 
 
 @pytest.fixture
-def account_creation(global_session: AsyncSession) -> AccountCreation:
-    account_manager = AccountManager(global_session)
-    account_user_manager = AccountUserManager(global_session)
+def account_creation(main_session: AsyncSession) -> AccountCreation:
+    account_manager = AccountManager(main_session)
+    account_user_manager = AccountUserManager(main_session)
     account_db = AccountDatabase()
     return AccountCreation(account_manager, account_user_manager, account_db)
 
@@ -83,11 +84,11 @@ class TestAccountCreationCreate:
         account_create: AccountCreate,
         account_creation: AccountCreation,
         account_admin_user: UserDB,
-        global_session: AsyncSession,
+        main_session: AsyncSession,
     ):
         account = await account_creation.create(account_create, account_admin_user.id)
 
-        account_user_manager = AccountUserManager(global_session)
+        account_user_manager = AccountUserManager(main_session)
         account_user = await account_user_manager.get_by_account_and_user(
             account.id, account_admin_user.id
         )

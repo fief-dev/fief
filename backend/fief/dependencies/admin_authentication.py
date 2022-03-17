@@ -5,7 +5,7 @@ from fastapi import Depends, HTTPException, status
 from fief.dependencies.admin_api_key import get_optional_admin_api_key
 from fief.dependencies.admin_session import get_optional_admin_session_token
 from fief.dependencies.current_account import get_current_account
-from fief.dependencies.global_managers import get_account_user_manager
+from fief.dependencies.main_managers import get_account_user_manager
 from fief.managers.account_user import AccountUserManager
 from fief.models import Account, AdminAPIKey, AdminSessionToken
 

@@ -8,11 +8,11 @@ from fief_client import FiefTokenResponse
 from pydantic import UUID4
 from sqlalchemy import Column, String, Text
 
-from fief.models.base import GlobalBase
+from fief.models.base import MainBase
 from fief.models.generics import CreatedUpdatedAt, UUIDModel
 
 
-class AdminSessionToken(UUIDModel, CreatedUpdatedAt, GlobalBase):
+class AdminSessionToken(UUIDModel, CreatedUpdatedAt, MainBase):
     __tablename__ = "admin_session_tokens"
 
     token: str = Column(

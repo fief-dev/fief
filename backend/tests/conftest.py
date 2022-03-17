@@ -25,14 +25,10 @@ from sqlalchemy_utils import create_database, drop_database
 from fief.apps import admin_app, auth_app
 from fief.crypto.access_token import generate_access_token
 from fief.csrf import check_csrf
-from fief.db import (
-    AsyncConnection,
-    AsyncEngine,
-    AsyncSession,
-    create_engine,
-    get_connection,
-    get_global_async_session,
-)
+from fief.db import AsyncConnection, AsyncEngine, AsyncSession
+from fief.db.account import get_connection
+from fief.db.engine import create_engine
+from fief.db.main import get_main_async_session
 from fief.db.types import DatabaseType, get_driver
 from fief.dependencies.account_creation import get_account_creation
 from fief.dependencies.account_db import get_account_db
@@ -46,8 +42,8 @@ from fief.models import (
     AdminSessionToken,
     AuthorizationCode,
     Client,
-    GlobalBase,
     LoginSession,
+    MainBase,
     SessionToken,
     Tenant,
     User,
@@ -96,7 +92,7 @@ async def main_test_database(
 
 
 @pytest.fixture(scope="session")
-async def global_engine(
+async def main_engine(
     main_test_database: Tuple[engine.URL, DatabaseType],
 ) -> AsyncGenerator[AsyncEngine, None]:
     url, _ = main_test_database
@@ -106,43 +102,43 @@ async def global_engine(
 
 
 @pytest.fixture(scope="session")
-async def global_connection(
-    global_engine: AsyncEngine,
+async def main_connection(
+    main_engine: AsyncEngine,
 ) -> AsyncGenerator[AsyncConnection, None]:
-    async with global_engine.connect() as connection:
+    async with main_engine.connect() as connection:
         yield connection
 
 
 @pytest.fixture(scope="session")
-async def create_global_db(global_connection: AsyncConnection):
-    await global_connection.run_sync(GlobalBase.metadata.create_all)
+async def create_main_db(main_connection: AsyncConnection):
+    await main_connection.run_sync(MainBase.metadata.create_all)
 
 
 @pytest.fixture(scope="session")
-async def global_session(
-    global_connection: AsyncConnection, create_global_db
+async def main_session(
+    main_connection: AsyncConnection, create_main_db
 ) -> AsyncGenerator[AsyncSession, None]:
-    async with AsyncSession(bind=global_connection, expire_on_commit=False) as session:
+    async with AsyncSession(bind=main_connection, expire_on_commit=False) as session:
         await session.begin_nested()
         yield session
         await session.rollback()
 
 
 @pytest.fixture(scope="session")
-def global_session_manager(global_session: AsyncSession):
+def main_session_manager(main_session: AsyncSession):
     @contextlib.asynccontextmanager
-    async def _global_session_manager(*args, **kwargs):
-        yield global_session
+    async def _main_session_manager(*args, **kwargs):
+        yield main_session
 
-    return _global_session_manager
+    return _main_session_manager
 
 
 @pytest.fixture(scope="session", autouse=True)
 @pytest.mark.asyncio
 async def account(
     main_test_database: Tuple[engine.URL, DatabaseType],
-    global_session,
-    create_global_db,
+    main_session,
+    create_main_db,
 ) -> AsyncGenerator[Account, None]:
     url, database_type = main_test_database
     account = Account(
@@ -155,8 +151,8 @@ async def account(
         database_password=url.password,
         database_name=url.database,
     )
-    global_session.add(account)
-    await global_session.commit()
+    main_session.add(account)
+    await main_session.commit()
 
     account_db = AccountDatabase()
     account_db.migrate(account.get_database_url(False), account.get_schema_name())
@@ -254,38 +250,38 @@ def account_admin_user() -> UserDB:
 
 @pytest.fixture
 async def admin_session_token(
-    global_session: AsyncSession,
+    main_session: AsyncSession,
     account: Account,
     account_admin_user: UserDB,
 ) -> AsyncGenerator[AdminSessionToken, None]:
     account_user = AccountUser(account_id=account.id, user_id=account_admin_user.id)
-    global_session.add(account_user)
-    await global_session.commit()
+    main_session.add(account_user)
+    await main_session.commit()
 
     session_token = AdminSessionToken(
         raw_tokens="{}", raw_userinfo=json.dumps(account_admin_user.get_claims())
     )
-    global_session.add(session_token)
+    main_session.add(session_token)
 
-    await global_session.commit()
+    await main_session.commit()
 
     yield session_token
 
-    await global_session.delete(session_token)
-    await global_session.delete(account_user)
+    await main_session.delete(session_token)
+    await main_session.delete(account_user)
 
 
 @pytest.fixture
 async def admin_api_key(
-    global_session: AsyncSession, account: Account
+    main_session: AsyncSession, account: Account
 ) -> AsyncGenerator[AdminAPIKey, None]:
     admin_api_key = AdminAPIKey(name="API Key", account_id=account.id)
-    global_session.add(admin_api_key)
-    await global_session.commit()
+    main_session.add(admin_api_key)
+    await main_session.commit()
 
     yield admin_api_key
 
-    await global_session.delete(admin_api_key)
+    await main_session.delete(admin_api_key)
 
 
 @pytest.fixture
@@ -394,7 +390,7 @@ TestClientGeneratorType = Callable[[FastAPI], AsyncContextManager[httpx.AsyncCli
 
 @pytest.fixture
 async def test_client_admin_generator(
-    global_session: AsyncSession,
+    main_session: AsyncSession,
     account_session: AsyncSession,
     account_db_mock: MagicMock,
     account_creation_mock: MagicMock,
@@ -406,7 +402,7 @@ async def test_client_admin_generator(
     @contextlib.asynccontextmanager
     async def _test_client_generator(app: FastAPI):
         app.dependency_overrides = {}
-        app.dependency_overrides[get_global_async_session] = lambda: global_session
+        app.dependency_overrides[get_main_async_session] = lambda: main_session
         app.dependency_overrides[get_current_account_session] = lambda: account_session
         app.dependency_overrides[get_account_db] = lambda: account_db_mock
         app.dependency_overrides[get_account_creation] = lambda: account_creation_mock
@@ -439,7 +435,7 @@ async def test_client_admin(
 
 @pytest.fixture
 async def test_client_auth_generator(
-    global_session: AsyncSession,
+    main_session: AsyncSession,
     account_session: AsyncSession,
     account_db_mock: MagicMock,
     account_creation_mock: MagicMock,
@@ -450,7 +446,7 @@ async def test_client_auth_generator(
     @contextlib.asynccontextmanager
     async def _test_client_generator(app: FastAPI):
         app.dependency_overrides = {}
-        app.dependency_overrides[get_global_async_session] = lambda: global_session
+        app.dependency_overrides[get_main_async_session] = lambda: main_session
         app.dependency_overrides[get_current_account_session] = lambda: account_session
         app.dependency_overrides[get_account_db] = lambda: account_db_mock
         app.dependency_overrides[get_account_creation] = lambda: account_creation_mock

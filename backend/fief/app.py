@@ -6,7 +6,7 @@ from sentry_sdk.integrations.redis import RedisIntegration
 
 from fief import __version__
 from fief.apps import admin_app, admin_frontend_app, auth_app
-from fief.db import account_engine_manager
+from fief.db.account import account_engine_manager
 from fief.settings import settings
 
 sentry_sdk.init(

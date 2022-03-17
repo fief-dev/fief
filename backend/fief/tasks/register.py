@@ -2,7 +2,8 @@ import uuid
 
 import dramatiq
 
-from fief.db import get_account_session, global_async_session_maker
+from fief.db.account import get_account_session
+from fief.db.main import main_async_session_maker
 from fief.settings import settings
 from fief.tasks.base import TaskBase
 
@@ -29,6 +30,6 @@ class OnAfterRegisterTask(TaskBase):
 
 on_after_register = dramatiq.actor(
     OnAfterRegisterTask(
-        global_async_session_maker, get_account_session, settings.get_email_provider()
+        main_async_session_maker, get_account_session, settings.get_email_provider()
     )
 )

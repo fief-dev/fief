@@ -6,7 +6,7 @@ from pydantic import UUID4
 from sqlalchemy import select
 
 from fief.dependencies.current_account import get_current_account
-from fief.dependencies.global_managers import get_admin_api_key_manager
+from fief.dependencies.main_managers import get_admin_api_key_manager
 from fief.dependencies.pagination import (
     Ordering,
     PaginatedObjects,

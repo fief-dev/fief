@@ -2,7 +2,7 @@ from sqlalchemy.ext.declarative import DeclarativeMeta, declarative_base
 
 from fief.settings import settings
 
-GlobalBase = declarative_base()
+MainBase = declarative_base()
 
 
 class AccountMeta(DeclarativeMeta):

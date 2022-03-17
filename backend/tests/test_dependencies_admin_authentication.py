@@ -25,16 +25,16 @@ def app() -> FastAPI:
 
 @pytest.fixture
 async def another_account(
-    global_session: AsyncSession,
+    main_session: AsyncSession,
 ) -> AsyncGenerator[Account, None]:
     account = Account(name="Gascony", domain="gascony.localhost")
-    global_session.add(account)
-    await global_session.commit()
+    main_session.add(account)
+    await main_session.commit()
 
     yield account
 
-    await global_session.delete(account)
-    # await global_session.commit()
+    await main_session.delete(account)
+    # await main_session.commit()
 
 
 @pytest.mark.asyncio
@@ -51,19 +51,19 @@ async def test_no_authentication(
 @pytest.mark.asyncio
 @pytest.mark.account_host
 async def test_admin_session_for_another_account(
-    global_session: AsyncSession,
+    main_session: AsyncSession,
     not_existing_uuid: uuid.UUID,
     test_client_admin_generator: TestClientGeneratorType,
     another_account: Account,
     app: FastAPI,
 ):
     account_user = AccountUser(account_id=another_account.id, user_id=not_existing_uuid)
-    global_session.add(account_user)
+    main_session.add(account_user)
     session_token = AdminSessionToken(
         raw_tokens="{}", raw_userinfo=json.dumps({"sub": str(not_existing_uuid)})
     )
-    global_session.add(session_token)
-    await global_session.commit()
+    main_session.add(session_token)
+    await main_session.commit()
 
     async with test_client_admin_generator(app) as test_client:
         cookies = {}
@@ -88,14 +88,14 @@ async def test_valid_admin_session(
 @pytest.mark.asyncio
 @pytest.mark.account_host
 async def test_admin_api_key_for_another_account(
-    global_session: AsyncSession,
+    main_session: AsyncSession,
     test_client_admin_generator: TestClientGeneratorType,
     another_account: Account,
     app: FastAPI,
 ):
     api_key = AdminAPIKey(name="Default", account_id=another_account.id)
-    global_session.add(api_key)
-    await global_session.commit()
+    main_session.add(api_key)
+    await main_session.commit()
 
     async with test_client_admin_generator(app) as test_client:
         headers = {"Authorization": f"Bearer {api_key.token}"}

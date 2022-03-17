@@ -45,11 +45,11 @@ class TaskBase:
 
     def __init__(
         self,
-        get_global_session: Callable[..., AsyncContextManager[AsyncSession]],
+        get_main_session: Callable[..., AsyncContextManager[AsyncSession]],
         get_account_session: Callable[..., AsyncContextManager[AsyncSession]],
         email_provider: EmailProvider,
     ) -> None:
-        self.get_global_session = get_global_session
+        self.get_main_session = get_main_session
         self.get_account_session = get_account_session
         self.email_provider = email_provider
 
@@ -69,7 +69,7 @@ class TaskBase:
         return loop.run_until_complete(self.run(*args, **kwargs))
 
     async def _get_account(self, account_id: UUID4) -> Account:
-        async with self.get_global_session() as session:
+        async with self.get_main_session() as session:
             manager = AccountManager(session)
             account = await manager.get_by_id(account_id)
             if account is None:

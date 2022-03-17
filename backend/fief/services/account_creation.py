@@ -2,7 +2,8 @@ from typing import Optional
 
 from pydantic import UUID4
 
-from fief.db import get_account_session, global_async_session_maker
+from fief.db.account import get_account_session
+from fief.db.main import main_async_session_maker
 from fief.dependencies.users import get_user_db, get_user_manager
 from fief.locale import get_preferred_translations
 from fief.managers import AccountManager, AccountUserManager, TenantManager
@@ -81,18 +82,18 @@ class AccountCreation:
         return account
 
 
-class GlobalAccountAlreadyExists(Exception):
+class MainAccountAlreadyExists(Exception):
     pass
 
 
-async def create_global_fief_account() -> Account:
-    async with global_async_session_maker() as session:
+async def create_main_fief_account() -> Account:
+    async with main_async_session_maker() as session:
         account_manager = AccountManager(session)
         account_user_manager = AccountUserManager(session)
         account = await account_manager.get_by_domain(settings.fief_domain)
 
         if account is not None:
-            raise GlobalAccountAlreadyExists()
+            raise MainAccountAlreadyExists()
 
         account_create = AccountCreate(name="Fief")
         account_db = AccountDatabase()
@@ -111,33 +112,33 @@ async def create_global_fief_account() -> Account:
     return account
 
 
-class CreateGlobalFiefUserError(Exception):
+class CreateMainFiefUserError(Exception):
     pass
 
 
-class GlobalAccountDoesNotExist(Exception):
+class MainAccountDoesNotExist(Exception):
     pass
 
 
-class GlobalAccountDoesNotHaveDefaultTenant(Exception):
+class MainAccountDoesNotHaveDefaultTenant(Exception):
     pass
 
 
-async def create_global_fief_user(email: str, password: str) -> UserDB:
-    async with global_async_session_maker() as session:
+async def create_main_fief_user(email: str, password: str) -> UserDB:
+    async with main_async_session_maker() as session:
         account_manager = AccountManager(session)
         account_user_manager = AccountUserManager(session)
         account = await account_manager.get_by_domain(settings.fief_domain)
 
         if account is None:
-            raise GlobalAccountDoesNotExist()
+            raise MainAccountDoesNotExist()
 
         async with get_account_session(account) as session:
             tenant_manager = TenantManager(session)
             tenant = await tenant_manager.get_default()
 
             if tenant is None:
-                raise GlobalAccountDoesNotHaveDefaultTenant()
+                raise MainAccountDoesNotHaveDefaultTenant()
 
             user_db = await get_user_db(session, tenant)
             user_manager = await get_user_manager(
