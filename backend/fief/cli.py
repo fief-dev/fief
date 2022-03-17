@@ -1,43 +1,93 @@
 import asyncio
+import secrets
 
 import typer
 import uvicorn
 from alembic import command
 from alembic.config import Config
 from dramatiq import cli as dramatiq_cli
+from pydantic import ValidationError
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import sessionmaker
 
 from fief import __version__
-from fief.models import Account
+from fief.crypto.encryption import generate_key
 from fief.paths import ALEMBIC_CONFIG_FILE
-from fief.services.account_creation import (
-    CreateGlobalFiefUserError,
-    GlobalAccountAlreadyExists,
-    create_global_fief_account,
-    create_global_fief_user,
-)
 from fief.services.account_db import AccountDatabase
-from fief.settings import settings
 
 app = typer.Typer()
+
+
+def get_settings():
+    from fief.settings import settings
+
+    return settings
+
+
+@app.command()
+def quickstart(
+    docker: bool = typer.Option(
+        False,
+        help="Show the Docker command to run the Fief server with required environment variables.",
+    )
+):
+    """Generate secrets and keys to help users getting started quickly."""
+    typer.secho(
+        "⚠️  Be sure to save the generated secrets somewhere safe for subsequent runs. Otherwise, you may lose access to the data.",
+        bold=True,
+        fg="red",
+        err=True,
+    )
+    generated_secrets = {
+        "SECRET": secrets.token_urlsafe(64),
+        "FIEF_CLIENT_ID": secrets.token_urlsafe(),
+        "FIEF_CLIENT_SECRET": secrets.token_urlsafe(),
+        "ENCRYPTION_KEY": generate_key().decode("utf-8"),
+    }
+    if docker:
+        parts = [
+            "docker run",
+            "--name fief-server",
+            "-d",
+            *[f'-e "{name}={value}"' for (name, value) in generated_secrets.items()],
+            "ghcr.io/fief-dev/fief:latest",
+        ]
+        typer.echo(" \\\n  ".join(parts))
+    else:
+        for (name, value) in generated_secrets.items():
+            typer.echo(f"{typer.style(name, bold=True)}: {value}")
 
 
 @app.command()
 def info():
     """Show current Fief version and settings."""
-    typer.secho(f"Fief version: {__version__}", bold=True)
-    typer.secho(f"Settings", bold=True)
-    for key, value in settings.dict().items():
-        typer.echo(f"{key}: {value}")
+    try:
+        settings = get_settings()
+
+        typer.secho(f"Fief version: {__version__}", bold=True)
+        typer.secho(f"Settings", bold=True)
+        for key, value in settings.dict().items():
+            typer.echo(f"{key}: {value}")
+    except ValidationError as e:
+        typer.secho(
+            "❌ Some environment variables are missing or invalid.", bold=True, fg="red"
+        )
+        typer.secho(
+            "Run 'fief quickstart' to help you generate the secrets.", bold=True
+        )
+        for error in e.errors():
+            typer.secho(error)
+        raise typer.Exit(code=1) from e
 
 
-@app.command("migrate-global")
-def migrate_global():
-    """Apply database migrations to the global database."""
+@app.command("migrate-main")
+def migrate_main():
+    """Apply database migrations to the main database."""
+    settings = get_settings()
+
     engine = create_engine(settings.get_database_url(False))
     with engine.begin() as connection:
-        alembic_config = Config(ALEMBIC_CONFIG_FILE, ini_section="global")
+        alembic_config = Config(ALEMBIC_CONFIG_FILE, ini_section="main")
         alembic_config.attributes["connection"] = connection
         command.upgrade(alembic_config, "head")
 
@@ -45,6 +95,10 @@ def migrate_global():
 @app.command("migrate-accounts")
 def migrate_accounts():
     """Apply database migrations to each account database."""
+    from fief.models import Account
+
+    settings = get_settings()
+
     engine = create_engine(settings.get_database_url(False))
     Session = sessionmaker(engine)
     with Session() as session:
@@ -58,22 +112,27 @@ def migrate_accounts():
             )
 
 
-@app.command("create-global-account")
-def create_global_account():
-    """Create a global Fief account following the environment settings."""
+@app.command("create-main-account")
+def create_main_account():
+    """Create a main Fief account following the environment settings."""
+    from fief.services.account_creation import (
+        MainAccountAlreadyExists,
+        create_main_fief_account,
+    )
+
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
 
     try:
-        loop.run_until_complete(create_global_fief_account())
-        typer.echo("Global Fief account created")
-    except GlobalAccountAlreadyExists as e:
-        typer.echo("Global Fief account already exists")
+        loop.run_until_complete(create_main_fief_account())
+        typer.echo("Main Fief account created")
+    except MainAccountAlreadyExists as e:
+        typer.echo("Main Fief account already exists")
         raise typer.Exit(code=1) from e
 
 
-@app.command("create-global-user")
-def create_global_user(
+@app.command("create-main-user")
+def create_main_user(
     user_email: str = typer.Option(..., help="The admin user email"),
     user_password: str = typer.Option(
         ...,
@@ -83,14 +142,19 @@ def create_global_user(
         help="The admin user password",
     ),
 ):
-    """Create a global Fief account user."""
+    """Create a main Fief account user."""
+    from fief.services.account_creation import (
+        CreateMainFiefUserError,
+        create_main_fief_user,
+    )
+
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
 
     try:
-        loop.run_until_complete(create_global_fief_user(user_email, user_password))
-        typer.echo("Global Fief user created")
-    except CreateGlobalFiefUserError as e:
+        loop.run_until_complete(create_main_fief_user(user_email, user_password))
+        typer.echo("Main Fief user created")
+    except CreateMainFiefUserError as e:
         typer.echo("An error occured")
         raise typer.Exit(code=1) from e
 
@@ -101,12 +165,12 @@ def run_server(
     port: int = 8000,
     migrate: bool = typer.Option(
         True,
-        help="Run the migrations on global and accounts databases before starting.",
+        help="Run the migrations on main and accounts databases before starting.",
     ),
 ):
     """Run the Fief backend server."""
     if migrate:
-        migrate_global()
+        migrate_main()
         migrate_accounts()
     uvicorn.run("fief.app:app", host=host, port=port)
 

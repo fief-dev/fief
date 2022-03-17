@@ -21,12 +21,12 @@ class InvalidEncryptionKeyError(ValueError):
 
 
 class Settings(BaseSettings):
-    environment: Environment
+    environment: Environment = Environment.DEVELOPMENT
     log_level: str = "DEBUG"
     unit_tests: bool = False
     sentry_dsn: Optional[str] = None
-    root_domain: str
-    allow_origin_regex: str
+    root_domain: str = "localhost"
+    allow_origin_regex: str = "http://.*localhost:\d+"
 
     secret: SecretStr
     encryption_key: bytes
