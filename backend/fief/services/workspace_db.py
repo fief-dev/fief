@@ -35,10 +35,6 @@ class WorkspaceDatabase:
         dialect_name = database_url.get_dialect().name
         if dialect_name == "postgresql":
             connect_args["options"] = f"-csearch_path={schema_name}"
-        elif dialect_name == "mysql":
-            database_url = database_url.set(database=schema_name)
-        elif dialect_name == "sqlite":
-            database_url = database_url.set(database=f"{schema_name}.db")
 
         return create_engine(database_url, connect_args=connect_args)
 

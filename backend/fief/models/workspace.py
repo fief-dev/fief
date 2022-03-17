@@ -4,7 +4,7 @@ from sqlalchemy import Column, Enum, String, Text, engine, event
 from sqlalchemy.orm import relationship
 
 from fief.crypto.encryption import decrypt, encrypt
-from fief.db.types import DatabaseType, get_driver
+from fief.db.types import DatabaseType, create_database_url
 from fief.models.base import MainBase
 from fief.models.generics import CreatedUpdatedAt, UUIDModel
 from fief.settings import settings
@@ -40,20 +40,19 @@ class Workspace(UUIDModel, CreatedUpdatedAt, MainBase):
         If it's not specified on the model, the instance database URL is returned.
         """
         if self.database_type is None:
-            url = settings.get_database_url(asyncio)
+            url = settings.get_database_url(asyncio, schema=self.get_schema_name())
         else:
-            url = engine.URL.create(
-                drivername=get_driver(self.database_type, asyncio=asyncio),
+            url = create_database_url(
+                self.database_type,
+                asyncio=asyncio,
                 username=self._decrypt_database_setting("database_username"),
                 password=self._decrypt_database_setting("database_password"),
                 host=self._decrypt_database_setting("database_host"),
                 port=self._decrypt_database_port(),
                 database=self._decrypt_database_setting("database_name"),
+                path=settings.database_location,
+                schema=self.get_schema_name(),
             )
-
-        dialect_name = url.get_dialect().name
-        if dialect_name == "sqlite":
-            url = url.set(database=f"{self.get_schema_name()}.db")
 
         return url
 

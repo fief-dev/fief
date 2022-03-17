@@ -1,12 +1,20 @@
 from enum import Enum
+from pathlib import Path
 from typing import Any, Dict, Optional
 from urllib.parse import urlparse
 
-from pydantic import BaseSettings, Field, SecretStr, root_validator, validator
+from pydantic import (
+    BaseSettings,
+    DirectoryPath,
+    Field,
+    SecretStr,
+    root_validator,
+    validator,
+)
 from sqlalchemy import engine
 
 from fief.crypto.encryption import is_valid_key
-from fief.db.types import DatabaseType, get_driver
+from fief.db.types import DatabaseType, create_database_url
 from fief.services.email import EMAIL_PROVIDERS, AvailableEmailProvider, EmailProvider
 
 
@@ -38,6 +46,7 @@ class Settings(BaseSettings):
     database_username: Optional[str] = None
     database_password: Optional[str] = None
     database_name: Optional[str] = "fief.db"
+    database_location: DirectoryPath = Path.cwd()
 
     redis_url: str = "redis://localhost:6379"
 
@@ -99,19 +108,24 @@ class Settings(BaseSettings):
             return None
         return value
 
-    def get_database_url(self, asyncio=True) -> engine.URL:
+    def get_database_url(
+        self, asyncio: bool = True, schema: Optional[str] = None
+    ) -> engine.URL:
         """
         Returns a proper database URL for async or not-async context.
 
         Some tools like Alembic still require a sync connection.
         """
-        return engine.URL.create(
-            drivername=get_driver(self.database_type, asyncio=asyncio),
+        return create_database_url(
+            self.database_type,
+            asyncio=asyncio,
             username=self.database_username,
             password=self.database_password,
             host=self.database_host,
             port=self.database_port,
             database=self.database_name,
+            path=settings.database_location,
+            schema=schema,
         )
 
     def get_email_provider(self) -> EmailProvider:
