@@ -51,8 +51,6 @@ def create_database_url(
     )
 
     dialect_name = url.get_dialect().name
-    if dialect_name == "mysql" and schema is not None:
-        url = url.set(database=schema)
     if dialect_name == "sqlite":
         name = schema if schema is not None else database
         assert name is not None
