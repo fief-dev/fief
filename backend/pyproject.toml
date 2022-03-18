@@ -69,7 +69,7 @@ dependencies = [
     "dramatiq[redis] ==1.12.3",
     "fastapi ==0.75.0",
     "fastapi-users[sqlalchemy2] ==9.2.6",
-    "fief-client ==0.3.3",
+    "fief-client ==0.3.4",
     "furl ==2.1.3",
     "greenlet==1.1.2",
     "gunicorn ==20.1.0",
