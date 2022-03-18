@@ -40,7 +40,6 @@ class Settings(BaseSettings):
     encryption_key: bytes
 
     database_type: DatabaseType = DatabaseType.SQLITE
-    database_url: Optional[str] = None
     database_host: Optional[str] = None
     database_port: Optional[int] = None
     database_username: Optional[str] = None
