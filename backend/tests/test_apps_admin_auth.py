@@ -15,14 +15,16 @@ class TestAuthLogin:
     async def test_success(
         self, test_client_admin: httpx.AsyncClient, fief_client_mock: MagicMock
     ):
-        fief_client_mock.auth_url.side_effect = AsyncMock(return_value="AUTHORIZE_URL")
+        fief_client_mock.auth_url.side_effect = AsyncMock(
+            return_value="http://localhost/authorize"
+        )
 
         response = await test_client_admin.get("/auth/login")
 
         assert response.status_code == status.HTTP_302_FOUND
 
         location = response.headers["Location"]
-        assert location == "AUTHORIZE_URL"
+        assert location == "http://api.fief.dev/authorize"
 
         fief_client_mock.auth_url.assert_called_once_with(
             redirect_uri="http://api.fief.dev/auth/callback", scope=["openid"]

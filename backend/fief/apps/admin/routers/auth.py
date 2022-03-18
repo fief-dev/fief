@@ -3,6 +3,7 @@ import json
 from fastapi import APIRouter, Depends, Query, Request, status
 from fastapi.responses import RedirectResponse
 from fief_client import FiefAsync
+from furl import furl
 
 from fief.dependencies.admin_session import get_userinfo
 from fief.dependencies.fief import get_fief
@@ -19,7 +20,19 @@ async def login(request: Request, fief: FiefAsync = Depends(get_fief)):
     url = await fief.auth_url(
         redirect_uri=request.url_for("admin.auth:callback"), scope=["openid"]
     )
-    return RedirectResponse(url=url, status_code=status.HTTP_302_FOUND)
+
+    # Tweak the URL manually to avoid issues when running on different ports.
+    # Typically, the Fief client will be queried internally on http://localhost
+    # Thus, it'll return URL with this base.
+    # However, when running locally (e.g. Docker), it's common
+    # to expose the server on a different port, like http://localhost:8000.
+    # By replacing the host and port by the ones of the request, we make sure
+    # to have a working redirection.
+    parsed_url = furl(url)
+    parsed_url.host = request.base_url.hostname
+    parsed_url.port = request.base_url.port
+
+    return RedirectResponse(url=parsed_url.url, status_code=status.HTTP_302_FOUND)
 
 
 @router.get("/callback", name="admin.auth:callback")
