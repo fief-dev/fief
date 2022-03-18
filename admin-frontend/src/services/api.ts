@@ -3,7 +3,7 @@ import * as R from 'ramda';
 
 import * as schemas from '../schemas';
 
-const API_PORT =  process.env.REACT_APP_API_PORT;
+const API_PORT = process.env.REACT_APP_API_PORT || window.location.port;
 const BASE_URL = `${window.location.protocol}//${window.location.hostname}${API_PORT ? `:${API_PORT}` : ''}/api`;
 
 export class APIClient {
