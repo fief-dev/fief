@@ -34,7 +34,7 @@ class Settings(BaseSettings):
     unit_tests: bool = False
     sentry_dsn: Optional[str] = None
     root_domain: str = "localhost"
-    allow_origin_regex: str = "http://.*localhost:\d+"
+    allow_origin_regex: str = "http://.*localhost:[0-9]+"
 
     secret: SecretStr
     encryption_key: bytes
