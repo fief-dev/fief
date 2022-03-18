@@ -65,7 +65,7 @@ class Settings(BaseSettings):
     session_lifetime_seconds: int = 86400 * 30
 
     fief_domain: str = "localhost"
-    fief_base_url: str = "http://localhost:8000"
+    fief_base_url: str = "http://localhost"
     fief_client_id: str
     fief_client_secret: str
     fief_encryption_key: Optional[str] = None
