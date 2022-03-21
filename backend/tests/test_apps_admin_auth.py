@@ -24,7 +24,7 @@ class TestAuthLogin:
         assert response.status_code == status.HTTP_302_FOUND
 
         location = response.headers["Location"]
-        assert location == "http://api.fief.dev/authorize"
+        assert location == "http://localhost/authorize"
 
         fief_client_mock.auth_url.assert_called_once_with(
             redirect_uri="http://api.fief.dev/auth/callback", scope=["openid"]

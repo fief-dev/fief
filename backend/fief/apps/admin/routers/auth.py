@@ -26,10 +26,9 @@ async def login(request: Request, fief: FiefAsync = Depends(get_fief)):
     # Thus, it'll return URL with this base.
     # However, when running locally (e.g. Docker), it's common
     # to expose the server on a different port, like http://localhost:8000.
-    # By replacing the host and port by the ones of the request, we make sure
+    # By replacing the port by the one of the request, we make sure
     # to have a working redirection.
     parsed_url = furl(url)
-    parsed_url.host = request.base_url.hostname
     parsed_url.port = request.base_url.port
 
     return RedirectResponse(url=parsed_url.url, status_code=status.HTTP_302_FOUND)
