@@ -8,6 +8,7 @@ from starlette.datastructures import MutableHeaders
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 from fief.errors import APIErrorCode
+from fief.settings import settings
 
 CSRF_ATTRIBUTE_NAME = "csrftoken"
 SAFE_METHODS = {"GET", "HEAD", "OPTIONS", "TRACE"}
@@ -16,7 +17,7 @@ SAFE_METHODS = {"GET", "HEAD", "OPTIONS", "TRACE"}
 async def check_csrf(
     request: Request,
     challenge_csrf_token: Optional[str] = Cookie(
-        None, alias=CSRF_ATTRIBUTE_NAME, include_in_schema=False
+        None, alias=settings.csrf_cookie_name, include_in_schema=False
     ),
     submitted_csrf_token: Optional[str] = Form(
         None, alias=CSRF_ATTRIBUTE_NAME, include_in_schema=False
@@ -58,9 +59,10 @@ class CSRFCookieSetterMiddleware:
             headers = MutableHeaders(scope=message)
 
             cookie: http.cookies.BaseCookie = http.cookies.SimpleCookie()
-            cookie[CSRF_ATTRIBUTE_NAME] = csrftoken
-            cookie[CSRF_ATTRIBUTE_NAME]["secure"] = True
-            cookie[CSRF_ATTRIBUTE_NAME]["httponly"] = True
+            cookie_name = settings.csrf_cookie_name
+            cookie[cookie_name] = csrftoken
+            cookie[cookie_name]["secure"] = settings.csrf_cookie_secure
+            cookie[cookie_name]["httponly"] = True
             headers.append("set-cookie", cookie.output(header="").strip())
 
         await send(message)

@@ -55,6 +55,9 @@ class Settings(BaseSettings):
 
     workspace_table_prefix: str = "fief_"
 
+    csrf_cookie_name: str = "fief_csrftoken"
+    csrf_cookie_secure: bool = True
+
     login_session_cookie_name: str = "fief_login_session"
     login_session_cookie_domain: str = ""
     login_session_cookie_secure: bool = True
