@@ -109,7 +109,7 @@ class TestAuthTokenAuthorizationCode:
         error: str,
     ):
         response = await test_client_auth.post(
-            f"{tenant_params.path_prefix}/token", data=data
+            f"{tenant_params.path_prefix}/api/token", data=data
         )
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
@@ -126,7 +126,7 @@ class TestAuthTokenAuthorizationCode:
         authorization_code = test_data["authorization_codes"]["default_regular"]
         client = test_data["clients"]["secondary_tenant"]
         response = await test_client_auth.post(
-            f"{tenant_params.path_prefix}/token",
+            f"{tenant_params.path_prefix}/api/token",
             data={
                 "grant_type": "authorization_code",
                 "client_id": client.client_id,
@@ -150,7 +150,7 @@ class TestAuthTokenAuthorizationCode:
         authorization_code = test_data["authorization_codes"]["default_regular"]
         client = authorization_code.client
         response = await test_client_auth.post(
-            f"{tenant_params.path_prefix}/token",
+            f"{tenant_params.path_prefix}/api/token",
             data={
                 "grant_type": "authorization_code",
                 "client_id": client.client_id,
@@ -181,7 +181,7 @@ class TestAuthTokenAuthorizationCode:
         path_prefix = tenant.slug if not tenant.default else ""
 
         response = await test_client_auth.post(
-            f"{path_prefix}/token",
+            f"{path_prefix}/api/token",
             data={
                 "grant_type": "authorization_code",
                 "code": authorization_code.code,
@@ -293,7 +293,7 @@ class TestAuthTokenRefreshToken:
         error: str,
     ):
         response = await test_client_auth.post(
-            f"{tenant_params.path_prefix}/token", data=data
+            f"{tenant_params.path_prefix}/api/token", data=data
         )
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
@@ -310,7 +310,7 @@ class TestAuthTokenRefreshToken:
         refresh_token = test_data["refresh_tokens"]["default_regular"]
         client = test_data["clients"]["secondary_tenant"]
         response = await test_client_auth.post(
-            f"{tenant_params.path_prefix}/token",
+            f"{tenant_params.path_prefix}/api/token",
             data={
                 "grant_type": "refresh_token",
                 "client_id": client.client_id,
@@ -333,7 +333,7 @@ class TestAuthTokenRefreshToken:
         path_prefix = tenant.slug if not tenant.default else ""
 
         response = await test_client_auth.post(
-            f"{path_prefix}/token",
+            f"{path_prefix}/api/token",
             data={
                 "grant_type": "refresh_token",
                 "client_id": client.client_id,
@@ -360,7 +360,7 @@ class TestAuthTokenRefreshToken:
         path_prefix = tenant.slug if not tenant.default else ""
 
         response = await test_client_auth.post(
-            f"{path_prefix}/token",
+            f"{path_prefix}/api/token",
             data={
                 "grant_type": "refresh_token",
                 "client_id": client.client_id,

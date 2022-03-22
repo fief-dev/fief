@@ -202,7 +202,7 @@ class AuthorizationCodeBearerTransport(BearerTransport):
 authentication_backend = AuthenticationBackend[UserCreate, UserDB](
     "jwt_access_token",
     AuthorizationCodeBearerTransport(
-        "/authorize", "/token", "/token", {"openid": "openid"}
+        "/authorize", "/api/token", "/api/token", {"openid": "openid"}
     ),
     get_jwt_access_token_strategy,
 )

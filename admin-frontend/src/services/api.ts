@@ -4,7 +4,7 @@ import * as R from 'ramda';
 import * as schemas from '../schemas';
 
 const API_PORT = process.env.REACT_APP_API_PORT || window.location.port;
-const BASE_URL = `${window.location.protocol}//${window.location.hostname}${API_PORT ? `:${API_PORT}` : ''}/api`;
+const BASE_URL = `${window.location.protocol}//${window.location.hostname}${API_PORT ? `:${API_PORT}` : ''}/admin/api`;
 
 export class APIClient {
   client: AxiosInstance;

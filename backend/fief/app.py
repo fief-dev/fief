@@ -1,6 +1,5 @@
 import sentry_sdk
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
 from sentry_sdk.integrations.asgi import SentryAsgiMiddleware
 from sentry_sdk.integrations.redis import RedisIntegration
 
@@ -19,16 +18,9 @@ sentry_sdk.init(
 app = FastAPI(openapi_url=None)
 
 app.add_middleware(SentryAsgiMiddleware)
-app.add_middleware(
-    CORSMiddleware,
-    allow_origin_regex=settings.allow_origin_regex,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
+app.mount("/admin/api", admin_app)
 app.mount("/admin", admin_frontend_app)
-app.mount("/api", admin_app)
 app.mount("/", auth_app)
 
 

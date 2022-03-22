@@ -8,16 +8,17 @@ from fief.apps.auth.routers.reset import router as reset_router
 from fief.apps.auth.routers.token import router as token_router
 from fief.apps.auth.routers.user import router as user_router
 from fief.apps.auth.routers.well_known import router as well_known_router
+from fief.cors import CORSMiddlewarePath
 from fief.csrf import CSRFCookieSetterMiddleware
 from fief.paths import STATIC_DIRECTORY
 
 
 def include_routers(router: APIRouter) -> APIRouter:
-    router.include_router(auth_router)
-    router.include_router(register_router)
-    router.include_router(reset_router)
-    router.include_router(token_router)
-    router.include_router(user_router)
+    router.include_router(auth_router, include_in_schema=False)
+    router.include_router(register_router, include_in_schema=False)
+    router.include_router(reset_router, include_in_schema=False)
+    router.include_router(token_router, prefix="/api")
+    router.include_router(user_router, prefix="/api")
     router.include_router(well_known_router, prefix="/.well-known")
 
     return router
@@ -29,6 +30,14 @@ tenant_router = include_routers(APIRouter(prefix="/{tenant_slug}"))
 
 app = FastAPI()
 app.add_middleware(CSRFCookieSetterMiddleware)
+app.add_middleware(
+    CORSMiddlewarePath,
+    path_regex="^/api|^/\.well-known",
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["Authorization"],
+)
 app.include_router(default_tenant_router)
 app.include_router(tenant_router)
 app.mount("/static", StaticFiles(directory=STATIC_DIRECTORY), name="auth:static")

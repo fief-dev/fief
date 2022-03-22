@@ -3,7 +3,6 @@ import pytest
 from fastapi import status
 
 from tests.conftest import TenantParams
-from tests.data import TestData
 
 
 @pytest.mark.asyncio
@@ -12,7 +11,9 @@ class TestUserUserinfo:
     async def test_unauthorized(
         self, tenant_params: TenantParams, test_client_auth: httpx.AsyncClient
     ):
-        response = await test_client_auth.get(f"{tenant_params.path_prefix}/userinfo")
+        response = await test_client_auth.get(
+            f"{tenant_params.path_prefix}/api/userinfo"
+        )
 
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
@@ -20,7 +21,9 @@ class TestUserUserinfo:
     async def test_authorized(
         self, tenant_params: TenantParams, test_client_auth: httpx.AsyncClient
     ):
-        response = await test_client_auth.get(f"{tenant_params.path_prefix}/userinfo")
+        response = await test_client_auth.get(
+            f"{tenant_params.path_prefix}/api/userinfo"
+        )
 
         assert response.status_code == status.HTTP_200_OK
 
