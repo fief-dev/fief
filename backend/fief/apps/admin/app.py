@@ -9,7 +9,7 @@ from fief.apps.admin.routers.users import router as users_router
 from fief.apps.admin.routers.workspaces import router as workspaces_router
 from fief.settings import settings
 
-app = FastAPI()
+app = FastAPI(title="Fief Administration API")
 
 app.add_middleware(
     CORSMiddleware,

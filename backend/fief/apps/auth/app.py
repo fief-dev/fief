@@ -28,7 +28,7 @@ default_tenant_router = include_routers(APIRouter())
 tenant_router = include_routers(APIRouter(prefix="/{tenant_slug}"))
 
 
-app = FastAPI()
+app = FastAPI(title="Fief Authentication API")
 app.add_middleware(CSRFCookieSetterMiddleware)
 app.add_middleware(
     CORSMiddlewarePath,
