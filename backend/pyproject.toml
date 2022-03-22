@@ -29,6 +29,10 @@ ignore_missing_imports = true
 module = "dramatiq.*"
 ignore_missing_imports = true
 
+[[tool.mypy.overrides]]
+module = "passlib.*"
+ignore_missing_imports = true
+
 [tool.isort]
 profile = "black"
 
