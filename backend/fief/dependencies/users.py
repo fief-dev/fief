@@ -9,6 +9,7 @@ from fastapi_users.authentication import (
     Strategy,
 )
 from fastapi_users.manager import UserNotExists
+from fastapi_users.password import PasswordHelperProtocol
 from fastapi_users_db_sqlalchemy import (
     SQLAlchemyBaseOAuthAccountTable,
     SQLAlchemyBaseUserTable,
@@ -21,6 +22,7 @@ from sqlalchemy.orm import joinedload
 from sqlalchemy.sql import Select
 
 from fief.crypto.access_token import InvalidAccessToken, read_access_token
+from fief.crypto.password import password_helper
 from fief.db import AsyncSession
 from fief.dependencies.current_workspace import (
     get_current_workspace,
@@ -57,12 +59,13 @@ class UserManager(BaseUserManager[UserCreate, UserDB]):
     def __init__(
         self,
         user_db: SQLAlchemyUserDatabase[UserDB],
+        password_helper: PasswordHelperProtocol,
         workspace: Workspace,
         tenant: Tenant,
         translations: Translations,
         send_task: SendTask,
     ):
-        super().__init__(user_db)
+        super().__init__(user_db, password_helper)
         self.workspace = workspace
         self.tenant = tenant
         self.translations = translations
@@ -162,7 +165,9 @@ async def get_user_manager(
     translations: Translations = Depends(get_translations),
     send_task: SendTask = Depends(get_send_task),
 ):
-    return UserManager(user_db, workspace, tenant, translations, send_task)
+    return UserManager(
+        user_db, password_helper, workspace, tenant, translations, send_task
+    )
 
 
 async def get_user_db_from_create_user_internal(
@@ -181,7 +186,9 @@ async def get_user_manager_from_create_user_internal(
     translations: Translations = Depends(get_translations),
     send_task: SendTask = Depends(get_send_task),
 ):
-    return UserManager(user_db, workspace, tenant, translations, send_task)
+    return UserManager(
+        user_db, password_helper, workspace, tenant, translations, send_task
+    )
 
 
 class AuthorizationCodeBearerTransport(BearerTransport):

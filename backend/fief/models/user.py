@@ -14,7 +14,7 @@ class User(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
     __table_args__ = (UniqueConstraint("email", "tenant_id"),)
 
     email: str = Column(String(length=320), index=True, nullable=False)
-    hashed_password = Column(String(length=72), nullable=False)
+    hashed_password = Column(String(length=255), nullable=False)
     is_active = Column(Boolean, default=True, nullable=False)
     is_superuser = Column(Boolean, default=False, nullable=False)
     is_verified = Column(Boolean, default=False, nullable=False)

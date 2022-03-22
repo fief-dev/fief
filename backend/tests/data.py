@@ -3,9 +3,8 @@ import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Mapping, TypedDict
 
-from fastapi_users.password import get_password_hash
-
 from fief.crypto.jwk import generate_jwk
+from fief.crypto.password import password_helper
 from fief.models import (
     AuthorizationCode,
     Client,
@@ -73,13 +72,13 @@ users: ModelMapping[User] = {
     "regular": User(
         id=uuid.uuid4(),
         email="anne@bretagne.duchy",
-        hashed_password=get_password_hash("hermine"),
+        hashed_password=password_helper.hash("hermine"),
         tenant=tenants["default"],
     ),
     "regular_secondary": User(
         id=uuid.uuid4(),
         email="anne@nantes.city",
-        hashed_password=get_password_hash("hermine"),
+        hashed_password=password_helper.hash("hermine"),
         tenant=tenants["secondary"],
     ),
 }
