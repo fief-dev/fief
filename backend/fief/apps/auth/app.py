@@ -36,7 +36,7 @@ app.add_middleware(
     allow_origins=["*"],
     allow_credentials=False,
     allow_methods=["*"],
-    allow_headers=["Authorization"],
+    allow_headers=["Authorization", "X-Requested-With"],
 )
 app.include_router(default_tenant_router)
 app.include_router(tenant_router)
