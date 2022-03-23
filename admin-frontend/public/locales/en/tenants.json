@@ -2,7 +2,7 @@
   "list": {
     "title": "Tenants",
     "name": "Name",
-    "path": "Path prefix",
+    "base_url": "Base URL",
     "default": "Default"
   }
 }

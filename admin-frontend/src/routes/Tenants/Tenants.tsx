@@ -1,11 +1,13 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Column } from 'react-table';
+import ClipboardButton from '../../components/ClipboardButton/ClipboardButton';
 
 import DataTable from '../../components/DataTable/DataTable';
 import Layout from '../../components/Layout/Layout';
 import { usePaginationAPI } from '../../hooks/api';
 import * as schemas from '../../schemas';
+import { FIEF_INSTANCE } from '../../services/api';
 
 const Tenants: React.FunctionComponent = () => {
   const { t } = useTranslation(['tenants']);
@@ -36,13 +38,18 @@ const Tenants: React.FunctionComponent = () => {
         )
       },
       {
-        Header: t('tenants:list.path') as string,
+        Header: t('tenants:list.base_url') as string,
         accessor: 'slug',
-        Cell: ({ cell: { value }, row: { original } }) => (
-          <>
-            {original.default ? '/' : `/${value}`}
-          </>
-        )
+        Cell: ({ cell: { value }, row: { original } }) => {
+          const baseURL = original.default ? FIEF_INSTANCE : `${FIEF_INSTANCE}/${value}`;
+
+          return (
+          <span className="flex">
+            <span>{baseURL}</span>
+            <ClipboardButton text={baseURL} />
+          </span>
+          );
+      }
       },
     ];
   }, [t]);
