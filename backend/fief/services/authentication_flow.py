@@ -39,6 +39,7 @@ class AuthenticationFlow:
         redirect_uri: str,
         scope: List[str],
         state: Optional[str],
+        nonce: Optional[str],
         client: Client,
     ) -> ResponseType:
         login_session = LoginSession(
@@ -46,6 +47,7 @@ class AuthenticationFlow:
             redirect_uri=redirect_uri,
             scope=scope,
             state=state,
+            nonce=nonce,
             client_id=client.id,
         )
         login_session = await self.login_session_manager.create(login_session)
@@ -108,6 +110,7 @@ class AuthenticationFlow:
         redirect_uri: str,
         scope: List[str],
         state: Optional[str],
+        nonce: Optional[str],
         client: Client,
         user_id: UUID4,
     ) -> RedirectResponse:
@@ -115,6 +118,7 @@ class AuthenticationFlow:
             AuthorizationCode(
                 redirect_uri=redirect_uri,
                 scope=scope,
+                nonce=nonce,
                 user_id=user_id,
                 client_id=client.id,
             )

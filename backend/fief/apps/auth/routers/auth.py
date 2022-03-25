@@ -44,6 +44,7 @@ async def authorize(
     prompt: Optional[str] = Depends(get_authorize_prompt),
     screen: str = Depends(get_authorize_screen),
     state: Optional[str] = Query(None),
+    nonce: Optional[str] = Query(None),
     authentication_flow: AuthenticationFlow = Depends(get_authentication_flow),
     session_token: Optional[SessionToken] = Depends(get_session_token),
 ):
@@ -62,6 +63,7 @@ async def authorize(
         redirect_uri=redirect_uri,
         scope=scope,
         state=state,
+        nonce=nonce,
         client=client,
     )
 
@@ -137,6 +139,7 @@ async def get_consent(
             login_session.redirect_uri,
             login_session.scope,
             login_session.state,
+            login_session.nonce,
             login_session.client,
             user_id,
         )
@@ -181,6 +184,7 @@ async def post_consent(
             login_session.redirect_uri,
             login_session.scope,
             login_session.state,
+            login_session.nonce,
             login_session.client,
             user_id,
         )

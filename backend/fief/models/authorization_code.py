@@ -1,5 +1,5 @@
 import secrets
-from typing import List
+from typing import List, Optional
 
 from pydantic import UUID4
 from sqlalchemy import Column, ForeignKey
@@ -24,6 +24,7 @@ class AuthorizationCode(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
     )
     redirect_uri: str = Column(String(length=2048), nullable=False)
     scope: List[str] = Column(JSON, nullable=False, default=list)
+    nonce: Optional[str] = Column(String(length=255), nullable=True)
 
     user_id: UUID4 = Column(GUID, ForeignKey(User.id, ondelete="CASCADE"), nullable=False)  # type: ignore
     user: User = relationship("User")

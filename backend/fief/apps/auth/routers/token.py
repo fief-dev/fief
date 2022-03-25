@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta, timezone
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 from fastapi import APIRouter, Depends
 from pydantic import UUID4
@@ -23,13 +23,15 @@ router = APIRouter()
 
 @router.post("/token", name="auth:token")
 async def token(
-    grant_request: Tuple[UUID4, List[str], Client] = Depends(validate_grant_request),
+    grant_request: Tuple[UUID4, List[str], Optional[str], Client] = Depends(
+        validate_grant_request
+    ),
     user: UserDB = Depends(get_user_from_grant_request),
     refresh_token_manager: RefreshTokenManager = Depends(get_refresh_token_manager),
     workspace: Workspace = Depends(get_current_workspace),
     tenant: Tenant = Depends(get_current_tenant),
 ):
-    _, scope, client = grant_request
+    _, scope, nonce, client = grant_request
 
     tenant_host = tenant.get_host(workspace.domain)
     access_token = generate_access_token(
@@ -41,6 +43,7 @@ async def token(
         client,
         user,
         TOKEN_LIFETIME,
+        nonce=nonce,
         encryption_key=client.get_encrypt_jwk(),
     )
     token_response = TokenResponse(

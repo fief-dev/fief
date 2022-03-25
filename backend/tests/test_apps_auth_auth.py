@@ -6,7 +6,12 @@ from fastapi import status
 from furl import furl
 
 from fief.db import AsyncSession
-from fief.managers import GrantManager, LoginSessionManager, SessionTokenManager
+from fief.managers import (
+    AuthorizationCodeManager,
+    GrantManager,
+    LoginSessionManager,
+    SessionTokenManager,
+)
 from fief.settings import settings
 from tests.conftest import TenantParams
 from tests.data import TestData
@@ -171,23 +176,40 @@ class TestAuthAuthorize:
         assert parsed_location.query.params["error"] == error
 
     @pytest.mark.parametrize(
-        "screen,prompt,session,redirection",
+        "screen,prompt,nonce,session,redirection",
         [
-            pytest.param(None, None, False, "/login", id="Default login screen"),
-            pytest.param("login", None, False, "/login", id="Login screen"),
-            pytest.param("register", None, False, "/register", id="Register screen"),
-            pytest.param(None, None, True, "/consent", id="No prompt with session"),
-            pytest.param(None, "none", True, "/consent", id="None prompt with session"),
+            pytest.param(None, None, None, False, "/login", id="Default login screen"),
+            pytest.param("login", None, None, False, "/login", id="Login screen"),
             pytest.param(
-                None, "consent", True, "/consent", id="Consent prompt with session"
+                "register", None, None, False, "/register", id="Register screen"
             ),
-            pytest.param(None, "login", True, "/login", id="Login prompt with session"),
+            pytest.param(
+                None, None, None, True, "/consent", id="No prompt with session"
+            ),
+            pytest.param(
+                None, "none", None, True, "/consent", id="None prompt with session"
+            ),
+            pytest.param(
+                None,
+                "consent",
+                None,
+                True,
+                "/consent",
+                id="Consent prompt with session",
+            ),
+            pytest.param(
+                None, "login", None, True, "/login", id="Login prompt with session"
+            ),
+            pytest.param(
+                None, None, "NONCE", False, "/login", id="Provided nonce value"
+            ),
         ],
     )
     async def test_valid(
         self,
         screen: Optional[str],
         prompt: Optional[str],
+        nonce: Optional[str],
         session: bool,
         redirection: str,
         tenant_params: TenantParams,
@@ -204,6 +226,8 @@ class TestAuthAuthorize:
             params["screen"] = screen
         if prompt is not None:
             params["prompt"] = prompt
+        if nonce is not None:
+            params["nonce"] = nonce
 
         cookies = {}
         if session:
@@ -222,6 +246,7 @@ class TestAuthAuthorize:
         login_session_manager = LoginSessionManager(workspace_session)
         login_session = await login_session_manager.get_by_token(login_session_cookie)
         assert login_session is not None
+        assert login_session.nonce == nonce
 
 
 @pytest.mark.asyncio
@@ -496,6 +521,13 @@ class TestAuthGetConsent:
         assert "code" in parsed_location.query.params
         assert parsed_location.query.params["state"] == login_session.state
 
+        authorization_code_manager = AuthorizationCodeManager(workspace_session)
+        authorization_code = await authorization_code_manager.get_by_code(
+            parsed_location.query.params["code"]
+        )
+        assert authorization_code is not None
+        assert authorization_code.nonce == login_session.nonce
+
         set_cookie_header = response.headers["Set-Cookie"]
         assert set_cookie_header.startswith(f'{settings.login_session_cookie_name}=""')
         assert "Max-Age=0" in set_cookie_header
@@ -548,6 +580,13 @@ class TestAuthGetConsent:
         parsed_location = furl(redirect_uri)
         assert "code" in parsed_location.query.params
         assert parsed_location.query.params["state"] == login_session.state
+
+        authorization_code_manager = AuthorizationCodeManager(workspace_session)
+        authorization_code = await authorization_code_manager.get_by_code(
+            parsed_location.query.params["code"]
+        )
+        assert authorization_code is not None
+        assert authorization_code.nonce == login_session.nonce
 
         set_cookie_header = response.headers["Set-Cookie"]
         assert set_cookie_header.startswith(f'{settings.login_session_cookie_name}=""')
@@ -664,6 +703,13 @@ class TestAuthPostConsent:
         parsed_location = furl(redirect_uri)
         assert "code" in parsed_location.query.params
         assert parsed_location.query.params["state"] == login_session.state
+
+        authorization_code_manager = AuthorizationCodeManager(workspace_session)
+        authorization_code = await authorization_code_manager.get_by_code(
+            parsed_location.query.params["code"]
+        )
+        assert authorization_code is not None
+        assert authorization_code.nonce == login_session.nonce
 
         set_cookie_header = response.headers["Set-Cookie"]
         assert set_cookie_header.startswith(f'{settings.login_session_cookie_name}=""')

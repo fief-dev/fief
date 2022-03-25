@@ -1,4 +1,5 @@
 import secrets
+from re import L
 from typing import List, Optional
 
 from pydantic import UUID4
@@ -26,6 +27,7 @@ class LoginSession(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
     scope: List[str] = Column(JSON, nullable=False, default=list)
     prompt: Optional[str] = Column(String(length=255), nullable=True)
     state: Optional[str] = Column(String(length=2048), nullable=True)
+    nonce: Optional[str] = Column(String(length=255), nullable=True)
 
     client_id: UUID4 = Column(GUID, ForeignKey(Client.id, ondelete="CASCADE"), nullable=False)  # type: ignore
     client: Client = relationship("Client", lazy="joined")

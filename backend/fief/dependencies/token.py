@@ -74,7 +74,7 @@ async def validate_grant_request(
         get_authorization_code_manager
     ),
     refresh_token_manager: RefreshTokenManager = Depends(get_refresh_token_manager),
-) -> AsyncGenerator[Tuple[UUID4, List[str], Client], None]:
+) -> AsyncGenerator[Tuple[UUID4, List[str], Optional[str], Client], None]:
     if grant_type == "authorization_code":
         if code is None:
             raise TokenRequestException(TokenError.get_invalid_request())
@@ -95,6 +95,7 @@ async def validate_grant_request(
         yield (
             authorization_code.user_id,
             authorization_code.scope,
+            authorization_code.nonce,
             client,
         )
 
@@ -116,7 +117,7 @@ async def validate_grant_request(
         if not set(new_scope).issubset(set(refresh_token.scope)):
             raise TokenRequestException(TokenError.get_invalid_scope())
 
-        yield (refresh_token.user_id, new_scope, client)
+        yield (refresh_token.user_id, new_scope, None, client)
 
         await refresh_token_manager.delete(refresh_token)
         return
@@ -125,10 +126,12 @@ async def validate_grant_request(
 
 
 async def get_user_from_grant_request(
-    grant_request: Tuple[UUID4, List[str], Client] = Depends(validate_grant_request),
+    grant_request: Tuple[UUID4, List[str], Optional[str], Client] = Depends(
+        validate_grant_request
+    ),
     user_manager: UserManager = Depends(get_user_manager),
 ) -> UserDB:
-    user_id, _, _ = grant_request
+    user_id, _, _, _ = grant_request
     try:
         return await user_manager.get(user_id)
     except UserNotExists as e:

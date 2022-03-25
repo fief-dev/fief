@@ -89,6 +89,7 @@ login_sessions: ModelMapping[LoginSession] = {
         redirect_uri="https://nantes.city/callback",
         scope=["openid", "offline_access"],
         state="STATE",
+        nonce="NONCE",
         client=clients["default_tenant"],
     ),
     "default_none_prompt": LoginSession(
@@ -96,6 +97,7 @@ login_sessions: ModelMapping[LoginSession] = {
         redirect_uri="https://nantes.city/callback",
         scope=["openid", "offline_access"],
         state="STATE",
+        nonce="NONCE",
         client=clients["default_tenant"],
         prompt="none",
     ),
@@ -104,6 +106,7 @@ login_sessions: ModelMapping[LoginSession] = {
         redirect_uri="https://nantes.city/callback",
         scope=["openid", "offline_access"],
         state="STATE",
+        nonce="NONCE",
         client=clients["granted_default_tenant"],
     ),
     "granted_default_larger_scope": LoginSession(
@@ -111,6 +114,7 @@ login_sessions: ModelMapping[LoginSession] = {
         redirect_uri="https://nantes.city/callback",
         scope=["openid", "offline_access", "other"],
         state="STATE",
+        nonce="NONCE",
         client=clients["granted_default_tenant"],
     ),
     "first_party_default": LoginSession(
@@ -118,6 +122,7 @@ login_sessions: ModelMapping[LoginSession] = {
         redirect_uri="https://nantes.city/callback",
         scope=["openid", "offline_access", "other"],
         state="STATE",
+        nonce="NONCE",
         client=clients["first_party_default_tenant"],
     ),
     "secondary": LoginSession(
@@ -125,6 +130,7 @@ login_sessions: ModelMapping[LoginSession] = {
         redirect_uri="https://nantes.city/callback",
         scope=["openid", "offline_access"],
         state="STATE",
+        nonce="NONCE",
         client=clients["secondary_tenant"],
     ),
 }
@@ -135,6 +141,13 @@ authorization_codes: ModelMapping[AuthorizationCode] = {
         user=users["regular"],
         client=clients["default_tenant"],
         scope=["openid", "offline_access"],
+    ),
+    "default_regular_nonce": AuthorizationCode(
+        redirect_uri="https://bretagne.duchy/callback",
+        user=users["regular"],
+        client=clients["default_tenant"],
+        scope=["openid", "offline_access"],
+        nonce="NONCE",
     ),
     "secondary_regular": AuthorizationCode(
         redirect_uri="https://nantes.city/callback",

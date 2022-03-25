@@ -1,9 +1,11 @@
 import base64
+import json as _json
 from typing import Dict, Tuple
 
 import httpx
 import pytest
 from fastapi import status
+from jwcrypto import jwt
 
 from fief.db import AsyncSession
 from fief.managers import AuthorizationCodeManager, RefreshTokenManager
@@ -219,7 +221,8 @@ class TestAuthTokenAuthorizationCode:
         assert json["error"] == "invalid_grant"
 
     @pytest.mark.parametrize(
-        "authorization_code_alias", ["default_regular", "secondary_regular"]
+        "authorization_code_alias",
+        ["default_regular", "default_regular_nonce", "secondary_regular"],
     )
     @pytest.mark.parametrize("auth_method", AUTH_METHODS)
     async def test_valid(
@@ -265,6 +268,14 @@ class TestAuthTokenAuthorizationCode:
             assert json["refresh_token"] is not None
         else:
             assert "refresh_token" not in json
+
+        id_token = json["id_token"]
+        id_token_jwt = jwt.JWT(jwt=id_token, algs=["RS256"], key=tenant.get_sign_jwk())
+        id_token_claims = _json.loads(id_token_jwt.claims)
+        if authorization_code.nonce is not None:
+            assert id_token_claims["nonce"] == authorization_code.nonce
+        else:
+            assert "nonce" not in id_token_claims
 
 
 @pytest.mark.asyncio
