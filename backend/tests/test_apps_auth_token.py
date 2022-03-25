@@ -167,6 +167,34 @@ class TestAuthTokenAuthorizationCode:
         assert json["error"] == error
 
     @pytest.mark.parametrize("auth_method", AUTH_METHODS)
+    async def test_expired_authorization_code(
+        self,
+        auth_method: str,
+        tenant_params: TenantParams,
+        test_client_auth: httpx.AsyncClient,
+        test_data: TestData,
+    ):
+        authorization_code = test_data["authorization_codes"]["expired"]
+        client = authorization_code.client
+
+        headers, data = get_authenticated_request_headers_data(auth_method, client)
+        response = await test_client_auth.post(
+            f"{tenant_params.path_prefix}/api/token",
+            headers=headers,
+            data={
+                **data,
+                "grant_type": "authorization_code",
+                "code": authorization_code.code,
+                "redirect_uri": authorization_code.redirect_uri,
+            },
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+        json = response.json()
+        assert json["error"] == "invalid_grant"
+
+    @pytest.mark.parametrize("auth_method", AUTH_METHODS)
     async def test_client_not_matching_authorization_code(
         self,
         auth_method: str,

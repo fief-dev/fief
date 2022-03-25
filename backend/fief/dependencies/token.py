@@ -82,7 +82,7 @@ async def validate_grant_request(
         if redirect_uri is None:
             raise TokenRequestException(TokenError.get_invalid_request())
 
-        authorization_code = await authorization_code_manager.get_by_code(code)
+        authorization_code = await authorization_code_manager.get_valid_by_code(code)
         if authorization_code is None:
             raise TokenRequestException(TokenError.get_invalid_grant())
 

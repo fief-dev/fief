@@ -67,6 +67,8 @@ class Settings(BaseSettings):
     session_cookie_secure: bool = True
     session_lifetime_seconds: int = 86400 * 30
 
+    authorization_code_lifetime_seconds: int = 60 * 10
+
     fief_domain: str = "localhost"
     fief_base_url: str = "http://localhost"
     fief_client_id: str

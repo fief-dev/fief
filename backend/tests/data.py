@@ -1,6 +1,6 @@
 import secrets
 import uuid
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone, tzinfo
 from typing import Mapping, TypedDict
 
 from fief.crypto.jwk import generate_jwk
@@ -16,6 +16,7 @@ from fief.models import (
     Tenant,
     User,
 )
+from fief.settings import settings
 
 ModelMapping = Mapping[str, M]
 
@@ -154,6 +155,14 @@ authorization_codes: ModelMapping[AuthorizationCode] = {
         user=users["regular_secondary"],
         client=clients["secondary_tenant"],
         scope=["openid"],
+    ),
+    "expired": AuthorizationCode(
+        created_at=datetime.now(timezone.utc)
+        - timedelta(seconds=settings.authorization_code_lifetime_seconds),
+        redirect_uri="https://bretagne.duchy/callback",
+        user=users["regular"],
+        client=clients["default_tenant"],
+        scope=["openid", "offline_access"],
     ),
 }
 
