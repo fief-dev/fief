@@ -30,6 +30,11 @@ class TestWellKnownOpenIDConfiguration:
         for key in json:
             assert json[key] is not None
 
+        assert json["token_endpoint_auth_methods_supported"] == [
+            "client_secret_basic",
+            "client_secret_post",
+        ]
+
 
 @pytest.mark.asyncio
 @pytest.mark.workspace_host

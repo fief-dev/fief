@@ -39,7 +39,10 @@ async def get_openid_configuration(
         id_token_encryption_alg_values_supported=["RSA-OAEP-256"],
         id_token_encryption_enc_values_supported=["A256CBC-HS512"],
         userinfo_signing_alg_values_supported=["none"],
-        token_endpoint_auth_methods_supported=["client_secret_post"],
+        token_endpoint_auth_methods_supported=[
+            "client_secret_basic",
+            "client_secret_post",
+        ],
         claims_supported=["email", "tenant_id"],
         service_documentation=settings.fief_documentation_url,
     )

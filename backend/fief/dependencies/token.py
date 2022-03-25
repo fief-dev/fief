@@ -1,6 +1,7 @@
 from typing import AsyncGenerator, List, Optional, Tuple
 
 from fastapi import Depends, Form
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi_users.manager import UserNotExists
 from pydantic import UUID4
 
@@ -16,21 +17,43 @@ from fief.models import Client
 from fief.schemas.auth import TokenError
 from fief.schemas.user import UserDB
 
+ClientSecretBasicScheme = HTTPBasic(scheme_name="client_secret_basic", auto_error=False)
+
+
+async def authenticate_client_secret_basic(
+    credentials: Optional[HTTPBasicCredentials] = Depends(ClientSecretBasicScheme),
+    client_manager: ClientManager = Depends(get_client_manager),
+) -> Optional[Client]:
+    if credentials is None:
+        return None
+
+    return await client_manager.get_by_client_id_and_secret(
+        credentials.username, credentials.password
+    )
+
 
 async def authenticate_client_secret_post(
     client_id: Optional[str] = Form(None),
     client_secret: Optional[str] = Form(None),
     client_manager: ClientManager = Depends(get_client_manager),
-) -> Client:
+) -> Optional[Client]:
     if client_id is None or client_secret is None:
-        raise TokenRequestException(TokenError.get_invalid_client())
+        return None
 
-    client = await client_manager.get_by_client_id_and_secret(client_id, client_secret)
+    return await client_manager.get_by_client_id_and_secret(client_id, client_secret)
 
-    if client is None:
-        raise TokenRequestException(TokenError.get_invalid_client())
 
-    return client
+async def authenticate_client_secret(
+    client_secret_basic: Optional[Client] = Depends(authenticate_client_secret_basic),
+    client_secret_post: Optional[Client] = Depends(authenticate_client_secret_post),
+) -> Client:
+    if client_secret_basic is not None:
+        return client_secret_basic
+
+    if client_secret_post is not None:
+        return client_secret_post
+
+    raise TokenRequestException(TokenError.get_invalid_client())
 
 
 async def get_grant_type(grant_type: Optional[str] = Form(None)) -> str:
@@ -46,7 +69,7 @@ async def validate_grant_request(
     refresh_token_token: Optional[str] = Form(None, alias="refresh_token"),
     scope: Optional[str] = Form(None),
     grant_type: str = Depends(get_grant_type),
-    client: Client = Depends(authenticate_client_secret_post),
+    client: Client = Depends(authenticate_client_secret),
     authorization_code_manager: AuthorizationCodeManager = Depends(
         get_authorization_code_manager
     ),

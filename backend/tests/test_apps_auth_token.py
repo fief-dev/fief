@@ -1,4 +1,5 @@
-from typing import Dict
+import base64
+from typing import Dict, Tuple
 
 import httpx
 import pytest
@@ -6,17 +7,41 @@ from fastapi import status
 
 from fief.db import AsyncSession
 from fief.managers import AuthorizationCodeManager, RefreshTokenManager
+from fief.models import Client
 from tests.conftest import TenantParams
 from tests.data import TestData
 
+AUTH_METHODS = ["client_secret_basic", "client_secret_post"]
 
-@pytest.mark.asyncio
+
+def get_basic_authorization_header(client_id: str, client_secret: str) -> str:
+    credentials = f"{client_id}:{client_secret}"
+    encoded = base64.b64encode(credentials.encode("utf-8")).decode("utf-8")
+    return f"Basic {encoded}"
+
+
+def get_authenticated_request_headers_data(
+    method: str, client: Client
+) -> Tuple[Dict[str, str], Dict[str, str]]:
+    headers: Dict[str, str] = {}
+    data: Dict[str, str] = {}
+    if method == "client_secret_basic":
+        headers["Authorization"] = get_basic_authorization_header(
+            client.client_id, client.client_secret
+        )
+    elif method == "client_secret_post":
+        data["client_id"] = client.client_id
+        data["client_secret"] = client.client_secret
+    return headers, data
+
+
 @pytest.mark.workspace_host
 class TestAuthTokenAuthorizationCode:
     @pytest.mark.parametrize(
-        "data,error",
+        "headers,data,error",
         [
             pytest.param(
+                {},
                 {
                     "grant_type": "authorization_code",
                     "client_secret": "DEFAULT_TENANT_CLIENT_SECRET",
@@ -24,9 +49,10 @@ class TestAuthTokenAuthorizationCode:
                     "redirect_uri": "https://nantes.city/callback",
                 },
                 "invalid_client",
-                id="Missing client_id",
+                id="Missing client_id in body",
             ),
             pytest.param(
+                {},
                 {
                     "grant_type": "authorization_code",
                     "client_id": "DEFAULT_TENANT_CLIENT_ID",
@@ -34,9 +60,10 @@ class TestAuthTokenAuthorizationCode:
                     "redirect_uri": "https://nantes.city/callback",
                 },
                 "invalid_client",
-                id="Missing client_secret",
+                id="Missing client_secret in body",
             ),
             pytest.param(
+                {},
                 {
                     "grant_type": "authorization_code",
                     "client_id": "DEFAULT_TENANT_CLIENT_ID",
@@ -45,9 +72,24 @@ class TestAuthTokenAuthorizationCode:
                     "redirect_uri": "https://nantes.city/callback",
                 },
                 "invalid_client",
-                id="Invalid client_id/client_secret",
+                id="Invalid client_id/client_secret in body",
             ),
             pytest.param(
+                {
+                    "Authorization": get_basic_authorization_header(
+                        "DEFAULT_TENANT_CLIENT_ID", "INVALID_CLIENT_SECRET"
+                    )
+                },
+                {
+                    "grant_type": "authorization_code",
+                    "code": "CODE",
+                    "redirect_uri": "https://nantes.city/callback",
+                },
+                "invalid_client",
+                id="Invalid client_id/client_secret in authorization header",
+            ),
+            pytest.param(
+                {},
                 {
                     "client_id": "DEFAULT_TENANT_CLIENT_ID",
                     "client_secret": "DEFAULT_TENANT_CLIENT_SECRET",
@@ -58,6 +100,7 @@ class TestAuthTokenAuthorizationCode:
                 id="Missing grant_type",
             ),
             pytest.param(
+                {},
                 {
                     "grant_type": "magic_wand",
                     "client_id": "DEFAULT_TENANT_CLIENT_ID",
@@ -69,6 +112,7 @@ class TestAuthTokenAuthorizationCode:
                 id="Unsupported grant_type",
             ),
             pytest.param(
+                {},
                 {
                     "grant_type": "authorization_code",
                     "client_id": "DEFAULT_TENANT_CLIENT_ID",
@@ -79,6 +123,7 @@ class TestAuthTokenAuthorizationCode:
                 id="Missing code",
             ),
             pytest.param(
+                {},
                 {
                     "grant_type": "authorization_code",
                     "client_id": "DEFAULT_TENANT_CLIENT_ID",
@@ -89,6 +134,7 @@ class TestAuthTokenAuthorizationCode:
                 id="Missing redirect_uri",
             ),
             pytest.param(
+                {},
                 {
                     "grant_type": "authorization_code",
                     "client_id": "DEFAULT_TENANT_CLIENT_ID",
@@ -105,11 +151,12 @@ class TestAuthTokenAuthorizationCode:
         self,
         tenant_params: TenantParams,
         test_client_auth: httpx.AsyncClient,
+        headers: Dict[str, str],
         data: Dict[str, str],
         error: str,
     ):
         response = await test_client_auth.post(
-            f"{tenant_params.path_prefix}/api/token", data=data
+            f"{tenant_params.path_prefix}/api/token", data=data, headers=headers
         )
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
@@ -117,20 +164,23 @@ class TestAuthTokenAuthorizationCode:
         json = response.json()
         assert json["error"] == error
 
+    @pytest.mark.parametrize("auth_method", AUTH_METHODS)
     async def test_client_not_matching_authorization_code(
         self,
+        auth_method: str,
         tenant_params: TenantParams,
         test_client_auth: httpx.AsyncClient,
         test_data: TestData,
     ):
         authorization_code = test_data["authorization_codes"]["default_regular"]
         client = test_data["clients"]["secondary_tenant"]
+        headers, data = get_authenticated_request_headers_data(auth_method, client)
         response = await test_client_auth.post(
             f"{tenant_params.path_prefix}/api/token",
+            headers=headers,
             data={
+                **data,
                 "grant_type": "authorization_code",
-                "client_id": client.client_id,
-                "client_secret": client.client_secret,
                 "code": authorization_code.code,
                 "redirect_uri": authorization_code.redirect_uri,
             },
@@ -141,20 +191,23 @@ class TestAuthTokenAuthorizationCode:
         json = response.json()
         assert json["error"] == "invalid_grant"
 
+    @pytest.mark.parametrize("auth_method", AUTH_METHODS)
     async def test_redirect_uri_not_matching(
         self,
+        auth_method: str,
         tenant_params: TenantParams,
         test_client_auth: httpx.AsyncClient,
         test_data: TestData,
     ):
         authorization_code = test_data["authorization_codes"]["default_regular"]
         client = authorization_code.client
+        headers, data = get_authenticated_request_headers_data(auth_method, client)
         response = await test_client_auth.post(
             f"{tenant_params.path_prefix}/api/token",
+            headers=headers,
             data={
+                **data,
                 "grant_type": "authorization_code",
-                "client_id": client.client_id,
-                "client_secret": client.client_secret,
                 "code": authorization_code.code,
                 "redirect_uri": "INVALID_REDIRECT_URI",
             },
@@ -168,8 +221,10 @@ class TestAuthTokenAuthorizationCode:
     @pytest.mark.parametrize(
         "authorization_code_alias", ["default_regular", "secondary_regular"]
     )
+    @pytest.mark.parametrize("auth_method", AUTH_METHODS)
     async def test_valid(
         self,
+        auth_method: str,
         authorization_code_alias: str,
         test_client_auth: httpx.AsyncClient,
         test_data: TestData,
@@ -180,14 +235,15 @@ class TestAuthTokenAuthorizationCode:
         tenant = client.tenant
         path_prefix = tenant.slug if not tenant.default else ""
 
+        headers, data = get_authenticated_request_headers_data(auth_method, client)
         response = await test_client_auth.post(
             f"{path_prefix}/api/token",
+            headers=headers,
             data={
+                **data,
                 "grant_type": "authorization_code",
                 "code": authorization_code.code,
                 "redirect_uri": authorization_code.redirect_uri,
-                "client_id": client.client_id,
-                "client_secret": client.client_secret,
             },
         )
 
@@ -215,27 +271,30 @@ class TestAuthTokenAuthorizationCode:
 @pytest.mark.workspace_host
 class TestAuthTokenRefreshToken:
     @pytest.mark.parametrize(
-        "data,error",
+        "headers,data,error",
         [
             pytest.param(
+                {},
                 {
                     "grant_type": "refresh_token",
                     "client_secret": "DEFAULT_TENANT_CLIENT_SECRET",
                     "refresh_token": "REFRESH_TOKEN",
                 },
                 "invalid_client",
-                id="Missing client_id",
+                id="Missing client_id in body",
             ),
             pytest.param(
+                {},
                 {
                     "grant_type": "refresh_token",
                     "client_id": "DEFAULT_TENANT_CLIENT_ID",
                     "refresh_token": "REFRESH_TOKEN",
                 },
                 "invalid_client",
-                id="Missing client_secret",
+                id="Missing client_secret in body",
             ),
             pytest.param(
+                {},
                 {
                     "grant_type": "refresh_token",
                     "client_id": "DEFAULT_TENANT_CLIENT_ID",
@@ -243,9 +302,24 @@ class TestAuthTokenRefreshToken:
                     "refresh_token": "REFRESH_TOKEN",
                 },
                 "invalid_client",
-                id="Invalid client_id/client_secret",
+                id="Invalid client_id/client_secret in body",
             ),
             pytest.param(
+                {
+                    "Authorization": get_basic_authorization_header(
+                        "DEFAULT_TENANT_CLIENT_ID", "INVALID_CLIENT_SECRET"
+                    )
+                },
+                {
+                    "grant_type": "authorization_code",
+                    "code": "CODE",
+                    "redirect_uri": "https://nantes.city/callback",
+                },
+                "invalid_client",
+                id="Invalid client_id/client_secret in authorization header",
+            ),
+            pytest.param(
+                {},
                 {
                     "client_id": "DEFAULT_TENANT_CLIENT_ID",
                     "client_secret": "DEFAULT_TENANT_CLIENT_SECRET",
@@ -255,6 +329,7 @@ class TestAuthTokenRefreshToken:
                 id="Missing grant_type",
             ),
             pytest.param(
+                {},
                 {
                     "grant_type": "magic_wand",
                     "client_id": "DEFAULT_TENANT_CLIENT_ID",
@@ -265,6 +340,7 @@ class TestAuthTokenRefreshToken:
                 id="Unsupported grant_type",
             ),
             pytest.param(
+                {},
                 {
                     "grant_type": "refresh_token",
                     "client_id": "DEFAULT_TENANT_CLIENT_ID",
@@ -274,6 +350,7 @@ class TestAuthTokenRefreshToken:
                 id="Missing refresh_token",
             ),
             pytest.param(
+                {},
                 {
                     "grant_type": "refresh_token",
                     "client_id": "DEFAULT_TENANT_CLIENT_ID",
@@ -289,11 +366,12 @@ class TestAuthTokenRefreshToken:
         self,
         tenant_params: TenantParams,
         test_client_auth: httpx.AsyncClient,
+        headers: Dict[str, str],
         data: Dict[str, str],
         error: str,
     ):
         response = await test_client_auth.post(
-            f"{tenant_params.path_prefix}/api/token", data=data
+            f"{tenant_params.path_prefix}/api/token", data=data, headers=headers
         )
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
@@ -301,20 +379,23 @@ class TestAuthTokenRefreshToken:
         json = response.json()
         assert json["error"] == error
 
+    @pytest.mark.parametrize("auth_method", AUTH_METHODS)
     async def test_client_not_matching_refresh_token(
         self,
+        auth_method: str,
         tenant_params: TenantParams,
         test_client_auth: httpx.AsyncClient,
         test_data: TestData,
     ):
         refresh_token = test_data["refresh_tokens"]["default_regular"]
         client = test_data["clients"]["secondary_tenant"]
+        headers, data = get_authenticated_request_headers_data(auth_method, client)
         response = await test_client_auth.post(
             f"{tenant_params.path_prefix}/api/token",
+            headers=headers,
             data={
+                **data,
                 "grant_type": "refresh_token",
-                "client_id": client.client_id,
-                "client_secret": client.client_secret,
                 "refresh_token": refresh_token.token,
             },
         )
@@ -324,20 +405,22 @@ class TestAuthTokenRefreshToken:
         json = response.json()
         assert json["error"] == "invalid_grant"
 
+    @pytest.mark.parametrize("auth_method", AUTH_METHODS)
     async def test_extra_scope(
-        self, test_client_auth: httpx.AsyncClient, test_data: TestData
+        self, auth_method: str, test_client_auth: httpx.AsyncClient, test_data: TestData
     ):
         refresh_token = test_data["refresh_tokens"]["default_regular"]
         client = refresh_token.client
         tenant = client.tenant
         path_prefix = tenant.slug if not tenant.default else ""
 
+        headers, data = get_authenticated_request_headers_data(auth_method, client)
         response = await test_client_auth.post(
             f"{path_prefix}/api/token",
+            headers=headers,
             data={
+                **data,
                 "grant_type": "refresh_token",
-                "client_id": client.client_id,
-                "client_secret": client.client_secret,
                 "refresh_token": refresh_token.token,
                 "scope": "openid offline_access user",
             },
@@ -348,8 +431,10 @@ class TestAuthTokenRefreshToken:
         json = response.json()
         assert json["error"] == "invalid_scope"
 
+    @pytest.mark.parametrize("auth_method", AUTH_METHODS)
     async def test_valid(
         self,
+        auth_method: str,
         test_client_auth: httpx.AsyncClient,
         test_data: TestData,
         workspace_session: AsyncSession,
@@ -359,12 +444,13 @@ class TestAuthTokenRefreshToken:
         tenant = client.tenant
         path_prefix = tenant.slug if not tenant.default else ""
 
+        headers, data = get_authenticated_request_headers_data(auth_method, client)
         response = await test_client_auth.post(
             f"{path_prefix}/api/token",
+            headers=headers,
             data={
+                **data,
                 "grant_type": "refresh_token",
-                "client_id": client.client_id,
-                "client_secret": client.client_secret,
                 "refresh_token": refresh_token.token,
             },
         )
