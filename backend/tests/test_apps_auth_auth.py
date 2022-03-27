@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from typing import Dict, Optional
 
 import httpx
@@ -176,40 +177,46 @@ class TestAuthAuthorize:
         assert parsed_location.query.params["error"] == error
 
     @pytest.mark.parametrize(
-        "screen,prompt,nonce,session,redirection",
+        "params,session,redirection",
         [
-            pytest.param(None, None, None, False, "/login", id="Default login screen"),
-            pytest.param("login", None, None, False, "/login", id="Login screen"),
+            pytest.param({}, False, "/login", id="Default login screen"),
+            pytest.param({"screen": "login"}, False, "/login", id="Login screen"),
             pytest.param(
-                "register", None, None, False, "/register", id="Register screen"
+                {"screen": "register"}, False, "/register", id="Register screen"
+            ),
+            pytest.param({}, True, "/consent", id="No prompt with session"),
+            pytest.param(
+                {"prompt": "none"}, True, "/consent", id="None prompt with session"
             ),
             pytest.param(
-                None, None, None, True, "/consent", id="No prompt with session"
-            ),
-            pytest.param(
-                None, "none", None, True, "/consent", id="None prompt with session"
-            ),
-            pytest.param(
-                None,
-                "consent",
-                None,
+                {"prompt": "consent"},
                 True,
                 "/consent",
                 id="Consent prompt with session",
             ),
             pytest.param(
-                None, "login", None, True, "/login", id="Login prompt with session"
+                {"prompt": "login"}, True, "/login", id="Login prompt with session"
             ),
             pytest.param(
-                None, None, "NONCE", False, "/login", id="Provided nonce value"
+                {"nonce": "NONCE"}, False, "/login", id="Provided nonce value"
+            ),
+            pytest.param(
+                {"max_age": int(datetime.now(timezone.utc).timestamp()) + 3600},
+                True,
+                "/login",
+                id="max_age greater than session",
+            ),
+            pytest.param(
+                {"max_age": 0},
+                True,
+                "/consent",
+                id="max_age less than session",
             ),
         ],
     )
     async def test_valid(
         self,
-        screen: Optional[str],
-        prompt: Optional[str],
-        nonce: Optional[str],
+        params: Dict[str, str],
         session: bool,
         redirection: str,
         tenant_params: TenantParams,
@@ -217,17 +224,12 @@ class TestAuthAuthorize:
         workspace_session: AsyncSession,
     ):
         params = {
+            **params,
             "response_type": "code",
             "client_id": tenant_params.client.client_id,
             "redirect_uri": "https://nantes.city/callback",
             "scope": "openid",
         }
-        if screen is not None:
-            params["screen"] = screen
-        if prompt is not None:
-            params["prompt"] = prompt
-        if nonce is not None:
-            params["nonce"] = nonce
 
         cookies = {}
         if session:
@@ -246,7 +248,9 @@ class TestAuthAuthorize:
         login_session_manager = LoginSessionManager(workspace_session)
         login_session = await login_session_manager.get_by_token(login_session_cookie)
         assert login_session is not None
-        assert login_session.nonce == nonce
+
+        if "nonce" in params:
+            assert login_session.nonce == params["nonce"]
 
 
 @pytest.mark.asyncio

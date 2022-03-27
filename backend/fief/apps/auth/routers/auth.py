@@ -45,11 +45,17 @@ async def authorize(
     screen: str = Depends(get_authorize_screen),
     state: Optional[str] = Query(None),
     nonce: Optional[str] = Query(None),
+    max_age: Optional[int] = Query(None),
     authentication_flow: AuthenticationFlow = Depends(get_authentication_flow),
     session_token: Optional[SessionToken] = Depends(get_session_token),
 ):
     tenant = client.tenant
-    if session_token is not None and prompt != "login":
+    has_valid_session = False
+    has_valid_session = session_token is not None and (
+        max_age is None or int(session_token.created_at.timestamp()) > max_age
+    )
+
+    if has_valid_session and prompt != "login":
         redirection = tenant.url_for(request, "auth:consent.get")
     elif screen == "register":
         redirection = tenant.url_for(request, "register:get")
