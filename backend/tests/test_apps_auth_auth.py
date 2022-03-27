@@ -531,7 +531,7 @@ class TestAuthGetConsent:
         )
         assert authorization_code is not None
         assert authorization_code.nonce == login_session.nonce
-        assert authorization_code.authenticated_at == session_token.created_at
+        assert authorization_code.authenticated_at.timestamp() == session_token.created_at.timestamp()
 
         set_cookie_header = response.headers["Set-Cookie"]
         assert set_cookie_header.startswith(f'{settings.login_session_cookie_name}=""')
@@ -592,7 +592,7 @@ class TestAuthGetConsent:
         )
         assert authorization_code is not None
         assert authorization_code.nonce == login_session.nonce
-        assert authorization_code.authenticated_at == session_token.created_at
+        assert authorization_code.authenticated_at.timestamp() == session_token.created_at.timestamp()
 
         set_cookie_header = response.headers["Set-Cookie"]
         assert set_cookie_header.startswith(f'{settings.login_session_cookie_name}=""')
@@ -716,7 +716,7 @@ class TestAuthPostConsent:
         )
         assert authorization_code is not None
         assert authorization_code.nonce == login_session.nonce
-        assert authorization_code.authenticated_at == session_token.created_at
+        assert authorization_code.authenticated_at.timestamp() == session_token.created_at.timestamp()
 
         set_cookie_header = response.headers["Set-Cookie"]
         assert set_cookie_header.startswith(f'{settings.login_session_cookie_name}=""')
