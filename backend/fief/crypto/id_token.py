@@ -11,6 +11,7 @@ def generate_id_token(
     signing_key: jwk.JWK,
     host: str,
     client: Client,
+    authenticated_at: datetime,
     user: UserDB,
     lifetime_seconds: int,
     *,
@@ -25,6 +26,8 @@ def generate_id_token(
     :param signing_key: The JWK to sign the JWT.
     :host: The issuer host.
     :client: The client used to authenticate the user.
+    :authenticated_at: Date and time at which the user authenticated.
+    :user: The authenticated user.
     :lifetime_seconds: Lifetime of the JWT.
     :nonce: Optional nonce value associated with the authorization request.
     :encryption_key: Optional JWK to further encrypt the signed token.
@@ -39,6 +42,7 @@ def generate_id_token(
         "aud": [client.client_id],
         "exp": exp,
         "iat": iat,
+        "auth_time": int(authenticated_at.timestamp()),
         "azp": client.client_id,
     }
 

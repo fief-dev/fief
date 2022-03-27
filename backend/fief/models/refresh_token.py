@@ -24,6 +24,7 @@ class RefreshToken(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
     )
     expires_at: datetime = Column(TIMESTAMP(timezone=True), nullable=False, index=True)
     scope: List[str] = Column(JSON, nullable=False, default=list)
+    authenticated_at: datetime = Column(TIMESTAMP(timezone=True), nullable=False)
 
     user_id: UUID4 = Column(GUID, ForeignKey(User.id, ondelete="CASCADE"), nullable=False)  # type: ignore
     user: User = relationship("User")

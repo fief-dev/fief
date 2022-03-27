@@ -1,6 +1,6 @@
 import secrets
 import uuid
-from datetime import datetime, timedelta, timezone, tzinfo
+from datetime import datetime, timedelta, timezone
 from typing import Mapping, TypedDict
 
 from fief.crypto.jwk import generate_jwk
@@ -19,6 +19,8 @@ from fief.models import (
 from fief.settings import settings
 
 ModelMapping = Mapping[str, M]
+
+now = datetime.now(timezone.utc)
 
 
 class TestData(TypedDict):
@@ -142,6 +144,7 @@ authorization_codes: ModelMapping[AuthorizationCode] = {
         user=users["regular"],
         client=clients["default_tenant"],
         scope=["openid", "offline_access"],
+        authenticated_at=now,
     ),
     "default_regular_nonce": AuthorizationCode(
         redirect_uri="https://bretagne.duchy/callback",
@@ -149,12 +152,14 @@ authorization_codes: ModelMapping[AuthorizationCode] = {
         client=clients["default_tenant"],
         scope=["openid", "offline_access"],
         nonce="NONCE",
+        authenticated_at=now,
     ),
     "secondary_regular": AuthorizationCode(
         redirect_uri="https://nantes.city/callback",
         user=users["regular_secondary"],
         client=clients["secondary_tenant"],
         scope=["openid"],
+        authenticated_at=now,
     ),
     "expired": AuthorizationCode(
         created_at=datetime.now(timezone.utc)
@@ -163,6 +168,7 @@ authorization_codes: ModelMapping[AuthorizationCode] = {
         user=users["regular"],
         client=clients["default_tenant"],
         scope=["openid", "offline_access"],
+        authenticated_at=now,
     ),
 }
 
@@ -172,6 +178,7 @@ refresh_tokens: ModelMapping[RefreshToken] = {
         user=users["regular"],
         client=clients["default_tenant"],
         scope=["openid", "offline_access"],
+        authenticated_at=now,
     )
 }
 

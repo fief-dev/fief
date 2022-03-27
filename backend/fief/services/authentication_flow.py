@@ -109,6 +109,7 @@ class AuthenticationFlow:
         self,
         redirect_uri: str,
         scope: List[str],
+        authenticated_at: datetime,
         state: Optional[str],
         nonce: Optional[str],
         client: Client,
@@ -118,6 +119,7 @@ class AuthenticationFlow:
             AuthorizationCode(
                 redirect_uri=redirect_uri,
                 scope=scope,
+                authenticated_at=authenticated_at,
                 nonce=nonce,
                 user_id=user_id,
                 client_id=client.id,

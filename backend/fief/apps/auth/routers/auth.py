@@ -138,6 +138,7 @@ async def get_consent(
         response = await authentication_flow.get_authorization_code_success_redirect(
             login_session.redirect_uri,
             login_session.scope,
+            session_token.created_at,
             login_session.state,
             login_session.nonce,
             login_session.client,
@@ -183,6 +184,7 @@ async def post_consent(
         response = await authentication_flow.get_authorization_code_success_redirect(
             login_session.redirect_uri,
             login_session.scope,
+            session_token.created_at,
             login_session.state,
             login_session.nonce,
             login_session.client,

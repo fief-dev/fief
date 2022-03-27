@@ -304,6 +304,9 @@ class TestAuthTokenAuthorizationCode:
             assert id_token_claims["nonce"] == authorization_code.nonce
         else:
             assert "nonce" not in id_token_claims
+        id_token_claims["auth_time"] == int(
+            authorization_code.authenticated_at.timestamp()
+        )
 
 
 @pytest.mark.asyncio
@@ -513,3 +516,8 @@ class TestAuthTokenRefreshToken:
             assert old_refresh_token is None
         else:
             assert "refresh_token" not in json
+
+        id_token = json["id_token"]
+        id_token_jwt = jwt.JWT(jwt=id_token, algs=["RS256"], key=tenant.get_sign_jwk())
+        id_token_claims = _json.loads(id_token_jwt.claims)
+        id_token_claims["auth_time"] == int(refresh_token.authenticated_at.timestamp())

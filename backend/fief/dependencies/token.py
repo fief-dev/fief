@@ -1,4 +1,5 @@
-from typing import AsyncGenerator, List, Optional, Tuple
+from datetime import datetime
+from typing import AsyncGenerator, List, Optional, TypedDict
 
 from fastapi import Depends, Form
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
@@ -18,6 +19,14 @@ from fief.schemas.auth import TokenError
 from fief.schemas.user import UserDB
 
 ClientSecretBasicScheme = HTTPBasic(scheme_name="client_secret_basic", auto_error=False)
+
+
+class GrantRequest(TypedDict):
+    user_id: UUID4
+    scope: List[str]
+    authenticated_at: datetime
+    nonce: Optional[str]
+    client: Client
 
 
 async def authenticate_client_secret_basic(
@@ -74,7 +83,7 @@ async def validate_grant_request(
         get_authorization_code_manager
     ),
     refresh_token_manager: RefreshTokenManager = Depends(get_refresh_token_manager),
-) -> AsyncGenerator[Tuple[UUID4, List[str], Optional[str], Client], None]:
+) -> AsyncGenerator[GrantRequest, None]:
     if grant_type == "authorization_code":
         if code is None:
             raise TokenRequestException(TokenError.get_invalid_request())
@@ -92,12 +101,13 @@ async def validate_grant_request(
         if authorization_code.redirect_uri != redirect_uri:
             raise TokenRequestException(TokenError.get_invalid_grant())
 
-        yield (
-            authorization_code.user_id,
-            authorization_code.scope,
-            authorization_code.nonce,
-            client,
-        )
+        yield {
+            "user_id": authorization_code.user_id,
+            "scope": authorization_code.scope,
+            "authenticated_at": authorization_code.authenticated_at,
+            "nonce": authorization_code.nonce,
+            "client": client,
+        }
 
         await authorization_code_manager.delete(authorization_code)
         return
@@ -117,7 +127,13 @@ async def validate_grant_request(
         if not set(new_scope).issubset(set(refresh_token.scope)):
             raise TokenRequestException(TokenError.get_invalid_scope())
 
-        yield (refresh_token.user_id, new_scope, None, client)
+        yield {
+            "user_id": refresh_token.user_id,
+            "scope": new_scope,
+            "authenticated_at": refresh_token.authenticated_at,
+            "nonce": None,
+            "client": client,
+        }
 
         await refresh_token_manager.delete(refresh_token)
         return
@@ -126,13 +142,10 @@ async def validate_grant_request(
 
 
 async def get_user_from_grant_request(
-    grant_request: Tuple[UUID4, List[str], Optional[str], Client] = Depends(
-        validate_grant_request
-    ),
+    grant_request: GrantRequest = Depends(validate_grant_request),
     user_manager: UserManager = Depends(get_user_manager),
 ) -> UserDB:
-    user_id, _, _, _ = grant_request
     try:
-        return await user_manager.get(user_id)
+        return await user_manager.get(grant_request["user_id"])
     except UserNotExists as e:
         raise TokenRequestException(TokenError.get_invalid_grant()) from e
