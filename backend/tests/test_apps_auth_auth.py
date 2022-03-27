@@ -201,17 +201,9 @@ class TestAuthAuthorize:
                 {"nonce": "NONCE"}, False, "/login", id="Provided nonce value"
             ),
             pytest.param(
-                {"max_age": int(datetime.now(timezone.utc).timestamp()) + 3600},
-                True,
-                "/login",
-                id="max_age greater than session",
+                {"max_age": 3600}, True, "/consent", id="max_age one hour ago"
             ),
-            pytest.param(
-                {"max_age": 0},
-                True,
-                "/consent",
-                id="max_age less than session",
-            ),
+            pytest.param({"max_age": 0}, True, "/login", id="max_age now"),
         ],
     )
     async def test_valid(

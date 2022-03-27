@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from typing import List, Optional
 
 from fastapi import Cookie, Depends, Form, Query, Response
@@ -158,6 +159,22 @@ async def get_authorize_screen(
         )
 
     return screen
+
+
+async def has_valid_session_token(
+    max_age: Optional[int] = Query(None),
+    session_token: Optional[SessionToken] = Depends(get_session_token),
+) -> bool:
+    if session_token is None:
+        return False
+
+    if max_age is not None:
+        session_age = (
+            datetime.now(timezone.utc) - session_token.created_at
+        ).total_seconds()
+        return session_age < max_age
+
+    return True
 
 
 async def get_optional_login_session(

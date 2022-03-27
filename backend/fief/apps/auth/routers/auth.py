@@ -3,7 +3,6 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, Query, Request, status
 from fastapi.responses import RedirectResponse
 from fastapi.security.oauth2 import OAuth2PasswordRequestForm
-from pydantic import UUID4
 
 from fief.apps.auth.templates import templates
 from fief.csrf import check_csrf
@@ -18,6 +17,7 @@ from fief.dependencies.auth import (
     get_consent_prompt,
     get_login_session,
     get_needs_consent,
+    has_valid_session_token,
 )
 from fief.dependencies.authentication_flow import get_authentication_flow
 from fief.dependencies.locale import get_gettext, get_translations
@@ -45,17 +45,12 @@ async def authorize(
     screen: str = Depends(get_authorize_screen),
     state: Optional[str] = Query(None),
     nonce: Optional[str] = Query(None),
-    max_age: Optional[int] = Query(None),
     authentication_flow: AuthenticationFlow = Depends(get_authentication_flow),
-    session_token: Optional[SessionToken] = Depends(get_session_token),
+    has_valid_session_token: bool = Depends(has_valid_session_token),
 ):
     tenant = client.tenant
-    has_valid_session = False
-    has_valid_session = session_token is not None and (
-        max_age is None or int(session_token.created_at.timestamp()) > max_age
-    )
 
-    if has_valid_session and prompt != "login":
+    if has_valid_session_token and prompt != "login":
         redirection = tenant.url_for(request, "auth:consent.get")
     elif screen == "register":
         redirection = tenant.url_for(request, "register:get")
