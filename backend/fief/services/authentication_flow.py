@@ -87,7 +87,6 @@ class AuthenticationFlow:
             domain=settings.session_cookie_domain,
             secure=settings.session_cookie_secure,
             httponly=True,
-            samesite="strict",
         )
 
         return response
