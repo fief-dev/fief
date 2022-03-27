@@ -366,7 +366,10 @@ class TestAuthPostLogin:
         assert session_token is not None
 
     async def test_valid_with_session(
-        self, test_client_auth: httpx.AsyncClient, test_data: TestData
+        self,
+        test_client_auth: httpx.AsyncClient,
+        test_data: TestData,
+        workspace_session: AsyncSession,
     ):
         login_session = test_data["login_sessions"]["default"]
         client = login_session.client
@@ -392,7 +395,14 @@ class TestAuthPostLogin:
         redirect_uri = response.headers["Location"]
         assert redirect_uri.endswith(f"{path_prefix}/consent")
 
-        assert settings.session_cookie_name not in response.cookies
+        session_cookie = response.cookies[settings.session_cookie_name]
+        session_token_manager = SessionTokenManager(workspace_session)
+        new_session_token = await session_token_manager.get_by_token(session_cookie)
+        assert new_session_token is not None
+        assert new_session_token.id != session_token.id
+
+        old_session_token = await session_token_manager.get_by_id(session_token.id)
+        assert old_session_token is None
 
 
 @pytest.mark.asyncio

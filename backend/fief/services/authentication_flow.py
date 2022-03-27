@@ -91,6 +91,17 @@ class AuthenticationFlow:
 
         return response
 
+    async def rotate_session_token(
+        self,
+        response: ResponseType,
+        user_id: UUID4,
+        *,
+        session_token: Optional[SessionToken],
+    ) -> ResponseType:
+        if session_token is not None:
+            await self.session_token_manager.delete(session_token)
+        return await self.create_session_token(response, user_id)
+
     async def create_or_update_grant(
         self, user_id: UUID4, client: Client, scope: List[str]
     ) -> Grant:

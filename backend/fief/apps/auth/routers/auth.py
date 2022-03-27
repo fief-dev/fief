@@ -112,8 +112,9 @@ async def post_login(
         tenant.url_for(request, "auth:consent.get"),
         status_code=status.HTTP_302_FOUND,
     )
-    if session_token is None:
-        response = await authentication_flow.create_session_token(response, user.id)
+    response = await authentication_flow.rotate_session_token(
+        response, user.id, session_token=session_token
+    )
 
     return response
 
