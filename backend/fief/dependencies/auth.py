@@ -51,11 +51,19 @@ async def get_authorize_client(
 
 async def get_authorize_redirect_uri(
     redirect_uri: Optional[str] = Query(None),
+    client: Client = Depends(get_authorize_client),
     _=Depends(get_gettext),
 ) -> str:
     if redirect_uri is None:
         raise AuthorizeException(
             AuthorizeError.get_invalid_redirect_uri(_("redirect_uri is missing"))
+        )
+
+    if redirect_uri not in client.redirect_uris:
+        raise AuthorizeException(
+            AuthorizeError.get_invalid_redirect_uri(
+                _("redirect_uri is not authorized for this client")
+            )
         )
 
     return redirect_uri

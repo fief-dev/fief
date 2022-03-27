@@ -47,12 +47,14 @@ clients: ModelMapping[Client] = {
         tenant=tenants["default"],
         client_id="DEFAULT_TENANT_CLIENT_ID",
         client_secret="DEFAULT_TENANT_CLIENT_SECRET",
+        redirect_uris=["https://nantes.city/callback"],
     ),
     "granted_default_tenant": Client(
         name="Granted default",
         tenant=tenants["default"],
         client_id="GRANTED_DEFAULT_TENANT_CLIENT_ID",
         client_secret="GRANTED_DEFAULT_TENANT_CLIENT_SECRET",
+        redirect_uris=["https://nantes.city/callback"],
     ),
     "first_party_default_tenant": Client(
         name="First-party default",
@@ -60,6 +62,7 @@ clients: ModelMapping[Client] = {
         tenant=tenants["default"],
         client_id="FIRST_PARTY_DEFAULT_TENANT_CLIENT_ID",
         client_secret="FIRST_PARTY_DEFAULT_TENANT_CLIENT_SECRET",
+        redirect_uris=["https://nantes.city/callback"],
     ),
     "encryption_default_tenant": Client(
         name="Encryption default",
@@ -67,8 +70,13 @@ clients: ModelMapping[Client] = {
         client_id="ENCRYPTION_DEFAULT_TENANT_CLIENT_ID",
         client_secret="ENCRYPTION_DEFAULT_TENANT_CLIENT_SECRET",
         encrypt_jwk=generate_jwk(secrets.token_urlsafe(), "enc").export_public(),
+        redirect_uris=["https://nantes.city/callback"],
     ),
-    "secondary_tenant": Client(name="Secondary", tenant=tenants["secondary"]),
+    "secondary_tenant": Client(
+        name="Secondary",
+        tenant=tenants["secondary"],
+        redirect_uris=["https://nantes.city/callback"],
+    ),
 }
 
 users: ModelMapping[User] = {

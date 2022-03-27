@@ -1,10 +1,11 @@
 import secrets
-from typing import Optional
+from typing import List, Optional
 
 from jwcrypto import jwk
 from pydantic import UUID4
 from sqlalchemy import Boolean, Column, ForeignKey, String, Text
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql.sqltypes import JSON
 
 from fief.crypto.jwk import load_jwk
 from fief.models.base import WorkspaceBase
@@ -24,6 +25,7 @@ class Client(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
     client_secret: str = Column(
         String(length=255), default=secrets.token_urlsafe, nullable=False, index=True
     )
+    redirect_uris: List[str] = Column(JSON, nullable=False, default=list)
     encrypt_jwk: str = Column(Text, nullable=True)
 
     tenant_id: UUID4 = Column(GUID, ForeignKey(Tenant.id, ondelete="CASCADE"), nullable=False)  # type: ignore

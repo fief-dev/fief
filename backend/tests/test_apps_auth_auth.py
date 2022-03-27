@@ -52,6 +52,16 @@ class TestAuthAuthorize:
                 "invalid_redirect_uri",
                 id="Missing redirect_uri",
             ),
+            pytest.param(
+                {
+                    "response_type": "code",
+                    "client_id": "DEFAULT_TENANT_CLIENT_ID",
+                    "redirect_uri": "https://bordeaux.city/callback",
+                    "scope": "openid",
+                },
+                "invalid_redirect_uri",
+                id="Not authorized redirect_uri",
+            ),
         ],
     )
     async def test_authorize_error(
