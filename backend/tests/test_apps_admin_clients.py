@@ -1,4 +1,5 @@
 import uuid
+from typing import List
 
 import httpx
 import pytest
@@ -44,6 +45,50 @@ class TestCreateClient:
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
     @pytest.mark.authenticated_admin
+    async def test_empty_redirect_uris(
+        self, test_client_admin: httpx.AsyncClient, test_data: TestData
+    ):
+        tenant = test_data["tenants"]["default"]
+        response = await test_client_admin.post(
+            "/clients/",
+            json={
+                "name": "New client",
+                "first_party": True,
+                "redirect_uris": [],
+                "tenant_id": str(tenant.id),
+            },
+        )
+
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+        json = response.json()
+        assert json["detail"][0]["loc"] == ["body", "redirect_uris"]
+
+    @pytest.mark.authenticated_admin
+    async def test_redirect_uris_not_https(
+        self, test_client_admin: httpx.AsyncClient, test_data: TestData
+    ):
+        tenant = test_data["tenants"]["default"]
+        response = await test_client_admin.post(
+            "/clients/",
+            json={
+                "name": "New client",
+                "first_party": True,
+                "redirect_uris": ["http://nantes.city/callback"],
+                "tenant_id": str(tenant.id),
+            },
+        )
+
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+        json = response.json()
+        assert json["detail"][0]["loc"] == ["body", "redirect_uris", 0]
+        assert (
+            json["detail"][0]["msg"]
+            == APIErrorCode.CLIENT_HTTPS_REQUIRED_ON_REDIRECT_URIS
+        )
+
+    @pytest.mark.authenticated_admin
     async def test_unknown_tenant(
         self, test_client_admin: httpx.AsyncClient, not_existing_uuid: uuid.UUID
     ):
@@ -52,6 +97,7 @@ class TestCreateClient:
             json={
                 "name": "New client",
                 "first_party": True,
+                "redirect_uris": ["https://nantes.city/callback"],
                 "tenant_id": str(not_existing_uuid),
             },
         )
@@ -62,8 +108,18 @@ class TestCreateClient:
         assert json["detail"] == APIErrorCode.CLIENT_CREATE_UNKNOWN_TENANT
 
     @pytest.mark.authenticated_admin
+    @pytest.mark.parametrize(
+        "redirect_uris",
+        [
+            ["https://nantes.city/callback"],
+            ["http://localhost:8000/callback"],
+        ],
+    )
     async def test_valid(
-        self, test_client_admin: httpx.AsyncClient, test_data: TestData
+        self,
+        redirect_uris: List[str],
+        test_client_admin: httpx.AsyncClient,
+        test_data: TestData,
     ):
         tenant = test_data["tenants"]["default"]
         response = await test_client_admin.post(
@@ -71,6 +127,7 @@ class TestCreateClient:
             json={
                 "name": "New client",
                 "first_party": True,
+                "redirect_uris": redirect_uris,
                 "tenant_id": str(tenant.id),
             },
         )
@@ -80,6 +137,7 @@ class TestCreateClient:
         json = response.json()
         assert json["name"] == "New client"
         assert json["first_party"] is True
+        assert json["redirect_uris"] == redirect_uris
         assert json["client_id"] is not None
         assert json["client_secret"] is not None
         assert json["tenant_id"] == str(tenant.id)
