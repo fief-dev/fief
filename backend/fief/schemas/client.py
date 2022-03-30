@@ -7,17 +7,31 @@ from fief.schemas.generics import CreatedUpdatedAt, UUIDSchema
 from fief.schemas.tenant import TenantEmbedded
 
 
+def validate_redirect_uri(url: AnyUrl) -> AnyUrl:
+    if url.scheme == "http" and url.host != "localhost":
+        raise ValueError(APIErrorCode.CLIENT_HTTPS_REQUIRED_ON_REDIRECT_URIS.value)
+    return url
+
+
 class ClientCreate(BaseModel):
     name: str
     first_party: bool
     redirect_uris: List[AnyUrl] = Field(..., min_items=1)
     tenant_id: UUID4
 
-    @validator("redirect_uris", each_item=True)
-    def check_http_only_on_localhost(cls, v: AnyUrl):
-        if v.scheme == "http" and v.host != "localhost":
-            raise ValueError(APIErrorCode.CLIENT_HTTPS_REQUIRED_ON_REDIRECT_URIS.value)
-        return v
+    _validate_redirect_uri = validator(
+        "redirect_uris", each_item=True, allow_reuse=True
+    )(validate_redirect_uri)
+
+
+class ClientUpdate(BaseModel):
+    name: Optional[str]
+    first_party: Optional[bool]
+    redirect_uris: Optional[List[AnyUrl]] = Field(None, min_items=1)
+
+    _validate_redirect_uri = validator(
+        "redirect_uris", each_item=True, allow_reuse=True
+    )(validate_redirect_uri)
 
 
 class BaseClient(UUIDSchema, CreatedUpdatedAt):

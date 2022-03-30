@@ -10,7 +10,7 @@ from fief.models import AdminAPIKey, Workspace
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host()
+@pytest.mark.workspace_host
 class TestListAPIKeys:
     async def test_unauthorized(self, test_client_admin: httpx.AsyncClient):
         response = await test_client_admin.get("/api-keys/")
@@ -41,7 +41,7 @@ class TestListAPIKeys:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host()
+@pytest.mark.workspace_host
 class TestCreateAPIKey:
     async def test_unauthorized(self, test_client_admin: httpx.AsyncClient):
         response = await test_client_admin.post("/api-keys/", json={})
@@ -72,7 +72,7 @@ class TestCreateAPIKey:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host()
+@pytest.mark.workspace_host
 class TestDeleteAPIKey:
     async def test_unauthorized(
         self, test_client_admin: httpx.AsyncClient, admin_api_key: AdminAPIKey

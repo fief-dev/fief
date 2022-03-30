@@ -13,7 +13,7 @@ from tests.data import TestData
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host()
+@pytest.mark.workspace_host
 class TestListClients:
     async def test_unauthorized(self, test_client_admin: httpx.AsyncClient):
         response = await test_client_admin.get("/clients/")
@@ -37,7 +37,7 @@ class TestListClients:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host()
+@pytest.mark.workspace_host
 class TestCreateClient:
     async def test_unauthorized(self, test_client_admin: httpx.AsyncClient):
         response = await test_client_admin.post("/clients/", json={})
@@ -144,7 +144,78 @@ class TestCreateClient:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host()
+@pytest.mark.workspace_host
+class TestUpdateClient:
+    async def test_unauthorized(
+        self, test_client_admin: httpx.AsyncClient, test_data: TestData
+    ):
+        client = test_data["clients"]["default_tenant"]
+        response = await test_client_admin.patch(f"/clients/{client.id}", json={})
+
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+    @pytest.mark.authenticated_admin
+    async def test_not_existing(
+        self, test_client_admin: httpx.AsyncClient, not_existing_uuid: uuid.UUID
+    ):
+        response = await test_client_admin.patch(
+            f"/clients/{not_existing_uuid}", json={}
+        )
+
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    @pytest.mark.authenticated_admin
+    async def test_redirect_uris_not_https(
+        self, test_client_admin: httpx.AsyncClient, test_data: TestData
+    ):
+        client = test_data["clients"]["default_tenant"]
+        response = await test_client_admin.patch(
+            f"/clients/{client.id}",
+            json={"redirect_uris": ["http://nantes.city/callback"]},
+        )
+
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+        json = response.json()
+        assert json["detail"][0]["loc"] == ["body", "redirect_uris", 0]
+        assert (
+            json["detail"][0]["msg"]
+            == APIErrorCode.CLIENT_HTTPS_REQUIRED_ON_REDIRECT_URIS
+        )
+
+    @pytest.mark.authenticated_admin
+    async def test_cant_update_tenant(
+        self, test_client_admin: httpx.AsyncClient, test_data: TestData
+    ):
+        client = test_data["clients"]["default_tenant"]
+        response = await test_client_admin.patch(
+            f"/clients/{client.id}",
+            json={"tenant_id": str(test_data["tenants"]["secondary"])},
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+
+        json = response.json()
+        assert json["tenant_id"] == str(client.tenant_id)
+
+    @pytest.mark.authenticated_admin
+    async def test_valid(
+        self, test_client_admin: httpx.AsyncClient, test_data: TestData
+    ):
+        client = test_data["clients"]["default_tenant"]
+        response = await test_client_admin.patch(
+            f"/clients/{client.id}",
+            json={"name": "Updated name"},
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+
+        json = response.json()
+        assert json["name"] == "Updated name"
+
+
+@pytest.mark.asyncio
+@pytest.mark.workspace_host
 class TestCreateEncryptionKey:
     async def test_unauthorized(
         self, test_client_admin: httpx.AsyncClient, test_data: TestData

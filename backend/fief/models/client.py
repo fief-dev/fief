@@ -13,6 +13,10 @@ from fief.models.generics import GUID, CreatedUpdatedAt, UUIDModel
 from fief.models.tenant import Tenant
 
 
+def get_default_redirect_uris() -> List[str]:
+    return ["http://localhost:8000/docs/oauth2-redirect"]
+
+
 class Client(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
     __tablename__ = "clients"
 
@@ -25,7 +29,9 @@ class Client(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
     client_secret: str = Column(
         String(length=255), default=secrets.token_urlsafe, nullable=False, index=True
     )
-    redirect_uris: List[str] = Column(JSON, nullable=False, default=list)
+    redirect_uris: List[str] = Column(
+        JSON, nullable=False, default=get_default_redirect_uris
+    )
     encrypt_jwk: str = Column(Text, nullable=True)
 
     tenant_id: UUID4 = Column(GUID, ForeignKey(Tenant.id, ondelete="CASCADE"), nullable=False)  # type: ignore

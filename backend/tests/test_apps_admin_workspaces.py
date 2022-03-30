@@ -11,7 +11,7 @@ from fief.services.workspace_db import WorkspaceDatabaseConnectionError
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host()
+@pytest.mark.workspace_host
 class TestListWorkspaces:
     async def test_unauthorized(self, test_client_admin: httpx.AsyncClient):
         response = await test_client_admin.get("/workspaces/")

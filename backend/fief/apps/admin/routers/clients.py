@@ -53,6 +53,21 @@ async def create_client(
     return schemas.client.Client.from_orm(client)
 
 
+@router.patch("/{id:uuid}", name="clients:update", response_model=schemas.client.Client)
+async def update_client(
+    client_update: schemas.client.ClientUpdate,
+    client: Client = Depends(get_client_by_id_or_404),
+    manager: ClientManager = Depends(get_client_manager),
+) -> schemas.client.Client:
+    client_update_dict = client_update.dict(exclude_unset=True)
+    for field, value in client_update_dict.items():
+        setattr(client, field, value)
+
+    await manager.update(client)
+
+    return schemas.client.Client.from_orm(client)
+
+
 @router.post(
     "/{id:uuid}/encryption-key",
     name="clients:encryption_key",

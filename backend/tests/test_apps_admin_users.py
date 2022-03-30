@@ -9,7 +9,7 @@ from tests.data import TestData
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host()
+@pytest.mark.workspace_host
 class TestListUsers:
     async def test_unauthorized(self, test_client_admin: httpx.AsyncClient):
         response = await test_client_admin.get("/users/")
@@ -32,7 +32,7 @@ class TestListUsers:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host()
+@pytest.mark.workspace_host
 class TestCreateUser:
     async def test_unauthorized(self, test_client_admin: httpx.AsyncClient):
         response = await test_client_admin.post("/users/", json={})
