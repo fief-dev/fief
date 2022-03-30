@@ -60,16 +60,30 @@ def now_utc():
     return datetime.now(timezone.utc)
 
 
+class TIMESTAMPAware(TIMESTAMP):
+    """
+    MySQL will always return naive-Python datetimes.
+
+    We store everything as UTC, but we want to have
+    only offset-aware Python datetimes, even with MySQL.
+    """
+
+    def process_result_value(self, value: datetime, dialect):
+        if dialect.name == "mysql":
+            return value.replace(tzinfo=timezone.utc)
+        return value
+
+
 class CreatedUpdatedAt(BaseModel):
     created_at: datetime = Column(  # type: ignore
-        TIMESTAMP(timezone=True),
+        TIMESTAMPAware(timezone=True),
         nullable=False,
         index=True,
         default=now_utc,
         server_default=func.now(),
     )
     updated_at: datetime = Column(  # type: ignore
-        TIMESTAMP(timezone=True),
+        TIMESTAMPAware(timezone=True),
         nullable=False,
         index=True,
         default=now_utc,
