@@ -88,6 +88,7 @@ dependencies = [
     "sqlalchemy[mypy] ==1.4.32",
     "typer ==0.4.0",
     "uvicorn[standard]==0.17.6",
+    "click<8.1.0",  # See https://github.com/tiangolo/typer/pull/375
 ]
 
 [project.optional-dependencies]
