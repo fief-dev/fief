@@ -6,15 +6,18 @@ import * as schemas from '../../schemas';
 import ClipboardButton from '../ClipboardButton/ClipboardButton';
 import LoadingButton from '../LoadingButton/LoadingButton';
 import Modal from '../Modal/Modal';
+import EditClientModal from '../EditClientModal/EditClientModal';
 import WarningAlert from '../WarningAlert/WarningAlert';
 
 interface ClientDetailsProps {
   client: schemas.client.Client;
+  onUpdated?: (client: schemas.client.Client) => void;
 }
 
-const ClientDetails: React.FunctionComponent<ClientDetailsProps> = ({ client }) => {
+const ClientDetails: React.FunctionComponent<ClientDetailsProps> = ({ client, onUpdated: _onUpdated }) => {
   const { t } = useTranslation(['clients']);
   const api = useAPI();
+
   const [encryptionKeyLoading, setEncryptionKeyLoading] = useState(false);
   const [encryptionKey, setEncryptionKey] = useState<string | undefined>();
   const [showEncryptionKeyModal, setShowEncryptionKeyModal] = useState(false);
@@ -26,6 +29,14 @@ const ClientDetails: React.FunctionComponent<ClientDetailsProps> = ({ client }) 
     setShowEncryptionKeyModal(true);
     setEncryptionKeyLoading(false);
   }, [api, client]);
+
+  const [showEditModal, setShowEditModal] = useState(false);
+  const onUpdated = useCallback((client: schemas.client.Client) => {
+    setShowEditModal(false);
+    if (_onUpdated) {
+      _onUpdated(client);
+    };
+  }, [_onUpdated]);
 
   return (
     <>
@@ -46,13 +57,26 @@ const ClientDetails: React.FunctionComponent<ClientDetailsProps> = ({ client }) 
       </div>
       <div className="mt-6">
         <div className="text-sm font-semibold text-slate-800">{t('details.redirect_uris')}</div>
-        <ul>
+        <ul className="mb-3">
           {client.redirect_uris.map((redirectURI) =>
             <li className="flex items-center justify-between py-3 border-b border-slate-200">
               <div className="text-sm whitespace-nowrap truncate">{redirectURI}</div>
             </li>
           )}
         </ul>
+        <button
+          type="button"
+          className="btn w-full border-slate-200 hover:border-slate-300"
+          onClick={() => setShowEditModal(true)}
+        >
+          {t('details.edit')}
+        </button>
+        <EditClientModal
+          client={client}
+          open={showEditModal}
+          onClose={() => setShowEditModal(false)}
+          onUpdated={onUpdated}
+        />
       </div>
       <div className="mt-6">
         <div className="text-sm font-semibold text-slate-800">{t('details.id_token_encryption')}</div>

@@ -70,8 +70,13 @@ const Clients: React.FunctionComponent = () => {
     refresh();
   }, [onClientSelected, refresh]);
 
+  const onUpdated = useCallback((client: schemas.client.Client) => {
+    refresh();
+    setSelected(client);
+  }, [refresh]);
+
   return (
-    <Layout sidebar={selected ? <ClientDetails client={selected} /> : undefined}>
+    <Layout sidebar={selected ? <ClientDetails client={selected} onUpdated={onUpdated} /> : undefined}>
       <div className="sm:flex sm:justify-between sm:items-center mb-8">
 
         <div className="mb-4 sm:mb-0">

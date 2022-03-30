@@ -11,6 +11,7 @@
     "client_id": "ID",
     "client_secret": "Secret",
     "redirect_uris": "Redirect URIs",
+    "edit": "Edit client",
     "id_token_encryption": "ID Token encryption",
     "id_token_encryption_disabled": "Disabled",
     "id_token_encryption_enabled": "Enabled",
@@ -19,14 +20,21 @@
     "id_token_encryption_shown_once": "The key below will be shown only once. Make sure to copy it and store it somewhere safe.",
     "id_token_encryption_close_modal": "Close"
   },
-  "create": {
-    "title": "Create Client",
+  "base": {
     "name": "Name",
     "first_party": "First-party",
-    "redirect_uris": "Redirect URIs",
+    "redirect_uris": "Redirect URIs"
+  },
+  "create": {
+    "title": "Create Client",
     "tenant": "Tenant",
     "cancel": "Cancel",
     "submit": "Create"
+  },
+  "edit": {
+    "title": "Edit Client {{ client }}",
+    "cancel": "Cancel",
+    "submit": "Update"
   },
   "redirect_uris": {
     "add": "Add",

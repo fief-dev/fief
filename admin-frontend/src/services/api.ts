@@ -45,6 +45,10 @@ export class APIClient {
     return this.client.post('/clients/', data);
   }
 
+  public updateClient(id: string, data: schemas.client.ClientUpdate): Promise<AxiosResponse<schemas.client.Client>> {
+    return this.client.patch(`/clients/${id}`, data);
+  }
+
   public createClientEncryptionKey(id: string): Promise<AxiosResponse<Record<string, string>>> {
     return this.client.post(`/clients/${id}/encryption-key`);
   }
