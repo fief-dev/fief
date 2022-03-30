@@ -45,6 +45,16 @@ const ClientDetails: React.FunctionComponent<ClientDetailsProps> = ({ client }) 
         </ul>
       </div>
       <div className="mt-6">
+        <div className="text-sm font-semibold text-slate-800">{t('details.redirect_uris')}</div>
+        <ul>
+          {client.redirect_uris.map((redirectURI) =>
+            <li className="flex items-center justify-between py-3 border-b border-slate-200">
+              <div className="text-sm whitespace-nowrap truncate">{redirectURI}</div>
+            </li>
+          )}
+        </ul>
+      </div>
+      <div className="mt-6">
         <div className="text-sm font-semibold text-slate-800">{t('details.id_token_encryption')}</div>
         <div className="pb-4 border-b border-slate-200">
           <div className="flex justify-between text-sm mb-2">

@@ -10,6 +10,7 @@
   "details": {
     "client_id": "ID",
     "client_secret": "Secret",
+    "redirect_uris": "Redirect URIs",
     "id_token_encryption": "ID Token encryption",
     "id_token_encryption_disabled": "Disabled",
     "id_token_encryption_enabled": "Enabled",
@@ -22,8 +23,14 @@
     "title": "Create Client",
     "name": "Name",
     "first_party": "First-party",
+    "redirect_uris": "Redirect URIs",
     "tenant": "Tenant",
     "cancel": "Cancel",
     "submit": "Create"
+  },
+  "redirect_uris": {
+    "add": "Add",
+    "https_required": "An HTTPS URL is required.",
+    "invalid_uri": "This URI is invalid."
   }
 }

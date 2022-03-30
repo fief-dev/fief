@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 
 from pydantic import UUID4
 
@@ -33,6 +33,7 @@ class WorkspaceCreation:
         default_domain: Optional[str] = None,
         default_client_id: Optional[str] = None,
         default_client_secret: Optional[str] = None,
+        default_redirect_uris: Optional[List[str]] = None,
         default_encryption_key: Optional[str] = None,
     ) -> Workspace:
         workspace = Workspace(**workspace_create.dict())
@@ -67,7 +68,12 @@ class WorkspaceCreation:
             session.add(tenant)
 
             client = Client(
-                name=f"{tenant.name}'s client", first_party=True, tenant=tenant
+                name=f"{tenant.name}'s client",
+                first_party=True,
+                tenant=tenant,
+                redirect_uris=default_redirect_uris
+                if default_redirect_uris is not None
+                else ["http://localhost:8000/docs/oauth2-redirect"],
             )
 
             if default_client_id is not None:
@@ -103,12 +109,18 @@ async def create_main_fief_workspace() -> Workspace:
             workspace_manager, workspace_user_manager, workspace_db
         )
 
+        localhost_domain = settings.fief_domain.endswith("localhost")
+        default_redirect_uri = f"{'http' if localhost_domain else 'https'}://{settings.fief_domain}/admin/api/auth/callback"
         workspace = await workspace_creation.create(
             workspace_create,
             default_domain=settings.fief_domain,
             default_client_id=settings.fief_client_id,
             default_client_secret=settings.fief_client_secret,
             default_encryption_key=settings.fief_encryption_key,
+            default_redirect_uris=[
+                default_redirect_uri,
+                "http://localhost:8000/docs/oauth2-redirect",
+            ],
         )
 
     return workspace
