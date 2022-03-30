@@ -3,12 +3,12 @@ from datetime import datetime
 from typing import List
 
 from pydantic import UUID4
-from sqlalchemy import JSON, TIMESTAMP, Column, ForeignKey, String
+from sqlalchemy import JSON, Column, ForeignKey, String
 from sqlalchemy.orm import relationship
 
 from fief.models.base import WorkspaceBase
 from fief.models.client import Client
-from fief.models.generics import GUID, CreatedUpdatedAt, UUIDModel
+from fief.models.generics import GUID, CreatedUpdatedAt, TIMESTAMPAware, UUIDModel
 from fief.models.user import User
 
 
@@ -22,9 +22,11 @@ class RefreshToken(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
         index=True,
         unique=True,
     )
-    expires_at: datetime = Column(TIMESTAMP(timezone=True), nullable=False, index=True)
+    expires_at: datetime = Column(
+        TIMESTAMPAware(timezone=True), nullable=False, index=True
+    )
     scope: List[str] = Column(JSON, nullable=False, default=list)
-    authenticated_at: datetime = Column(TIMESTAMP(timezone=True), nullable=False)
+    authenticated_at: datetime = Column(TIMESTAMPAware(timezone=True), nullable=False)
 
     user_id: UUID4 = Column(GUID, ForeignKey(User.id, ondelete="CASCADE"), nullable=False)  # type: ignore
     user: User = relationship("User")

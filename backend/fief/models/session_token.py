@@ -2,11 +2,11 @@ import secrets
 from datetime import datetime
 
 from pydantic import UUID4
-from sqlalchemy import TIMESTAMP, Column, ForeignKey, String
+from sqlalchemy import Column, ForeignKey, String
 from sqlalchemy.orm import relationship
 
 from fief.models.base import WorkspaceBase
-from fief.models.generics import GUID, CreatedUpdatedAt, UUIDModel
+from fief.models.generics import GUID, CreatedUpdatedAt, TIMESTAMPAware, UUIDModel
 from fief.models.user import User
 
 
@@ -20,7 +20,9 @@ class SessionToken(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
         index=True,
         unique=True,
     )
-    expires_at: datetime = Column(TIMESTAMP(timezone=True), nullable=False, index=True)
+    expires_at: datetime = Column(
+        TIMESTAMPAware(timezone=True), nullable=False, index=True
+    )
 
     user_id: UUID4 = Column(GUID, ForeignKey(User.id, ondelete="CASCADE"), nullable=False)  # type: ignore
     user: User = relationship("User")
