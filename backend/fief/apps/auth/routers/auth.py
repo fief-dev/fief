@@ -7,6 +7,7 @@ from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 from fief.apps.auth.templates import templates
 from fief.csrf import check_csrf
 from fief.dependencies.auth import (
+    check_unsupported_request_parameter,
     get_authorize_client,
     get_authorize_prompt,
     get_authorize_redirect_uri,
@@ -34,7 +35,11 @@ from fief.services.authentication_flow import AuthenticationFlow
 router = APIRouter(dependencies=[Depends(check_csrf), Depends(get_translations)])
 
 
-@router.get("/authorize", name="auth:authorize")
+@router.get(
+    "/authorize",
+    name="auth:authorize",
+    dependencies=[Depends(check_unsupported_request_parameter)],
+)
 async def authorize(
     request: Request,
     response_type: str = Depends(get_authorize_response_type),

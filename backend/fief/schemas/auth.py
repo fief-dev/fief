@@ -42,6 +42,10 @@ class AuthorizeRedirectError(BaseModel):
     def get_consent_required(cls, error_description: Optional[str] = None):
         return cls(error="consent_required", error_description=error_description)
 
+    @classmethod
+    def get_request_not_supported(cls, error_description: Optional[str] = None):
+        return cls(error="request_not_supported", error_description=error_description)
+
 
 class LoginError(BaseModel):
     error: str = Field(..., regex="invalid_session|bad_credentials")

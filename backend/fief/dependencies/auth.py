@@ -73,6 +73,22 @@ async def get_authorize_state(state: Optional[str] = Query(None)) -> Optional[st
     return state
 
 
+async def check_unsupported_request_parameter(
+    request_parameter: Optional[str] = Query(None, alias="request"),
+    redirect_uri: str = Depends(get_authorize_redirect_uri),
+    state: Optional[str] = Depends(get_authorize_state),
+    _=Depends(get_gettext),
+) -> None:
+    if request_parameter is not None:
+        raise AuthorizeRedirectException(
+            AuthorizeRedirectError.get_request_not_supported(
+                _("request parameter is not supported")
+            ),
+            redirect_uri,
+            state,
+        )
+
+
 async def get_authorize_response_type(
     response_type: Optional[str] = Query(None),
     redirect_uri: str = Depends(get_authorize_redirect_uri),

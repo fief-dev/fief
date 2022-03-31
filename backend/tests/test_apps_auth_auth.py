@@ -165,6 +165,17 @@ class TestAuthAuthorize:
                 "invalid_request",
                 id="Invalid screen",
             ),
+            pytest.param(
+                {
+                    "response_type": "code",
+                    "client_id": "DEFAULT_TENANT_CLIENT_ID",
+                    "redirect_uri": "https://nantes.city/callback",
+                    "scope": "openid",
+                    "request": "REQUEST_PARAMETER",
+                },
+                "request_not_supported",
+                id="Use of unsupported request parameter",
+            ),
         ],
     )
     async def test_authorize_redirect_error(

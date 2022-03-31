@@ -44,6 +44,7 @@ async def get_openid_configuration(
             "client_secret_post",
         ],
         claims_supported=["email", "tenant_id"],
+        request_parameter_supported=False,
         service_documentation=settings.fief_documentation_url,
     )
 
