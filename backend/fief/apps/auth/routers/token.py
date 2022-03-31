@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from typing import List, Optional, Tuple
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Response
 from pydantic import UUID4
 
 from fief.crypto.access_token import generate_access_token
@@ -27,6 +27,7 @@ router = APIRouter()
 
 @router.post("/token", name="auth:token")
 async def token(
+    response: Response,
     grant_request: GrantRequest = Depends(validate_grant_request),
     user: UserDB = Depends(get_user_from_grant_request),
     refresh_token_manager: RefreshTokenManager = Depends(get_refresh_token_manager),
@@ -70,4 +71,6 @@ async def token(
         refresh_token = await refresh_token_manager.create(refresh_token)
         token_response.refresh_token = refresh_token.token
 
+    response.headers["Cache-Control"] = "no-store"
+    response.headers["Pragma"] = "no-cache"
     return token_response.dict(exclude_none=True)

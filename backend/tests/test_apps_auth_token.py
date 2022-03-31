@@ -308,6 +308,10 @@ class TestAuthTokenAuthorizationCode:
             authorization_code.authenticated_at.timestamp()
         )
 
+        response_headers = response.headers
+        assert response_headers["Cache-Control"] == "no-store"
+        assert response_headers["Pragma"] == "no-cache"
+
 
 @pytest.mark.asyncio
 @pytest.mark.workspace_host
@@ -521,3 +525,7 @@ class TestAuthTokenRefreshToken:
         id_token_jwt = jwt.JWT(jwt=id_token, algs=["RS256"], key=tenant.get_sign_jwk())
         id_token_claims = _json.loads(id_token_jwt.claims)
         id_token_claims["auth_time"] == int(refresh_token.authenticated_at.timestamp())
+
+        response_headers = response.headers
+        assert response_headers["Cache-Control"] == "no-store"
+        assert response_headers["Pragma"] == "no-cache"
