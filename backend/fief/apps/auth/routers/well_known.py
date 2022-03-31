@@ -33,7 +33,7 @@ async def get_openid_configuration(
         registration_endpoint=_url_for("register:get"),
         scopes_supported=["openid", "offline_access"],
         response_types_supported=["code"],
-        grant_types_supported=["authorization_code"],
+        grant_types_supported=["authorization_code", "refresh_token"],
         subject_types_supported=["public"],
         id_token_signing_alg_values_supported=["RS256"],
         id_token_encryption_alg_values_supported=["RSA-OAEP-256"],
