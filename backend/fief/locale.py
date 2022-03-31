@@ -28,22 +28,22 @@ for locale in LOCALES:
 
 
 def get_preferred_locale(
-    preffered: List[str],
+    preferred: List[str],
     *,
     supported: List[str] = SUPPORTED_LOCALES,
     fallback: str = FALLBACK
 ) -> str:
-    locale = core.negotiate_locale(preffered, supported)
+    locale = core.negotiate_locale(preferred, supported)
     if locale is None:
         return fallback
     return locale
 
 
 def get_preferred_translations(
-    preffered: List[str],
+    preferred: List[str],
     *,
     supported: List[str] = SUPPORTED_LOCALES,
     fallback: str = FALLBACK
 ) -> Translations:
-    locale = get_preferred_locale(preffered, supported=supported, fallback=fallback)
+    locale = get_preferred_locale(preferred, supported=supported, fallback=fallback)
     return TRANSLATIONS[locale]
