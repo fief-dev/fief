@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  Fief\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2022-02-13 15:49+0100\n"
+"POT-Creation-Date: 2022-03-31 13:19+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en_us\n"
@@ -14,27 +14,27 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.9.1\n"
 
-#: fief/errors.py:30
+#: fief/exceptions.py:20
 msgid "This field is required."
 msgstr "This field is required."
 
-#: fief/errors.py:31
+#: fief/exceptions.py:21
 msgid "This email address is invalid."
 msgstr "This email address is invalid."
 
-#: fief/errors.py:47
+#: fief/exceptions.py:37
 msgid "type"
 msgstr "type"
 
-#: fief/apps/auth/routers/auth.py:99
+#: fief/apps/auth/routers/auth.py:107
 msgid "Invalid email or password"
 msgstr "Invalid email or password"
 
-#: fief/apps/auth/routers/auth.py:191
+#: fief/apps/auth/routers/auth.py:204
 msgid "The user denied access to their data."
 msgstr "The user denied access to their data."
 
-#: fief/apps/auth/routers/register.py:51
+#: fief/apps/auth/routers/register.py:54
 msgid "A user with the same email address already exists."
 msgstr "A user with the same email address already exists."
 
@@ -58,59 +58,67 @@ msgstr "The reset password token is invalid or expired."
 msgid "Your password has been changed!"
 msgstr "Your password has been changed!"
 
-#: fief/dependencies/auth.py:40
+#: fief/dependencies/auth.py:41
 msgid "client_id is missing"
 msgstr "client_id is missing"
 
-#: fief/dependencies/auth.py:46
+#: fief/dependencies/auth.py:47
 msgid "Unknown client"
 msgstr "Unknown client"
 
-#: fief/dependencies/auth.py:57
+#: fief/dependencies/auth.py:59
 msgid "redirect_uri is missing"
 msgstr "redirect_uri is missing"
 
-#: fief/dependencies/auth.py:75
+#: fief/dependencies/auth.py:65
+msgid "redirect_uri is not authorized for this client"
+msgstr ""
+
+#: fief/dependencies/auth.py:85
+msgid "request parameter is not supported"
+msgstr ""
+
+#: fief/dependencies/auth.py:100
 msgid "response_type is missing"
 msgstr "response_type is missing"
 
-#: fief/dependencies/auth.py:83
+#: fief/dependencies/auth.py:108
 msgid "response_type should be \"code\""
 msgstr "response_type should be \"code\""
 
-#: fief/dependencies/auth.py:100
+#: fief/dependencies/auth.py:125
 msgid "scope is missing"
 msgstr "scope is missing"
 
-#: fief/dependencies/auth.py:110
+#: fief/dependencies/auth.py:135
 msgid "scope should contain \"openid\""
 msgstr "scope should contain \"openid\""
 
-#: fief/dependencies/auth.py:129
+#: fief/dependencies/auth.py:154
 msgid "prompt should either be \"none\", \"login\" or \"register\""
 msgstr "prompt should either be \"none\", \"login\" or \"register\""
 
-#: fief/dependencies/auth.py:137
+#: fief/dependencies/auth.py:162
 msgid "User is not logged in"
 msgstr "User is not logged in"
 
-#: fief/dependencies/auth.py:154
+#: fief/dependencies/auth.py:179
 msgid "screen should either be \"login\" or \"register\""
 msgstr "screen should either be \"login\" or \"register\""
 
-#: fief/dependencies/auth.py:187
+#: fief/dependencies/auth.py:228
 msgid "Invalid login session"
 msgstr "Invalid login session"
 
-#: fief/dependencies/auth.py:202
+#: fief/dependencies/auth.py:243
 msgid "action should either be \"allow\" or \"deny\""
 msgstr "action should either be \"allow\" or \"deny\""
 
-#: fief/dependencies/auth.py:242
+#: fief/dependencies/auth.py:288
 msgid "User consent is required for this scope"
 msgstr "User consent is required for this scope"
 
-#: fief/dependencies/users.py:57
+#: fief/dependencies/users.py:79
 msgid "The password should be at least 8 characters."
 msgstr "The password should be at least 8 characters."
 
@@ -146,17 +154,17 @@ msgstr "Reset your password"
 msgid "Welcome to %(tenant)s! We're thrilled to have you on board."
 msgstr ""
 
-#: fief/tasks/forgot_password.py:19
+#: fief/tasks/forgot_password.py:20
 #, python-format
 msgid "Reset your %(tenant)s's password"
 msgstr "Reset your %(tenant)s's password"
 
-#: fief/tasks/register.py:19
+#: fief/tasks/register.py:20
 #, python-format
 msgid "Welcome to %(tenant)s!"
 msgstr "Welcome to %(tenant)s!"
 
-#: fief/templates/auth_layout.html:50
+#: fief/templates/auth_layout.html:49
 msgid "Powered by"
 msgstr "Powered by"
 
