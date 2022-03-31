@@ -13,7 +13,7 @@ class InvalidAccessToken(AuthException):
 
 
 def generate_jwk(kid: str, use: Literal["sig", "enc"]) -> jwk.JWK:
-    return jwk.JWK.generate(kty="RSA", size=2048, use=use, kid=kid)
+    return jwk.JWK.generate(kty="RSA", size=4096, use=use, kid=kid)
 
 
 def load_jwk(json: str) -> jwk.JWK:
