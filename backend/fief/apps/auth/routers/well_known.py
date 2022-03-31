@@ -5,7 +5,7 @@ from jwcrypto import jwk
 from fief.dependencies.current_workspace import get_current_workspace
 from fief.dependencies.tenant import get_current_tenant
 from fief.models import Tenant, Workspace
-from fief.schemas.well_known import OpenIDConfiguration
+from fief.schemas.well_known import OpenIDProviderMetadata
 from fief.settings import settings
 
 router = APIRouter()
@@ -24,7 +24,7 @@ async def get_openid_configuration(
     def _url_for(name: str) -> str:
         return request.url_for(name, **url_for_params)
 
-    configuration = OpenIDConfiguration(
+    configuration = OpenIDProviderMetadata(
         issuer=tenant.get_host(workspace.domain),
         authorization_endpoint=_url_for("auth:authorize"),
         token_endpoint=_url_for("auth:token"),
@@ -45,6 +45,7 @@ async def get_openid_configuration(
         ],
         claims_supported=["email", "tenant_id"],
         request_parameter_supported=False,
+        code_challenge_methods_supported=["plain", "S256"],
         service_documentation=settings.fief_documentation_url,
     )
 

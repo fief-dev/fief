@@ -1,4 +1,3 @@
-from datetime import datetime, timezone
 from typing import Dict, Optional
 
 import httpx
@@ -176,6 +175,18 @@ class TestAuthAuthorize:
                 "request_not_supported",
                 id="Use of unsupported request parameter",
             ),
+            pytest.param(
+                {
+                    "response_type": "code",
+                    "client_id": "DEFAULT_TENANT_CLIENT_ID",
+                    "redirect_uri": "https://nantes.city/callback",
+                    "scope": "openid",
+                    "code_challenge": "CODE_CHALLENGE",
+                    "code_challenge_method": "UNSUPPORTED_METHOD",
+                },
+                "invalid_request",
+                id="Invalid code_challenge_method",
+            ),
         ],
     )
     async def test_authorize_redirect_error(
@@ -225,6 +236,18 @@ class TestAuthAuthorize:
                 {"max_age": 3600}, True, "/consent", id="max_age one hour ago"
             ),
             pytest.param({"max_age": 0}, True, "/login", id="max_age now"),
+            pytest.param(
+                {"code_challenge": "CODE_CHALLENGE"},
+                False,
+                "/login",
+                id="code_challenge without method",
+            ),
+            pytest.param(
+                {"code_challenge": "CODE_CHALLENGE", "code_challenge_method": "S256"},
+                False,
+                "/login",
+                id="code_challenge with specified method",
+            ),
         ],
     )
     async def test_valid(
@@ -264,6 +287,16 @@ class TestAuthAuthorize:
 
         if "nonce" in params:
             assert login_session.nonce == params["nonce"]
+
+        if "code_challenge" in params:
+            assert login_session.code_challenge == params["code_challenge"]
+            if "code_challenge_method" in params:
+                assert (
+                    login_session.code_challenge_method
+                    == params["code_challenge_method"]
+                )
+            else:
+                assert login_session.code_challenge_method == "plain"
 
 
 @pytest.mark.asyncio
@@ -709,13 +742,18 @@ class TestAuthPostConsent:
         headers = response.headers
         assert headers["X-Fief-Error"] == "invalid_action"
 
+    @pytest.mark.parametrize(
+        "login_session_alias",
+        ["default", "default_code_challenge_plain", "default_code_challenge_s256"],
+    )
     async def test_allow(
         self,
+        login_session_alias: str,
         test_client_auth: httpx.AsyncClient,
         test_data: TestData,
         workspace_session: AsyncSession,
     ):
-        login_session = test_data["login_sessions"]["default"]
+        login_session = test_data["login_sessions"][login_session_alias]
         client = login_session.client
         tenant = client.tenant
         path_prefix = tenant.slug if not tenant.default else ""
@@ -746,6 +784,11 @@ class TestAuthPostConsent:
         assert authorization_code.authenticated_at.replace(
             microsecond=0
         ) == session_token.created_at.replace(microsecond=0)
+        assert authorization_code.code_challenge == login_session.code_challenge
+        assert (
+            authorization_code.code_challenge_method
+            == login_session.code_challenge_method
+        )
 
         set_cookie_header = response.headers["Set-Cookie"]
         assert set_cookie_header.startswith(f'{settings.login_session_cookie_name}=""')

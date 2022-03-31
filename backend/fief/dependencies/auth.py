@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 from fastapi import Cookie, Depends, Form, Query, Response
 from pydantic import UUID4
@@ -183,6 +183,28 @@ async def get_authorize_screen(
         )
 
     return screen
+
+
+async def get_authorize_code_challenge(
+    code_challenge: Optional[str] = Query(None),
+    code_challenge_method: Optional[str] = Query("plain"),
+    redirect_uri: str = Depends(get_authorize_redirect_uri),
+    state: Optional[str] = Depends(get_authorize_state),
+    _=Depends(get_gettext),
+) -> Optional[Tuple[str, str]]:
+    if code_challenge is None:
+        return None
+
+    if code_challenge_method not in ["plain", "S256"]:
+        raise AuthorizeRedirectException(
+            AuthorizeRedirectError.get_invalid_request(
+                _("Unsupported code_challenge_method")
+            ),
+            redirect_uri,
+            state,
+        )
+
+    return code_challenge, code_challenge_method
 
 
 async def has_valid_session_token(

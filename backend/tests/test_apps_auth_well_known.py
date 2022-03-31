@@ -34,6 +34,7 @@ class TestWellKnownOpenIDConfiguration:
             "client_secret_basic",
             "client_secret_post",
         ]
+        assert json["code_challenge_methods_supported"] == ["plain", "S256"]
 
 
 @pytest.mark.asyncio

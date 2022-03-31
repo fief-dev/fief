@@ -6,6 +6,7 @@ from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi_users.manager import UserNotExists
 from pydantic import UUID4
 
+from fief.crypto.code_challenge import verify_code_verifier
 from fief.dependencies.users import UserManager, get_user_manager
 from fief.dependencies.workspace_managers import (
     get_authorization_code_manager,
@@ -74,6 +75,7 @@ async def get_grant_type(grant_type: Optional[str] = Form(None)) -> str:
 
 async def validate_grant_request(
     code: Optional[str] = Form(None),
+    code_verifier: Optional[str] = Form(None),
     redirect_uri: Optional[str] = Form(None),
     refresh_token_token: Optional[str] = Form(None, alias="refresh_token"),
     scope: Optional[str] = Form(None),
@@ -100,6 +102,13 @@ async def validate_grant_request(
 
         if authorization_code.redirect_uri != redirect_uri:
             raise TokenRequestException(TokenError.get_invalid_grant())
+
+        code_challenge_tuple = authorization_code.get_code_challenge_tuple()
+        if code_challenge_tuple is not None:
+            if code_verifier is None or not verify_code_verifier(
+                code_verifier, code_challenge_tuple[0], code_challenge_tuple[1]
+            ):
+                raise TokenRequestException(TokenError.get_invalid_grant())
 
         yield {
             "user_id": authorization_code.user_id,

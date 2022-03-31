@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta, timezone
-from typing import List, Optional, TypeVar
+from typing import List, Optional, Tuple, TypeVar
 
 from fastapi import Response, status
 from fastapi.responses import RedirectResponse
@@ -40,6 +40,7 @@ class AuthenticationFlow:
         scope: List[str],
         state: Optional[str],
         nonce: Optional[str],
+        code_challenge_tuple: Optional[Tuple[str, str]],
         client: Client,
     ) -> ResponseType:
         login_session = LoginSession(
@@ -50,6 +51,11 @@ class AuthenticationFlow:
             nonce=nonce,
             client_id=client.id,
         )
+        if code_challenge_tuple is not None:
+            code_challenge, code_challenge_method = code_challenge_tuple
+            login_session.code_challenge = code_challenge
+            login_session.code_challenge_method = code_challenge_method
+
         login_session = await self.login_session_manager.create(login_session)
 
         response.set_cookie(
@@ -122,6 +128,7 @@ class AuthenticationFlow:
         authenticated_at: datetime,
         state: Optional[str],
         nonce: Optional[str],
+        code_challenge_tuple: Optional[Tuple[str, str]],
         client: Client,
         user_id: UUID4,
     ) -> RedirectResponse:
@@ -135,6 +142,10 @@ class AuthenticationFlow:
                 client_id=client.id,
             )
         )
+        if code_challenge_tuple is not None:
+            code_challenge, code_challenge_method = code_challenge_tuple
+            authorization_code.code_challenge = code_challenge
+            authorization_code.code_challenge_method = code_challenge_method
 
         parsed_redirect_uri = furl(redirect_uri)
         parsed_redirect_uri.add(query_params={"code": authorization_code.code})

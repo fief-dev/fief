@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 from fastapi import APIRouter, Depends, Query, Request, status
 from fastapi.responses import RedirectResponse
@@ -9,6 +9,7 @@ from fief.csrf import check_csrf
 from fief.dependencies.auth import (
     check_unsupported_request_parameter,
     get_authorize_client,
+    get_authorize_code_challenge,
     get_authorize_prompt,
     get_authorize_redirect_uri,
     get_authorize_response_type,
@@ -48,6 +49,9 @@ async def authorize(
     scope: List[str] = Depends(get_authorize_scope),
     prompt: Optional[str] = Depends(get_authorize_prompt),
     screen: str = Depends(get_authorize_screen),
+    code_challenge_tuple: Optional[Tuple[str, str]] = Depends(
+        get_authorize_code_challenge
+    ),
     state: Optional[str] = Query(None),
     nonce: Optional[str] = Query(None),
     authentication_flow: AuthenticationFlow = Depends(get_authentication_flow),
@@ -70,6 +74,7 @@ async def authorize(
         scope=scope,
         state=state,
         nonce=nonce,
+        code_challenge_tuple=code_challenge_tuple,
         client=client,
     )
 
@@ -148,6 +153,7 @@ async def get_consent(
             session_token.created_at,
             login_session.state,
             login_session.nonce,
+            login_session.get_code_challenge_tuple(),
             login_session.client,
             user_id,
         )
@@ -194,6 +200,7 @@ async def post_consent(
             session_token.created_at,
             login_session.state,
             login_session.nonce,
+            login_session.get_code_challenge_tuple(),
             login_session.client,
             user_id,
         )

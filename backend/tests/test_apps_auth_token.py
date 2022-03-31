@@ -249,6 +249,54 @@ class TestAuthTokenAuthorizationCode:
         assert json["error"] == "invalid_grant"
 
     @pytest.mark.parametrize(
+        "authorization_code_alias,code_verifier_data",
+        [
+            pytest.param(
+                "default_regular_code_challenge_plain", {}, id="Missing code_verifier"
+            ),
+            pytest.param(
+                "default_regular_code_challenge_plain",
+                {"code_verifier": "INVALID_CODE_VERIFIER"},
+                id="Invalid code_verifier plain",
+            ),
+            pytest.param(
+                "default_regular_code_challenge_s256",
+                {"code_verifier": "INVALID_CODE_VERIFIER"},
+                id="Invalid code_verifier s256",
+            ),
+        ],
+    )
+    @pytest.mark.parametrize("auth_method", AUTH_METHODS)
+    async def test_code_verifier_not_matching(
+        self,
+        auth_method: str,
+        authorization_code_alias: str,
+        code_verifier_data: Dict[str, str],
+        tenant_params: TenantParams,
+        test_client_auth: httpx.AsyncClient,
+        test_data: TestData,
+    ):
+        authorization_code = test_data["authorization_codes"][authorization_code_alias]
+        client = authorization_code.client
+        headers, data = get_authenticated_request_headers_data(auth_method, client)
+        response = await test_client_auth.post(
+            f"{tenant_params.path_prefix}/api/token",
+            headers=headers,
+            data={
+                **data,
+                **code_verifier_data,
+                "grant_type": "authorization_code",
+                "code": authorization_code.code,
+                "redirect_uri": authorization_code.redirect_uri,
+            },
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+        json = response.json()
+        assert json["error"] == "invalid_grant"
+
+    @pytest.mark.parametrize(
         "authorization_code_alias",
         ["default_regular", "default_regular_nonce", "secondary_regular"],
     )
@@ -311,6 +359,42 @@ class TestAuthTokenAuthorizationCode:
         response_headers = response.headers
         assert response_headers["Cache-Control"] == "no-store"
         assert response_headers["Pragma"] == "no-cache"
+
+    @pytest.mark.parametrize(
+        "authorization_code_alias,code_verifier",
+        [
+            ("default_regular_code_challenge_plain", "PLAIN_CODE_CHALLENGE"),
+            ("default_regular_code_challenge_s256", "S256_CODE_CHALLENGE"),
+        ],
+    )
+    @pytest.mark.parametrize("auth_method", AUTH_METHODS)
+    async def test_valid_code_verifier(
+        self,
+        auth_method: str,
+        authorization_code_alias: str,
+        code_verifier: str,
+        test_client_auth: httpx.AsyncClient,
+        test_data: TestData,
+    ):
+        authorization_code = test_data["authorization_codes"][authorization_code_alias]
+        client = authorization_code.client
+        tenant = client.tenant
+        path_prefix = tenant.slug if not tenant.default else ""
+
+        headers, data = get_authenticated_request_headers_data(auth_method, client)
+        response = await test_client_auth.post(
+            f"{path_prefix}/api/token",
+            headers=headers,
+            data={
+                **data,
+                "grant_type": "authorization_code",
+                "code": authorization_code.code,
+                "redirect_uri": authorization_code.redirect_uri,
+                "code_verifier": code_verifier,
+            },
+        )
+
+        assert response.status_code == status.HTTP_200_OK
 
 
 @pytest.mark.asyncio
