@@ -1,7 +1,9 @@
 import re
 from typing import AsyncGenerator, Tuple
+from unittest.mock import AsyncMock
 
 import pytest
+from pytest_mock import MockerFixture
 from sqlalchemy import engine, select
 
 from fief.db import AsyncSession
@@ -13,12 +15,13 @@ from fief.managers import (
     WorkspaceManager,
     WorkspaceUserManager,
 )
-from fief.models import Client, Tenant
+from fief.models import Client, Tenant, Workspace
 from fief.schemas.user import UserDB
 from fief.schemas.workspace import WorkspaceCreate
 from fief.services.workspace_creation import WorkspaceCreation
 from fief.services.workspace_db import WorkspaceDatabase
 from tests.conftest import GetTestDatabase
+from tests.data import TestData
 
 
 @pytest.fixture(scope="module")
@@ -54,6 +57,26 @@ def workspace_creation(main_session: AsyncSession) -> WorkspaceCreation:
     workspace_user_manager = WorkspaceUserManager(main_session)
     workspace_db = WorkspaceDatabase()
     return WorkspaceCreation(workspace_manager, workspace_user_manager, workspace_db)
+
+
+@pytest.fixture(autouse=True)
+def mock_main_fief_functions(
+    mocker: MockerFixture,
+    workspace: Workspace,
+    test_data: TestData,
+    workspace_session: AsyncSession,
+):
+    get_main_fief_workspace_mock = mocker.patch(
+        "fief.services.workspace_creation.get_main_fief_workspace"
+    )
+    get_main_fief_workspace_mock.side_effect = AsyncMock(return_value=workspace)
+
+    get_main_fief_client_mock = mocker.patch(
+        "fief.services.workspace_creation.get_main_fief_client"
+    )
+    get_main_fief_client_mock.side_effect = AsyncMock(
+        return_value=test_data["clients"]["default_tenant"]
+    )
 
 
 @pytest.mark.asyncio
@@ -97,6 +120,27 @@ class TestWorkspaceCreationCreate:
             workspace.id, workspace_admin_user.id
         )
         assert workspace_user is not None
+
+    async def test_added_redirect_uri(
+        self,
+        workspace_create: WorkspaceCreate,
+        workspace_creation: WorkspaceCreation,
+        workspace_admin_user: UserDB,
+        workspace_session: AsyncSession,
+        test_data: TestData,
+    ):
+        workspace = await workspace_creation.create(
+            workspace_create, workspace_admin_user.id
+        )
+
+        client_manager = ClientManager(workspace_session)
+        client = await client_manager.get_by_id(
+            test_data["clients"]["default_tenant"].id
+        )
+        assert client is not None
+        assert (
+            f"http://{workspace.domain}/admin/api/auth/callback" in client.redirect_uris
+        )
 
     async def test_default_parameters(
         self, workspace_create: WorkspaceCreate, workspace_creation: WorkspaceCreation

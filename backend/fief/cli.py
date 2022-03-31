@@ -116,7 +116,7 @@ def migrate_workspaces():
 @app.command("create-main-workspace")
 def create_main_workspace():
     """Create a main Fief workspace following the environment settings."""
-    from fief.services.workspace_creation import (
+    from fief.services.main_workspace import (
         MainWorkspaceAlreadyExists,
         create_main_fief_workspace,
     )
@@ -144,7 +144,7 @@ def create_main_user(
     ),
 ):
     """Create a main Fief workspace user."""
-    from fief.services.workspace_creation import (
+    from fief.services.main_workspace import (
         CreateMainFiefUserError,
         create_main_fief_user,
     )

@@ -17,6 +17,9 @@ class WorkspaceManager(BaseManager[Workspace], UUIDManagerMixin[Workspace]):
         statement = select(Workspace).where(Workspace.domain == domain)
         return await self.get_one_or_none(statement)
 
+    async def get_main(self) -> Optional[Workspace]:
+        return await self.get_by_domain(settings.fief_domain)
+
     async def get_available_subdomain(self, name: str) -> str:
         slug = slugify(name)
         domain = f"{slug}.{settings.root_domain}"
