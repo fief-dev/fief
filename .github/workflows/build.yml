@@ -145,7 +145,7 @@ jobs:
     - name: Wait package to be truly available from PyPI
       shell: bash
       run: |
-        sleep 60
+        sleep 120
     - name: Set raw version variable
       shell: bash
       run: |
