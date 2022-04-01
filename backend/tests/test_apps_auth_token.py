@@ -1,11 +1,9 @@
 import base64
-import json as _json
 from typing import Dict, Tuple
 
 import httpx
 import pytest
 from fastapi import status
-from jwcrypto import jwt
 
 from fief.crypto.token import get_token_hash
 from fief.db import AsyncSession
@@ -13,6 +11,7 @@ from fief.managers import AuthorizationCodeManager, RefreshTokenManager
 from fief.models import Client
 from tests.conftest import TenantParams
 from tests.data import TestData, authorization_code_codes, refresh_token_tokens
+from tests.helpers import id_token_assertions
 
 AUTH_METHODS = ["client_secret_basic", "client_secret_post"]
 
@@ -351,15 +350,11 @@ class TestAuthTokenAuthorizationCode:
         else:
             assert "refresh_token" not in json
 
-        id_token = json["id_token"]
-        id_token_jwt = jwt.JWT(jwt=id_token, algs=["RS256"], key=tenant.get_sign_jwk())
-        id_token_claims = _json.loads(id_token_jwt.claims)
-        if authorization_code.nonce is not None:
-            assert id_token_claims["nonce"] == authorization_code.nonce
-        else:
-            assert "nonce" not in id_token_claims
-        id_token_claims["auth_time"] == int(
-            authorization_code.authenticated_at.timestamp()
+        await id_token_assertions(
+            id_token=json["id_token"],
+            jwk=tenant.get_sign_jwk(),
+            authenticated_at=authorization_code.authenticated_at,
+            authorization_code=authorization_code,
         )
 
         response_headers = response.headers
@@ -610,10 +605,11 @@ class TestAuthTokenRefreshToken:
         else:
             assert "refresh_token" not in json
 
-        id_token = json["id_token"]
-        id_token_jwt = jwt.JWT(jwt=id_token, algs=["RS256"], key=tenant.get_sign_jwk())
-        id_token_claims = _json.loads(id_token_jwt.claims)
-        id_token_claims["auth_time"] == int(refresh_token.authenticated_at.timestamp())
+        await id_token_assertions(
+            id_token=json["id_token"],
+            jwk=tenant.get_sign_jwk(),
+            authenticated_at=refresh_token.authenticated_at,
+        )
 
         response_headers = response.headers
         assert response_headers["Cache-Control"] == "no-store"

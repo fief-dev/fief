@@ -30,13 +30,6 @@ class UserUpdate(models.BaseUserUpdate):
 class UserDB(User, models.BaseUserDB):
     tenant_id: UUID4
 
-    def get_claims(self) -> Dict[str, Any]:
-        return {
-            "sub": str(self.id),
-            "email": self.email,
-            "tenant_id": str(self.tenant_id),
-        }
-
 
 class UserRead(User):
     tenant: TenantEmbedded

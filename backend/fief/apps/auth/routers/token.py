@@ -19,9 +19,7 @@ from fief.managers import RefreshTokenManager
 from fief.models import RefreshToken, Tenant, Workspace
 from fief.schemas.auth import TokenResponse
 from fief.schemas.user import UserDB
-
-TOKEN_LIFETIME = 3600
-REFRESH_TOKEN_LIFETIME = 3600 * 24 * 30
+from fief.settings import settings
 
 router = APIRouter()
 
@@ -42,7 +40,12 @@ async def token(
 
     tenant_host = tenant.get_host(workspace.domain)
     access_token = generate_access_token(
-        tenant.get_sign_jwk(), tenant_host, client, user, scope, TOKEN_LIFETIME
+        tenant.get_sign_jwk(),
+        tenant_host,
+        client,
+        user,
+        scope,
+        settings.access_id_token_lifetime_seconds,
     )
     id_token = generate_id_token(
         tenant.get_sign_jwk(),
@@ -50,17 +53,19 @@ async def token(
         client,
         authenticated_at,
         user,
-        TOKEN_LIFETIME,
+        settings.access_id_token_lifetime_seconds,
         nonce=nonce,
         encryption_key=client.get_encrypt_jwk(),
     )
     token_response = TokenResponse(
-        access_token=access_token, id_token=id_token, expires_in=TOKEN_LIFETIME
+        access_token=access_token,
+        id_token=id_token,
+        expires_in=settings.access_id_token_lifetime_seconds,
     )
 
     if "offline_access" in scope:
         expires_at = datetime.now(timezone.utc) + timedelta(
-            seconds=REFRESH_TOKEN_LIFETIME
+            seconds=settings.refresh_token_lifetime_seconds
         )
         token, token_hash = generate_token()
         refresh_token = RefreshToken(

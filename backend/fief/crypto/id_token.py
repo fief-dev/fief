@@ -1,10 +1,18 @@
 from datetime import datetime, timezone
-from typing import Optional
+from typing import Any, Dict, Optional, Union
 
 from jwcrypto import jwk, jwt
 
-from fief.models import Client
+from fief.models import Client, User
 from fief.schemas.user import UserDB
+
+
+def get_user_claims(user: Union[UserDB, User]) -> Dict[str, Any]:
+    return {
+        "sub": str(user.id),
+        "email": user.email,
+        "tenant_id": str(user.tenant_id),
+    }
 
 
 def generate_id_token(
@@ -12,7 +20,7 @@ def generate_id_token(
     host: str,
     client: Client,
     authenticated_at: datetime,
-    user: UserDB,
+    user: Union[UserDB, User],
     lifetime_seconds: int,
     *,
     nonce: Optional[str] = None,
@@ -37,7 +45,7 @@ def generate_id_token(
     exp = iat + lifetime_seconds
 
     claims = {
-        **user.get_claims(),
+        **get_user_claims(user),
         "iss": host,
         "aud": [client.client_id],
         "exp": exp,

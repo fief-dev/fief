@@ -23,4 +23,4 @@ class SessionToken(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
     )
 
     user_id: UUID4 = Column(GUID, ForeignKey(User.id, ondelete="CASCADE"), nullable=False)  # type: ignore
-    user: User = relationship("User")
+    user: User = relationship("User", lazy="joined")

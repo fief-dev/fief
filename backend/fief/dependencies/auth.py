@@ -30,6 +30,9 @@ from fief.schemas.auth import (
 from fief.services.authentication_flow import AuthenticationFlow
 from fief.settings import settings
 
+ALLOWED_RESPONSE_TYPES = ["code", "code id_token", "code token", "code id_token token"]
+NONCE_REQUIRED_RESPONSE_TYPES = ["code id_token", "code token", "code id_token token"]
+
 
 async def get_authorize_client(
     client_id: Optional[str] = Query(None),
@@ -89,8 +92,13 @@ async def check_unsupported_request_parameter(
         )
 
 
+async def get_nonce(nonce: Optional[str] = Query(None)) -> Optional[str]:
+    return nonce
+
+
 async def get_authorize_response_type(
     response_type: Optional[str] = Query(None),
+    nonce: Optional[str] = Depends(get_nonce),
     redirect_uri: str = Depends(get_authorize_redirect_uri),
     state: Optional[str] = Depends(get_authorize_state),
     _=Depends(get_gettext),
@@ -102,10 +110,17 @@ async def get_authorize_response_type(
             state,
         )
 
-    if response_type != "code":
+    if response_type not in ALLOWED_RESPONSE_TYPES:
+        raise AuthorizeRedirectException(
+            AuthorizeRedirectError.get_invalid_request(_("response_type is invalid")),
+            redirect_uri,
+            state,
+        )
+
+    if nonce is None and response_type in NONCE_REQUIRED_RESPONSE_TYPES:
         raise AuthorizeRedirectException(
             AuthorizeRedirectError.get_invalid_request(
-                _('response_type should be "code"')
+                _("nonce parameter is required for this response_type")
             ),
             redirect_uri,
             state,

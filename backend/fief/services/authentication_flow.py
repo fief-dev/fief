@@ -6,6 +6,8 @@ from fastapi.responses import RedirectResponse
 from furl import furl
 from pydantic import UUID4
 
+from fief.crypto.access_token import generate_access_token
+from fief.crypto.id_token import generate_id_token
 from fief.crypto.token import generate_token
 from fief.managers import (
     AuthorizationCodeManager,
@@ -13,7 +15,16 @@ from fief.managers import (
     LoginSessionManager,
     SessionTokenManager,
 )
-from fief.models import AuthorizationCode, Client, Grant, LoginSession, SessionToken
+from fief.models import (
+    AuthorizationCode,
+    Client,
+    Grant,
+    LoginSession,
+    SessionToken,
+    Tenant,
+    User,
+    Workspace,
+)
 from fief.settings import settings
 
 ResponseType = TypeVar("ResponseType", bound=Response)
@@ -125,37 +136,67 @@ class AuthenticationFlow:
 
     async def get_authorization_code_success_redirect(
         self,
-        redirect_uri: str,
-        scope: List[str],
+        *,
+        login_session: LoginSession,
         authenticated_at: datetime,
-        state: Optional[str],
-        nonce: Optional[str],
-        code_challenge_tuple: Optional[Tuple[str, str]],
+        user: User,
         client: Client,
-        user_id: UUID4,
+        tenant: Tenant,
+        workspace: Workspace,
     ) -> RedirectResponse:
         code, code_hash = generate_token()
         authorization_code = await self.authorization_code_manager.create(
             AuthorizationCode(
                 code=code_hash,
-                redirect_uri=redirect_uri,
-                scope=scope,
+                redirect_uri=login_session.redirect_uri,
+                scope=login_session.scope,
                 authenticated_at=authenticated_at,
-                nonce=nonce,
-                user_id=user_id,
+                nonce=login_session.nonce,
+                user_id=user.id,
                 client_id=client.id,
             )
         )
+
+        code_challenge_tuple = login_session.get_code_challenge_tuple()
         if code_challenge_tuple is not None:
             code_challenge, code_challenge_method = code_challenge_tuple
             authorization_code.code_challenge = code_challenge
             authorization_code.code_challenge_method = code_challenge_method
 
-        parsed_redirect_uri = furl(redirect_uri)
-        parsed_redirect_uri.add(query_params={"code": code})
-        if state is not None:
-            parsed_redirect_uri.add(query_params={"state": state})
+        query_params = {"code": code}
 
+        if login_session.state is not None:
+            query_params["state"] = login_session.state
+
+        tenant_host = tenant.get_host(workspace.domain)
+
+        if login_session.response_type in ["code token", "code id_token token"]:
+            access_token = generate_access_token(
+                tenant.get_sign_jwk(),
+                tenant_host,
+                client,
+                user,
+                login_session.scope,
+                settings.access_id_token_lifetime_seconds,
+            )
+            query_params["access_token"] = access_token
+            query_params["token_type"] = "bearer"
+
+        if login_session.response_type in ["code id_token", "code id_token token"]:
+            id_token = generate_id_token(
+                tenant.get_sign_jwk(),
+                tenant_host,
+                client,
+                authenticated_at,
+                user,
+                settings.access_id_token_lifetime_seconds,
+                nonce=login_session.nonce,
+                encryption_key=client.get_encrypt_jwk(),
+            )
+            query_params["id_token"] = id_token
+
+        parsed_redirect_uri = furl(login_session.redirect_uri)
+        parsed_redirect_uri.add(query_params)
         return RedirectResponse(
             url=parsed_redirect_uri.url, status_code=status.HTTP_302_FOUND
         )

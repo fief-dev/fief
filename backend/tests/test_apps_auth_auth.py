@@ -7,15 +7,11 @@ from furl import furl
 
 from fief.crypto.token import get_token_hash
 from fief.db import AsyncSession
-from fief.managers import (
-    AuthorizationCodeManager,
-    GrantManager,
-    LoginSessionManager,
-    SessionTokenManager,
-)
+from fief.managers import GrantManager, LoginSessionManager, SessionTokenManager
 from fief.settings import settings
 from tests.conftest import TenantParams
 from tests.data import TestData, session_token_tokens
+from tests.helpers import authorization_code_assertions
 
 
 @pytest.mark.asyncio
@@ -188,6 +184,23 @@ class TestAuthAuthorize:
                 "invalid_request",
                 id="Invalid code_challenge_method",
             ),
+            *[
+                pytest.param(
+                    {
+                        "response_type": response_type,
+                        "client_id": "DEFAULT_TENANT_CLIENT_ID",
+                        "redirect_uri": "https://nantes.city/callback",
+                        "scope": "openid",
+                    },
+                    "invalid_request",
+                    id=f"Missing nonce in Hybrid flow with {response_type}",
+                )
+                for response_type in [
+                    "code id_token",
+                    "code token",
+                    "code id_token token",
+                ]
+            ],
         ],
     )
     async def test_authorize_redirect_error(
@@ -212,43 +225,92 @@ class TestAuthAuthorize:
     @pytest.mark.parametrize(
         "params,session,redirection",
         [
-            pytest.param({}, False, "/login", id="Default login screen"),
-            pytest.param({"screen": "login"}, False, "/login", id="Login screen"),
             pytest.param(
-                {"screen": "register"}, False, "/register", id="Register screen"
-            ),
-            pytest.param({}, True, "/consent", id="No prompt with session"),
-            pytest.param(
-                {"prompt": "none"}, True, "/consent", id="None prompt with session"
+                {"response_type": "code"}, False, "/login", id="Default login screen"
             ),
             pytest.param(
-                {"prompt": "consent"},
+                {"response_type": "code", "screen": "login"},
+                False,
+                "/login",
+                id="Login screen",
+            ),
+            pytest.param(
+                {"response_type": "code", "screen": "register"},
+                False,
+                "/register",
+                id="Register screen",
+            ),
+            pytest.param(
+                {"response_type": "code"}, True, "/consent", id="No prompt with session"
+            ),
+            pytest.param(
+                {"response_type": "code", "prompt": "none"},
+                True,
+                "/consent",
+                id="None prompt with session",
+            ),
+            pytest.param(
+                {"response_type": "code", "prompt": "consent"},
                 True,
                 "/consent",
                 id="Consent prompt with session",
             ),
             pytest.param(
-                {"prompt": "login"}, True, "/login", id="Login prompt with session"
+                {"response_type": "code", "prompt": "login"},
+                True,
+                "/login",
+                id="Login prompt with session",
             ),
             pytest.param(
-                {"nonce": "NONCE"}, False, "/login", id="Provided nonce value"
+                {"response_type": "code", "nonce": "NONCE"},
+                False,
+                "/login",
+                id="Provided nonce value",
             ),
             pytest.param(
-                {"max_age": 3600}, True, "/consent", id="max_age one hour ago"
+                {"response_type": "code", "max_age": 3600},
+                True,
+                "/consent",
+                id="max_age one hour ago",
             ),
-            pytest.param({"max_age": 0}, True, "/login", id="max_age now"),
             pytest.param(
-                {"code_challenge": "CODE_CHALLENGE"},
+                {"response_type": "code", "max_age": 0},
+                True,
+                "/login",
+                id="max_age now",
+            ),
+            pytest.param(
+                {"response_type": "code", "code_challenge": "CODE_CHALLENGE"},
                 False,
                 "/login",
                 id="code_challenge without method",
             ),
             pytest.param(
-                {"code_challenge": "CODE_CHALLENGE", "code_challenge_method": "S256"},
+                {
+                    "response_type": "code",
+                    "code_challenge": "CODE_CHALLENGE",
+                    "code_challenge_method": "S256",
+                },
                 False,
                 "/login",
                 id="code_challenge with specified method",
             ),
+            *[
+                pytest.param(
+                    {
+                        "response_type": response_type,
+                        "nonce": "NONCE",
+                    },
+                    False,
+                    "/login",
+                    id=f"Hybrid flow with {response_type}",
+                )
+                for response_type in [
+                    "code id_token",
+                    "code token",
+                    "code id_token token",
+                ]
+            ],
         ],
     )
     async def test_valid(
@@ -262,7 +324,6 @@ class TestAuthAuthorize:
     ):
         params = {
             **params,
-            "response_type": "code",
             "client_id": tenant_params.client.client_id,
             "redirect_uri": "https://nantes.city/callback",
             "scope": "openid",
@@ -582,19 +643,12 @@ class TestAuthGetConsent:
         assert response.status_code == status.HTTP_302_FOUND
 
         redirect_uri = response.headers["Location"]
-        assert redirect_uri.startswith(login_session.redirect_uri)
-        parsed_location = furl(redirect_uri)
-        assert "code" in parsed_location.query.params
-        assert parsed_location.query.params["state"] == login_session.state
-
-        authorization_code_manager = AuthorizationCodeManager(workspace_session)
-        code_hash = get_token_hash(parsed_location.query.params["code"])
-        authorization_code = await authorization_code_manager.get_by_code(code_hash)
-        assert authorization_code is not None
-        assert authorization_code.nonce == login_session.nonce
-        assert authorization_code.authenticated_at.replace(
-            microsecond=0
-        ) == session_token.created_at.replace(microsecond=0)
+        await authorization_code_assertions(
+            redirect_uri=redirect_uri,
+            login_session=login_session,
+            session_token=session_token,
+            session=workspace_session,
+        )
 
         set_cookie_header = response.headers["Set-Cookie"]
         assert set_cookie_header.startswith(f'{settings.login_session_cookie_name}=""')
@@ -645,19 +699,12 @@ class TestAuthGetConsent:
         assert response.status_code == status.HTTP_302_FOUND
 
         redirect_uri = response.headers["Location"]
-        assert redirect_uri.startswith(login_session.redirect_uri)
-        parsed_location = furl(redirect_uri)
-        assert "code" in parsed_location.query.params
-        assert parsed_location.query.params["state"] == login_session.state
-
-        authorization_code_manager = AuthorizationCodeManager(workspace_session)
-        code_hash = get_token_hash(parsed_location.query.params["code"])
-        authorization_code = await authorization_code_manager.get_by_code(code_hash)
-        assert authorization_code is not None
-        assert authorization_code.nonce == login_session.nonce
-        assert authorization_code.authenticated_at.replace(
-            microsecond=0
-        ) == session_token.created_at.replace(microsecond=0)
+        await authorization_code_assertions(
+            redirect_uri=redirect_uri,
+            login_session=login_session,
+            session_token=session_token,
+            session=workspace_session,
+        )
 
         set_cookie_header = response.headers["Set-Cookie"]
         assert set_cookie_header.startswith(f'{settings.login_session_cookie_name}=""')
@@ -749,7 +796,14 @@ class TestAuthPostConsent:
 
     @pytest.mark.parametrize(
         "login_session_alias",
-        ["default", "default_code_challenge_plain", "default_code_challenge_s256"],
+        [
+            "default",
+            "default_code_challenge_plain",
+            "default_code_challenge_s256",
+            "default_hybrid_id_token",
+            "default_hybrid_token",
+            "default_hybrid_id_token_token",
+        ],
     )
     async def test_allow(
         self,
@@ -776,23 +830,11 @@ class TestAuthPostConsent:
         assert response.status_code == status.HTTP_302_FOUND
 
         redirect_uri = response.headers["Location"]
-        assert redirect_uri.startswith(login_session.redirect_uri)
-        parsed_location = furl(redirect_uri)
-        assert "code" in parsed_location.query.params
-        assert parsed_location.query.params["state"] == login_session.state
-
-        authorization_code_manager = AuthorizationCodeManager(workspace_session)
-        code_hash = get_token_hash(parsed_location.query.params["code"])
-        authorization_code = await authorization_code_manager.get_by_code(code_hash)
-        assert authorization_code is not None
-        assert authorization_code.nonce == login_session.nonce
-        assert authorization_code.authenticated_at.replace(
-            microsecond=0
-        ) == session_token.created_at.replace(microsecond=0)
-        assert authorization_code.code_challenge == login_session.code_challenge
-        assert (
-            authorization_code.code_challenge_method
-            == login_session.code_challenge_method
+        await authorization_code_assertions(
+            redirect_uri=redirect_uri,
+            login_session=login_session,
+            session_token=session_token,
+            session=workspace_session,
         )
 
         set_cookie_header = response.headers["Set-Cookie"]

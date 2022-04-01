@@ -19,16 +19,18 @@ from fief.dependencies.auth import (
     get_consent_prompt,
     get_login_session,
     get_needs_consent,
+    get_nonce,
     has_valid_session_token,
 )
 from fief.dependencies.authentication_flow import get_authentication_flow
+from fief.dependencies.current_workspace import get_current_workspace
 from fief.dependencies.locale import get_gettext, get_translations
 from fief.dependencies.session_token import get_session_token
 from fief.dependencies.tenant import get_current_tenant
 from fief.dependencies.users import UserManager, get_user_manager
 from fief.exceptions import LoginException
 from fief.locale import Translations
-from fief.models import Client, LoginSession, Tenant
+from fief.models import Client, LoginSession, Tenant, Workspace
 from fief.models.session_token import SessionToken
 from fief.schemas.auth import LoginError
 from fief.services.authentication_flow import AuthenticationFlow
@@ -52,8 +54,8 @@ async def authorize(
     code_challenge_tuple: Optional[Tuple[str, str]] = Depends(
         get_authorize_code_challenge
     ),
+    nonce: Optional[str] = Depends(get_nonce),
     state: Optional[str] = Query(None),
-    nonce: Optional[str] = Query(None),
     authentication_flow: AuthenticationFlow = Depends(get_authentication_flow),
     has_valid_session_token: bool = Depends(has_valid_session_token),
 ):
@@ -137,6 +139,7 @@ async def get_consent(
     prompt: Optional[str] = Depends(get_consent_prompt),
     needs_consent: bool = Depends(get_needs_consent),
     tenant: Tenant = Depends(get_current_tenant),
+    workspace: Workspace = Depends(get_current_workspace),
     authentication_flow: AuthenticationFlow = Depends(get_authentication_flow),
     translations: Translations = Depends(get_translations),
 ):
@@ -146,16 +149,13 @@ async def get_consent(
         )
 
     if not needs_consent and prompt != "consent":
-        user_id = session_token.user_id
         response = await authentication_flow.get_authorization_code_success_redirect(
-            login_session.redirect_uri,
-            login_session.scope,
-            session_token.created_at,
-            login_session.state,
-            login_session.nonce,
-            login_session.get_code_challenge_tuple(),
-            login_session.client,
-            user_id,
+            login_session=login_session,
+            authenticated_at=session_token.created_at,
+            user=session_token.user,
+            client=login_session.client,
+            tenant=tenant,
+            workspace=workspace,
         )
         response = await authentication_flow.delete_login_session(
             response, login_session
@@ -181,6 +181,7 @@ async def post_consent(
     login_session: LoginSession = Depends(get_login_session),
     session_token: Optional[SessionToken] = Depends(get_session_token),
     tenant: Tenant = Depends(get_current_tenant),
+    workspace: Workspace = Depends(get_current_workspace),
     authentication_flow: AuthenticationFlow = Depends(get_authentication_flow),
     _=Depends(get_gettext),
 ):
@@ -195,14 +196,12 @@ async def post_consent(
             user_id, login_session.client, login_session.scope
         )
         response = await authentication_flow.get_authorization_code_success_redirect(
-            login_session.redirect_uri,
-            login_session.scope,
-            session_token.created_at,
-            login_session.state,
-            login_session.nonce,
-            login_session.get_code_challenge_tuple(),
-            login_session.client,
-            user_id,
+            login_session=login_session,
+            authenticated_at=session_token.created_at,
+            user=session_token.user,
+            client=login_session.client,
+            tenant=tenant,
+            workspace=workspace,
         )
     elif action == "deny":
         response = AuthenticationFlow.get_authorization_code_error_redirect(

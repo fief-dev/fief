@@ -24,6 +24,7 @@ from sqlalchemy_utils import create_database, drop_database
 
 from fief.apps import admin_app, auth_app
 from fief.crypto.access_token import generate_access_token
+from fief.crypto.id_token import get_user_claims
 from fief.crypto.token import generate_token
 from fief.csrf import check_csrf
 from fief.db import AsyncConnection, AsyncEngine, AsyncSession
@@ -272,7 +273,7 @@ async def admin_session_token(
     session_token = AdminSessionToken(
         token=token_hash,
         raw_tokens="{}",
-        raw_userinfo=json.dumps(workspace_admin_user.get_claims()),
+        raw_userinfo=json.dumps(get_user_claims(workspace_admin_user)),
     )
     main_session.add(session_token)
 
