@@ -128,7 +128,8 @@ async def validate_grant_request(
         if refresh_token_token is None:
             raise TokenRequestException(TokenError.get_invalid_request())
 
-        refresh_token = await refresh_token_manager.get_by_token(refresh_token_token)
+        token_hash = get_token_hash(refresh_token_token)
+        refresh_token = await refresh_token_manager.get_by_token(token_hash)
 
         if refresh_token is None:
             raise TokenRequestException(TokenError.get_invalid_grant())

@@ -6,6 +6,7 @@ from pydantic import UUID4
 
 from fief.crypto.access_token import generate_access_token
 from fief.crypto.id_token import generate_id_token
+from fief.crypto.token import generate_token
 from fief.dependencies.current_workspace import get_current_workspace
 from fief.dependencies.tenant import get_current_tenant
 from fief.dependencies.token import (
@@ -61,7 +62,9 @@ async def token(
         expires_at = datetime.now(timezone.utc) + timedelta(
             seconds=REFRESH_TOKEN_LIFETIME
         )
+        token, token_hash = generate_token()
         refresh_token = RefreshToken(
+            token=token_hash,
             expires_at=expires_at,
             scope=scope,
             user_id=user.id,
@@ -69,7 +72,7 @@ async def token(
             authenticated_at=authenticated_at,
         )
         refresh_token = await refresh_token_manager.create(refresh_token)
-        token_response.refresh_token = refresh_token.token
+        token_response.refresh_token = token
 
     response.headers["Cache-Control"] = "no-store"
     response.headers["Pragma"] = "no-cache"

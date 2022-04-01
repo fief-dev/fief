@@ -7,11 +7,12 @@ import pytest
 from fastapi import status
 from jwcrypto import jwt
 
+from fief.crypto.token import get_token_hash
 from fief.db import AsyncSession
 from fief.managers import AuthorizationCodeManager, RefreshTokenManager
 from fief.models import Client
 from tests.conftest import TenantParams
-from tests.data import TestData, authorization_code_codes
+from tests.data import TestData, authorization_code_codes, refresh_token_tokens
 
 AUTH_METHODS = ["client_secret_basic", "client_secret_post"]
 
@@ -342,6 +343,11 @@ class TestAuthTokenAuthorizationCode:
 
         if "offline_access" in authorization_code.scope:
             assert json["refresh_token"] is not None
+            refresh_token_manager = RefreshTokenManager(workspace_session)
+            refresh_token = await refresh_token_manager.get_by_token(
+                get_token_hash(json["refresh_token"])
+            )
+            assert refresh_token is not None
         else:
             assert "refresh_token" not in json
 
@@ -551,7 +557,7 @@ class TestAuthTokenRefreshToken:
             data={
                 **data,
                 "grant_type": "refresh_token",
-                "refresh_token": refresh_token.token,
+                "refresh_token": refresh_token_tokens["default_regular"][0],
                 "scope": "openid offline_access user",
             },
         )
@@ -581,7 +587,7 @@ class TestAuthTokenRefreshToken:
             data={
                 **data,
                 "grant_type": "refresh_token",
-                "refresh_token": refresh_token.token,
+                "refresh_token": refresh_token_tokens["default_regular"][0],
             },
         )
 
@@ -595,8 +601,7 @@ class TestAuthTokenRefreshToken:
 
         if "offline_access" in refresh_token.scope:
             assert json["refresh_token"] is not None
-
-            assert json["refresh_token"] != refresh_token.token
+            assert get_token_hash(json["refresh_token"]) != refresh_token.token
             refresh_token_manager = RefreshTokenManager(workspace_session)
             old_refresh_token = await refresh_token_manager.get_by_token(
                 refresh_token.token

@@ -17,7 +17,6 @@ class RefreshToken(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
 
     token: str = Column(
         String(length=255),
-        default=secrets.token_urlsafe,
         nullable=False,
         index=True,
         unique=True,

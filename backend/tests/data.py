@@ -233,8 +233,14 @@ authorization_codes: ModelMapping[AuthorizationCode] = {
     ),
 }
 
+
+refresh_token_tokens: Mapping[str, Tuple[str, str]] = {
+    "default_regular": generate_token(),
+}
+
 refresh_tokens: ModelMapping[RefreshToken] = {
     "default_regular": RefreshToken(
+        token=refresh_token_tokens["default_regular"][1],
         expires_at=datetime.now(timezone.utc) + timedelta(seconds=3600),
         user=users["regular"],
         client=clients["default_tenant"],
@@ -273,4 +279,9 @@ data_mapping: TestData = {
     "grants": grants,
 }
 
-__all__ = ["authorization_code_codes", "data_mapping", "TestData"]
+__all__ = [
+    "authorization_code_codes",
+    "data_mapping",
+    "refresh_token_tokens",
+    "TestData",
+]
