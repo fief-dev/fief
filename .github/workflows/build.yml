@@ -101,8 +101,7 @@ jobs:
     - name: Set up Node.js
       uses: actions/setup-node@v1
       with:
-        node-version: 14.x
-        cache: 'npm'
+        node-version: 14.x'
     - name: Install Node dependencies
       shell: bash
       working-directory: backend
