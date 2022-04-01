@@ -4,6 +4,7 @@ import Header from '../Header/Header';
 import Sidebar from '../Sidebar/Sidebar';
 
 interface LayoutProps {
+  title?: string;
   sidebar?: React.ReactNode;
 }
 
