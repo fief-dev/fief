@@ -61,15 +61,18 @@ async def test_admin_session_for_another_workspace(
         workspace_id=another_workspace.id, user_id=not_existing_uuid
     )
     main_session.add(workspace_user)
+    token, token_hash = generate_token()
     session_token = AdminSessionToken(
-        raw_tokens="{}", raw_userinfo=json.dumps({"sub": str(not_existing_uuid)})
+        token=token_hash,
+        raw_tokens="{}",
+        raw_userinfo=json.dumps({"sub": str(not_existing_uuid)}),
     )
     main_session.add(session_token)
     await main_session.commit()
 
     async with test_client_admin_generator(app) as test_client:
         cookies = {}
-        cookies[settings.fief_admin_session_cookie_name] = session_token.token
+        cookies[settings.fief_admin_session_cookie_name] = token
         response = await test_client.get("/protected", cookies=cookies)
 
         assert response.status_code == status.HTTP_403_FORBIDDEN

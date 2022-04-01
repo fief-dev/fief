@@ -15,9 +15,7 @@ from fief.models.generics import CreatedUpdatedAt, UUIDModel
 class AdminSessionToken(UUIDModel, CreatedUpdatedAt, MainBase):
     __tablename__ = "admin_session_tokens"
 
-    token: str = Column(
-        String(length=255), default=secrets.token_urlsafe, unique=True, nullable=False
-    )
+    token: str = Column(String(length=255), unique=True, nullable=False)
     raw_tokens: str = Column(Text, nullable=False)
     raw_userinfo: str = Column(Text, nullable=False)
 

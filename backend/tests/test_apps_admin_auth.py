@@ -4,6 +4,7 @@ import httpx
 import pytest
 from fastapi import status
 
+from fief.crypto.token import get_token_hash
 from fief.db import AsyncSession
 from fief.managers import AdminSessionTokenManager
 from fief.schemas.user import UserDB
@@ -61,7 +62,10 @@ class TestAuthCallback:
         assert session_cookie is not None
 
         admin_session_token_manager = AdminSessionTokenManager(main_session)
-        session_token = await admin_session_token_manager.get_by_token(session_cookie)
+        session_token_hash = get_token_hash(session_cookie)
+        session_token = await admin_session_token_manager.get_by_token(
+            session_token_hash
+        )
         assert session_token is not None
         assert session_token.userinfo == {"email": "anne@bretagne.duchy"}
 

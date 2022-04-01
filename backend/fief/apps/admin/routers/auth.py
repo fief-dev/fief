@@ -5,6 +5,7 @@ from fastapi.responses import RedirectResponse
 from fief_client import FiefAsync
 from furl import furl
 
+from fief.crypto.token import generate_token
 from fief.dependencies.admin_session import get_userinfo
 from fief.dependencies.fief import get_fief
 from fief.dependencies.main_managers import get_admin_session_token_manager
@@ -44,15 +45,18 @@ async def callback(
     tokens, userinfo = await fief.auth_callback(
         code, request.url_for("admin.auth:callback")
     )
+    token, token_hash = generate_token()
     session_token = AdminSessionToken(
-        raw_tokens=json.dumps(tokens), raw_userinfo=json.dumps(userinfo)
+        token=token_hash,
+        raw_tokens=json.dumps(tokens),
+        raw_userinfo=json.dumps(userinfo),
     )
-    session_token = await manager.create(session_token)
+    await manager.create(session_token)
 
     response = RedirectResponse(url="/admin/", status_code=status.HTTP_302_FOUND)
     response.set_cookie(
         settings.fief_admin_session_cookie_name,
-        session_token.token,
+        token,
         domain=settings.fief_admin_session_cookie_domain,
         secure=settings.fief_admin_session_cookie_secure,
         httponly=True,

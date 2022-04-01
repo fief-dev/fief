@@ -261,21 +261,24 @@ async def admin_session_token(
     main_session: AsyncSession,
     workspace: Workspace,
     workspace_admin_user: UserDB,
-) -> AsyncGenerator[AdminSessionToken, None]:
+) -> AsyncGenerator[Tuple[AdminSessionToken, str], None]:
     workspace_user = WorkspaceUser(
         workspace_id=workspace.id, user_id=workspace_admin_user.id
     )
     main_session.add(workspace_user)
     await main_session.commit()
 
+    token, token_hash = generate_token()
     session_token = AdminSessionToken(
-        raw_tokens="{}", raw_userinfo=json.dumps(workspace_admin_user.get_claims())
+        token=token_hash,
+        raw_tokens="{}",
+        raw_userinfo=json.dumps(workspace_admin_user.get_claims()),
     )
     main_session.add(session_token)
 
     await main_session.commit()
 
-    yield session_token
+    yield (session_token, token)
 
     await main_session.delete(session_token)
     await main_session.delete(workspace_user)
@@ -300,7 +303,7 @@ async def admin_api_key(
 @pytest.fixture
 async def authenticated_admin(
     request: pytest.FixtureRequest,
-    admin_session_token: AdminSessionToken,
+    admin_session_token: Tuple[AdminSessionToken, str],
     admin_api_key: Tuple[AdminAPIKey, str],
 ) -> Dict[str, Any]:
     marker = request.node.get_closest_marker("authenticated_admin")
@@ -310,7 +313,7 @@ async def authenticated_admin(
         if mode == "session":
             headers[
                 "Cookie"
-            ] = f"{settings.fief_admin_session_cookie_name}={admin_session_token.token}"
+            ] = f"{settings.fief_admin_session_cookie_name}={admin_session_token[1]}"
         elif mode == "api_key":
             headers["Authorization"] = f"Bearer {admin_api_key[1]}"
     return headers
