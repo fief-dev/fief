@@ -56,6 +56,8 @@ from fief.settings import settings
 from fief.tasks import send_task
 from tests.data import TestData, data_mapping, session_token_tokens
 
+pytest.register_assert_rewrite("tests.helpers")
+
 
 @pytest.fixture(scope="session")
 def event_loop():

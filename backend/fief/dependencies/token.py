@@ -28,7 +28,7 @@ class GrantRequest(TypedDict):
     scope: List[str]
     authenticated_at: datetime
     nonce: Optional[str]
-    code: Optional[str]
+    c_hash: Optional[str]
     client: Client
 
 
@@ -120,7 +120,7 @@ async def validate_grant_request(
             "scope": authorization_code.scope,
             "authenticated_at": authorization_code.authenticated_at,
             "nonce": authorization_code.nonce,
-            "code": authorization_code.code,
+            "c_hash": authorization_code.c_hash,
             "client": client,
         }
 
@@ -148,7 +148,7 @@ async def validate_grant_request(
             "scope": new_scope,
             "authenticated_at": refresh_token.authenticated_at,
             "nonce": None,
-            "code": None,
+            "c_hash": None,
             "client": client,
         }
 

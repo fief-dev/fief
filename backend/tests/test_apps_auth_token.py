@@ -310,6 +310,7 @@ class TestAuthTokenAuthorizationCode:
         workspace_session: AsyncSession,
     ):
         authorization_code = test_data["authorization_codes"][authorization_code_alias]
+        authorization_code_code = authorization_code_codes[authorization_code_alias]
         client = authorization_code.client
         tenant = client.tenant
         path_prefix = tenant.slug if not tenant.default else ""
@@ -321,7 +322,7 @@ class TestAuthTokenAuthorizationCode:
             data={
                 **data,
                 "grant_type": "authorization_code",
-                "code": authorization_code_codes[authorization_code_alias][0],
+                "code": authorization_code_code[0],
                 "redirect_uri": authorization_code.redirect_uri,
             },
         )
@@ -336,7 +337,7 @@ class TestAuthTokenAuthorizationCode:
 
         authorization_code_manager = AuthorizationCodeManager(workspace_session)
         used_authorization_code = await authorization_code_manager.get_by_code(
-            authorization_code.code
+            authorization_code_code[1]
         )
         assert used_authorization_code is None
 
@@ -354,7 +355,7 @@ class TestAuthTokenAuthorizationCode:
             id_token=json["id_token"],
             jwk=tenant.get_sign_jwk(),
             authenticated_at=authorization_code.authenticated_at,
-            authorization_code=authorization_code,
+            authorization_code_tuple=(authorization_code, authorization_code_code[0]),
             access_token=json["access_token"],
         )
 

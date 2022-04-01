@@ -7,7 +7,7 @@ from furl import furl
 from pydantic import UUID4
 
 from fief.crypto.access_token import generate_access_token
-from fief.crypto.id_token import generate_id_token
+from fief.crypto.id_token import generate_id_token, get_validation_hash
 from fief.crypto.token import generate_token
 from fief.managers import (
     AuthorizationCodeManager,
@@ -147,9 +147,11 @@ class AuthenticationFlow:
         workspace: Workspace,
     ) -> RedirectResponse:
         code, code_hash = generate_token()
+        c_hash = get_validation_hash(code)
         authorization_code = await self.authorization_code_manager.create(
             AuthorizationCode(
                 code=code_hash,
+                c_hash=c_hash,
                 redirect_uri=login_session.redirect_uri,
                 scope=login_session.scope,
                 authenticated_at=authenticated_at,
@@ -194,7 +196,7 @@ class AuthenticationFlow:
                 user,
                 settings.access_id_token_lifetime_seconds,
                 nonce=login_session.nonce,
-                code=code,
+                c_hash=c_hash,
                 access_token=access_token,
                 encryption_key=client.get_encrypt_jwk(),
             )

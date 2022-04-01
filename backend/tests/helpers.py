@@ -1,10 +1,11 @@
 import json
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Tuple
 
 from furl import furl
 from jwcrypto import jwk, jwt
 
+from fief.crypto.id_token import get_validation_hash
 from fief.crypto.token import get_token_hash
 from fief.db import AsyncSession
 from fief.managers import AuthorizationCodeManager
@@ -16,7 +17,7 @@ async def id_token_assertions(
     id_token: str,
     jwk: jwk.JWK,
     authenticated_at: datetime,
-    authorization_code: Optional[AuthorizationCode] = None,
+    authorization_code_tuple: Optional[Tuple[AuthorizationCode, str]] = None,
     access_token: Optional[str] = None,
 ):
     id_token_jwt = jwt.JWT(jwt=id_token, algs=["RS256"], key=jwk)
@@ -24,12 +25,15 @@ async def id_token_assertions(
 
     id_token_claims["auth_time"] == int(authenticated_at.timestamp())
 
-    if authorization_code is not None:
+    if authorization_code_tuple is not None:
+        authorization_code, code = authorization_code_tuple
         if authorization_code.nonce is not None:
             assert id_token_claims["nonce"] == authorization_code.nonce
         else:
             assert "nonce" not in id_token_claims
         assert "c_hash" in id_token_claims
+        c_hash = id_token_claims["c_hash"]
+        assert c_hash == get_validation_hash(code)
 
     if access_token is not None:
         assert "at_hash" in id_token_claims
@@ -55,7 +59,8 @@ async def authorization_code_assertions(
     assert params["state"] == login_session.state
 
     authorization_code_manager = AuthorizationCodeManager(session)
-    code_hash = get_token_hash(params["code"])
+    code = params["code"]
+    code_hash = get_token_hash(code)
 
     authorization_code = await authorization_code_manager.get_by_code(code_hash)
     assert authorization_code is not None
@@ -68,6 +73,8 @@ async def authorization_code_assertions(
     assert authorization_code.authenticated_at.replace(
         microsecond=0
     ) == session_token.created_at.replace(microsecond=0)
+
+    assert authorization_code.c_hash == get_validation_hash(code)
 
     if login_session.response_type in ["code token", "code id_token token"]:
         assert "access_token" in params
@@ -82,6 +89,6 @@ async def authorization_code_assertions(
             id_token=params["id_token"],
             jwk=tenant.get_sign_jwk(),
             authenticated_at=authorization_code.authenticated_at,
-            authorization_code=authorization_code,
+            authorization_code_tuple=(authorization_code, code),
             access_token=params.get("access_token"),
         )

@@ -26,7 +26,7 @@ def generate_id_token(
     lifetime_seconds: int,
     *,
     nonce: Optional[str] = None,
-    code: Optional[str] = None,
+    c_hash: Optional[str] = None,
     access_token: Optional[str] = None,
     encryption_key: Optional[jwk.JWK] = None,
 ) -> str:
@@ -42,7 +42,7 @@ def generate_id_token(
     :user: The authenticated user.
     :lifetime_seconds: Lifetime of the JWT.
     :nonce: Optional nonce value associated with the authorization request.
-    :code: Optional authorization code associated to the ID Token.
+    :c_hash: Optional c_hash value to add to the claims.
     :access_token: Optional access token associated to the ID Token.
     :encryption_key: Optional JWK to further encrypt the signed token.
     In this case, it becomes a Nested JWT, as defined in rfc7519.
@@ -62,8 +62,8 @@ def generate_id_token(
 
     if nonce is not None:
         claims["nonce"] = nonce
-    if code is not None:
-        claims["c_hash"] = get_validation_hash(code)
+    if c_hash is not None:
+        claims["c_hash"] = c_hash
     if access_token is not None:
         claims["at_hash"] = get_validation_hash(access_token)
 
