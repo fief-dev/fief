@@ -6,6 +6,7 @@ from fief.dependencies.current_workspace import get_current_workspace
 from fief.dependencies.tenant import get_current_tenant
 from fief.models import Tenant, Workspace
 from fief.schemas.well_known import OpenIDProviderMetadata
+from fief.services.response_type import ALLOWED_RESPONSE_TYPES
 from fief.settings import settings
 
 router = APIRouter()
@@ -32,7 +33,8 @@ async def get_openid_configuration(
         jwks_uri=_url_for("well_known:jwks"),
         registration_endpoint=_url_for("register:get"),
         scopes_supported=["openid", "offline_access"],
-        response_types_supported=["code"],
+        response_types_supported=ALLOWED_RESPONSE_TYPES,
+        response_modes_supported=["query", "fragment"],
         grant_types_supported=["authorization_code", "refresh_token"],
         subject_types_supported=["public"],
         id_token_signing_alg_values_supported=["RS256"],

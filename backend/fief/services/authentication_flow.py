@@ -25,6 +25,7 @@ from fief.models import (
     User,
     Workspace,
 )
+from fief.services.response_type import DEFAULT_RESPONSE_MODE
 from fief.settings import settings
 
 ResponseType = TypeVar("ResponseType", bound=Response)
@@ -57,6 +58,7 @@ class AuthenticationFlow:
     ) -> ResponseType:
         login_session = LoginSession(
             response_type=response_type,
+            response_mode=DEFAULT_RESPONSE_MODE[response_type],
             redirect_uri=redirect_uri,
             scope=scope,
             state=state,
@@ -163,10 +165,10 @@ class AuthenticationFlow:
             authorization_code.code_challenge = code_challenge
             authorization_code.code_challenge_method = code_challenge_method
 
-        query_params = {"code": code}
+        params = {"code": code}
 
         if login_session.state is not None:
-            query_params["state"] = login_session.state
+            params["state"] = login_session.state
 
         tenant_host = tenant.get_host(workspace.domain)
         access_token: Optional[str] = None
@@ -180,8 +182,8 @@ class AuthenticationFlow:
                 login_session.scope,
                 settings.access_id_token_lifetime_seconds,
             )
-            query_params["access_token"] = access_token
-            query_params["token_type"] = "bearer"
+            params["access_token"] = access_token
+            params["token_type"] = "bearer"
 
         if login_session.response_type in ["code id_token", "code id_token token"]:
             id_token = generate_id_token(
@@ -196,10 +198,15 @@ class AuthenticationFlow:
                 access_token=access_token,
                 encryption_key=client.get_encrypt_jwk(),
             )
-            query_params["id_token"] = id_token
+            params["id_token"] = id_token
 
         parsed_redirect_uri = furl(login_session.redirect_uri)
-        parsed_redirect_uri.add(query_params)
+
+        if login_session.response_mode == "query":
+            parsed_redirect_uri.query.add(params)
+        elif login_session.response_mode == "fragment":
+            parsed_redirect_uri.fragment.add(args=params)
+
         return RedirectResponse(
             url=parsed_redirect_uri.url, status_code=status.HTTP_302_FOUND
         )

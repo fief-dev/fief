@@ -44,12 +44,18 @@ async def authorization_code_assertions(
 ):
     assert redirect_uri.startswith(login_session.redirect_uri)
     parsed_location = furl(redirect_uri)
-    query_params = parsed_location.query.params
-    assert "code" in query_params
-    assert query_params["state"] == login_session.state
+
+    params = (
+        parsed_location.query.params
+        if login_session.response_mode == "query"
+        else parsed_location.fragment.query.params
+    )
+
+    assert "code" in params
+    assert params["state"] == login_session.state
 
     authorization_code_manager = AuthorizationCodeManager(session)
-    code_hash = get_token_hash(query_params["code"])
+    code_hash = get_token_hash(params["code"])
 
     authorization_code = await authorization_code_manager.get_by_code(code_hash)
     assert authorization_code is not None
@@ -64,18 +70,18 @@ async def authorization_code_assertions(
     ) == session_token.created_at.replace(microsecond=0)
 
     if login_session.response_type in ["code token", "code id_token token"]:
-        assert "access_token" in query_params
-        assert "token_type" in query_params
-        assert query_params["token_type"] == "bearer"
-        assert "refresh_token" not in query_params
+        assert "access_token" in params
+        assert "token_type" in params
+        assert params["token_type"] == "bearer"
+        assert "refresh_token" not in params
 
     if login_session.response_type in ["code id_token", "code id_token token"]:
-        assert "id_token" in query_params
+        assert "id_token" in params
         tenant = session_token.user.tenant
         await id_token_assertions(
-            id_token=query_params["id_token"],
+            id_token=params["id_token"],
             jwk=tenant.get_sign_jwk(),
             authenticated_at=authorization_code.authenticated_at,
             authorization_code=authorization_code,
-            access_token=query_params.get("access_token"),
+            access_token=params.get("access_token"),
         )

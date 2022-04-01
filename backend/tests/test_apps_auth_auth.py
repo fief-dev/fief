@@ -8,6 +8,7 @@ from furl import furl
 from fief.crypto.token import get_token_hash
 from fief.db import AsyncSession
 from fief.managers import GrantManager, LoginSessionManager, SessionTokenManager
+from fief.services.response_type import HYBRID_RESPONSE_TYPES
 from fief.settings import settings
 from tests.conftest import TenantParams
 from tests.data import TestData, session_token_tokens
@@ -195,11 +196,7 @@ class TestAuthAuthorize:
                     "invalid_request",
                     id=f"Missing nonce in Hybrid flow with {response_type}",
                 )
-                for response_type in [
-                    "code id_token",
-                    "code token",
-                    "code id_token token",
-                ]
+                for response_type in HYBRID_RESPONSE_TYPES
             ],
         ],
     )
@@ -305,11 +302,7 @@ class TestAuthAuthorize:
                     "/login",
                     id=f"Hybrid flow with {response_type}",
                 )
-                for response_type in [
-                    "code id_token",
-                    "code token",
-                    "code id_token token",
-                ]
+                for response_type in HYBRID_RESPONSE_TYPES
             ],
         ],
     )
@@ -359,6 +352,11 @@ class TestAuthAuthorize:
                 )
             else:
                 assert login_session.code_challenge_method == "plain"
+
+        if params["response_type"] in ["code"]:
+            assert login_session.response_mode == "query"
+        else:
+            assert login_session.response_mode == "fragment"
 
 
 @pytest.mark.asyncio

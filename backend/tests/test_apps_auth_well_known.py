@@ -6,6 +6,7 @@ from fastapi import status
 from jwcrypto import jwk
 
 from fief.models import Workspace
+from fief.services.response_type import ALLOWED_RESPONSE_TYPES
 from tests.conftest import TenantParams
 
 
@@ -30,6 +31,7 @@ class TestWellKnownOpenIDConfiguration:
         for key in json:
             assert json[key] is not None
 
+        assert json["response_types_supported"] == ALLOWED_RESPONSE_TYPES
         assert json["token_endpoint_auth_methods_supported"] == [
             "client_secret_basic",
             "client_secret_post",

@@ -99,6 +99,7 @@ users: ModelMapping[User] = {
 login_sessions: ModelMapping[LoginSession] = {
     "default": LoginSession(
         response_type="code",
+        response_mode="query",
         redirect_uri="https://nantes.city/callback",
         scope=["openid", "offline_access"],
         state="STATE",
@@ -107,6 +108,7 @@ login_sessions: ModelMapping[LoginSession] = {
     ),
     "default_none_prompt": LoginSession(
         response_type="code",
+        response_mode="query",
         redirect_uri="https://nantes.city/callback",
         scope=["openid", "offline_access"],
         state="STATE",
@@ -116,6 +118,7 @@ login_sessions: ModelMapping[LoginSession] = {
     ),
     "default_code_challenge_plain": LoginSession(
         response_type="code",
+        response_mode="query",
         redirect_uri="https://nantes.city/callback",
         scope=["openid", "offline_access"],
         state="STATE",
@@ -125,6 +128,7 @@ login_sessions: ModelMapping[LoginSession] = {
     ),
     "default_code_challenge_s256": LoginSession(
         response_type="code",
+        response_mode="query",
         redirect_uri="https://nantes.city/callback",
         scope=["openid", "offline_access"],
         state="STATE",
@@ -134,6 +138,7 @@ login_sessions: ModelMapping[LoginSession] = {
     ),
     "default_hybrid_id_token": LoginSession(
         response_type="code id_token",
+        response_mode="fragment",
         redirect_uri="https://nantes.city/callback",
         scope=["openid", "offline_access"],
         state="STATE",
@@ -141,6 +146,7 @@ login_sessions: ModelMapping[LoginSession] = {
     ),
     "default_hybrid_token": LoginSession(
         response_type="code token",
+        response_mode="fragment",
         redirect_uri="https://nantes.city/callback",
         scope=["openid", "offline_access"],
         state="STATE",
@@ -148,6 +154,7 @@ login_sessions: ModelMapping[LoginSession] = {
     ),
     "default_hybrid_id_token_token": LoginSession(
         response_type="code id_token token",
+        response_mode="fragment",
         redirect_uri="https://nantes.city/callback",
         scope=["openid", "offline_access"],
         state="STATE",
@@ -155,6 +162,7 @@ login_sessions: ModelMapping[LoginSession] = {
     ),
     "granted_default": LoginSession(
         response_type="code",
+        response_mode="query",
         redirect_uri="https://nantes.city/callback",
         scope=["openid", "offline_access"],
         state="STATE",
@@ -163,6 +171,7 @@ login_sessions: ModelMapping[LoginSession] = {
     ),
     "granted_default_larger_scope": LoginSession(
         response_type="code",
+        response_mode="query",
         redirect_uri="https://nantes.city/callback",
         scope=["openid", "offline_access", "other"],
         state="STATE",
@@ -171,6 +180,7 @@ login_sessions: ModelMapping[LoginSession] = {
     ),
     "first_party_default": LoginSession(
         response_type="code",
+        response_mode="query",
         redirect_uri="https://nantes.city/callback",
         scope=["openid", "offline_access", "other"],
         state="STATE",
@@ -179,6 +189,7 @@ login_sessions: ModelMapping[LoginSession] = {
     ),
     "secondary": LoginSession(
         response_type="code",
+        response_mode="query",
         redirect_uri="https://nantes.city/callback",
         scope=["openid", "offline_access"],
         state="STATE",

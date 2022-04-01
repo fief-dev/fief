@@ -28,10 +28,11 @@ from fief.schemas.auth import (
     LoginError,
 )
 from fief.services.authentication_flow import AuthenticationFlow
+from fief.services.response_type import (
+    ALLOWED_RESPONSE_TYPES,
+    NONCE_REQUIRED_RESPONSE_TYPES,
+)
 from fief.settings import settings
-
-ALLOWED_RESPONSE_TYPES = ["code", "code id_token", "code token", "code id_token token"]
-NONCE_REQUIRED_RESPONSE_TYPES = ["code id_token", "code token", "code id_token token"]
 
 
 async def get_authorize_client(
