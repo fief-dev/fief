@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, status
 
 from fief import schemas
+from fief.crypto.token import generate_token
 from fief.dependencies.admin_api_key import (
     get_api_key_by_id_or_404,
     get_paginated_api_keys,
@@ -40,10 +41,15 @@ async def create_api_key(
     current_workspace: Workspace = Depends(get_current_workspace),
     manager: AdminAPIKeyManager = Depends(get_admin_api_key_manager),
 ) -> schemas.admin_api_key.AdminAPIKeyCreateResponse:
-    api_key = AdminAPIKey(**create_api_key.dict(), workspace_id=current_workspace.id)
+    token, token_hash = generate_token()
+    api_key = AdminAPIKey(
+        **create_api_key.dict(), token=token_hash, workspace_id=current_workspace.id
+    )
     api_key = await manager.create(api_key)
 
-    return schemas.admin_api_key.AdminAPIKeyCreateResponse.from_orm(api_key)
+    api_key_response = schemas.admin_api_key.AdminAPIKeyCreateResponse.from_orm(api_key)
+    api_key_response.token = token
+    return api_key_response
 
 
 @router.delete(

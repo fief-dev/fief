@@ -81,15 +81,16 @@ class AuthenticationFlow:
     async def create_session_token(
         self, response: ResponseType, user_id: UUID4
     ) -> ResponseType:
+        token, token_hash = generate_token()
         expires_at = datetime.now(timezone.utc) + timedelta(
             seconds=settings.session_lifetime_seconds
         )
-        session_token = await self.session_token_manager.create(
-            SessionToken(expires_at=expires_at, user_id=user_id)
+        await self.session_token_manager.create(
+            SessionToken(token=token_hash, expires_at=expires_at, user_id=user_id)
         )
         response.set_cookie(
             settings.session_cookie_name,
-            value=session_token.token,
+            value=token,
             max_age=settings.session_lifetime_seconds,
             domain=settings.session_cookie_domain,
             secure=settings.session_cookie_secure,

@@ -1,9 +1,11 @@
 import uuid
+from typing import Tuple
 
 import httpx
 import pytest
 from fastapi import status
 
+from fief.crypto.token import generate_token, get_token_hash
 from fief.db import AsyncSession
 from fief.managers import AdminAPIKeyManager
 from fief.models import AdminAPIKey, Workspace
@@ -27,7 +29,9 @@ class TestListAPIKeys:
 
     @pytest.mark.authenticated_admin(mode="session")
     async def test_valid(
-        self, test_client_admin: httpx.AsyncClient, admin_api_key: AdminAPIKey
+        self,
+        test_client_admin: httpx.AsyncClient,
+        admin_api_key: Tuple[AdminAPIKey, str],
     ):
         response = await test_client_admin.get("/api-keys/")
 
@@ -58,7 +62,10 @@ class TestCreateAPIKey:
 
     @pytest.mark.authenticated_admin(mode="session")
     async def test_valid(
-        self, test_client_admin: httpx.AsyncClient, workspace: Workspace
+        self,
+        test_client_admin: httpx.AsyncClient,
+        workspace: Workspace,
+        main_session: AsyncSession,
     ):
         response = await test_client_admin.post(
             "/api-keys/", json={"name": "New API Key"}
@@ -70,22 +77,31 @@ class TestCreateAPIKey:
         assert json["token"] != "**********"
         assert json["workspace_id"] == str(workspace.id)
 
+        api_key_manager = AdminAPIKeyManager(main_session)
+        api_key = await api_key_manager.get_by_id(json["id"])
+        assert api_key is not None
+        assert api_key.token == get_token_hash(json["token"])
+
 
 @pytest.mark.asyncio
 @pytest.mark.workspace_host
 class TestDeleteAPIKey:
     async def test_unauthorized(
-        self, test_client_admin: httpx.AsyncClient, admin_api_key: AdminAPIKey
+        self,
+        test_client_admin: httpx.AsyncClient,
+        admin_api_key: Tuple[AdminAPIKey, str],
     ):
-        response = await test_client_admin.delete(f"/api-keys/{admin_api_key.id}")
+        response = await test_client_admin.delete(f"/api-keys/{admin_api_key[0].id}")
 
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
     @pytest.mark.authenticated_admin(mode="api_key")
     async def test_unauthorized_with_api_key(
-        self, test_client_admin: httpx.AsyncClient, admin_api_key: AdminAPIKey
+        self,
+        test_client_admin: httpx.AsyncClient,
+        admin_api_key: Tuple[AdminAPIKey, str],
     ):
-        response = await test_client_admin.delete(f"/api-keys/{admin_api_key.id}")
+        response = await test_client_admin.delete(f"/api-keys/{admin_api_key[0].id}")
 
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
@@ -105,7 +121,10 @@ class TestDeleteAPIKey:
         workspace: Workspace,
     ):
         api_key_manager = AdminAPIKeyManager(main_session)
-        api_key = AdminAPIKey(name="New API Key", workspace_id=workspace.id)
+        _, token_hash = generate_token()
+        api_key = AdminAPIKey(
+            name="New API Key", token=token_hash, workspace_id=workspace.id
+        )
         api_key = await api_key_manager.create(api_key)
 
         response = await test_client_admin.delete(f"/api-keys/{api_key.id}")

@@ -15,7 +15,7 @@ from fief.managers import (
 )
 from fief.settings import settings
 from tests.conftest import TenantParams
-from tests.data import TestData
+from tests.data import TestData, session_token_tokens
 
 
 @pytest.mark.asyncio
@@ -270,7 +270,7 @@ class TestAuthAuthorize:
 
         cookies = {}
         if session:
-            cookies[settings.session_cookie_name] = tenant_params.session_token.token
+            cookies[settings.session_cookie_name] = tenant_params.session_token_token[0]
 
         response = await test_client_auth.get(
             f"{tenant_params.path_prefix}/authorize", params=params, cookies=cookies
@@ -417,7 +417,9 @@ class TestAuthPostLogin:
 
         session_cookie = response.cookies[settings.session_cookie_name]
         session_token_manager = SessionTokenManager(workspace_session)
-        session_token = await session_token_manager.get_by_token(session_cookie)
+        session_token = await session_token_manager.get_by_token(
+            get_token_hash(session_cookie)
+        )
         assert session_token is not None
 
     async def test_valid_with_session(
@@ -434,7 +436,7 @@ class TestAuthPostLogin:
 
         cookies = {}
         cookies[settings.login_session_cookie_name] = login_session.token
-        cookies[settings.session_cookie_name] = session_token.token
+        cookies[settings.session_cookie_name] = session_token_tokens["regular"][0]
 
         response = await test_client_auth.post(
             f"{path_prefix}/login",
@@ -452,7 +454,9 @@ class TestAuthPostLogin:
 
         session_cookie = response.cookies[settings.session_cookie_name]
         session_token_manager = SessionTokenManager(workspace_session)
-        new_session_token = await session_token_manager.get_by_token(session_cookie)
+        new_session_token = await session_token_manager.get_by_token(
+            get_token_hash(session_cookie)
+        )
         assert new_session_token is not None
         assert new_session_token.id != session_token.id
 
@@ -514,11 +518,11 @@ class TestAuthGetConsent:
         client = login_session.client
         tenant = client.tenant
         path_prefix = tenant.slug if not tenant.default else ""
-        session_token = test_data["session_tokens"]["regular"]
+        session_token_token = session_token_tokens["regular"][0]
 
         cookies = {}
         cookies[settings.login_session_cookie_name] = login_session.token
-        cookies[settings.session_cookie_name] = session_token.token
+        cookies[settings.session_cookie_name] = session_token_token
 
         response = await test_client_auth.get(f"{path_prefix}/consent", cookies=cookies)
 
@@ -534,11 +538,11 @@ class TestAuthGetConsent:
         client = login_session.client
         tenant = client.tenant
         path_prefix = tenant.slug if not tenant.default else ""
-        session_token = test_data["session_tokens"]["regular"]
+        session_token_token = session_token_tokens["regular"][0]
 
         cookies = {}
         cookies[settings.login_session_cookie_name] = login_session.token
-        cookies[settings.session_cookie_name] = session_token.token
+        cookies[settings.session_cookie_name] = session_token_token
 
         response = await test_client_auth.get(f"{path_prefix}/consent", cookies=cookies)
 
@@ -567,10 +571,11 @@ class TestAuthGetConsent:
         tenant = client.tenant
         path_prefix = tenant.slug if not tenant.default else ""
         session_token = test_data["session_tokens"]["regular"]
+        session_token_token = session_token_tokens["regular"][0]
 
         cookies = {}
         cookies[settings.login_session_cookie_name] = login_session.token
-        cookies[settings.session_cookie_name] = session_token.token
+        cookies[settings.session_cookie_name] = session_token_token
 
         response = await test_client_auth.get(f"{path_prefix}/consent", cookies=cookies)
 
@@ -608,11 +613,11 @@ class TestAuthGetConsent:
         client = login_session.client
         tenant = client.tenant
         path_prefix = tenant.slug if not tenant.default else ""
-        session_token = test_data["session_tokens"]["regular"]
+        session_token_token = session_token_tokens["regular"][0]
 
         cookies = {}
         cookies[settings.login_session_cookie_name] = login_session.token
-        cookies[settings.session_cookie_name] = session_token.token
+        cookies[settings.session_cookie_name] = session_token_token
 
         response = await test_client_auth.get(f"{path_prefix}/consent", cookies=cookies)
 
@@ -629,10 +634,11 @@ class TestAuthGetConsent:
         tenant = client.tenant
         path_prefix = tenant.slug if not tenant.default else ""
         session_token = test_data["session_tokens"]["regular"]
+        session_token_token = session_token_tokens["regular"][0]
 
         cookies = {}
         cookies[settings.login_session_cookie_name] = login_session.token
-        cookies[settings.session_cookie_name] = session_token.token
+        cookies[settings.session_cookie_name] = session_token_token
 
         response = await test_client_auth.get(f"{path_prefix}/consent", cookies=cookies)
 
@@ -726,11 +732,11 @@ class TestAuthPostConsent:
         client = login_session.client
         tenant = client.tenant
         path_prefix = tenant.slug if not tenant.default else ""
-        session_token = test_data["session_tokens"]["regular"]
+        session_token_token = session_token_tokens["regular"][0]
 
         cookies = {}
         cookies[settings.login_session_cookie_name] = login_session.token
-        cookies[settings.session_cookie_name] = session_token.token
+        cookies[settings.session_cookie_name] = session_token_token
 
         response = await test_client_auth.post(
             f"{path_prefix}/consent", cookies=cookies, data=data
@@ -757,10 +763,11 @@ class TestAuthPostConsent:
         tenant = client.tenant
         path_prefix = tenant.slug if not tenant.default else ""
         session_token = test_data["session_tokens"]["regular"]
+        session_token_token = session_token_tokens["regular"][0]
 
         cookies = {}
         cookies[settings.login_session_cookie_name] = login_session.token
-        cookies[settings.session_cookie_name] = session_token.token
+        cookies[settings.session_cookie_name] = session_token_token
 
         response = await test_client_auth.post(
             f"{path_prefix}/consent", cookies=cookies, data={"action": "allow"}
@@ -815,11 +822,11 @@ class TestAuthPostConsent:
         client = login_session.client
         tenant = client.tenant
         path_prefix = tenant.slug if not tenant.default else ""
-        session_token = test_data["session_tokens"]["regular"]
+        session_token_token = session_token_tokens["regular"][0]
 
         cookies = {}
         cookies[settings.login_session_cookie_name] = login_session.token
-        cookies[settings.session_cookie_name] = session_token.token
+        cookies[settings.session_cookie_name] = session_token_token
 
         response = await test_client_auth.post(
             f"{path_prefix}/consent", cookies=cookies, data={"action": "deny"}

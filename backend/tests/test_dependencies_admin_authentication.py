@@ -5,6 +5,7 @@ from typing import AsyncGenerator
 import pytest
 from fastapi import Depends, FastAPI, status
 
+from fief.crypto.token import generate_token
 from fief.db import AsyncSession
 from fief.dependencies.admin_authentication import is_authenticated_admin
 from fief.models import AdminAPIKey, AdminSessionToken, Workspace, WorkspaceUser
@@ -94,12 +95,15 @@ async def test_admin_api_key_for_another_workspace(
     another_workspace: Workspace,
     app: FastAPI,
 ):
-    api_key = AdminAPIKey(name="Default", workspace_id=another_workspace.id)
+    token, token_hash = generate_token()
+    api_key = AdminAPIKey(
+        name="Default", token=token_hash, workspace_id=another_workspace.id
+    )
     main_session.add(api_key)
     await main_session.commit()
 
     async with test_client_admin_generator(app) as test_client:
-        headers = {"Authorization": f"Bearer {api_key.token}"}
+        headers = {"Authorization": f"Bearer {token}"}
         response = await test_client.get("/protected", headers=headers)
 
         assert response.status_code == status.HTTP_403_FORBIDDEN

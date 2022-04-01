@@ -1,4 +1,3 @@
-import secrets
 from datetime import datetime
 
 from pydantic import UUID4
@@ -15,7 +14,6 @@ class SessionToken(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
 
     token: str = Column(
         String(length=255),
-        default=secrets.token_urlsafe,
         nullable=False,
         index=True,
         unique=True,

@@ -249,12 +249,20 @@ refresh_tokens: ModelMapping[RefreshToken] = {
     )
 }
 
+
+session_token_tokens: Mapping[str, Tuple[str, str]] = {
+    "regular": generate_token(),
+    "regular_secondary": generate_token(),
+}
+
 session_tokens: ModelMapping[SessionToken] = {
     "regular": SessionToken(
+        token=session_token_tokens["regular"][1],
         expires_at=datetime.now(timezone.utc) + timedelta(seconds=3600),
         user=users["regular"],
     ),
     "regular_secondary": SessionToken(
+        token=session_token_tokens["regular_secondary"][1],
         expires_at=datetime.now(timezone.utc) + timedelta(seconds=3600),
         user=users["regular_secondary"],
     ),
@@ -283,5 +291,6 @@ __all__ = [
     "authorization_code_codes",
     "data_mapping",
     "refresh_token_tokens",
+    "session_token_tokens",
     "TestData",
 ]

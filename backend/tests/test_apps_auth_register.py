@@ -5,6 +5,7 @@ import httpx
 import pytest
 from fastapi import status
 
+from fief.crypto.token import get_token_hash
 from fief.db import AsyncSession
 from fief.managers import SessionTokenManager
 from fief.models import Workspace
@@ -151,7 +152,9 @@ class TestPostRegister:
 
         session_cookie = response.cookies[settings.session_cookie_name]
         session_token_manager = SessionTokenManager(workspace_session)
-        session_token = await session_token_manager.get_by_token(session_cookie)
+        session_token = await session_token_manager.get_by_token(
+            get_token_hash(session_cookie)
+        )
         assert session_token is not None
 
         send_task_mock.assert_called_once_with(

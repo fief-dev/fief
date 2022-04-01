@@ -5,6 +5,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import UUID4
 from sqlalchemy import select
 
+from fief.crypto.token import get_token_hash
 from fief.dependencies.current_workspace import get_current_workspace
 from fief.dependencies.main_managers import get_admin_api_key_manager
 from fief.dependencies.pagination import (
@@ -27,7 +28,8 @@ async def get_optional_admin_api_key(
 ) -> Optional[AdminAPIKey]:
     if authorization is None:
         return None
-    admin_api_key = await manager.get_by_token(authorization.credentials)
+    token_hash = get_token_hash(authorization.credentials)
+    admin_api_key = await manager.get_by_token(token_hash)
     return admin_api_key
 
 
