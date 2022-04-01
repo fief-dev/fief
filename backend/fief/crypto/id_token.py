@@ -1,3 +1,5 @@
+import base64
+import hashlib
 from datetime import datetime, timezone
 from typing import Any, Dict, Optional, Union
 
@@ -24,6 +26,8 @@ def generate_id_token(
     lifetime_seconds: int,
     *,
     nonce: Optional[str] = None,
+    code: Optional[str] = None,
+    access_token: Optional[str] = None,
     encryption_key: Optional[jwk.JWK] = None,
 ) -> str:
     """
@@ -38,6 +42,8 @@ def generate_id_token(
     :user: The authenticated user.
     :lifetime_seconds: Lifetime of the JWT.
     :nonce: Optional nonce value associated with the authorization request.
+    :code: Optional authorization code associated to the ID Token.
+    :access_token: Optional access token associated to the ID Token.
     :encryption_key: Optional JWK to further encrypt the signed token.
     In this case, it becomes a Nested JWT, as defined in rfc7519.
     """
@@ -56,6 +62,10 @@ def generate_id_token(
 
     if nonce is not None:
         claims["nonce"] = nonce
+    if code is not None:
+        claims["c_hash"] = get_validation_hash(code)
+    if access_token is not None:
+        claims["at_hash"] = get_validation_hash(access_token)
 
     signed_token = jwt.JWT(header={"alg": "RS256"}, claims=claims)
     signed_token.make_signed_token(signing_key)
@@ -69,3 +79,20 @@ def generate_id_token(
         return encrypted_token.serialize()
 
     return signed_token.serialize()
+
+
+def get_validation_hash(value: str) -> str:
+    """
+    Computes a hash value to be embedded in the ID Token, like at_hash and c_hash.
+
+    Specification: https://openid.net/specs/openid-connect-core-1_0.html#toc
+    """
+    hasher = hashlib.sha256()
+    hasher.update(value.encode("utf-8"))
+    hash = hasher.digest()
+
+    half_hash = hash[0 : int(len(hash) / 2)]
+    # Remove the Base64 padding "==" at the end
+    base64_hash = base64.urlsafe_b64encode(half_hash)[:-2]
+
+    return base64_hash.decode("utf-8")

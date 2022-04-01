@@ -355,6 +355,7 @@ class TestAuthTokenAuthorizationCode:
             jwk=tenant.get_sign_jwk(),
             authenticated_at=authorization_code.authenticated_at,
             authorization_code=authorization_code,
+            access_token=json["access_token"],
         )
 
         response_headers = response.headers
@@ -609,6 +610,7 @@ class TestAuthTokenRefreshToken:
             id_token=json["id_token"],
             jwk=tenant.get_sign_jwk(),
             authenticated_at=refresh_token.authenticated_at,
+            access_token=json["access_token"],
         )
 
         response_headers = response.headers

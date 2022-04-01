@@ -36,6 +36,7 @@ async def token(
     scope = grant_request["scope"]
     authenticated_at = grant_request["authenticated_at"]
     nonce = grant_request["nonce"]
+    code = grant_request["code"]
     client = grant_request["client"]
 
     tenant_host = tenant.get_host(workspace.domain)
@@ -55,6 +56,8 @@ async def token(
         user,
         settings.access_id_token_lifetime_seconds,
         nonce=nonce,
+        code=code,
+        access_token=access_token,
         encryption_key=client.get_encrypt_jwk(),
     )
     token_response = TokenResponse(

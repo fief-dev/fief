@@ -169,6 +169,7 @@ class AuthenticationFlow:
             query_params["state"] = login_session.state
 
         tenant_host = tenant.get_host(workspace.domain)
+        access_token: Optional[str] = None
 
         if login_session.response_type in ["code token", "code id_token token"]:
             access_token = generate_access_token(
@@ -191,6 +192,8 @@ class AuthenticationFlow:
                 user,
                 settings.access_id_token_lifetime_seconds,
                 nonce=login_session.nonce,
+                code=code,
+                access_token=access_token,
                 encryption_key=client.get_encrypt_jwk(),
             )
             query_params["id_token"] = id_token

@@ -17,6 +17,7 @@ async def id_token_assertions(
     jwk: jwk.JWK,
     authenticated_at: datetime,
     authorization_code: Optional[AuthorizationCode] = None,
+    access_token: Optional[str] = None,
 ):
     id_token_jwt = jwt.JWT(jwt=id_token, algs=["RS256"], key=jwk)
     id_token_claims = json.loads(id_token_jwt.claims)
@@ -28,6 +29,10 @@ async def id_token_assertions(
             assert id_token_claims["nonce"] == authorization_code.nonce
         else:
             assert "nonce" not in id_token_claims
+        assert "c_hash" in id_token_claims
+
+    if access_token is not None:
+        assert "at_hash" in id_token_claims
 
 
 async def authorization_code_assertions(
@@ -72,4 +77,5 @@ async def authorization_code_assertions(
             jwk=tenant.get_sign_jwk(),
             authenticated_at=authorization_code.authenticated_at,
             authorization_code=authorization_code,
+            access_token=query_params.get("access_token"),
         )
