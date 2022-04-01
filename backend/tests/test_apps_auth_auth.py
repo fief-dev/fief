@@ -5,6 +5,7 @@ import pytest
 from fastapi import status
 from furl import furl
 
+from fief.crypto.token import get_token_hash
 from fief.db import AsyncSession
 from fief.managers import (
     AuthorizationCodeManager,
@@ -582,9 +583,8 @@ class TestAuthGetConsent:
         assert parsed_location.query.params["state"] == login_session.state
 
         authorization_code_manager = AuthorizationCodeManager(workspace_session)
-        authorization_code = await authorization_code_manager.get_by_code(
-            parsed_location.query.params["code"]
-        )
+        code_hash = get_token_hash(parsed_location.query.params["code"])
+        authorization_code = await authorization_code_manager.get_by_code(code_hash)
         assert authorization_code is not None
         assert authorization_code.nonce == login_session.nonce
         assert authorization_code.authenticated_at.replace(
@@ -645,9 +645,8 @@ class TestAuthGetConsent:
         assert parsed_location.query.params["state"] == login_session.state
 
         authorization_code_manager = AuthorizationCodeManager(workspace_session)
-        authorization_code = await authorization_code_manager.get_by_code(
-            parsed_location.query.params["code"]
-        )
+        code_hash = get_token_hash(parsed_location.query.params["code"])
+        authorization_code = await authorization_code_manager.get_by_code(code_hash)
         assert authorization_code is not None
         assert authorization_code.nonce == login_session.nonce
         assert authorization_code.authenticated_at.replace(
@@ -776,9 +775,8 @@ class TestAuthPostConsent:
         assert parsed_location.query.params["state"] == login_session.state
 
         authorization_code_manager = AuthorizationCodeManager(workspace_session)
-        authorization_code = await authorization_code_manager.get_by_code(
-            parsed_location.query.params["code"]
-        )
+        code_hash = get_token_hash(parsed_location.query.params["code"])
+        authorization_code = await authorization_code_manager.get_by_code(code_hash)
         assert authorization_code is not None
         assert authorization_code.nonce == login_session.nonce
         assert authorization_code.authenticated_at.replace(

@@ -11,7 +11,7 @@ from fief.db import AsyncSession
 from fief.managers import AuthorizationCodeManager, RefreshTokenManager
 from fief.models import Client
 from tests.conftest import TenantParams
-from tests.data import TestData
+from tests.data import TestData, authorization_code_codes
 
 AUTH_METHODS = ["client_secret_basic", "client_secret_post"]
 
@@ -184,7 +184,7 @@ class TestAuthTokenAuthorizationCode:
             data={
                 **data,
                 "grant_type": "authorization_code",
-                "code": authorization_code.code,
+                "code": authorization_code_codes["expired"][0],
                 "redirect_uri": authorization_code.redirect_uri,
             },
         )
@@ -211,7 +211,7 @@ class TestAuthTokenAuthorizationCode:
             data={
                 **data,
                 "grant_type": "authorization_code",
-                "code": authorization_code.code,
+                "code": authorization_code_codes["default_regular"][0],
                 "redirect_uri": authorization_code.redirect_uri,
             },
         )
@@ -238,7 +238,7 @@ class TestAuthTokenAuthorizationCode:
             data={
                 **data,
                 "grant_type": "authorization_code",
-                "code": authorization_code.code,
+                "code": authorization_code_codes["default_regular"][0],
                 "redirect_uri": "INVALID_REDIRECT_URI",
             },
         )
@@ -286,7 +286,7 @@ class TestAuthTokenAuthorizationCode:
                 **data,
                 **code_verifier_data,
                 "grant_type": "authorization_code",
-                "code": authorization_code.code,
+                "code": authorization_code_codes[authorization_code_alias][0],
                 "redirect_uri": authorization_code.redirect_uri,
             },
         )
@@ -321,7 +321,7 @@ class TestAuthTokenAuthorizationCode:
             data={
                 **data,
                 "grant_type": "authorization_code",
-                "code": authorization_code.code,
+                "code": authorization_code_codes[authorization_code_alias][0],
                 "redirect_uri": authorization_code.redirect_uri,
             },
         )
@@ -388,7 +388,7 @@ class TestAuthTokenAuthorizationCode:
             data={
                 **data,
                 "grant_type": "authorization_code",
-                "code": authorization_code.code,
+                "code": authorization_code_codes[authorization_code_alias][0],
                 "redirect_uri": authorization_code.redirect_uri,
                 "code_verifier": code_verifier,
             },

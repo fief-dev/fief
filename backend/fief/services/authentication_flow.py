@@ -6,6 +6,7 @@ from fastapi.responses import RedirectResponse
 from furl import furl
 from pydantic import UUID4
 
+from fief.crypto.token import generate_token
 from fief.managers import (
     AuthorizationCodeManager,
     GrantManager,
@@ -132,8 +133,10 @@ class AuthenticationFlow:
         client: Client,
         user_id: UUID4,
     ) -> RedirectResponse:
+        code, code_hash = generate_token()
         authorization_code = await self.authorization_code_manager.create(
             AuthorizationCode(
+                code=code_hash,
                 redirect_uri=redirect_uri,
                 scope=scope,
                 authenticated_at=authenticated_at,
@@ -148,7 +151,7 @@ class AuthenticationFlow:
             authorization_code.code_challenge_method = code_challenge_method
 
         parsed_redirect_uri = furl(redirect_uri)
-        parsed_redirect_uri.add(query_params={"code": authorization_code.code})
+        parsed_redirect_uri.add(query_params={"code": code})
         if state is not None:
             parsed_redirect_uri.add(query_params={"state": state})
 

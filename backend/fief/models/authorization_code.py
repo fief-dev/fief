@@ -18,7 +18,6 @@ class AuthorizationCode(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
 
     code: str = Column(
         String(length=255),
-        default=secrets.token_urlsafe,
         nullable=False,
         index=True,
         unique=True,
