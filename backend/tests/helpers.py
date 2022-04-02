@@ -1,6 +1,6 @@
 import json
 from datetime import datetime
-from typing import Optional, Tuple
+from typing import Dict, Optional, Tuple
 
 from furl import furl
 from jwcrypto import jwk, jwt
@@ -39,6 +39,17 @@ async def id_token_assertions(
         assert "at_hash" in id_token_claims
 
 
+def get_params_by_response_mode(
+    redirect_uri: str, response_mode: str
+) -> Dict[str, str]:
+    parsed_uri = furl(redirect_uri)
+    if response_mode == "query":
+        return parsed_uri.query.params
+    elif response_mode == "fragment":
+        return parsed_uri.fragment.query.params
+    raise Exception("Unknown response_mode")
+
+
 async def authorization_code_assertions(
     *,
     redirect_uri: str,
@@ -47,13 +58,7 @@ async def authorization_code_assertions(
     session: AsyncSession,
 ):
     assert redirect_uri.startswith(login_session.redirect_uri)
-    parsed_location = furl(redirect_uri)
-
-    params = (
-        parsed_location.query.params
-        if login_session.response_mode == "query"
-        else parsed_location.fragment.query.params
-    )
+    params = get_params_by_response_mode(redirect_uri, login_session.response_mode)
 
     assert "code" in params
     assert params["state"] == login_session.state

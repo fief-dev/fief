@@ -3,16 +3,15 @@ from typing import Dict, Optional
 import httpx
 import pytest
 from fastapi import status
-from furl import furl
 
 from fief.crypto.token import get_token_hash
 from fief.db import AsyncSession
 from fief.managers import GrantManager, LoginSessionManager, SessionTokenManager
-from fief.services.response_type import HYBRID_RESPONSE_TYPES
+from fief.services.response_type import DEFAULT_RESPONSE_MODE, HYBRID_RESPONSE_TYPES
 from fief.settings import settings
 from tests.conftest import TenantParams
 from tests.data import TestData, session_token_tokens
-from tests.helpers import authorization_code_assertions
+from tests.helpers import authorization_code_assertions, get_params_by_response_mode
 
 
 @pytest.mark.asyncio
@@ -216,8 +215,13 @@ class TestAuthAuthorize:
         redirect_uri = response.headers["Location"]
 
         assert redirect_uri.startswith("https://nantes.city/callback")
-        parsed_location = furl(redirect_uri)
-        assert parsed_location.query.params["error"] == error
+
+        try:
+            response_mode = DEFAULT_RESPONSE_MODE[params["response_type"]]
+        except KeyError:
+            response_mode = "query"
+        redirect_params = get_params_by_response_mode(redirect_uri, response_mode)
+        assert redirect_params["error"] == error
 
     @pytest.mark.parametrize(
         "params,session,redirection",
@@ -609,9 +613,11 @@ class TestAuthGetConsent:
 
         redirect_uri = response.headers["Location"]
         assert redirect_uri.startswith(login_session.redirect_uri)
-        parsed_location = furl(redirect_uri)
-        assert parsed_location.query.params["error"] == "consent_required"
-        assert parsed_location.query.params["state"] == login_session.state
+        redirect_params = get_params_by_response_mode(
+            redirect_uri, login_session.response_mode
+        )
+        assert redirect_params["error"] == "consent_required"
+        assert redirect_params["state"] == login_session.state
 
         login_session_manager = LoginSessionManager(workspace_session)
         used_login_session = await login_session_manager.get_by_token(
@@ -852,13 +858,23 @@ class TestAuthPostConsent:
         assert grant is not None
         assert grant.scope == login_session.scope
 
+    @pytest.mark.parametrize(
+        "login_session_alias",
+        [
+            "default",
+            "default_hybrid_id_token",
+            "default_hybrid_token",
+            "default_hybrid_id_token_token",
+        ],
+    )
     async def test_deny(
         self,
+        login_session_alias: str,
         test_client_auth: httpx.AsyncClient,
         test_data: TestData,
         workspace_session: AsyncSession,
     ):
-        login_session = test_data["login_sessions"]["default"]
+        login_session = test_data["login_sessions"][login_session_alias]
         client = login_session.client
         tenant = client.tenant
         path_prefix = tenant.slug if not tenant.default else ""
@@ -876,9 +892,11 @@ class TestAuthPostConsent:
 
         redirect_uri = response.headers["Location"]
         assert redirect_uri.startswith(login_session.redirect_uri)
-        parsed_location = furl(redirect_uri)
-        assert parsed_location.query.params["error"] == "access_denied"
-        assert parsed_location.query.params["state"] == login_session.state
+        redirect_params = get_params_by_response_mode(
+            redirect_uri, login_session.response_mode
+        )
+        assert redirect_params["error"] == "access_denied"
+        assert redirect_params["state"] == login_session.state
 
         set_cookie_header = response.headers["Set-Cookie"]
         assert set_cookie_header.startswith(f'{settings.login_session_cookie_name}=""')

@@ -25,7 +25,6 @@ from fief.models import (
     User,
     Workspace,
 )
-from fief.services.response_type import DEFAULT_RESPONSE_MODE
 from fief.settings import settings
 
 ResponseType = TypeVar("ResponseType", bound=Response)
@@ -49,6 +48,7 @@ class AuthenticationFlow:
         response: ResponseType,
         *,
         response_type: str,
+        response_mode: str,
         redirect_uri: str,
         scope: List[str],
         state: Optional[str],
@@ -58,7 +58,7 @@ class AuthenticationFlow:
     ) -> ResponseType:
         login_session = LoginSession(
             response_type=response_type,
-            response_mode=DEFAULT_RESPONSE_MODE[response_type],
+            response_mode=response_mode,
             redirect_uri=redirect_uri,
             scope=scope,
             state=state,
@@ -217,6 +217,7 @@ class AuthenticationFlow:
     def get_authorization_code_error_redirect(
         cls,
         redirect_uri: str,
+        response_mode: str,
         error: str,
         *,
         error_description: Optional[str] = None,
@@ -225,14 +226,18 @@ class AuthenticationFlow:
     ) -> RedirectResponse:
         parsed_redirect_uri = furl(redirect_uri)
 
-        query_params = {"error": error}
+        params = {"error": error}
         if error_description is not None:
-            query_params["error_description"] = error_description
+            params["error_description"] = error_description
         if error_uri is not None:
-            query_params["error_uri"] = error_uri
+            params["error_uri"] = error_uri
         if state is not None:
-            query_params["state"] = state
-        parsed_redirect_uri.add(query_params=query_params)
+            params["state"] = state
+
+        if response_mode == "query":
+            parsed_redirect_uri.query.add(params)
+        elif response_mode == "fragment":
+            parsed_redirect_uri.fragment.add(args=params)
 
         return RedirectResponse(
             url=parsed_redirect_uri.url, status_code=status.HTTP_302_FOUND

@@ -78,6 +78,7 @@ async def authorize_redirect_exception_handler(
 ):
     return AuthenticationFlow.get_authorization_code_error_redirect(
         exc.redirect_uri,
+        exc.response_mode,
         exc.error.error,
         error_description=exc.error.error_description,
         error_uri=exc.error.error_uri,

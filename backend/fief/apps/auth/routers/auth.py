@@ -12,6 +12,7 @@ from fief.dependencies.auth import (
     get_authorize_code_challenge,
     get_authorize_prompt,
     get_authorize_redirect_uri,
+    get_authorize_response_mode,
     get_authorize_response_type,
     get_authorize_scope,
     get_authorize_screen,
@@ -48,6 +49,7 @@ async def authorize(
     response_type: str = Depends(get_authorize_response_type),
     client: Client = Depends(get_authorize_client),
     redirect_uri: str = Depends(get_authorize_redirect_uri),
+    response_mode: str = Depends(get_authorize_response_mode),
     scope: List[str] = Depends(get_authorize_scope),
     prompt: Optional[str] = Depends(get_authorize_prompt),
     screen: str = Depends(get_authorize_screen),
@@ -72,6 +74,7 @@ async def authorize(
     response = await authentication_flow.create_login_session(
         response,
         response_type=response_type,
+        response_mode=response_mode,
         redirect_uri=redirect_uri,
         scope=scope,
         state=state,
@@ -206,6 +209,7 @@ async def post_consent(
     elif action == "deny":
         response = AuthenticationFlow.get_authorization_code_error_redirect(
             login_session.redirect_uri,
+            login_session.response_mode,
             "access_denied",
             error_description=_("The user denied access to their data."),
             state=login_session.state,

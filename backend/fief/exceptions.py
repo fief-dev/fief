@@ -66,11 +66,13 @@ class AuthorizeRedirectException(Exception):
         self,
         error: AuthorizeRedirectError,
         redirect_uri: str,
+        response_mode: str,
         state: Optional[str],
         tenant: Optional[Tenant] = None,
     ) -> None:
         self.error = error
         self.redirect_uri = redirect_uri
+        self.response_mode = response_mode
         self.state = state
         self.tenant = tenant
 

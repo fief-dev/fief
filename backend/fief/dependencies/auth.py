@@ -2,7 +2,6 @@ from datetime import datetime, timezone
 from typing import List, Optional, Tuple
 
 from fastapi import Cookie, Depends, Form, Query, Response
-from pydantic import UUID4
 
 from fief.dependencies.authentication_flow import get_authentication_flow
 from fief.dependencies.locale import get_gettext
@@ -30,6 +29,7 @@ from fief.schemas.auth import (
 from fief.services.authentication_flow import AuthenticationFlow
 from fief.services.response_type import (
     ALLOWED_RESPONSE_TYPES,
+    DEFAULT_RESPONSE_MODE,
     NONCE_REQUIRED_RESPONSE_TYPES,
 )
 from fief.settings import settings
@@ -77,22 +77,6 @@ async def get_authorize_state(state: Optional[str] = Query(None)) -> Optional[st
     return state
 
 
-async def check_unsupported_request_parameter(
-    request_parameter: Optional[str] = Query(None, alias="request"),
-    redirect_uri: str = Depends(get_authorize_redirect_uri),
-    state: Optional[str] = Depends(get_authorize_state),
-    _=Depends(get_gettext),
-) -> None:
-    if request_parameter is not None:
-        raise AuthorizeRedirectException(
-            AuthorizeRedirectError.get_request_not_supported(
-                _("request parameter is not supported")
-            ),
-            redirect_uri,
-            state,
-        )
-
-
 async def get_nonce(nonce: Optional[str] = Query(None)) -> Optional[str]:
     return nonce
 
@@ -108,6 +92,7 @@ async def get_authorize_response_type(
         raise AuthorizeRedirectException(
             AuthorizeRedirectError.get_invalid_request(_("response_type is missing")),
             redirect_uri,
+            "query",
             state,
         )
 
@@ -115,6 +100,7 @@ async def get_authorize_response_type(
         raise AuthorizeRedirectException(
             AuthorizeRedirectError.get_invalid_request(_("response_type is invalid")),
             redirect_uri,
+            "query",
             state,
         )
 
@@ -124,15 +110,41 @@ async def get_authorize_response_type(
                 _("nonce parameter is required for this response_type")
             ),
             redirect_uri,
+            DEFAULT_RESPONSE_MODE[response_type],
             state,
         )
 
     return response_type
 
 
+async def get_authorize_response_mode(
+    response_type: str = Depends(get_authorize_response_type),
+) -> str:
+    return DEFAULT_RESPONSE_MODE[response_type]
+
+
+async def check_unsupported_request_parameter(
+    request_parameter: Optional[str] = Query(None, alias="request"),
+    redirect_uri: str = Depends(get_authorize_redirect_uri),
+    response_mode: str = Depends(get_authorize_response_mode),
+    state: Optional[str] = Depends(get_authorize_state),
+    _=Depends(get_gettext),
+) -> None:
+    if request_parameter is not None:
+        raise AuthorizeRedirectException(
+            AuthorizeRedirectError.get_request_not_supported(
+                _("request parameter is not supported")
+            ),
+            redirect_uri,
+            response_mode,
+            state,
+        )
+
+
 async def get_authorize_scope(
     scope: Optional[str] = Query(None),
     redirect_uri: str = Depends(get_authorize_redirect_uri),
+    response_mode: str = Depends(get_authorize_response_mode),
     state: Optional[str] = Depends(get_authorize_state),
     _=Depends(get_gettext),
 ) -> List[str]:
@@ -140,6 +152,7 @@ async def get_authorize_scope(
         raise AuthorizeRedirectException(
             AuthorizeRedirectError.get_invalid_request(_("scope is missing")),
             redirect_uri,
+            response_mode,
             state,
         )
 
@@ -151,6 +164,7 @@ async def get_authorize_scope(
                 _('scope should contain "openid"')
             ),
             redirect_uri,
+            response_mode,
             state,
         )
 
@@ -161,6 +175,7 @@ async def get_authorize_prompt(
     prompt: Optional[str] = Query(None),
     session_token: Optional[SessionToken] = Depends(get_session_token),
     redirect_uri: str = Depends(get_authorize_redirect_uri),
+    response_mode: str = Depends(get_authorize_response_mode),
     state: Optional[str] = Depends(get_authorize_state),
     _=Depends(get_gettext),
 ) -> Optional[str]:
@@ -170,6 +185,7 @@ async def get_authorize_prompt(
                 _('prompt should either be "none", "login" or "register"')
             ),
             redirect_uri,
+            response_mode,
             state,
         )
 
@@ -177,6 +193,7 @@ async def get_authorize_prompt(
         raise AuthorizeRedirectException(
             AuthorizeRedirectError.get_login_required(_("User is not logged in")),
             redirect_uri,
+            response_mode,
             state,
         )
 
@@ -186,6 +203,7 @@ async def get_authorize_prompt(
 async def get_authorize_screen(
     screen: str = Query("login"),
     redirect_uri: str = Depends(get_authorize_redirect_uri),
+    response_mode: str = Depends(get_authorize_response_mode),
     state: Optional[str] = Depends(get_authorize_state),
     _=Depends(get_gettext),
 ) -> str:
@@ -195,6 +213,7 @@ async def get_authorize_screen(
                 _('screen should either be "login" or "register"')
             ),
             redirect_uri,
+            response_mode,
             state,
         )
 
@@ -205,6 +224,7 @@ async def get_authorize_code_challenge(
     code_challenge: Optional[str] = Query(None),
     code_challenge_method: Optional[str] = Query("plain"),
     redirect_uri: str = Depends(get_authorize_redirect_uri),
+    response_mode: str = Depends(get_authorize_response_mode),
     state: Optional[str] = Depends(get_authorize_state),
     _=Depends(get_gettext),
 ) -> Optional[Tuple[str, str]]:
@@ -217,6 +237,7 @@ async def get_authorize_code_challenge(
                 _("Unsupported code_challenge_method")
             ),
             redirect_uri,
+            response_mode,
             state,
         )
 
@@ -326,6 +347,7 @@ async def get_consent_prompt(
                 _("User consent is required for this scope")
             ),
             login_session.redirect_uri,
+            login_session.response_mode,
             login_session.state,
             tenant,
         )
