@@ -1,5 +1,3 @@
-import secrets
-
 from pydantic import UUID4
 from sqlalchemy import Column, ForeignKey, String
 
