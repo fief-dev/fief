@@ -77,13 +77,8 @@ async def get_authorize_state(state: Optional[str] = Query(None)) -> Optional[st
     return state
 
 
-async def get_nonce(nonce: Optional[str] = Query(None)) -> Optional[str]:
-    return nonce
-
-
 async def get_authorize_response_type(
     response_type: Optional[str] = Query(None),
-    nonce: Optional[str] = Depends(get_nonce),
     redirect_uri: str = Depends(get_authorize_redirect_uri),
     state: Optional[str] = Depends(get_authorize_state),
     _=Depends(get_gettext),
@@ -101,16 +96,6 @@ async def get_authorize_response_type(
             AuthorizeRedirectError.get_invalid_request(_("response_type is invalid")),
             redirect_uri,
             "query",
-            state,
-        )
-
-    if nonce is None and response_type in NONCE_REQUIRED_RESPONSE_TYPES:
-        raise AuthorizeRedirectException(
-            AuthorizeRedirectError.get_invalid_request(
-                _("nonce parameter is required for this response_type")
-            ),
-            redirect_uri,
-            DEFAULT_RESPONSE_MODE[response_type],
             state,
         )
 
@@ -139,6 +124,27 @@ async def check_unsupported_request_parameter(
             response_mode,
             state,
         )
+
+
+async def get_nonce(
+    nonce: Optional[str] = Query(None),
+    response_type: str = Depends(get_authorize_response_type),
+    redirect_uri: str = Depends(get_authorize_redirect_uri),
+    response_mode: str = Depends(get_authorize_response_mode),
+    state: Optional[str] = Depends(get_authorize_state),
+    _=Depends(get_gettext),
+) -> Optional[str]:
+    if nonce is None and response_type in NONCE_REQUIRED_RESPONSE_TYPES:
+        raise AuthorizeRedirectException(
+            AuthorizeRedirectError.get_invalid_request(
+                _("nonce parameter is required for this response_type")
+            ),
+            redirect_uri,
+            response_mode,
+            state,
+        )
+
+    return nonce
 
 
 async def get_authorize_scope(

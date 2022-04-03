@@ -174,6 +174,17 @@ class TestAuthAuthorize:
             ),
             pytest.param(
                 {
+                    "response_type": "code id_token",
+                    "client_id": "DEFAULT_TENANT_CLIENT_ID",
+                    "redirect_uri": "https://nantes.city/callback",
+                    "scope": "openid",
+                    "request": "REQUEST_PARAMETER",
+                },
+                "request_not_supported",
+                id="Use of unsupported request parameter with a Hybrid flow without nonce",
+            ),
+            pytest.param(
+                {
                     "response_type": "code",
                     "client_id": "DEFAULT_TENANT_CLIENT_ID",
                     "redirect_uri": "https://nantes.city/callback",
