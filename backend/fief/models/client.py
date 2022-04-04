@@ -1,9 +1,10 @@
+import enum
 import secrets
 from typing import List, Optional
 
 from jwcrypto import jwk
 from pydantic import UUID4
-from sqlalchemy import Boolean, Column, ForeignKey, String, Text
+from sqlalchemy import Boolean, Column, Enum, ForeignKey, String, Text
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.sqltypes import JSON
 
@@ -17,12 +18,23 @@ def get_default_redirect_uris() -> List[str]:
     return ["http://localhost:8000/docs/oauth2-redirect"]
 
 
+class ClientType(str, enum.Enum):
+    PUBLIC = "public"
+    CONFIDENTIAL = "confidential"
+
+
 class Client(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
     __tablename__ = "clients"
 
     name: str = Column(String(length=255), nullable=False)
     first_party: bool = Column(Boolean, nullable=False, default=False)
 
+    client_type: ClientType = Column(
+        Enum(ClientType, values_callable=lambda x: [e.value for e in x]),
+        nullable=False,
+        default=ClientType.CONFIDENTIAL,
+        server_default=ClientType.CONFIDENTIAL,
+    )
     client_id: str = Column(
         String(length=255), default=secrets.token_urlsafe, nullable=False, index=True
     )

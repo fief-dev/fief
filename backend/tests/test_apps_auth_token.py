@@ -298,6 +298,71 @@ class TestAuthTokenAuthorizationCode:
 
     @pytest.mark.parametrize(
         "authorization_code_alias",
+        [
+            "default_public_regular_no_code_challenge",
+            "default_public_regular_code_challenge_s256",
+        ],
+    )
+    async def test_public_client_without_code_verifier(
+        self,
+        authorization_code_alias: str,
+        test_client_auth: httpx.AsyncClient,
+        test_data: TestData,
+    ):
+        authorization_code = test_data["authorization_codes"][authorization_code_alias]
+        client = authorization_code.client
+        tenant = client.tenant
+        path_prefix = tenant.slug if not tenant.default else ""
+
+        response = await test_client_auth.post(
+            f"{path_prefix}/api/token",
+            data={
+                "client_id": client.client_id,
+                "grant_type": "authorization_code",
+                "code": authorization_code_codes[authorization_code_alias][0],
+                "redirect_uri": authorization_code.redirect_uri,
+            },
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+        json = response.json()
+        assert json["error"] == "invalid_client"
+
+    @pytest.mark.parametrize(
+        "authorization_code_alias",
+        [
+            "default_public_regular_no_code_challenge",
+            "default_public_regular_code_challenge_s256",
+        ],
+    )
+    async def test_public_client_code_verifier_not_matching(
+        self,
+        authorization_code_alias: str,
+        tenant_params: TenantParams,
+        test_client_auth: httpx.AsyncClient,
+        test_data: TestData,
+    ):
+        authorization_code = test_data["authorization_codes"][authorization_code_alias]
+        client = authorization_code.client
+        response = await test_client_auth.post(
+            f"{tenant_params.path_prefix}/api/token",
+            data={
+                "client_id": client.client_id,
+                "grant_type": "authorization_code",
+                "code": authorization_code_codes[authorization_code_alias][0],
+                "redirect_uri": authorization_code.redirect_uri,
+                "code_verifier": "INVALID_CODE_VERIFIER",
+            },
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+        json = response.json()
+        assert json["error"] == "invalid_grant"
+
+    @pytest.mark.parametrize(
+        "authorization_code_alias",
         ["default_regular", "default_regular_nonce", "secondary_regular"],
     )
     @pytest.mark.parametrize("auth_method", AUTH_METHODS)
@@ -399,6 +464,31 @@ class TestAuthTokenAuthorizationCode:
 
         assert response.status_code == status.HTTP_200_OK
 
+    async def test_valid_public_client_with_code_verifier(
+        self, test_client_auth: httpx.AsyncClient, test_data: TestData
+    ):
+        authorization_code = test_data["authorization_codes"][
+            "default_public_regular_code_challenge_s256"
+        ]
+        client = authorization_code.client
+        tenant = client.tenant
+        path_prefix = tenant.slug if not tenant.default else ""
+
+        response = await test_client_auth.post(
+            f"{path_prefix}/api/token",
+            data={
+                "client_id": client.client_id,
+                "grant_type": "authorization_code",
+                "code": authorization_code_codes[
+                    "default_public_regular_code_challenge_s256"
+                ][0],
+                "redirect_uri": authorization_code.redirect_uri,
+                "code_verifier": "S256_CODE_CHALLENGE",
+            },
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+
 
 @pytest.mark.asyncio
 @pytest.mark.workspace_host
@@ -450,6 +540,16 @@ class TestAuthTokenRefreshToken:
                 },
                 "invalid_client",
                 id="Invalid client_id/client_secret in authorization header",
+            ),
+            pytest.param(
+                {},
+                {
+                    "grant_type": "refresh_token",
+                    "client_id": "DEFAULT_TENANT_CLIENT_ID",
+                    "refresh_token": refresh_token_tokens["default_regular"][0],
+                },
+                "invalid_client",
+                id="Confidential client without client_secret",
             ),
             pytest.param(
                 {},
@@ -617,3 +717,22 @@ class TestAuthTokenRefreshToken:
         response_headers = response.headers
         assert response_headers["Cache-Control"] == "no-store"
         assert response_headers["Pragma"] == "no-cache"
+
+    async def test_valid_public_client(
+        self, test_client_auth: httpx.AsyncClient, test_data: TestData
+    ):
+        refresh_token = test_data["refresh_tokens"]["default_public_regular"]
+        client = refresh_token.client
+        tenant = client.tenant
+        path_prefix = tenant.slug if not tenant.default else ""
+
+        response = await test_client_auth.post(
+            f"{path_prefix}/api/token",
+            data={
+                "client_id": client.client_id,
+                "grant_type": "refresh_token",
+                "refresh_token": refresh_token_tokens["default_public_regular"][0],
+            },
+        )
+
+        assert response.status_code == status.HTTP_200_OK

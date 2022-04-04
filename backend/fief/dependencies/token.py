@@ -16,7 +16,7 @@ from fief.dependencies.workspace_managers import (
 )
 from fief.exceptions import TokenRequestException
 from fief.managers import AuthorizationCodeManager, ClientManager, RefreshTokenManager
-from fief.models import Client
+from fief.models import Client, ClientType
 from fief.schemas.auth import TokenError
 from fief.schemas.user import UserDB
 
@@ -30,6 +30,13 @@ class GrantRequest(TypedDict):
     nonce: Optional[str]
     c_hash: Optional[str]
     client: Client
+
+
+async def get_grant_type(grant_type: Optional[str] = Form(None)) -> str:
+    if grant_type is None:
+        raise TokenRequestException(TokenError.get_invalid_request())
+
+    return grant_type
 
 
 async def authenticate_client_secret_basic(
@@ -55,9 +62,32 @@ async def authenticate_client_secret_post(
     return await client_manager.get_by_client_id_and_secret(client_id, client_secret)
 
 
-async def authenticate_client_secret(
+async def authenticate_none(
+    client_id: Optional[str] = Form(None),
+    client_manager: ClientManager = Depends(get_client_manager),
+    grant_type: str = Depends(get_grant_type),
+    code_verifier: Optional[str] = Form(None),
+) -> Optional[Client]:
+    if client_id is None:
+        return None
+
+    client = await client_manager.get_by_client_id(client_id)
+
+    if (
+        client is None
+        or client.client_type != ClientType.PUBLIC
+        # Enforce PKCE for authorization_code grant
+        or (grant_type == "authorization_code" and code_verifier is None)
+    ):
+        return None
+
+    return client
+
+
+async def authenticate_client(
     client_secret_basic: Optional[Client] = Depends(authenticate_client_secret_basic),
     client_secret_post: Optional[Client] = Depends(authenticate_client_secret_post),
+    client_none: Optional[Client] = Depends(authenticate_none),
 ) -> Client:
     if client_secret_basic is not None:
         return client_secret_basic
@@ -65,14 +95,10 @@ async def authenticate_client_secret(
     if client_secret_post is not None:
         return client_secret_post
 
+    if client_none is not None:
+        return client_none
+
     raise TokenRequestException(TokenError.get_invalid_client())
-
-
-async def get_grant_type(grant_type: Optional[str] = Form(None)) -> str:
-    if grant_type is None:
-        raise TokenRequestException(TokenError.get_invalid_request())
-
-    return grant_type
 
 
 async def validate_grant_request(
@@ -82,7 +108,7 @@ async def validate_grant_request(
     refresh_token_token: Optional[str] = Form(None, alias="refresh_token"),
     scope: Optional[str] = Form(None),
     grant_type: str = Depends(get_grant_type),
-    client: Client = Depends(authenticate_client_secret),
+    client: Client = Depends(authenticate_client),
     authorization_code_manager: AuthorizationCodeManager = Depends(
         get_authorization_code_manager
     ),
@@ -114,6 +140,8 @@ async def validate_grant_request(
                 code_verifier, code_challenge_tuple[0], code_challenge_tuple[1]
             ):
                 raise TokenRequestException(TokenError.get_invalid_grant())
+        elif code_verifier is not None:
+            raise TokenRequestException(TokenError.get_invalid_grant())
 
         yield {
             "user_id": authorization_code.user_id,

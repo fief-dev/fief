@@ -1,8 +1,6 @@
 from datetime import datetime, timedelta, timezone
-from typing import List, Optional, Tuple
 
 from fastapi import APIRouter, Depends, Response
-from pydantic import UUID4
 
 from fief.crypto.access_token import generate_access_token
 from fief.crypto.id_token import generate_id_token

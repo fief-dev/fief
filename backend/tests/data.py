@@ -11,6 +11,7 @@ from fief.crypto.token import generate_token
 from fief.models import (
     AuthorizationCode,
     Client,
+    ClientType,
     Grant,
     LoginSession,
     M,
@@ -65,6 +66,14 @@ clients: ModelMapping[Client] = {
         tenant=tenants["default"],
         client_id="FIRST_PARTY_DEFAULT_TENANT_CLIENT_ID",
         client_secret="FIRST_PARTY_DEFAULT_TENANT_CLIENT_SECRET",
+        redirect_uris=["https://nantes.city/callback"],
+    ),
+    "public_default_tenant": Client(
+        name="Default",
+        client_type=ClientType.PUBLIC,
+        tenant=tenants["default"],
+        client_id="PUBLIC_DEFAULT_TENANT_CLIENT_ID",
+        client_secret="PUBLIC_DEFAULT_TENANT_CLIENT_SECRET",
         redirect_uris=["https://nantes.city/callback"],
     ),
     "encryption_default_tenant": Client(
@@ -206,6 +215,8 @@ authorization_code_codes: Mapping[str, Tuple[str, str]] = {
     "default_regular_nonce": generate_token(),
     "secondary_regular": generate_token(),
     "expired": generate_token(),
+    "default_public_regular_no_code_challenge": generate_token(),
+    "default_public_regular_code_challenge_s256": generate_token(),
 }
 
 authorization_codes: ModelMapping[AuthorizationCode] = {
@@ -276,11 +287,36 @@ authorization_codes: ModelMapping[AuthorizationCode] = {
         scope=["openid", "offline_access"],
         authenticated_at=now,
     ),
+    "default_public_regular_no_code_challenge": AuthorizationCode(
+        code=authorization_code_codes["default_public_regular_no_code_challenge"][1],
+        c_hash=get_validation_hash(
+            authorization_code_codes["default_public_regular_no_code_challenge"][0]
+        ),
+        redirect_uri="https://bretagne.duchy/callback",
+        user=users["regular"],
+        client=clients["public_default_tenant"],
+        scope=["openid", "offline_access"],
+        authenticated_at=now,
+    ),
+    "default_public_regular_code_challenge_s256": AuthorizationCode(
+        code=authorization_code_codes["default_public_regular_code_challenge_s256"][1],
+        c_hash=get_validation_hash(
+            authorization_code_codes["default_public_regular_code_challenge_s256"][0]
+        ),
+        redirect_uri="https://bretagne.duchy/callback",
+        user=users["regular"],
+        client=clients["public_default_tenant"],
+        scope=["openid", "offline_access"],
+        code_challenge=get_code_verifier_hash("S256_CODE_CHALLENGE"),
+        code_challenge_method="S256",
+        authenticated_at=now,
+    ),
 }
 
 
 refresh_token_tokens: Mapping[str, Tuple[str, str]] = {
     "default_regular": generate_token(),
+    "default_public_regular": generate_token(),
 }
 
 refresh_tokens: ModelMapping[RefreshToken] = {
@@ -291,7 +327,15 @@ refresh_tokens: ModelMapping[RefreshToken] = {
         client=clients["default_tenant"],
         scope=["openid", "offline_access"],
         authenticated_at=now,
-    )
+    ),
+    "default_public_regular": RefreshToken(
+        token=refresh_token_tokens["default_public_regular"][1],
+        expires_at=datetime.now(timezone.utc) + timedelta(seconds=3600),
+        user=users["regular"],
+        client=clients["public_default_tenant"],
+        scope=["openid", "offline_access"],
+        authenticated_at=now,
+    ),
 }
 
 
