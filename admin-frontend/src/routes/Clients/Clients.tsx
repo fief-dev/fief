@@ -9,6 +9,7 @@ import Layout from '../../components/Layout/Layout';
 import { usePaginationAPI } from '../../hooks/api';
 import * as schemas from '../../schemas';
 import CreateClientModal from '../../components/CreateClientModal/CreateClientModal';
+import ClientType from '../../components/ClientType/ClientType';
 
 const Clients: React.FunctionComponent = () => {
   const { t } = useTranslation(['clients']);
@@ -48,6 +49,13 @@ const Clients: React.FunctionComponent = () => {
             }
           </>
         )
+      },
+      {
+        Header: t('clients:list.type') as string,
+        accessor: 'client_type',
+        Cell: ({ cell: { value: type } }) => (
+          <ClientType type={type} tooltip />
+        ),
       },
       {
         Header: t('clients:list.tenant') as string,

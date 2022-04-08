@@ -1,13 +1,23 @@
 {
+  "client_type": {
+    "public": "Public",
+    "confidential": "Confidential"
+  },
+  "client_type_details": {
+    "public": "A public client is suitable for Single-Page-Apps (e.g. React, VueJS, etc.) or mobile applications where the client secret can't be kept private.",
+    "confidential": "A confidential client is suitable for server-based applications (e.g. NodeJS, Python...) where the client secret is safely kept private on your server."
+  },
   "list": {
     "title": "Clients",
     "name": "Name",
     "first_party": "First-party",
+    "type": "Type",
     "tenant": "Tenant",
     "client_id": "Client ID",
     "create": "Create Client"
   },
   "details": {
+    "client_type": "Type",
     "client_id": "ID",
     "client_secret": "Secret",
     "redirect_uris": "Redirect URIs",
@@ -23,6 +33,7 @@
   "base": {
     "name": "Name",
     "first_party": "First-party",
+    "client_type": "Type",
     "redirect_uris": "Redirect URIs"
   },
   "create": {

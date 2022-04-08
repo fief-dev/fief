@@ -54,6 +54,7 @@ class TestCreateClient:
             json={
                 "name": "New client",
                 "first_party": True,
+                "client_type": "confidential",
                 "redirect_uris": [],
                 "tenant_id": str(tenant.id),
             },
@@ -74,6 +75,7 @@ class TestCreateClient:
             json={
                 "name": "New client",
                 "first_party": True,
+                "client_type": "confidential",
                 "redirect_uris": ["http://nantes.city/callback"],
                 "tenant_id": str(tenant.id),
             },
@@ -97,6 +99,7 @@ class TestCreateClient:
             json={
                 "name": "New client",
                 "first_party": True,
+                "client_type": "confidential",
                 "redirect_uris": ["https://nantes.city/callback"],
                 "tenant_id": str(not_existing_uuid),
             },
@@ -127,6 +130,7 @@ class TestCreateClient:
             json={
                 "name": "New client",
                 "first_party": True,
+                "client_type": "confidential",
                 "redirect_uris": redirect_uris,
                 "tenant_id": str(tenant.id),
             },

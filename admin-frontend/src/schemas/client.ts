@@ -1,6 +1,11 @@
 import { CreatedUpdatedAt, UUIDSchema } from './generics';
 import { TenantEmbedded } from './tenant';
 
+export enum ClientType {
+  PUBLIC = 'public',
+  CONFIDENTIAL = 'confidential',
+}
+
 export interface RedirectURISForm {
   redirect_uris: {
     id: string;
@@ -11,6 +16,7 @@ export interface RedirectURISForm {
 interface ClientCreateBase {
   name: string;
   first_party: boolean;
+  client_type: ClientType;
   tenant_id: string;
 }
 
@@ -24,6 +30,7 @@ export interface ClientCreate extends ClientCreateBase {
 interface ClientUpdateBase {
   name?: string;
   first_party?: boolean;
+  client_type?: ClientType;
 }
 
 export interface ClientUpdateForm extends ClientUpdateBase, Partial<RedirectURISForm> {
@@ -36,6 +43,7 @@ export interface ClientUpdate extends ClientUpdateBase {
 interface BaseClient extends UUIDSchema, CreatedUpdatedAt {
   name: string;
   first_party: boolean;
+  client_type: ClientType;
   client_id: string;
   client_secret: string;
   redirect_uris: string[];

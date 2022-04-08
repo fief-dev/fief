@@ -31,8 +31,10 @@ const EditClientModal: React.FunctionComponent<EditClientModalProps> = ({ client
     [client],
   );
   const form = useForm<schemas.client.ClientUpdateForm>({ defaultValues });
-  const { register, handleSubmit, reset, formState: { errors } } = form;
+  const { register, handleSubmit, watch, reset, formState: { errors } } = form;
   const fieldRequiredErrorMessage = useFieldRequiredErrorMessage();
+
+  const clientType = watch('client_type');
 
   useEffect(() => {
     reset(defaultValues);
@@ -100,6 +102,20 @@ const EditClientModal: React.FunctionComponent<EditClientModalProps> = ({ client
                   <span className="ml-2">{t('base.first_party')}</span>
                 </label>
                 <FormErrorMessage errors={errors} name="first_party" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1" htmlFor="client_type">{t('base.client_type')}</label>
+                <select
+                  id="client_type"
+                  className="form-select w-full"
+                  {...register('client_type', { required: fieldRequiredErrorMessage })}
+                >
+                  {Object.values(schemas.client.ClientType).map((type) =>
+                    <option key={type} value={type}>{t(`client_type.${type}`)}</option>
+                  )}
+                </select>
+                <FormErrorMessage errors={errors} name="client_type" />
+                <div className="text-justify text-xs mt-1">{t(`client_type_details.${clientType}`)}</div>
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">{t('base.redirect_uris')}</label>

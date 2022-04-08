@@ -3,6 +3,7 @@ from typing import List, Optional
 from pydantic import UUID4, AnyUrl, BaseModel, Field, SecretStr, validator
 
 from fief.errors import APIErrorCode
+from fief.models.client import ClientType
 from fief.schemas.generics import CreatedUpdatedAt, UUIDSchema
 from fief.schemas.tenant import TenantEmbedded
 
@@ -16,6 +17,7 @@ def validate_redirect_uri(url: AnyUrl) -> AnyUrl:
 class ClientCreate(BaseModel):
     name: str
     first_party: bool
+    client_type: ClientType
     redirect_uris: List[AnyUrl] = Field(..., min_items=1)
     tenant_id: UUID4
 
@@ -27,6 +29,7 @@ class ClientCreate(BaseModel):
 class ClientUpdate(BaseModel):
     name: Optional[str]
     first_party: Optional[bool]
+    client_type: Optional[ClientType]
     redirect_uris: Optional[List[AnyUrl]] = Field(None, min_items=1)
 
     _validate_redirect_uri = validator(
@@ -37,6 +40,7 @@ class ClientUpdate(BaseModel):
 class BaseClient(UUIDSchema, CreatedUpdatedAt):
     name: str
     first_party: bool
+    client_type: ClientType
     client_id: str
     client_secret: str
     redirect_uris: List[AnyUrl]
