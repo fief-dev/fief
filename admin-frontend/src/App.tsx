@@ -22,16 +22,12 @@ function App() {
   const { pathname } = useLocation();
 
   useEffect(() => {
-    if (!loading && workspaces.length === 0) {
-      navigate('/create-workspace');
-    }
-  }, [loading, workspaces, navigate]);
-
-  useEffect(() => {
     if (pathname === '/create-workspace') {
       navigate('/create-workspace/step1');
+    } else if (!loading && !pathname.startsWith('/create-workspace') && workspaces.length === 0) {
+      navigate('/create-workspace');
     }
-  }, [pathname, navigate]);
+  }, [pathname, loading, workspaces, navigate]);
 
   return (
     <Suspense fallback="loading">
