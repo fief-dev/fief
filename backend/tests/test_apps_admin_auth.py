@@ -81,3 +81,18 @@ async def test_auth_userinfo(
     json = response.json()
     assert json["sub"] == str(workspace_admin_user.id)
     assert json["email"] == workspace_admin_user.email
+
+
+@pytest.mark.asyncio
+class TestAuthLogout:
+    async def test_unauthorized(self, test_client_admin: httpx.AsyncClient):
+        response = await test_client_admin.get("/auth/logout")
+
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+    @pytest.mark.authenticated_admin(mode="session")
+    async def test_valid(self, test_client_admin: httpx.AsyncClient):
+        response = await test_client_admin.get("/auth/logout")
+
+        assert response.status_code == status.HTTP_302_FOUND
+        assert "Set-Cookie" in response.headers

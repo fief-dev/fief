@@ -6,7 +6,7 @@ from fief_client import FiefAsync
 from furl import furl
 
 from fief.crypto.token import generate_token
-from fief.dependencies.admin_session import get_userinfo
+from fief.dependencies.admin_session import get_admin_session_token, get_userinfo
 from fief.dependencies.fief import get_fief
 from fief.dependencies.main_managers import get_admin_session_token_manager
 from fief.managers import AdminSessionTokenManager
@@ -68,3 +68,21 @@ async def callback(
 @router.get("/userinfo", name="admin.auth:userinfo")
 async def userinfo(userinfo=Depends(get_userinfo)):
     return userinfo
+
+
+@router.get("/logout", name="admin.auth:logout")
+async def logout(
+    session_token: AdminSessionToken = Depends(get_admin_session_token),
+    manager: AdminSessionTokenManager = Depends(get_admin_session_token_manager),
+):
+    await manager.delete(session_token)
+
+    response = RedirectResponse(url="/admin/", status_code=status.HTTP_302_FOUND)
+    response.delete_cookie(
+        settings.fief_admin_session_cookie_name,
+        domain=settings.fief_admin_session_cookie_domain,
+        secure=settings.fief_admin_session_cookie_secure,
+        httponly=True,
+    )
+
+    return response
