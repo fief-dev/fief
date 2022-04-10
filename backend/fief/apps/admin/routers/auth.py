@@ -72,12 +72,17 @@ async def userinfo(userinfo=Depends(get_userinfo)):
 
 @router.get("/logout", name="admin.auth:logout")
 async def logout(
+    request: Request,
     session_token: AdminSessionToken = Depends(get_admin_session_token),
     manager: AdminSessionTokenManager = Depends(get_admin_session_token_manager),
+    fief: FiefAsync = Depends(get_fief),
 ):
     await manager.delete(session_token)
 
-    response = RedirectResponse(url="/admin/", status_code=status.HTTP_302_FOUND)
+    response = RedirectResponse(
+        url=f"{fief.base_url}/logout?redirect_uri={request.base_url}admin/",
+        status_code=status.HTTP_302_FOUND,
+    )
     response.delete_cookie(
         settings.fief_admin_session_cookie_name,
         domain=settings.fief_admin_session_cookie_domain,

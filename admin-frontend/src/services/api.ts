@@ -21,6 +21,10 @@ export class APIClient {
     return `${BASE_URL}/auth/login?redirect_uri=${encodeURIComponent(window.location.href)}`;
   }
 
+  public static getLogoutURL(): string {
+    return `${BASE_URL}/auth/logout`;
+  }
+
   public getUserinfo(): Promise<AxiosResponse<schemas.user.CurrentUser>> {
     return this.client.get('/auth/userinfo');
   }

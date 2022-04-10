@@ -1,15 +1,17 @@
 import { Fragment } from 'react';
-import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Menu, Transition } from '@headlessui/react'
 
 
 import { useCurrentUser } from '../../hooks/user';
+import { APIClient } from '../../services/api';
 import UserAvatar from '../UserAvatar/UserAvatar';
 
 interface UserMenuProps {
 }
 
 const UserMenu: React.FunctionComponent<UserMenuProps> = () => {
+  const { t } = useTranslation(['common']);
   const user = useCurrentUser();
 
   return (
@@ -44,16 +46,13 @@ const UserMenu: React.FunctionComponent<UserMenuProps> = () => {
           </div>
           <div className="px-1 py-1">
             <Menu.Item>
-              {({ active }) => (
-                <Link
-                  to="/signout"
-                  className={`
-                    flex flex-col rounded w-full px-2 py-2 text-sm
-                    ${active ? 'bg-slate-100' : ''}
-                    `}
+              {() => (
+                <a
+                  href={APIClient.getLogoutURL()}
+                  className="flex flex-col rounded w-full px-2 py-2 text-sm"
                 >
-                  Sign Out
-                </Link>
+                  {t('user_menu.signout')}
+                </a>
               )}
             </Menu.Item>
           </div>

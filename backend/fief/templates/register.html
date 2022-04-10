@@ -1,8 +1,8 @@
 {% extends "auth_layout.html" %}
 
-{% block head_title %}{{ _('Register') }}{% endblock %}
+{% block head_title %}{{ _('Sign up') }}{% endblock %}
 
-{% block title %}{{ _('Register') }}{% endblock %}
+{% block title %}{{ _('Sign up') }}{% endblock %}
 
 {% block auth_form %}
   <form method="POST" action="{{ tenant.url_for(request, 'register:post') }}">

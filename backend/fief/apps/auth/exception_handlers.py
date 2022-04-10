@@ -10,6 +10,7 @@ from fief.exceptions import (
     ConsentException,
     FormValidationError,
     LoginException,
+    LogoutException,
     RegisterException,
     ResetPasswordException,
     TokenRequestException,
@@ -156,5 +157,23 @@ async def reset_password_exception_handler(
 
 
 exception_handlers[ResetPasswordException] = reset_password_exception_handler
+
+
+async def logout_exception_handler(request: Request, exc: LogoutException):
+    return templates.LocaleTemplateResponse(
+        "logout.html",
+        {
+            "request": request,
+            "error": exc.error.error_description,
+            "tenant": exc.tenant,
+            "fatal_error": True,
+        },
+        translations=request.scope["translations"],
+        status_code=status.HTTP_400_BAD_REQUEST,
+        headers={"X-Fief-Error": exc.error.error},
+    )
+
+
+exception_handlers[LogoutException] = logout_exception_handler
 
 __all__ = ["exception_handlers"]

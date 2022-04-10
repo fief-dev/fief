@@ -1,3 +1,4 @@
+from typing import Tuple
 from unittest.mock import AsyncMock, MagicMock
 
 import httpx
@@ -7,6 +8,7 @@ from fastapi import status
 from fief.crypto.token import get_token_hash
 from fief.db import AsyncSession
 from fief.managers import AdminSessionTokenManager
+from fief.models import AdminSessionToken
 from fief.schemas.user import UserDB
 from fief.settings import settings
 
@@ -91,8 +93,28 @@ class TestAuthLogout:
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
     @pytest.mark.authenticated_admin(mode="session")
-    async def test_valid(self, test_client_admin: httpx.AsyncClient):
+    async def test_valid(
+        self,
+        test_client_admin: httpx.AsyncClient,
+        admin_session_token: Tuple[AdminSessionToken, str],
+        main_session: AsyncSession,
+        fief_client_mock: MagicMock,
+    ):
+        fief_client_mock.base_url = "https://bretagne.fief.dev"
         response = await test_client_admin.get("/auth/logout")
 
         assert response.status_code == status.HTTP_302_FOUND
+
+        location = response.headers["Location"]
+        assert (
+            location
+            == "https://bretagne.fief.dev/logout?redirect_uri=http://api.fief.dev/admin/"
+        )
+
         assert "Set-Cookie" in response.headers
+
+        admin_session_token_manager = AdminSessionTokenManager(main_session)
+        deleted_admin_session_token = await admin_session_token_manager.get_by_id(
+            admin_session_token[0].id
+        )
+        assert deleted_admin_session_token is None

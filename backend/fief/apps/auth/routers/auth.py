@@ -3,6 +3,7 @@ from typing import List, Optional, Tuple
 from fastapi import APIRouter, Depends, Query, Request, status
 from fastapi.responses import RedirectResponse
 from fastapi.security.oauth2 import OAuth2PasswordRequestForm
+from pydantic import AnyUrl
 
 from fief.apps.auth.templates import templates
 from fief.csrf import check_csrf
@@ -29,12 +30,15 @@ from fief.dependencies.locale import get_gettext, get_translations
 from fief.dependencies.session_token import get_session_token
 from fief.dependencies.tenant import get_current_tenant
 from fief.dependencies.users import UserManager, get_user_manager
-from fief.exceptions import LoginException
+from fief.dependencies.workspace_managers import get_session_token_manager
+from fief.exceptions import LoginException, LogoutException
 from fief.locale import Translations
+from fief.managers.session_token import SessionTokenManager
 from fief.models import Client, LoginSession, Tenant, Workspace
 from fief.models.session_token import SessionToken
-from fief.schemas.auth import LoginError
+from fief.schemas.auth import LoginError, LogoutError
 from fief.services.authentication_flow import AuthenticationFlow
+from fief.settings import settings
 
 router = APIRouter(dependencies=[Depends(check_csrf), Depends(get_translations)])
 
@@ -216,5 +220,34 @@ async def post_consent(
         )
 
     response = await authentication_flow.delete_login_session(response, login_session)
+
+    return response
+
+
+@router.get("/logout", name="auth:logout")
+async def logout(
+    redirect_uri: Optional[AnyUrl] = Query(None),
+    session_token: Optional[SessionToken] = Depends(get_session_token),
+    sesstion_token_manager: SessionTokenManager = Depends(get_session_token_manager),
+    tenant: Tenant = Depends(get_current_tenant),
+    _=Depends(get_gettext),
+):
+    if redirect_uri is None:
+        raise LogoutException(
+            LogoutError.get_invalid_request(_("redirect_uri is missing")),
+            tenant,
+        )
+
+    if session_token is not None:
+        await sesstion_token_manager.delete(session_token)
+
+    response = RedirectResponse(redirect_uri, status_code=status.HTTP_302_FOUND)
+
+    response.delete_cookie(
+        settings.session_cookie_name,
+        domain=settings.session_cookie_domain,
+        secure=settings.session_cookie_secure,
+        httponly=True,
+    )
 
     return response

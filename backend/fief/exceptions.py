@@ -11,6 +11,7 @@ from fief.schemas.auth import (
     AuthorizeRedirectError,
     ConsentError,
     LoginError,
+    LogoutError,
     TokenError,
 )
 from fief.schemas.register import RegisterError
@@ -121,3 +122,9 @@ class ResetPasswordException(Exception):
         self.form_data = form_data
         self.tenant = tenant
         self.fatal = fatal
+
+
+class LogoutException(Exception):
+    def __init__(self, error: LogoutError, tenant: Optional[Tenant] = None) -> None:
+        self.error = error
+        self.tenant = tenant

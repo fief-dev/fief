@@ -918,3 +918,85 @@ class TestAuthPostConsent:
             login_session.token
         )
         assert used_login_session is None
+
+
+@pytest.mark.asyncio
+@pytest.mark.workspace_host
+class TestAuthLogout:
+    async def test_missing_redirect_uri(
+        self,
+        test_client_auth: httpx.AsyncClient,
+        test_data: TestData,
+    ):
+        session_token = test_data["session_tokens"]["regular"]
+        tenant = session_token.user.tenant
+        path_prefix = tenant.slug if not tenant.default else ""
+
+        cookies = {}
+        cookies[settings.session_cookie_name] = session_token_tokens["regular"][0]
+
+        response = await test_client_auth.get(f"{path_prefix}/logout", cookies=cookies)
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+        headers = response.headers
+        assert headers["X-Fief-Error"] == "invalid_request"
+
+    @pytest.mark.parametrize("cookie", [None, "INVALID_SESSION_TOKEN"])
+    async def test_no_session_token(
+        self,
+        cookie: Optional[str],
+        test_client_auth: httpx.AsyncClient,
+        test_data: TestData,
+    ):
+        tenant = test_data["tenants"]["default"]
+        path_prefix = tenant.slug if not tenant.default else ""
+
+        cookies = {}
+        if cookie is not None:
+            cookies[settings.session_cookie_name] = cookie
+
+        redirect_uri = "https://www.bretagne.duchy"
+        response = await test_client_auth.get(
+            f"{path_prefix}/logout",
+            params={"redirect_uri": redirect_uri},
+            cookies=cookies,
+        )
+
+        assert response.status_code == status.HTTP_302_FOUND
+
+        location = response.headers["Location"]
+        assert location == redirect_uri
+
+    async def test_valid_session_token(
+        self,
+        test_client_auth: httpx.AsyncClient,
+        test_data: TestData,
+        workspace_session: AsyncSession,
+    ):
+        session_token = test_data["session_tokens"]["regular"]
+        tenant = session_token.user.tenant
+        path_prefix = tenant.slug if not tenant.default else ""
+
+        cookies = {}
+        cookies[settings.session_cookie_name] = session_token_tokens["regular"][0]
+
+        redirect_uri = "https://www.bretagne.duchy"
+        response = await test_client_auth.get(
+            f"{path_prefix}/logout",
+            params={"redirect_uri": redirect_uri},
+            cookies=cookies,
+        )
+
+        assert response.status_code == status.HTTP_302_FOUND
+
+        location = response.headers["Location"]
+        assert location == redirect_uri
+
+        assert "Set-Cookie" in response.headers
+
+        session_token_manager = SessionTokenManager(workspace_session)
+        deleted_session_token = await session_token_manager.get_by_token(
+            session_token_tokens["regular"][1]
+        )
+        assert deleted_session_token is None

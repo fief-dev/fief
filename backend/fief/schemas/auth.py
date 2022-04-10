@@ -106,3 +106,13 @@ class TokenError(BaseModel):
     @classmethod
     def get_invalid_scope(cls):
         return cls(error="invalid_scope")
+
+
+class LogoutError(BaseModel):
+    error: str = Field(..., regex="invalid_request")
+    error_description: Optional[str] = None
+    error_uri: Optional[str] = None
+
+    @classmethod
+    def get_invalid_request(cls, error_description: Optional[str] = None):
+        return cls(error="invalid_request", error_description=error_description)
