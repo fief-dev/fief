@@ -1,6 +1,6 @@
 ---
-name: Bug report
-about: Create a report to help us improve
+name: 🪲 I found a bug
+about: I'm sure it's a bug and I want to report it.
 title: ''
 labels: bug
 assignees: ''
@@ -26,7 +26,7 @@ A clear and concise description of what you expected to happen.
 ## Configuration
 
 * Cloud or self-hosted: Cloud
-* If self-hosted, Fief version: 
+* If self-hosted, Fief version:
 
 ## Additional context
 
