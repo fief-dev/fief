@@ -116,6 +116,7 @@ ENV/
 # SQLite databases
 *.db
 /db
+/backend/db
 
 # node_modules
 node_modules/
