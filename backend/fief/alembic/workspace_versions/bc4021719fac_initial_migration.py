@@ -5,10 +5,9 @@ Revises:
 Create Date: 2022-04-13 15:36:14.370753
 
 """
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 from sqlalchemy.dialects import postgresql
-
 
 import fief
 
