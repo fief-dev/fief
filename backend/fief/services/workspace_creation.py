@@ -59,9 +59,6 @@ class WorkspaceCreation:
             workspace_user = WorkspaceUser(workspace_id=workspace.id, user_id=user_id)
             await self.workspace_user_manager.create(workspace_user)
 
-        # Allow a redirect URI on this workspace on the main Fief client
-        await self._add_fief_redirect_uri(workspace)
-
         # Create a default tenant and client
         async with get_workspace_session(workspace) as session:
             tenant_name = workspace.name
@@ -89,6 +86,9 @@ class WorkspaceCreation:
             session.add(client)
 
             await session.commit()
+
+        # Allow a redirect URI on this workspace on the main Fief client
+        await self._add_fief_redirect_uri(workspace)
 
         return workspace
 
