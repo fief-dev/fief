@@ -48,7 +48,7 @@ def quickstart(
         parts = [
             "docker run",
             "--name fief-server",
-            "-p 8000:80",
+            "-p 8000:8000",
             "-d",
             *[f'-e "{name}={value}"' for (name, value) in generated_secrets.items()],
             "ghcr.io/fief-dev/fief:latest",

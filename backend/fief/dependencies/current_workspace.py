@@ -14,8 +14,6 @@ from fief.models import Workspace
 async def get_host(
     host: Optional[str] = Header(None, include_in_schema=False)
 ) -> Optional[str]:
-    if host is not None:
-        return host.split(":")[0]  # Remove port
     return host
 
 

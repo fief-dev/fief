@@ -15,7 +15,7 @@ const WorkspaceSwitcher: React.FunctionComponent<WorkspaceSwitcherProps> = () =>
 
   const switchWorkspace = useCallback((workspace: schemas.workspace.WorkspacePublic) => {
     setWorkspace(workspace);
-    window.location.hostname = workspace.domain;
+    window.location.host = workspace.domain;
   }, [setWorkspace]);
 
   return (

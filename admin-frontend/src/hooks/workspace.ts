@@ -46,7 +46,7 @@ export const useCurrentWorkspace = (): [schemas.workspace.WorkspacePublic | unde
   const [workspace, setWorkspace] = useState<schemas.workspace.WorkspacePublic | undefined>();
 
   const getWorkspace = useCallback(async () => {
-    const workspaceDomain = window.location.hostname;
+    const workspaceDomain = window.location.host;
     let workspace: schemas.workspace.WorkspacePublic | undefined;
     if (workspaceDomain) {
       workspace = workspaces.find((workspace) => workspace.domain === workspaceDomain);

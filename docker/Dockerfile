@@ -17,7 +17,7 @@ COPY supervisord.conf /etc/supervisord.conf
 
 ENV DATABASE_LOCATION=/data/db
 
-ENV PORT=80
+ENV PORT=8000
 EXPOSE ${PORT}
 
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]

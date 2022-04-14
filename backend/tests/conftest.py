@@ -146,7 +146,7 @@ async def workspace(
     url, database_type = main_test_database
     workspace = Workspace(
         name="Duché de Bretagne",
-        domain="bretagne.localhost",
+        domain="bretagne.localhost:8000",
         database_type=database_type,
         database_host=url.host,
         database_port=url.port,

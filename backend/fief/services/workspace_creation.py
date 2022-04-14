@@ -1,3 +1,4 @@
+import re
 from typing import List, Optional
 
 from pydantic import UUID4
@@ -13,6 +14,10 @@ from fief.models import Client, Tenant, Workspace, WorkspaceUser
 from fief.schemas.workspace import WorkspaceCreate
 from fief.services.main_workspace import get_main_fief_client, get_main_fief_workspace
 from fief.services.workspace_db import WorkspaceDatabase
+
+LOCALHOST_DOMAIN_PATTERN = re.compile(
+    r"([^\.]+\.)?localhost(\d+)?", flags=re.IGNORECASE
+)
 
 
 class WorkspaceCreation:
@@ -99,7 +104,7 @@ class WorkspaceCreation:
             client_manager = ClientManager(session)
             fief_client = await get_main_fief_client()
 
-            localhost_domain = workspace.domain.endswith("localhost")
+            localhost_domain = LOCALHOST_DOMAIN_PATTERN.match(workspace.domain)
             redirect_uri = f"{'http' if localhost_domain else 'https'}://{workspace.domain}/admin/api/auth/callback"
             fief_client.redirect_uris = fief_client.redirect_uris + [redirect_uri]
 

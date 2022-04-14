@@ -23,7 +23,7 @@ const CreateWorkspaceStep4: React.FunctionComponent = () => {
     setLoading(true);
     try {
       const { data: workspace } = await api.createWorkspace(createWorkspace as schemas.workspace.WorkspaceCreate);
-      window.location.hostname = workspace.domain;
+      window.location.host = workspace.domain;
     } catch (err) {
       setErrorMessage(handleAPIError(err));
     } finally {
