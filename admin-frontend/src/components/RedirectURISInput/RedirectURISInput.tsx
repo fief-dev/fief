@@ -7,6 +7,7 @@ import { useFieldRequiredErrorMessage } from '../../hooks/errors';
 import * as schemas from '../../schemas';
 import FormErrorMessage from '../FormErrorMessage/FormErrorMessage';
 
+const LOCALHOST_DOMAIN_PATTERN = new RegExp(/([^.]+\.)?localhost(\d+)?/i);
 
 interface RedirectURISInputProps {
 }
@@ -21,7 +22,7 @@ const RedirectURISInput: React.FunctionComponent<RedirectURISInputProps> = () =>
   const validateRedirectURI = useCallback((value: string) => {
     try {
       const url = new URL(value);
-      if (url.protocol === 'http:' && url.hostname !== 'localhost') {
+      if (url.protocol === 'http:' && !url.hostname.match(LOCALHOST_DOMAIN_PATTERN)) {
         return t('redirect_uris.https_required');
       }
     } catch (err) {

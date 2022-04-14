@@ -116,6 +116,7 @@ class TestCreateClient:
         [
             ["https://nantes.city/callback"],
             ["http://localhost:8000/callback"],
+            ["http://test.localhost:8000/callback"],
         ],
     )
     async def test_valid(
