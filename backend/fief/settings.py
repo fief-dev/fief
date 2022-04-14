@@ -33,7 +33,7 @@ class Settings(BaseSettings):
     log_level: str = "DEBUG"
     unit_tests: bool = False
     sentry_dsn: Optional[str] = None
-    root_domain: str = "localhost"
+    root_domain: str = "localhost:8000"
     allow_origin_regex: str = "http://.*localhost:[0-9]+"
 
     secret: SecretStr
