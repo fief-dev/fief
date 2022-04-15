@@ -26,6 +26,7 @@ runs:
   steps:
     - uses: actions/checkout@v2
       with:
+        token: ${{ secrets.GH_GLOBAL_TOKEN }}
         submodules: recursive
     - name: Set up Python 3.10
       uses: actions/setup-python@v2

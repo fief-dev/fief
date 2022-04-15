@@ -6,6 +6,9 @@ runs:
 
   steps:
     - uses: actions/checkout@v2
+      with:
+        token: ${{ secrets.GH_GLOBAL_TOKEN }}
+        submodules: recursive
     - name: Use Node.js
       uses: actions/setup-node@v3
       with:

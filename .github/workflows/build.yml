@@ -53,6 +53,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
+        token: ${{ secrets.GH_GLOBAL_TOKEN }}
         submodules: recursive
     - name: Test backend with ${{ matrix.database_type }} database
       uses: ./.github/actions/test-backend
@@ -70,6 +71,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
+        token: ${{ secrets.GH_GLOBAL_TOKEN }}
         submodules: recursive
     - name: Test admin frontend
       uses: ./.github/actions/test-admin-frontend
@@ -81,6 +83,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
+        token: ${{ secrets.GH_GLOBAL_TOKEN }}
         submodules: recursive
     - name: Build admin frontend
       uses: ./.github/actions/build-admin-frontend
@@ -93,6 +96,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
+        token: ${{ secrets.GH_GLOBAL_TOKEN }}
         submodules: recursive
     - name: Set up Python 3.10
       uses: actions/setup-python@v2
@@ -149,6 +153,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
+        token: ${{ secrets.GH_GLOBAL_TOKEN }}
         submodules: recursive
     - name: Wait package to be truly available from PyPI
       shell: bash
