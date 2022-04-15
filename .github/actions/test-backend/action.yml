@@ -25,6 +25,8 @@ runs:
 
   steps:
     - uses: actions/checkout@v2
+      with:
+        submodules: recursive
     - name: Set up Python 3.10
       uses: actions/setup-python@v2
       with:
