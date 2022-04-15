@@ -1,5 +1,10 @@
-name: 'Test admin frontend'
-description: 'Run the tests for the React admin frontend'
+name: "Test admin frontend"
+description: "Run the tests for the React admin frontend"
+
+inputs:
+  github_token:
+    description: "GitHub token"
+    required: true
 
 runs:
   using: "composite"
@@ -7,12 +12,12 @@ runs:
   steps:
     - uses: actions/checkout@v2
       with:
-        token: ${{ secrets.GH_GLOBAL_TOKEN }}
+        token: ${{ inputs.github_token }}
         submodules: recursive
     - name: Use Node.js
       uses: actions/setup-node@v3
       with:
-        node-version: '14'
+        node-version: "14"
     - name: Install dependencies
       shell: bash
       working-directory: admin-frontend

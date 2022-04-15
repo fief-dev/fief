@@ -1,23 +1,27 @@
-name: 'Test backend'
-description: 'Run the tests for the Python backend'
+name: "Test backend"
+description: "Run the tests for the Python backend"
+
 inputs:
+  github_token:
+    description: "GitHub token"
+    required: true
   database_type:
-    description: 'DB type'
+    description: "DB type"
     required: true
   database_host:
-    description: 'DB host'
+    description: "DB host"
     required: true
   database_port:
-    description: 'DB port'
+    description: "DB port"
     required: true
   database_username:
-    description: 'DB username'
+    description: "DB username"
     required: true
   database_password:
-    description: 'DB password'
+    description: "DB password"
     required: true
   database_name:
-    description: 'DB name'
+    description: "DB name"
     required: true
 
 runs:
@@ -26,12 +30,12 @@ runs:
   steps:
     - uses: actions/checkout@v2
       with:
-        token: ${{ secrets.GH_GLOBAL_TOKEN }}
+        token: ${{ inputs.github_token }}
         submodules: recursive
     - name: Set up Python 3.10
       uses: actions/setup-python@v2
       with:
-        python-version: '3.10'
+        python-version: "3.10"
     - name: Install dependencies
       shell: bash
       working-directory: backend
