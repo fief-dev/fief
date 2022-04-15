@@ -11,7 +11,7 @@ from fief.dependencies.current_workspace import (
     get_current_workspace_session,
 )
 from fief.models import Tenant, Workspace
-from tests.conftest import TestClientGeneratorType
+from tests.types import TestClientGeneratorType
 
 
 @pytest.fixture

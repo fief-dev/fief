@@ -9,9 +9,9 @@ from fief.db import AsyncSession
 from fief.managers import GrantManager, LoginSessionManager, SessionTokenManager
 from fief.services.response_type import DEFAULT_RESPONSE_MODE, HYBRID_RESPONSE_TYPES
 from fief.settings import settings
-from tests.conftest import TenantParams
 from tests.data import TestData, session_token_tokens
 from tests.helpers import authorization_code_assertions, get_params_by_response_mode
+from tests.types import TenantParams
 
 
 @pytest.mark.asyncio

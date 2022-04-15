@@ -1,17 +1,8 @@
 import asyncio
 import contextlib
-import dataclasses
 import json
 import uuid
-from typing import (
-    Any,
-    AsyncContextManager,
-    AsyncGenerator,
-    Callable,
-    Dict,
-    Optional,
-    Tuple,
-)
+from typing import Any, AsyncGenerator, Dict, Optional, Tuple
 from unittest.mock import MagicMock
 
 import asgi_lifespan
@@ -40,12 +31,7 @@ from fief.dependencies.workspace_db import get_workspace_db
 from fief.models import (
     AdminAPIKey,
     AdminSessionToken,
-    Client,
-    LoginSession,
     MainBase,
-    SessionToken,
-    Tenant,
-    User,
     Workspace,
     WorkspaceUser,
 )
@@ -55,6 +41,7 @@ from fief.services.workspace_db import WorkspaceDatabase
 from fief.settings import settings
 from fief.tasks import send_task
 from tests.data import TestData, data_mapping, session_token_tokens
+from tests.types import GetTestDatabase, TenantParams, TestClientGeneratorType
 
 pytest.register_assert_rewrite("tests.helpers")
 
@@ -65,9 +52,6 @@ def event_loop():
     loop = asyncio.new_event_loop()
     yield loop
     loop.close()
-
-
-GetTestDatabase = Callable[..., AsyncContextManager[Tuple[engine.URL, DatabaseType]]]
 
 
 @pytest.fixture(scope="session")
@@ -322,17 +306,6 @@ async def authenticated_admin(
     return headers
 
 
-@dataclasses.dataclass
-class TenantParams:
-    path_prefix: str
-    tenant: Tenant
-    client: Client
-    user: User
-    login_session: LoginSession
-    session_token: SessionToken
-    session_token_token: Tuple[str, str]
-
-
 @pytest.fixture(
     params=[
         {
@@ -398,9 +371,6 @@ def access_token(
             3600,
         )
     return None
-
-
-TestClientGeneratorType = Callable[[FastAPI], AsyncContextManager[httpx.AsyncClient]]
 
 
 @pytest.fixture

@@ -20,8 +20,8 @@ from fief.schemas.user import UserDB
 from fief.schemas.workspace import WorkspaceCreate
 from fief.services.workspace_creation import WorkspaceCreation
 from fief.services.workspace_db import WorkspaceDatabase
-from tests.conftest import GetTestDatabase
 from tests.data import TestData
+from tests.types import GetTestDatabase
 
 
 @pytest.fixture(scope="module")

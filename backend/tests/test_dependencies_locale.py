@@ -6,7 +6,7 @@ from fastapi import Depends, FastAPI, status
 
 from fief.dependencies.locale import get_accepted_languages
 from fief.locale import get_preferred_locale
-from tests.conftest import TestClientGeneratorType
+from tests.types import TestClientGeneratorType
 
 
 @pytest.fixture

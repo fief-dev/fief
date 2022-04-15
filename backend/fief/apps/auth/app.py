@@ -32,7 +32,7 @@ app = FastAPI(title="Fief Authentication API")
 app.add_middleware(CSRFCookieSetterMiddleware)
 app.add_middleware(
     CORSMiddlewarePath,
-    path_regex="^/api|^/\.well-known",
+    path_regex=r"^/api|^/\.well-known",
     allow_origins=["*"],
     allow_credentials=False,
     allow_methods=["*"],

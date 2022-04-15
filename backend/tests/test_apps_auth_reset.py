@@ -11,8 +11,8 @@ from fief.dependencies.users import UserManager
 from fief.models import Workspace
 from fief.settings import settings
 from fief.tasks import on_after_forgot_password
-from tests.conftest import TenantParams
 from tests.data import TestData
+from tests.types import TenantParams
 
 
 @pytest.mark.asyncio

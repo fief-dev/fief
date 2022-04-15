@@ -4,7 +4,7 @@ import httpx
 import pytest
 from fastapi import status
 
-from tests.conftest import TenantParams
+from tests.types import TenantParams
 
 
 @pytest.mark.asyncio

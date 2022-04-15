@@ -11,8 +11,8 @@ from fief.managers import SessionTokenManager
 from fief.models import Workspace
 from fief.settings import settings
 from fief.tasks import on_after_register
-from tests.conftest import TenantParams
 from tests.data import TestData
+from tests.types import TenantParams
 
 
 @pytest.mark.asyncio

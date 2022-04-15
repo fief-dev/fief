@@ -7,7 +7,7 @@ from jwcrypto import jwk
 
 from fief.models import Workspace
 from fief.services.response_type import ALLOWED_RESPONSE_TYPES
-from tests.conftest import TenantParams
+from tests.types import TenantParams
 
 
 @pytest.mark.asyncio

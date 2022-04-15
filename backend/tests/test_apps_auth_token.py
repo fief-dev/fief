@@ -9,9 +9,9 @@ from fief.crypto.token import get_token_hash
 from fief.db import AsyncSession
 from fief.managers import AuthorizationCodeManager, RefreshTokenManager
 from fief.models import Client
-from tests.conftest import TenantParams
 from tests.data import TestData, authorization_code_codes, refresh_token_tokens
 from tests.helpers import id_token_assertions
+from tests.types import TenantParams
 
 AUTH_METHODS = ["client_secret_basic", "client_secret_post"]
 

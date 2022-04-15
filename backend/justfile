@@ -55,11 +55,11 @@ revision-workspace message: start-db
 migrate-workspace: start-db
   alembic -c fief/alembic.ini -n workspace upgrade head
 
-start-server: start-db start-redis compile-translations build-css
-  uvicorn --host 0.0.0.0 --port 8000 fief.app:app
+start-server app="fief.app:app": start-db start-redis compile-translations build-css
+  uvicorn --host 0.0.0.0 --port 8000 {{app}}
 
-start-server-watch:
-  watchexec -r --exts po,py,html -- just start-server
+start-server-watch app="fief.app:app":
+  watchexec -r --exts po,py,html -- just start-server {{app}}
 
 start-worker: start-db start-redis
   dramatiq fief.worker -p 1 -t 1

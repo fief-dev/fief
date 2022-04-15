@@ -10,7 +10,7 @@ from fief.db import AsyncSession
 from fief.dependencies.admin_authentication import is_authenticated_admin
 from fief.models import AdminAPIKey, AdminSessionToken, Workspace, WorkspaceUser
 from fief.settings import settings
-from tests.conftest import TestClientGeneratorType
+from tests.types import TestClientGeneratorType
 
 
 @pytest.fixture
