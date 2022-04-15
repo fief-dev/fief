@@ -118,4 +118,4 @@ Documentation = "https://docs.fief.dev"
 
 [tool.flit.sdist]
 include = ["fief/static", "fief/locale"]
-exclude = ["tests"]
+exclude = ["fief_cloud", "tests"]
