@@ -10,7 +10,7 @@ const OnboardingLayout: React.FunctionComponent<OnboardingLayoutProps> = ({ step
   return (
     <main className="bg-white">
       <div className="relative flex">
-        <div className="w-full md:w-1/2">
+        <div className="w-full">
           <div className="min-h-screen h-full flex flex-col after:flex-1">
 
             <div className="flex-1">

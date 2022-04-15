@@ -47,14 +47,10 @@ export const useCurrentWorkspace = (): [schemas.workspace.WorkspacePublic | unde
 
   const getWorkspace = useCallback(async () => {
     const workspaceDomain = window.location.host;
-    let workspace: schemas.workspace.WorkspacePublic | undefined;
     if (workspaceDomain) {
-      workspace = workspaces.find((workspace) => workspace.domain === workspaceDomain);
+      return workspaces.find((workspace) => workspace.domain === workspaceDomain);
     }
-    if (!workspace) {
-      workspace = workspaces[0];
-    }
-    return workspace;
+    return undefined;
   }, [workspaces]);
 
   useEffect(() => {

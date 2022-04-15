@@ -23,5 +23,9 @@
     "database_name": "Database name",
     "step4_title": "Everything is ready!",
     "create_workspace": "Create workspace"
+  },
+  "select": {
+    "title": "Select your workspace",
+    "create": "Create new workspace"
   }
 }
