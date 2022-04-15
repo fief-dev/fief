@@ -47,9 +47,7 @@ def read_access_token(key: jwk.JWK, token: str) -> UUID4:
         decoded_jwt = jwt.JWT(jwt=token, key=key)
         claims = json.loads(decoded_jwt.claims)
         user_id = claims["sub"]
-    except JWException as e:
-        raise InvalidAccessToken() from e
-    except KeyError as e:
+    except (JWException, KeyError, ValueError) as e:
         raise InvalidAccessToken() from e
     else:
         return uuid.UUID(user_id)

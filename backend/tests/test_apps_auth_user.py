@@ -1,3 +1,5 @@
+from typing import Optional
+
 import httpx
 import pytest
 from fastapi import status
@@ -9,14 +11,28 @@ from tests.conftest import TenantParams
 @pytest.mark.workspace_host
 @pytest.mark.parametrize("method", ["GET", "POST"])
 class TestUserUserinfo:
+    @pytest.mark.parametrize(
+        "authorization",
+        [
+            None,
+            "INVALID_FORMAT",
+            "INVALID_SCHEMA INVALID_TOKEN",
+            "Bearer INVALID_TOKEN",
+        ],
+    )
     async def test_unauthorized(
         self,
         method: str,
+        authorization: Optional[str],
         tenant_params: TenantParams,
         test_client_auth: httpx.AsyncClient,
     ):
+        headers = {}
+        if authorization is not None:
+            headers["Authorization"] = authorization
+
         response = await test_client_auth.request(
-            method, f"{tenant_params.path_prefix}/api/userinfo"
+            method, f"{tenant_params.path_prefix}/api/userinfo", headers=headers
         )
 
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
