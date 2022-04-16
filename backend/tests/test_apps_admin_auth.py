@@ -30,7 +30,9 @@ class TestAuthLogin:
         assert location == "http://localhost/authorize"
 
         fief_client_mock.auth_url.assert_called_once_with(
-            redirect_uri="http://api.fief.dev/auth/callback", scope=["openid"]
+            redirect_uri="http://api.fief.dev/auth/callback",
+            scope=["openid"],
+            extras_params={"screen": "login"},
         )
 
 

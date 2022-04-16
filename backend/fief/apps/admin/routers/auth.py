@@ -16,9 +16,13 @@ router = APIRouter()
 
 
 @router.get("/login", name="admin.auth:login")
-async def login(request: Request, fief: FiefAsync = Depends(get_fief)):
+async def login(
+    request: Request, screen: str = Query("login"), fief: FiefAsync = Depends(get_fief)
+):
     url = await fief.auth_url(
-        redirect_uri=request.url_for("admin.auth:callback"), scope=["openid"]
+        redirect_uri=request.url_for("admin.auth:callback"),
+        scope=["openid"],
+        extras_params={"screen": screen},
     )
     return RedirectResponse(url=url, status_code=status.HTTP_302_FOUND)
 
