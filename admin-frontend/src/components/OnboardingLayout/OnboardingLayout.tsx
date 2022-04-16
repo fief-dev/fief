@@ -9,7 +9,12 @@ interface OnboardingLayoutProps {
 const OnboardingLayout: React.FunctionComponent<OnboardingLayoutProps> = ({ steps, active, children }) => {
   return (
     <main className="bg-white">
-      <div className="relative flex">
+
+      <div className="fixed bottom-0 right-0 hidden md:block w-1/4 -z-1">
+        <img src={`${process.env.PUBLIC_URL}/illustrations/castle.svg`} alt="Fief Castle" />
+      </div>
+
+      <div className="relative flex bg-fixed bg-repeat-x bg-bottom" style={{ backgroundImage: `url(${process.env.PUBLIC_URL}/illustrations/grass.svg)` }}>
         <div className="w-full">
           <div className="min-h-screen h-full flex flex-col after:flex-1">
 
