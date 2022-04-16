@@ -3,7 +3,7 @@ import * as R from 'ramda';
 
 import * as schemas from '../schemas';
 
-const API_PORT = process.env.REACT_APP_API_PORT || window.location.port;
+export const API_PORT = process.env.REACT_APP_API_PORT || window.location.port;
 export const FIEF_INSTANCE = `${window.location.protocol}//${window.location.hostname}${API_PORT ? `:${API_PORT}` : ''}`;
 const BASE_URL = `${FIEF_INSTANCE}/admin/api`;
 

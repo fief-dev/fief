@@ -1,7 +1,7 @@
 import { createCache, useCache } from '@react-hook/cache';
 import { Dispatch, useCallback, useEffect, useState } from 'react';
 
-import { APIClient, isAxiosException } from '../services/api';
+import { APIClient, API_PORT, isAxiosException } from '../services/api';
 import * as schemas from '../schemas';
 
 const workspacesCache = createCache<schemas.workspace.WorkspacePublic[]>((async (key: string) => {
@@ -41,12 +41,13 @@ export const useWorkspacesCache = (): [schemas.workspace.WorkspacePublic[], bool
   return [workspaces, loading];
 };
 
-export const useCurrentWorkspace = (): [schemas.workspace.WorkspacePublic | undefined, Dispatch<schemas.workspace.WorkspacePublic>] => {
-  const [workspaces, loading] = useWorkspacesCache();
+export const useCurrentWorkspace = (): [schemas.workspace.WorkspacePublic | undefined, boolean, Dispatch<schemas.workspace.WorkspacePublic>] => {
+  const [workspaces] = useWorkspacesCache();
+  const [currentWorskpaceLoading, setCurrentWorkspaceLoading] = useState(true);
   const [workspace, setWorkspace] = useState<schemas.workspace.WorkspacePublic | undefined>();
 
   const getWorkspace = useCallback(async () => {
-    const workspaceDomain = window.location.host;
+    const workspaceDomain = `${window.location.hostname}${API_PORT ? `:${API_PORT}` : ''}`;
     if (workspaceDomain) {
       return workspaces.find((workspace) => workspace.domain === workspaceDomain);
     }
@@ -54,12 +55,14 @@ export const useCurrentWorkspace = (): [schemas.workspace.WorkspacePublic | unde
   }, [workspaces]);
 
   useEffect(() => {
-    if (!loading && !workspace) {
+    if (!workspace) {
+      setCurrentWorkspaceLoading(true);
       getWorkspace().then((workspace) => {
         setWorkspace(workspace);
+        setCurrentWorkspaceLoading(false);
       });
     }
-  }, [getWorkspace, loading, workspace]);
+  }, [getWorkspace, workspace]);
 
-  return [workspace, setWorkspace];
+  return [workspace, currentWorskpaceLoading, setWorkspace];
 };

@@ -19,22 +19,21 @@ import Users from './routes/Users/Users';
 
 function App() {
   const [workspaces, loading] = useWorkspacesCache();
-  const [currentWorkspace] = useCurrentWorkspace();
+  const [currentWorkspace, currentWorkspaceLoading] = useCurrentWorkspace();
   const navigate = useNavigate();
   const { pathname } = useLocation();
 
   useEffect(() => {
-    console.log('pathname', pathname);
     if (pathname === '/create-workspace') {
       navigate('/create-workspace/step1', { replace: true });
-    } else if (!loading && !pathname.startsWith('/create-workspace')) {
+    } else if (!loading && !currentWorkspaceLoading && !pathname.startsWith('/create-workspace')) {
       if (workspaces.length === 0) {
         navigate('/create-workspace');
       } else if (!currentWorkspace) {
         navigate('/select-workspace');
       }
     }
-  }, [pathname, loading, workspaces, currentWorkspace, navigate]);
+  }, [pathname, loading, workspaces, currentWorkspace, currentWorkspaceLoading, navigate]);
 
   return (
     <Suspense fallback="loading">
