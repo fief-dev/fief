@@ -1,6 +1,8 @@
 import { Fragment, useCallback, useContext } from 'react';
 import { Menu, Transition } from '@headlessui/react'
-import { ChevronDownIcon } from '@heroicons/react/solid';
+import { ChevronDownIcon, PlusIcon } from '@heroicons/react/solid';
+import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 
 import WorkspaceContext from '../../contexts/workspace';
 import { useWorkspacesCache } from '../../hooks/workspace';
@@ -10,13 +12,19 @@ interface WorkspaceSwitcherProps {
 }
 
 const WorkspaceSwitcher: React.FunctionComponent<WorkspaceSwitcherProps> = () => {
+  const { t } = useTranslation(['common']);
   const [workspaces] = useWorkspacesCache();
   const [workspace, setWorkspace] = useContext(WorkspaceContext);
+  const navigate = useNavigate();
 
   const switchWorkspace = useCallback((workspace: schemas.workspace.WorkspacePublic) => {
     setWorkspace(workspace);
     window.location.host = workspace.domain;
   }, [setWorkspace]);
+
+  const createWorkspace = useCallback(() => {
+    navigate('/create-workspace');
+  }, [navigate]);
 
   return (
     <Menu as="div" className="relative inline-block text-left">
@@ -55,6 +63,25 @@ const WorkspaceSwitcher: React.FunctionComponent<WorkspaceSwitcherProps> = () =>
               </Menu.Item>
             </div>
           )}
+          <div className="px-1 py-1">
+            <Menu.Item>
+              {({ active }) => (
+                <button
+                  type="button"
+                  className={`
+                      flex flex-col rounded w-full px-2 py-2 text-sm
+                      ${active ? 'bg-slate-100' : ''}
+                      `}
+                  onClick={() => createWorkspace()}
+                >
+                  <div className="flex justify-between items-center w-full font-medium text-slate-800">
+                    {t('workspace_switcher.create')}
+                    <PlusIcon width="16" height="16" />
+                  </div>
+                </button>
+              )}
+            </Menu.Item>
+          </div>
         </Menu.Items>
       </Transition>
     </Menu>

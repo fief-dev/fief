@@ -15,6 +15,9 @@
     "showing_one": "Showing <1>{{firstIndex}}</1> to <2>{{lastIndex}}</2> of <3>{{count}}</3> result",
     "showing_other": "Showing <1>{{firstIndex}}</1> to <2>{{lastIndex}}</2> of <3>{{count}}</3> results"
   },
+  "workspace_switcher": {
+    "create": "Create new workspace"
+  },
   "user_menu": {
     "signout": "Sign out"
   },
