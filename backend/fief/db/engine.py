@@ -11,17 +11,10 @@ if TYPE_CHECKING:
 
 
 def create_engine(database_url: engine.URL) -> AsyncEngine:
-    dialect_name = database_url.get_dialect().name
-
-    connect_args = {}
-    if dialect_name == "postgreql":
-        connect_args["server_settings"] = {"tcp_keepalives_idle": "600"}
-
     engine = create_async_engine(
-        database_url,
-        echo=False and settings.log_level == "DEBUG",
-        connect_args=connect_args,
+        database_url, echo=False and settings.log_level == "DEBUG"
     )
+    dialect_name = engine.dialect.name
 
     # Special tweak for SQLite to better handle transaction
     # See: https://docs.sqlalchemy.org/en/14/dialects/sqlite.html#serializable-isolation-savepoints-transactional-ddl
