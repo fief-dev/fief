@@ -21,6 +21,9 @@
     "database_username": "Username",
     "database_password": "Password",
     "database_name": "Database name",
+    "check_connection": "Check connection",
+    "check_connection_error": "Can't connect to the database: {{ error }}",
+    "check_connection_success": "Successfully connected to the database",
     "step4_title": "Everything is ready!",
     "create_workspace": "Create workspace"
   },

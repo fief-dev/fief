@@ -37,6 +37,10 @@ export class APIClient {
     return this.client.post('/workspaces/', data);
   }
 
+  public checkConnectionWorkspace(data: schemas.workspace.WorkspaceCheckConnection): Promise<AxiosResponse<void>> {
+    return this.client.post('/workspaces/check-connection', data);
+  }
+
   public listTenants(params: schemas.tenant.TenantListParameters = {}): Promise<AxiosResponse<schemas.PaginatedResults<schemas.tenant.Tenant>>> {
     return this.client.get('/tenants/', { params });
   }

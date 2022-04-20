@@ -1,21 +1,41 @@
-import { useCallback, useContext } from 'react';
+import { useCallback, useContext, useState } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 
+import ErrorAlert from '../../components/ErrorAlert/ErrorAlert';
 import FormErrorMessage from '../../components/FormErrorMessage/FormErrorMessage';
 import OnboardingLayout from '../../components/OnboardingLayout/OnboardingLayout';
+import SuccessAlert from '../../components/SuccessAlert/SuccessAlert';
 import CreateWorkspaceContext from '../../contexts/create-workspace';
+import { useAPI } from '../../hooks/api';
 import { useFieldRequiredErrorMessage } from '../../hooks/errors';
 import * as schemas from '../../schemas';
+import { handleAPIError } from '../../services/api';
 
 const CreateWorkspaceStep3: React.FunctionComponent = () => {
   const { t } = useTranslation('workspaces');
+  const api = useAPI();
   const navigate = useNavigate();
+
+  const [checkConnectionSuccess, setCheckConnectionSuccess] = useState(false);
+  const [checkConnectionError, setCheckConnectionError] = useState<string | undefined>(undefined);
 
   const [createWorkspace, setCreateWorkspace] = useContext(CreateWorkspaceContext);
   const { register, handleSubmit, formState: { errors } } = useForm<schemas.workspace.WorkspaceCreate>({ defaultValues: createWorkspace });
   const fieldRequiredErrorMessage = useFieldRequiredErrorMessage();
+
+  const onCheckConnection: SubmitHandler<schemas.workspace.WorkspaceCreate> = useCallback(async (data) => {
+    setCheckConnectionSuccess(false);
+    setCheckConnectionError(undefined);
+    try {
+      await api.checkConnectionWorkspace(data);
+      setCheckConnectionSuccess(true);
+    } catch (err) {
+      const message = handleAPIError(err);
+      setCheckConnectionError(message);
+    }
+  }, [api]);
 
   const onSubmit: SubmitHandler<schemas.workspace.WorkspaceCreate> = useCallback((data) => {
     setCreateWorkspace({
@@ -97,10 +117,15 @@ const CreateWorkspaceStep3: React.FunctionComponent = () => {
             />
             <FormErrorMessage errors={errors} name="database_name" />
           </div>
+          {checkConnectionError && <ErrorAlert message={t('create.check_connection_error', { error: checkConnectionError })} />}
+          {checkConnectionSuccess && <SuccessAlert message={t('create.check_connection_success')} />}
         </div>
         <div className="flex items-center justify-between">
           <Link className="text-sm underline hover:no-underline" to="../step2">&lt;- {t('create.back')}</Link>
-          <button type="submit" className="btn bg-primary-500 hover:bg-primary-600 text-white ml-auto">{t('create.next')} -&gt;</button>
+          <div>
+            <button type="button" className="text-sm underline hover:no-underline mr-2" onClick={handleSubmit(onCheckConnection)}>{t('create.check_connection')}</button>
+            <button type="submit" className="btn bg-primary-500 hover:bg-primary-600 text-white ml-auto">{t('create.next')} -&gt;</button>
+          </div>
         </div>
       </form>
     </OnboardingLayout>
