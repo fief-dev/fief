@@ -1,5 +1,7 @@
 from alembic import command
 from alembic.config import Config
+from alembic.environment import EnvironmentContext
+from alembic.script import ScriptDirectory
 from sqlalchemy import create_engine, exc, inspect
 from sqlalchemy.engine import URL, Engine
 from sqlalchemy.schema import CreateSchema
@@ -16,16 +18,18 @@ class WorkspaceDatabaseConnectionError(WorkspaceDatabaseError):
 
 
 class WorkspaceDatabase:
-    def migrate(self, database_url: URL, schema_name: str):
+    def migrate(self, database_url: URL, schema_name: str) -> str:
         try:
             engine = self.get_engine(database_url, schema_name)
             with engine.begin() as connection:
-                alembic_config = Config(ALEMBIC_CONFIG_FILE, ini_section="workspace")
-                alembic_config.attributes["configure_logger"] = False
-                alembic_config.attributes["connection"] = connection
-                command.upgrade(alembic_config, "head")
+                config = self._get_alembic_base_config()
+                config.attributes["configure_logger"] = False
+                config.attributes["connection"] = connection
+                command.upgrade(config, "head")
         except exc.OperationalError as e:
             raise WorkspaceDatabaseConnectionError(str(e)) from e
+
+        return self.get_latest_revision()
 
     def get_engine(self, database_url: URL, schema_name: str) -> Engine:
         self._ensure_schema(database_url, schema_name)
@@ -39,6 +43,15 @@ class WorkspaceDatabase:
             database_url = database_url.set(database=schema_name)
 
         return create_engine(database_url, connect_args=connect_args)
+
+    def get_latest_revision(self) -> str:
+        config = self._get_alembic_base_config()
+        script = ScriptDirectory.from_config(config)
+        with EnvironmentContext(config, script) as environment:
+            return str(environment.get_head_revision())
+
+    def _get_alembic_base_config(self) -> Config:
+        return Config(ALEMBIC_CONFIG_FILE, ini_section="workspace")
 
     def _ensure_schema(self, database_url: URL, schema_name: str):
         engine = create_engine(database_url, connect_args={"connect_timeout": 5})

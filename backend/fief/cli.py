@@ -108,9 +108,12 @@ def migrate_workspaces():
         for [workspace] in session.execute(workspaces):
             assert isinstance(workspace, Workspace)
             typer.secho(f"Migrating {workspace.name}", bold=True)
-            workspace_db.migrate(
+            alembic_revision = workspace_db.migrate(
                 workspace.get_database_url(False), workspace.get_schema_name()
             )
+            workspace.alembic_revision = alembic_revision
+            session.add(workspace)
+            session.commit()
 
 
 @app.command("create-main-workspace")

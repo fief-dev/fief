@@ -53,9 +53,11 @@ class WorkspaceCreation:
         workspace = await self.workspace_manager.create(workspace)
 
         # Apply the database schema
-        self.workspace_db.migrate(
+        alembic_revision = self.workspace_db.migrate(
             workspace.get_database_url(False), workspace.get_schema_name()
         )
+        workspace.alembic_revision = alembic_revision
+        await self.workspace_manager.update(workspace)
 
         # Link the user to this workspace
         if user_id is not None:

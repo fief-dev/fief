@@ -26,6 +26,10 @@ class Workspace(UUIDModel, CreatedUpdatedAt, MainBase):
     database_password: Optional[str] = Column(Text, nullable=True)
     database_name: Optional[str] = Column(Text, nullable=True)
 
+    alembic_revision: Optional[str] = Column(
+        String(length=255), nullable=True, index=True
+    )
+
     workspace_users: List["WorkspaceUser"] = relationship(
         "WorkspaceUser", back_populates="workspace", cascade="all, delete"
     )

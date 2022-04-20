@@ -87,6 +87,7 @@ class TestWorkspaceCreationCreate:
         workspace = await workspace_creation.create(workspace_create)
 
         assert workspace.domain == "burgundy.localhost:8000"
+        assert workspace.alembic_revision is not None
 
         async with get_workspace_session(workspace) as session:
             tenant_manager = TenantManager(session)
