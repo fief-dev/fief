@@ -13,7 +13,10 @@ from sqlalchemy.orm import sessionmaker
 from fief import __version__
 from fief.crypto.encryption import generate_key
 from fief.paths import ALEMBIC_CONFIG_FILE
-from fief.services.workspace_db import WorkspaceDatabase
+from fief.services.workspace_db import (
+    WorkspaceDatabase,
+    WorkspaceDatabaseConnectionError,
+)
 
 app = typer.Typer()
 
@@ -107,13 +110,17 @@ def migrate_workspaces():
         workspaces = select(Workspace)
         for [workspace] in session.execute(workspaces):
             assert isinstance(workspace, Workspace)
-            typer.secho(f"Migrating {workspace.name}", bold=True)
-            alembic_revision = workspace_db.migrate(
-                workspace.get_database_url(False), workspace.get_schema_name()
-            )
-            workspace.alembic_revision = alembic_revision
-            session.add(workspace)
-            session.commit()
+            typer.secho(f"Migrating {workspace.name}... ", bold=True, nl=False)
+            try:
+                alembic_revision = workspace_db.migrate(
+                    workspace.get_database_url(False), workspace.get_schema_name()
+                )
+                workspace.alembic_revision = alembic_revision
+                session.add(workspace)
+                session.commit()
+                typer.secho(f"Done!")
+            except WorkspaceDatabaseConnectionError:
+                typer.secho(f"Failed!", fg="red", err=True)
 
 
 @app.command("create-main-workspace")
