@@ -9,6 +9,46 @@ from fief.schemas.generics import UUIDSchema
 from fief.settings import settings
 
 
+def validate_all_database_settings(cls, values):
+    database_type = values.get("database_type")
+    database_settings = [
+        values.get("database_host"),
+        values.get("database_port"),
+        values.get("database_username"),
+        values.get("database_password"),
+        values.get("database_name"),
+    ]
+
+    if database_type is None and not any(database_settings):
+        return values
+
+    if database_type is None and any(database_settings):
+        raise ValueError(APIErrorCode.WORKSPACE_CREATE_MISSING_DATABASE_SETTINGS)
+
+    database_name = values.get("database_name")
+    if database_type == DatabaseType.SQLITE:
+        if database_name is None:
+            raise ValueError(APIErrorCode.WORKSPACE_CREATE_MISSING_DATABASE_SETTINGS)
+    else:
+        if not all(database_settings):
+            raise ValueError(APIErrorCode.WORKSPACE_CREATE_MISSING_DATABASE_SETTINGS)
+
+    return values
+
+
+class WorkspaceCheckConnection(BaseModel):
+    database_type: DatabaseType
+    database_host: str
+    database_port: int
+    database_username: str
+    database_password: str
+    database_name: str
+
+    _validate_all_database_settings = root_validator(allow_reuse=True)(
+        validate_all_database_settings
+    )
+
+
 class WorkspaceCreate(BaseModel):
     name: str
     database_type: Optional[DatabaseType]
@@ -18,36 +58,9 @@ class WorkspaceCreate(BaseModel):
     database_password: Optional[str]
     database_name: Optional[str]
 
-    @root_validator
-    def validate_all_database_settings(cls, values):
-        database_type = values.get("database_type")
-        database_settings = [
-            values.get("database_host"),
-            values.get("database_port"),
-            values.get("database_username"),
-            values.get("database_password"),
-            values.get("database_name"),
-        ]
-
-        if database_type is None and not any(database_settings):
-            return values
-
-        if database_type is None and any(database_settings):
-            raise ValueError(APIErrorCode.WORKSPACE_CREATE_MISSING_DATABASE_SETTINGS)
-
-        database_name = values.get("database_name")
-        if database_type == DatabaseType.SQLITE:
-            if database_name is None:
-                raise ValueError(
-                    APIErrorCode.WORKSPACE_CREATE_MISSING_DATABASE_SETTINGS
-                )
-        else:
-            if not all(database_settings):
-                raise ValueError(
-                    APIErrorCode.WORKSPACE_CREATE_MISSING_DATABASE_SETTINGS
-                )
-
-        return values
+    _validate_all_database_settings = root_validator(allow_reuse=True)(
+        validate_all_database_settings
+    )
 
 
 class BaseWorkspace(UUIDSchema):

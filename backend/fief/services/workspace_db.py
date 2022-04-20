@@ -1,3 +1,5 @@
+from typing import Optional, Tuple
+
 from alembic import command
 from alembic.config import Config
 from alembic.environment import EnvironmentContext
@@ -43,6 +45,14 @@ class WorkspaceDatabase:
             database_url = database_url.set(database=schema_name)
 
         return create_engine(database_url, connect_args=connect_args)
+
+    def check_connection(self, database_url: URL) -> Tuple[bool, Optional[str]]:
+        try:
+            engine = create_engine(database_url)
+            with engine.begin():
+                return True, None
+        except exc.OperationalError as e:
+            return False, str(e)
 
     def get_latest_revision(self) -> str:
         config = self._get_alembic_base_config()

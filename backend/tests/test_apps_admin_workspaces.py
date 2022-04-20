@@ -40,6 +40,65 @@ class TestListWorkspaces:
 
 
 @pytest.mark.asyncio
+class TestCheckConnection:
+    async def test_unauthorized(self, test_client_admin: httpx.AsyncClient):
+        response = await test_client_admin.post("/workspaces/check-connection")
+
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+    @pytest.mark.authenticated_admin(mode="api_key")
+    async def test_unauthorized_with_api_key(
+        self, test_client_admin: httpx.AsyncClient
+    ):
+        response = await test_client_admin.post("/workspaces/check-connection")
+
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+    @pytest.mark.authenticated_admin(mode="session")
+    async def test_db_connection_error(
+        self, test_client_admin: httpx.AsyncClient, workspace_db_mock: MagicMock
+    ):
+        workspace_db_mock.check_connection.return_value = (False, "An error occured")
+
+        response = await test_client_admin.post(
+            "/workspaces/check-connection",
+            json={
+                "database_type": "POSTGRESQL",
+                "database_host": "db.bretagne.duchy",
+                "database_port": 5432,
+                "database_username": "anne",
+                "database_password": "hermine",
+                "database_name": "fief",
+            },
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+        json = response.json()
+        assert json["detail"] == "An error occured"
+
+    @pytest.mark.authenticated_admin(mode="session")
+    async def test_success(
+        self, test_client_admin: httpx.AsyncClient, workspace_db_mock: MagicMock
+    ):
+        workspace_db_mock.check_connection.return_value = (True, None)
+
+        response = await test_client_admin.post(
+            "/workspaces/check-connection",
+            json={
+                "database_type": "POSTGRESQL",
+                "database_host": "db.bretagne.duchy",
+                "database_port": 5432,
+                "database_username": "anne",
+                "database_password": "hermine",
+                "database_name": "fief",
+            },
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+
+
+@pytest.mark.asyncio
 class TestCreateWorkspace:
     async def test_unauthorized(self, test_client_admin: httpx.AsyncClient):
         response = await test_client_admin.post("/workspaces/")

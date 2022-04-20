@@ -49,3 +49,26 @@ class TestMigrate:
 
         assert "fief_alembic_version" in table_names
         assert "fief_tenants" in table_names
+
+
+@pytest.mark.asyncio
+class TestCheckConnection:
+    async def test_invalid(self, workspace_db: WorkspaceDatabase):
+        valid, message = workspace_db.check_connection(
+            engine.make_url("postgresql://foo:bar@localhost:1234/foobar")
+        )
+
+        assert valid is False
+        assert message is not None
+        assert "Connection refused" in message
+
+    async def test_valid_db(
+        self,
+        workspace_db: WorkspaceDatabase,
+        test_database_url: Tuple[engine.URL, DatabaseType],
+    ):
+        url, _ = test_database_url
+        valid, message = workspace_db.check_connection(url)
+
+        assert valid
+        assert message is None
