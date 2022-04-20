@@ -1,6 +1,7 @@
 {
   "api_errors": {
     "WORKSPACE_DB_CONNECTION_ERROR": "Connection to the custom database failed. Please check your credentials and try again.",
+    "WORKSPACE_DB_OUTDATED_MIGRATION": "The custom database schema is outdated. Please contact us so that we can apply the missing migrations.",
     "USER_CREATE_UNKNOWN_TENANT": "This tenant is unknown. Please check that you selected a valid tenant.",
     "USER_CREATE_ALREADY_EXISTS": "A user with the same email address already exists on this tenant.",
     "USER_CREATE_INVALID_PASSWORD": "The password is invalid.",

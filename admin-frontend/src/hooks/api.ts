@@ -1,13 +1,15 @@
 import { AxiosResponse } from 'axios';
 import * as R from 'ramda';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useContext, useEffect, useState } from 'react';
 import { SortingRule } from 'react-table';
 
+import APIClientContext from '../contexts/api';
 import { APIClient } from '../services/api';
 import * as schemas from '../schemas';
 
 export const useAPI = (): APIClient => {
-  return useMemo(() => new APIClient(), []);
+  const api = useContext(APIClientContext);
+  return api;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
