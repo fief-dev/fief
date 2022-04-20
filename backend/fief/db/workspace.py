@@ -1,7 +1,7 @@
 import contextlib
 from typing import TYPE_CHECKING, AsyncGenerator, Dict, Optional
 
-from sqlalchemy import engine
+from sqlalchemy import engine, exc
 from sqlalchemy.ext.asyncio import AsyncConnection, AsyncEngine, AsyncSession
 
 from fief.db.engine import create_engine
@@ -39,8 +39,11 @@ async def get_connection(
     options = {}
     if dialect_name != "sqlite":
         options["schema_translate_map"] = {None: schema_name}
-    async with engine.connect() as connection:
-        yield await connection.execution_options(**options)
+    try:
+        async with engine.connect() as connection:
+            yield await connection.execution_options(**options)
+    except Exception as e:
+        raise ConnectionError from e
 
 
 @contextlib.asynccontextmanager

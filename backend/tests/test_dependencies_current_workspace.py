@@ -10,8 +10,46 @@ from fief.dependencies.current_workspace import (
     get_current_workspace,
     get_current_workspace_session,
 )
+from fief.errors import APIErrorCode
 from fief.models import Tenant, Workspace
 from tests.types import TestClientGeneratorType
+
+
+@pytest.fixture(
+    scope="module",
+    params=[
+        {"host": "localhost", "port": 5432},
+        {"host": "localhost", "port": 5433},
+        {"host": "db.normandy.duchy", "port": 5432},
+    ],
+    ids=[
+        "Invalid credentials",
+        "Invalid port",
+        "Invalid host",
+    ],
+)
+@pytest.mark.asyncio
+async def unreachable_external_db_workspace(
+    request,
+    main_session: AsyncSession,
+) -> AsyncGenerator[Workspace, None]:
+    workspace = Workspace(
+        name="Normandie",
+        domain="normandie.localhost:8000",
+        database_type="POSTGRESQL",
+        database_host=request.param["host"],
+        database_port=request.param["port"],
+        database_username="guillaume",
+        database_password="alienor",
+        database_name="fief_normandy",
+    )
+    main_session.add(workspace)
+    await main_session.commit()
+
+    yield workspace
+
+    await main_session.delete(workspace)
+    await main_session.commit()
 
 
 @pytest.fixture
@@ -40,6 +78,7 @@ async def test_client_auth(
     test_client_auth_generator: TestClientGeneratorType, app: FastAPI
 ) -> AsyncGenerator[httpx.AsyncClient, None]:
     async with test_client_auth_generator(app) as test_client:
+        del app.dependency_overrides[get_current_workspace_session]
         yield test_client
 
 
@@ -67,6 +106,20 @@ class TestGetCurrentWorkspaceFromHostHeader:
 
 @pytest.mark.asyncio
 class TestGetCurrentWorkspaceSession:
+    async def test_unreachable_external_db_workspace(
+        self,
+        test_client_auth: httpx.AsyncClient,
+        unreachable_external_db_workspace: Workspace,
+    ):
+        response = await test_client_auth.get(
+            "/tenants", headers={"Host": unreachable_external_db_workspace.domain}
+        )
+
+        assert response.status_code == status.HTTP_503_SERVICE_UNAVAILABLE
+
+        json = response.json()
+        assert json["detail"] == APIErrorCode.WORKSPACE_DB_CONNECTION_ERROR
+
     async def test_existing_workspace(
         self, test_client_auth: httpx.AsyncClient, workspace: Workspace
     ):

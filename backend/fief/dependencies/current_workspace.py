@@ -37,5 +37,11 @@ async def get_current_workspace(
 async def get_current_workspace_session(
     workspace: Workspace = Depends(get_current_workspace),
 ) -> AsyncGenerator[AsyncSession, None]:
-    async with get_workspace_session(workspace) as session:
-        yield session
+    try:
+        async with get_workspace_session(workspace) as session:
+            yield session
+    except ConnectionError as e:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=APIErrorCode.WORKSPACE_DB_CONNECTION_ERROR,
+        ) from e
