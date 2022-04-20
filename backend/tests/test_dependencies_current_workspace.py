@@ -1,11 +1,12 @@
-from typing import AsyncGenerator
+from typing import AsyncGenerator, Tuple
 
 import httpx
 import pytest
 from fastapi import Depends, FastAPI, status
-from sqlalchemy import select
+from sqlalchemy import engine, select
 
 from fief.db import AsyncSession
+from fief.db.types import DatabaseType
 from fief.dependencies.current_workspace import (
     get_current_workspace,
     get_current_workspace_session,
@@ -34,7 +35,7 @@ async def unreachable_external_db_workspace(
     main_session: AsyncSession,
 ) -> AsyncGenerator[Workspace, None]:
     workspace = Workspace(
-        name="Normandie",
+        name="Duché de Normandie",
         domain="normandie.localhost:8000",
         database_type="POSTGRESQL",
         database_host=request.param["host"],
@@ -42,6 +43,34 @@ async def unreachable_external_db_workspace(
         database_username="guillaume",
         database_password="alienor",
         database_name="fief_normandy",
+        alembic_revision="LATEST",
+    )
+    main_session.add(workspace)
+    await main_session.commit()
+
+    yield workspace
+
+    await main_session.delete(workspace)
+    await main_session.commit()
+
+
+@pytest.fixture(scope="module")
+@pytest.mark.asyncio
+async def outdated_migration_workspace(
+    main_test_database: Tuple[engine.URL, DatabaseType],
+    main_session: AsyncSession,
+) -> AsyncGenerator[Workspace, None]:
+    url, database_type = main_test_database
+    workspace = Workspace(
+        name="Duché de Savoie",
+        domain="savoie.localhost:8000",
+        database_type=database_type,
+        database_host=url.host,
+        database_port=url.port,
+        database_username=url.username,
+        database_password=url.password,
+        database_name=url.database,
+        alembic_revision=None,
     )
     main_session.add(workspace)
     await main_session.commit()
@@ -90,6 +119,20 @@ class TestGetCurrentWorkspaceFromHostHeader:
         )
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    async def test_outdated_migration_workspace(
+        self,
+        test_client_auth: httpx.AsyncClient,
+        outdated_migration_workspace: Workspace,
+    ):
+        response = await test_client_auth.get(
+            "/workspace", headers={"Host": outdated_migration_workspace.domain}
+        )
+
+        assert response.status_code == status.HTTP_503_SERVICE_UNAVAILABLE
+
+        json = response.json()
+        assert json["detail"] == APIErrorCode.WORKSPACE_DB_OUTDATED_MIGRATION
 
     async def test_existing_workspace(
         self, test_client_auth: httpx.AsyncClient, workspace: Workspace

@@ -137,6 +137,7 @@ async def workspace(
         database_username=url.username,
         database_password=url.password,
         database_name=url.database,
+        alembic_revision="LATEST",
     )
     main_session.add(workspace)
     await main_session.commit()
@@ -208,7 +209,9 @@ def not_existing_uuid() -> uuid.UUID:
 
 @pytest.fixture
 async def workspace_db_mock() -> MagicMock:
-    return MagicMock(spec=WorkspaceDatabase)
+    mock = MagicMock(spec=WorkspaceDatabase)
+    mock.get_latest_revision.return_value = "LATEST"
+    return mock
 
 
 @pytest.fixture
