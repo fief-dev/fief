@@ -1,5 +1,6 @@
 import asyncio
-from typing import Any, AsyncContextManager, Callable, ClassVar, Dict, Protocol
+import contextlib
+from typing import Any, AsyncContextManager, AsyncGenerator, Callable, ClassVar, Dict
 from urllib.parse import urlparse
 
 import dramatiq
@@ -9,6 +10,8 @@ from pydantic import UUID4
 from sqlalchemy import select
 
 from fief.db import AsyncSession
+from fief.db.engine import AsyncSession, create_async_session_maker, create_engine
+from fief.db.workspace import get_connection
 from fief.locale import Translations
 from fief.managers import TenantManager, WorkspaceManager
 from fief.models import Tenant, User, Workspace
@@ -36,6 +39,24 @@ def send_task(task: dramatiq.Actor, *args, **kwargs):
     task.send(*args, **kwargs)
 
 
+def get_main_session_task() -> AsyncContextManager[AsyncSession]:
+    main_engine = create_engine(settings.get_database_url())
+    return create_async_session_maker(main_engine)()
+
+
+@contextlib.asynccontextmanager
+async def get_workspace_session_task(
+    workspace: Workspace,
+) -> AsyncGenerator[AsyncSession, None]:
+    engine = create_engine(workspace.get_database_url())
+    async with get_connection(engine, workspace.get_schema_name()) as connection:
+        async with AsyncSession(bind=connection, expire_on_commit=False) as session:
+            yield session
+
+
+email_provider = settings.get_email_provider()
+
+
 class TaskError(Exception):
     pass
 
@@ -45,9 +66,13 @@ class TaskBase:
 
     def __init__(
         self,
-        get_main_session: Callable[..., AsyncContextManager[AsyncSession]],
-        get_workspace_session: Callable[..., AsyncContextManager[AsyncSession]],
-        email_provider: EmailProvider,
+        get_main_session: Callable[
+            ..., AsyncContextManager[AsyncSession]
+        ] = get_main_session_task,
+        get_workspace_session: Callable[
+            ..., AsyncContextManager[AsyncSession]
+        ] = get_workspace_session_task,
+        email_provider: EmailProvider = email_provider,
     ) -> None:
         self.get_main_session = get_main_session
         self.get_workspace_session = get_workspace_session

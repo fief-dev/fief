@@ -2,9 +2,6 @@ import uuid
 
 import dramatiq
 
-from fief.db.main import main_async_session_maker
-from fief.db.workspace import get_workspace_session
-from fief.settings import settings
 from fief.tasks.base import TaskBase
 
 
@@ -32,8 +29,4 @@ class OnAfterForgotPasswordTask(TaskBase):
         )
 
 
-on_after_forgot_password = dramatiq.actor(
-    OnAfterForgotPasswordTask(
-        main_async_session_maker, get_workspace_session, settings.get_email_provider()
-    )
-)
+on_after_forgot_password = dramatiq.actor(OnAfterForgotPasswordTask())
