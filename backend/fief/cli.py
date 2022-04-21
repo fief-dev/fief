@@ -7,6 +7,8 @@ from alembic import command
 from alembic.config import Config
 from dramatiq import cli as dramatiq_cli
 from pydantic import ValidationError
+from rich.console import Console
+from rich.table import Table
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import sessionmaker
 
@@ -18,13 +20,123 @@ from fief.services.workspace_db import (
     WorkspaceDatabaseConnectionError,
 )
 
-app = typer.Typer()
-
 
 def get_settings():
     from fief.settings import settings
 
     return settings
+
+
+workspaces = typer.Typer(help="Commands to manage workspaces.")
+
+
+@workspaces.command()
+def list():
+    """List all workspaces and their number of users."""
+    from fief.services.workspaces import get_workspaces_stats
+
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
+    stats = loop.run_until_complete(get_workspaces_stats())
+
+    table = Table()
+    table.add_column("Name")
+    table.add_column("Reachable")
+    table.add_column("Database")
+    table.add_column("Database type")
+    table.add_column("Migration revision")
+    table.add_column("Nb. users")
+    for stat in stats:
+        table.add_row(
+            stat.workspace.name,
+            "✅" if stat.reachable else "❌",
+            "External" if stat.external_db else "Main",
+            stat.workspace.database_type if stat.external_db else None,
+            stat.workspace.alembic_revision,
+            str(stat.nb_users) if stat.reachable else None,
+            style="red" if not stat.reachable else None,
+        )
+    console = Console()
+    console.print(table)
+
+
+@workspaces.command("migrate")
+def migrate_workspaces():
+    """Apply database migrations to each workspace database."""
+    from fief.models import Workspace
+
+    settings = get_settings()
+
+    engine = create_engine(settings.get_database_url(False))
+    Session = sessionmaker(engine)
+    with Session() as session:
+        workspace_db = WorkspaceDatabase()
+        workspaces = select(Workspace)
+        for [workspace] in session.execute(workspaces):
+            assert isinstance(workspace, Workspace)
+            typer.secho(f"Migrating {workspace.name}... ", bold=True, nl=False)
+            try:
+                alembic_revision = workspace_db.migrate(
+                    workspace.get_database_url(False), workspace.get_schema_name()
+                )
+                workspace.alembic_revision = alembic_revision
+                session.add(workspace)
+                session.commit()
+                typer.secho(f"Done!")
+            except WorkspaceDatabaseConnectionError:
+                typer.secho(f"Failed!", fg="red", err=True)
+
+
+@workspaces.command("create-main")
+def create_main_workspace():
+    """Create a main Fief workspace following the environment settings."""
+    from fief.services.main_workspace import (
+        MainWorkspaceAlreadyExists,
+        create_main_fief_workspace,
+    )
+
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
+    try:
+        loop.run_until_complete(create_main_fief_workspace())
+        typer.echo("Main Fief workspace created")
+    except MainWorkspaceAlreadyExists as e:
+        typer.echo("Main Fief workspace already exists")
+        raise typer.Exit(code=1) from e
+
+
+@workspaces.command("create-main-user")
+def create_main_user(
+    user_email: str = typer.Option(..., help="The admin user email"),
+    user_password: str = typer.Option(
+        ...,
+        prompt=True,
+        confirmation_prompt=True,
+        hide_input=True,
+        help="The admin user password",
+    ),
+):
+    """Create a main Fief workspace user."""
+    from fief.services.main_workspace import (
+        CreateMainFiefUserError,
+        create_main_fief_user,
+    )
+
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
+    try:
+        loop.run_until_complete(create_main_fief_user(user_email, user_password))
+        typer.echo("Main Fief user created")
+    except CreateMainFiefUserError as e:
+        typer.echo("An error occured")
+        raise typer.Exit(code=1) from e
+
+
+app = typer.Typer(help="Commands to manage your Fief instance.")
+app.add_typer(workspaces, name="workspaces")
 
 
 @app.command()
@@ -84,7 +196,7 @@ def info():
         raise typer.Exit(code=1) from e
 
 
-@app.command("migrate-main")
+@app.command("migrate")
 def migrate_main():
     """Apply database migrations to the main database."""
     settings = get_settings()
@@ -94,80 +206,6 @@ def migrate_main():
         alembic_config = Config(ALEMBIC_CONFIG_FILE, ini_section="main")
         alembic_config.attributes["connection"] = connection
         command.upgrade(alembic_config, "head")
-
-
-@app.command("migrate-workspaces")
-def migrate_workspaces():
-    """Apply database migrations to each workspace database."""
-    from fief.models import Workspace
-
-    settings = get_settings()
-
-    engine = create_engine(settings.get_database_url(False))
-    Session = sessionmaker(engine)
-    with Session() as session:
-        workspace_db = WorkspaceDatabase()
-        workspaces = select(Workspace)
-        for [workspace] in session.execute(workspaces):
-            assert isinstance(workspace, Workspace)
-            typer.secho(f"Migrating {workspace.name}... ", bold=True, nl=False)
-            try:
-                alembic_revision = workspace_db.migrate(
-                    workspace.get_database_url(False), workspace.get_schema_name()
-                )
-                workspace.alembic_revision = alembic_revision
-                session.add(workspace)
-                session.commit()
-                typer.secho(f"Done!")
-            except WorkspaceDatabaseConnectionError:
-                typer.secho(f"Failed!", fg="red", err=True)
-
-
-@app.command("create-main-workspace")
-def create_main_workspace():
-    """Create a main Fief workspace following the environment settings."""
-    from fief.services.main_workspace import (
-        MainWorkspaceAlreadyExists,
-        create_main_fief_workspace,
-    )
-
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-
-    try:
-        loop.run_until_complete(create_main_fief_workspace())
-        typer.echo("Main Fief workspace created")
-    except MainWorkspaceAlreadyExists as e:
-        typer.echo("Main Fief workspace already exists")
-        raise typer.Exit(code=1) from e
-
-
-@app.command("create-main-user")
-def create_main_user(
-    user_email: str = typer.Option(..., help="The admin user email"),
-    user_password: str = typer.Option(
-        ...,
-        prompt=True,
-        confirmation_prompt=True,
-        hide_input=True,
-        help="The admin user password",
-    ),
-):
-    """Create a main Fief workspace user."""
-    from fief.services.main_workspace import (
-        CreateMainFiefUserError,
-        create_main_fief_user,
-    )
-
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-
-    try:
-        loop.run_until_complete(create_main_fief_user(user_email, user_password))
-        typer.echo("Main Fief user created")
-    except CreateMainFiefUserError as e:
-        typer.echo("An error occured")
-        raise typer.Exit(code=1) from e
 
 
 @app.command("run-server")
