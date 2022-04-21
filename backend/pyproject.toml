@@ -33,6 +33,14 @@ ignore_missing_imports = true
 module = "passlib.*"
 ignore_missing_imports = true
 
+[[tool.mypy.overrides]]
+module = "asyncpg.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "pymysql.*"
+ignore_missing_imports = true
+
 [tool.isort]
 profile = "black"
 

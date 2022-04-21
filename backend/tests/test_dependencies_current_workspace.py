@@ -19,14 +19,20 @@ from tests.types import TestClientGeneratorType
 @pytest.fixture(
     scope="module",
     params=[
-        {"host": "localhost", "port": 5432},
-        {"host": "localhost", "port": 5433},
-        {"host": "db.normandy.duchy", "port": 5432},
+        {"type": "POSTGRESQL", "host": "localhost", "port": 5432},
+        {"type": "POSTGRESQL", "host": "localhost", "port": 5433},
+        {"type": "POSTGRESQL", "host": "db.normandy.duchy", "port": 5432},
+        {"type": "MYSQL", "host": "localhost", "port": 3306},
+        {"type": "MYSQL", "host": "localhost", "port": 3307},
+        {"type": "MYSQL", "host": "db.normandy.duchy", "port": 3306},
     ],
     ids=[
-        "Invalid credentials",
-        "Invalid port",
-        "Invalid host",
+        "POSTGRESQL Invalid credentials",
+        "POSTGRESQL Invalid port",
+        "POSTGRESQL Invalid host",
+        "MYSQL Invalid credentials",
+        "MYSQL Invalid port",
+        "MYSQL Invalid host",
     ],
 )
 @pytest.mark.asyncio
@@ -37,7 +43,7 @@ async def unreachable_external_db_workspace(
     workspace = Workspace(
         name="Duché de Normandie",
         domain="normandie.localhost:8000",
-        database_type="POSTGRESQL",
+        database_type=request.param["type"],
         database_host=request.param["host"],
         database_port=request.param["port"],
         database_username="guillaume",

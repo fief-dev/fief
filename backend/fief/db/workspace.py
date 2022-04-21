@@ -1,6 +1,8 @@
 import contextlib
 from typing import TYPE_CHECKING, AsyncGenerator, Dict, Optional
 
+import asyncpg.exceptions
+import pymysql.err
 from sqlalchemy import engine, exc
 from sqlalchemy.ext.asyncio import AsyncConnection, AsyncEngine, AsyncSession
 
@@ -42,8 +44,17 @@ async def get_connection(
     try:
         async with engine.connect() as connection:
             yield await connection.execution_options(**options)
-    except Exception as e:
+    except (
+        asyncpg.exceptions.PostgresConnectionError,
+        asyncpg.exceptions.InvalidPasswordError,
+        OSError,
+    ) as e:
         raise ConnectionError from e
+    except (exc.OperationalError) as e:
+        # Catch MySQL connection error with code 2003
+        if isinstance(e.orig, pymysql.err.OperationalError) and e.orig.args[0] == 2003:
+            raise ConnectionError from e
+        raise
 
 
 @contextlib.asynccontextmanager
