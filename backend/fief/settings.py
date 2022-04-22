@@ -47,6 +47,7 @@ class Settings(BaseSettings):
     database_password: Optional[str] = None
     database_name: Optional[str] = "fief.db"
     database_location: DirectoryPath = Path.cwd()
+    database_pool_recycle_seconds: int = 600
 
     redis_url: str = "redis://localhost:6379"
 

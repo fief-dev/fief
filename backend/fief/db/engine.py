@@ -12,7 +12,9 @@ if TYPE_CHECKING:
 
 def create_engine(database_url: engine.URL) -> AsyncEngine:
     engine = create_async_engine(
-        database_url, echo=False and settings.log_level == "DEBUG", pool_recycle=1800
+        database_url,
+        echo=settings.log_level == "DEBUG",
+        pool_recycle=settings.database_pool_recycle_seconds,
     )
     dialect_name = engine.dialect.name
 
