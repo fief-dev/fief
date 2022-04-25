@@ -175,12 +175,14 @@ def quickstart(
         "FIEF_BASE_URL": f"http{'s' if ssl else ''}://{host}:{port}",
     }
     if not ssl:
-        environment_variables.update({
-            "CSRF_COOKIE_SECURE": False,
-            "LOGIN_SESSION_COOKIE_SECURE": False,
-            "SESSION_COOKIE_SECURE": False,
-            "FIEF_ADMIN_SESSION_COOKIE_SECURE": False,
-        })
+        environment_variables.update(
+            {
+                "CSRF_COOKIE_SECURE": False,
+                "LOGIN_SESSION_COOKIE_SECURE": False,
+                "SESSION_COOKIE_SECURE": False,
+                "FIEF_ADMIN_SESSION_COOKIE_SECURE": False,
+            }
+        )
 
     if docker:
         parts = [
