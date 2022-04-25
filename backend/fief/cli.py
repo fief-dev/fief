@@ -144,33 +144,40 @@ def quickstart(
     docker: bool = typer.Option(
         False,
         help="Show the Docker command to run the Fief server with required environment variables.",
-    )
+    ),
+    port: int = typer.Option(8000, help="Port on which you want to expose the Fief server."),
+    host: str = typer.Option("localhost", help="Host on which you want to expose the Fief server."),
 ):
-    """Generate secrets and keys to help users getting started quickly."""
+    """Generate secrets and environment variables to help users getting started quickly."""
     typer.secho(
         "⚠️  Be sure to save the generated secrets somewhere safe for subsequent runs. Otherwise, you may lose access to the data.",
         bold=True,
         fg="red",
         err=True,
     )
-    generated_secrets = {
+    environment_variables = {
         "SECRET": secrets.token_urlsafe(64),
         "FIEF_CLIENT_ID": secrets.token_urlsafe(),
         "FIEF_CLIENT_SECRET": secrets.token_urlsafe(),
         "ENCRYPTION_KEY": generate_key().decode("utf-8"),
+        "PORT": port,
+        "ROOT_DOMAIN": f"{host}:{port}",
+        "FIEF_DOMAIN": f"{host}:{port}",
+        "FIEF_BASE_URL": f"http://{host}:{port}",
     }
     if docker:
         parts = [
             "docker run",
             "--name fief-server",
-            "-p 8000:8000",
+            f"-p {port}:{port}",
+            f"--add-host {host}:127.0.0.1",
             "-d",
-            *[f'-e "{name}={value}"' for (name, value) in generated_secrets.items()],
+            *[f'-e "{name}={value}"' for (name, value) in environment_variables.items()],
             "ghcr.io/fief-dev/fief:latest",
         ]
         typer.echo(" \\\n  ".join(parts))
     else:
-        for (name, value) in generated_secrets.items():
+        for (name, value) in environment_variables.items():
             typer.echo(f"{typer.style(name, bold=True)}: {value}")
 
 
