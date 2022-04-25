@@ -145,8 +145,16 @@ def quickstart(
         False,
         help="Show the Docker command to run the Fief server with required environment variables.",
     ),
-    port: int = typer.Option(8000, help="Port on which you want to expose the Fief server."),
-    host: str = typer.Option("localhost", help="Host on which you want to expose the Fief server."),
+    port: int = typer.Option(
+        8000, help="Port on which you want to expose the Fief server."
+    ),
+    host: str = typer.Option(
+        "localhost", help="Host on which you want to expose the Fief server."
+    ),
+    ssl: bool = typer.Option(
+        False,
+        help="Whether the Fief server will be served over SSL. For local development, it'll likely be false.",
+    ),
 ):
     """Generate secrets and environment variables to help users getting started quickly."""
     typer.secho(
@@ -155,6 +163,7 @@ def quickstart(
         fg="red",
         err=True,
     )
+
     environment_variables = {
         "SECRET": secrets.token_urlsafe(64),
         "FIEF_CLIENT_ID": secrets.token_urlsafe(),
@@ -163,8 +172,16 @@ def quickstart(
         "PORT": port,
         "ROOT_DOMAIN": f"{host}:{port}",
         "FIEF_DOMAIN": f"{host}:{port}",
-        "FIEF_BASE_URL": f"http://{host}:{port}",
+        "FIEF_BASE_URL": f"http{'s' if ssl else ''}://{host}:{port}",
     }
+    if not ssl:
+        environment_variables.update({
+            "CSRF_COOKIE_SECURE": False,
+            "LOGIN_SESSION_COOKIE_SECURE": False,
+            "SESSION_COOKIE_SECURE": False,
+            "FIEF_ADMIN_SESSION_COOKIE_SECURE": False,
+        })
+
     if docker:
         parts = [
             "docker run",
@@ -172,7 +189,10 @@ def quickstart(
             f"-p {port}:{port}",
             f"--add-host {host}:127.0.0.1",
             "-d",
-            *[f'-e "{name}={value}"' for (name, value) in environment_variables.items()],
+            *[
+                f'-e "{name}={value}"'
+                for (name, value) in environment_variables.items()
+            ],
             "ghcr.io/fief-dev/fief:latest",
         ]
         typer.echo(" \\\n  ".join(parts))
