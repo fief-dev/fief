@@ -30,7 +30,7 @@ class InvalidEncryptionKeyError(ValueError):
 
 class Settings(BaseSettings):
     environment: Environment = Environment.DEVELOPMENT
-    log_level: str = "DEBUG"
+    log_level: str = "INFO"
     unit_tests: bool = False
     sentry_dsn: Optional[str] = None
     root_domain: str = "localhost:8000"
