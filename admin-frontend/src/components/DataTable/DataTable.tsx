@@ -1,3 +1,4 @@
+import { ArrowDownIcon, ArrowUpIcon } from '@heroicons/react/solid';
 import * as React from 'react';
 import { useEffect } from 'react';
 import {
@@ -88,8 +89,20 @@ const DataTable = <T extends object,>({ title, count, pageSize, data, columns, s
                   <tr {...headerGroup.getHeaderGroupProps()}>
                     {headerGroup.headers.map(column => (
                       <th {...column.getHeaderProps()} {...column.getHeaderProps((column as unknown as ColumnInstanceSortBy<T>).getSortByToggleProps())} className="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-                        <div className="font-semibold text-left">
+                        <div className="font-semibold text-left flex flex-row items-center">
                           {column.render('Header')}
+                          <span className="ml-1 w-[8px]">
+                            {(column as unknown as ColumnInstanceSortBy<T>).isSorted &&
+                              <>
+                                {(column as unknown as ColumnInstanceSortBy<T>).isSortedDesc &&
+                                  <ArrowDownIcon width={8} height={8} className="fill-current" />
+                                }
+                                {!(column as unknown as ColumnInstanceSortBy<T>).isSortedDesc &&
+                                  <ArrowUpIcon width={8} height={8} className="fill-current" />
+                                }
+                              </>
+                            }
+                          </span>
                         </div>
                       </th>
                     ))}
