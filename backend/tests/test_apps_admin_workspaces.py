@@ -4,7 +4,6 @@ import httpx
 import pytest
 from fastapi import status
 
-from fief.errors import APIErrorCode
 from fief.models import Workspace
 from fief.schemas.user import UserDB
 from fief.services.workspace_db import WorkspaceDatabaseConnectionError
@@ -117,7 +116,9 @@ class TestCreateWorkspace:
     async def test_db_connection_error(
         self, test_client_admin: httpx.AsyncClient, workspace_creation_mock: MagicMock
     ):
-        workspace_creation_mock.create.side_effect = WorkspaceDatabaseConnectionError()
+        workspace_creation_mock.create.side_effect = WorkspaceDatabaseConnectionError(
+            "An error occured"
+        )
 
         response = await test_client_admin.post(
             "/workspaces/",
@@ -127,7 +128,7 @@ class TestCreateWorkspace:
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 
         json = response.json()
-        assert json["detail"] == APIErrorCode.WORKSPACE_DB_CONNECTION_ERROR
+        assert json["detail"] == "An error occured"
 
     @pytest.mark.authenticated_admin(mode="session")
     async def test_success(

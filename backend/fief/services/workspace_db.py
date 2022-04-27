@@ -16,7 +16,8 @@ class WorkspaceDatabaseError(Exception):
 
 
 class WorkspaceDatabaseConnectionError(WorkspaceDatabaseError):
-    pass
+    def __init__(self, message: str) -> None:
+        self.message = message
 
 
 class WorkspaceDatabase:

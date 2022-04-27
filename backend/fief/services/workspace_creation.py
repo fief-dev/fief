@@ -13,7 +13,10 @@ from fief.managers import (
 from fief.models import Client, Tenant, Workspace, WorkspaceUser
 from fief.schemas.workspace import WorkspaceCreate
 from fief.services.main_workspace import get_main_fief_client, get_main_fief_workspace
-from fief.services.workspace_db import WorkspaceDatabase
+from fief.services.workspace_db import (
+    WorkspaceDatabase,
+    WorkspaceDatabaseConnectionError,
+)
 
 LOCALHOST_HOST_PATTERN = re.compile(r"([^\.]+\.)?localhost(\d+)?", flags=re.IGNORECASE)
 
@@ -53,9 +56,14 @@ class WorkspaceCreation:
         workspace = await self.workspace_manager.create(workspace)
 
         # Apply the database schema
-        alembic_revision = self.workspace_db.migrate(
-            workspace.get_database_url(False), workspace.get_schema_name()
-        )
+        try:
+            alembic_revision = self.workspace_db.migrate(
+                workspace.get_database_url(False), workspace.get_schema_name()
+            )
+        except WorkspaceDatabaseConnectionError:
+            await self.workspace_manager.delete(workspace)
+            raise
+
         workspace.alembic_revision = alembic_revision
         await self.workspace_manager.update(workspace)
 

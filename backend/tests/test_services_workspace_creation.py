@@ -19,7 +19,10 @@ from fief.models import Client, Tenant, Workspace
 from fief.schemas.user import UserDB
 from fief.schemas.workspace import WorkspaceCreate
 from fief.services.workspace_creation import WorkspaceCreation
-from fief.services.workspace_db import WorkspaceDatabase
+from fief.services.workspace_db import (
+    WorkspaceDatabase,
+    WorkspaceDatabaseConnectionError,
+)
 from tests.data import TestData
 from tests.types import GetTestDatabase
 
@@ -61,10 +64,7 @@ def workspace_creation(main_session: AsyncSession) -> WorkspaceCreation:
 
 @pytest.fixture(autouse=True)
 def mock_main_fief_functions(
-    mocker: MockerFixture,
-    workspace: Workspace,
-    test_data: TestData,
-    workspace_session: AsyncSession,
+    mocker: MockerFixture, workspace: Workspace, test_data: TestData
 ):
     get_main_fief_workspace_mock = mocker.patch(
         "fief.services.workspace_creation.get_main_fief_workspace"
@@ -81,6 +81,27 @@ def mock_main_fief_functions(
 
 @pytest.mark.asyncio
 class TestWorkspaceCreationCreate:
+    async def test_db_error(
+        self,
+        mocker: MockerFixture,
+        workspace_create: WorkspaceCreate,
+        workspace_creation: WorkspaceCreation,
+        main_session: AsyncSession,
+    ):
+        workspace_db_mock = mocker.patch.object(workspace_creation, "workspace_db")
+        workspace_db_mock.migrate.side_effect = WorkspaceDatabaseConnectionError(
+            "An error occured"
+        )
+
+        with pytest.raises(WorkspaceDatabaseConnectionError):
+            await workspace_creation.create(workspace_create)
+
+        workspace_manager = WorkspaceManager(main_session)
+        workspace = await workspace_manager.get_one_or_none(
+            select(Workspace).where(Workspace.name == workspace_create.name)
+        )
+        assert workspace is None
+
     async def test_valid_db(
         self, workspace_create: WorkspaceCreate, workspace_creation: WorkspaceCreation
     ):
