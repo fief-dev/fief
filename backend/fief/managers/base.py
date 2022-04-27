@@ -92,9 +92,12 @@ class BaseManager(BaseManagerProtocol, Generic[M]):
             if len(accessors) == 1:
                 try:
                     field = getattr(self.model, accessors[0])
-                    statement = statement.order_by(
-                        field.desc() if is_desc else field.asc()
-                    )
+                    if not isinstance(
+                        field.prop, RelationshipProperty
+                    ):  # Prevent ordering by raw relation ship field -> "tenant" instead of "tenant.id"
+                        statement = statement.order_by(
+                            field.desc() if is_desc else field.asc()
+                        )
                 except AttributeError:
                     pass
             # Relationship field

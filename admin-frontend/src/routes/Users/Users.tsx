@@ -31,6 +31,7 @@ const Users: React.FunctionComponent = () => {
       },
       {
         Header: t('users:list.tenant') as string,
+        id: 'tenant_id',
         accessor: 'tenant',
         Cell: ({ cell: { value: tenant } }) => (
           <>{tenant.name}</>

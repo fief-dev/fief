@@ -16,6 +16,17 @@ class TestListUsers:
 
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
+    @pytest.mark.parametrize(
+        "ordering", ["unknown_field", "email,-unknown_field", "tenant", "tenant.name"]
+    )
+    @pytest.mark.authenticated_admin
+    async def test_unknown_ordering_field(
+        self, ordering: str, test_client_admin: httpx.AsyncClient
+    ):
+        response = await test_client_admin.get("/users/", params={"ordering": ordering})
+
+        assert response.status_code == status.HTTP_200_OK
+
     @pytest.mark.authenticated_admin
     async def test_valid(
         self, test_client_admin: httpx.AsyncClient, test_data: TestData
