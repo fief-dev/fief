@@ -9,6 +9,7 @@ from fief.managers.refresh_token import RefreshTokenManager
 from fief.managers.session_token import SessionTokenManager
 from fief.managers.tenant import TenantManager
 from fief.managers.user import UserManager
+from fief.managers.user_field import UserFieldManager
 from fief.managers.workspace import WorkspaceManager
 from fief.managers.workspace_user import WorkspaceUserManager
 
@@ -25,5 +26,6 @@ __all__ = [
     "SessionTokenManager",
     "TenantManager",
     "UserManager",
+    "UserFieldManager",
     "get_manager",
 ]

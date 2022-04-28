@@ -19,6 +19,8 @@ from fief.models import (
     SessionToken,
     Tenant,
     User,
+    UserField,
+    UserFieldType,
 )
 from fief.settings import settings
 
@@ -32,6 +34,7 @@ class TestData(TypedDict):
 
     tenants: ModelMapping[Tenant]
     clients: ModelMapping[Client]
+    user_fields: ModelMapping[UserField]
     users: ModelMapping[User]
     login_sessions: ModelMapping[LoginSession]
     authorization_codes: ModelMapping[AuthorizationCode]
@@ -88,6 +91,55 @@ clients: ModelMapping[Client] = {
         name="Secondary",
         tenant=tenants["secondary"],
         redirect_uris=["https://nantes.city/callback"],
+    ),
+}
+
+user_fields: ModelMapping[UserField] = {
+    "given_name": UserField(
+        name="Given name",
+        slug="given_name",
+        type=UserFieldType.STRING,
+        configuration={
+            "multiple": False,
+            "at_registration": False,
+            "required": False,
+            "editable": True,
+        },
+    ),
+    "gender": UserField(
+        name="Gender",
+        slug="gender",
+        type=UserFieldType.CHOICE,
+        configuration={
+            "choices": ["male", "female", "non_binary"],
+            "multiple": False,
+            "at_registration": False,
+            "required": False,
+            "editable": True,
+        },
+    ),
+    "phone_number": UserField(
+        name="Phone number",
+        slug="phone_number",
+        type=UserFieldType.PHONE_NUMBER,
+        configuration={
+            "multiple": False,
+            "at_registration": False,
+            "required": False,
+            "editable": True,
+        },
+    ),
+    "phone_number_verified": UserField(
+        name="Phone number verified",
+        slug="phone_number_verified",
+        type=UserFieldType.BOOLEAN,
+        configuration={
+            "multiple": False,
+            "at_registration": False,
+            "required": False,
+            "editable": False,
+            "default": False,
+        },
     ),
 }
 
@@ -368,6 +420,7 @@ grants: ModelMapping[Grant] = {
 data_mapping: TestData = {
     "tenants": tenants,
     "clients": clients,
+    "user_fields": user_fields,
     "users": users,
     "login_sessions": login_sessions,
     "authorization_codes": authorization_codes,
