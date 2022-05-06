@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, Request, status
 from fastapi.responses import RedirectResponse
-from fastapi_users.manager import InvalidPasswordException, UserAlreadyExists
+from fastapi_users.exceptions import InvalidPasswordException, UserAlreadyExists
 
 from fief.apps.auth.templates import templates
 from fief.csrf import check_csrf

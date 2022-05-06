@@ -2,7 +2,7 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, Query, Request, status
 from fastapi.responses import RedirectResponse
-from fastapi_users.manager import (
+from fastapi_users.exceptions import (
     InvalidPasswordException,
     InvalidResetPasswordToken,
     UserInactive,

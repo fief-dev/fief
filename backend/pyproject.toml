@@ -81,7 +81,7 @@ dependencies = [
     "Babel ==2.9.1",
     "dramatiq[redis] ==1.12.3",
     "fastapi ==0.75.1",
-    "fastapi-users[sqlalchemy2] ==9.3.0",
+    "fastapi-users[sqlalchemy] ==10.0.1",
     "fief-client ==0.8.0",
     "furl ==2.1.3",
     "greenlet==1.1.2",
@@ -94,7 +94,7 @@ dependencies = [
     "python-slugify ==6.1.1",
     "rich <11.0.0,>=10.14.0",  # Needed for the CLI. FIXME: Not latest version because Tryceratops is pinned to an old version.
     "sentry-sdk ==1.5.9",
-    "sqlalchemy[mypy] ==1.4.35",
+    "sqlalchemy[mypy] ==1.4.36",
     "typer ==0.4.1",
     "uvicorn[standard]==0.17.6",
 ]

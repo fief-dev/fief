@@ -32,10 +32,10 @@ from fief.models import (
     AdminAPIKey,
     AdminSessionToken,
     MainBase,
+    User,
     Workspace,
     WorkspaceUser,
 )
-from fief.schemas.user import UserDB
 from fief.services.workspace_creation import WorkspaceCreation
 from fief.services.workspace_db import WorkspaceDatabase
 from fief.settings import settings
@@ -240,9 +240,12 @@ def workspace_host(
 
 
 @pytest.fixture
-def workspace_admin_user() -> UserDB:
-    return UserDB(
-        email="dev@bretagne.duchy", hashed_password="dev", tenant_id=uuid.uuid4()
+def workspace_admin_user() -> User:
+    return User(
+        id=uuid.uuid4(),
+        email="dev@bretagne.duchy",
+        hashed_password="dev",
+        tenant_id=uuid.uuid4(),
     )
 
 
@@ -250,7 +253,7 @@ def workspace_admin_user() -> UserDB:
 async def admin_session_token(
     main_session: AsyncSession,
     workspace: Workspace,
-    workspace_admin_user: UserDB,
+    workspace_admin_user: User,
 ) -> AsyncGenerator[Tuple[AdminSessionToken, str], None]:
     workspace_user = WorkspaceUser(
         workspace_id=workspace.id, user_id=workspace_admin_user.id
@@ -369,7 +372,7 @@ def access_token(
             user_tenant.get_sign_jwk(),
             user_tenant.get_host(workspace.domain),
             client,
-            UserDB.from_orm(user),
+            user,
             ["openid"],
             3600,
         )

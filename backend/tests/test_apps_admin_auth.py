@@ -8,8 +8,7 @@ from fastapi import status
 from fief.crypto.token import get_token_hash
 from fief.db import AsyncSession
 from fief.managers import AdminSessionTokenManager
-from fief.models import AdminSessionToken
-from fief.schemas.user import UserDB
+from fief.models import AdminSessionToken, User
 from fief.settings import settings
 
 
@@ -76,7 +75,7 @@ class TestAuthCallback:
 
 @pytest.mark.authenticated_admin(mode="session")
 async def test_auth_userinfo(
-    test_client_admin: httpx.AsyncClient, workspace_admin_user: UserDB
+    test_client_admin: httpx.AsyncClient, workspace_admin_user: User
 ):
     response = await test_client_admin.get("/auth/userinfo")
 

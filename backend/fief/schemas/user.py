@@ -1,16 +1,18 @@
-from typing import Any, Dict
-
-from fastapi_users import models
+from fastapi_users import schemas
 from pydantic import UUID4
 
 from fief.schemas.tenant import TenantEmbedded
 
 
-class User(models.BaseUser):
+class UserRead(schemas.BaseUser):
     tenant_id: UUID4
+    tenant: TenantEmbedded
+
+    class Config:
+        orm_mode = True
 
 
-class UserCreate(models.BaseUserCreate):
+class UserCreate(schemas.BaseUserCreate):
     pass
 
 
@@ -23,16 +25,5 @@ class UserCreateInternal(UserCreate):
     tenant_id: UUID4
 
 
-class UserUpdate(models.BaseUserUpdate):
+class UserUpdate(schemas.BaseUserUpdate):
     pass
-
-
-class UserDB(User, models.BaseUserDB):
-    tenant_id: UUID4
-
-
-class UserRead(User):
-    tenant: TenantEmbedded
-
-    class Config:
-        orm_mode = True

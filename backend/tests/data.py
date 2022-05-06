@@ -21,6 +21,7 @@ from fief.models import (
     User,
     UserField,
     UserFieldType,
+    UserFieldValue,
 )
 from fief.settings import settings
 
@@ -36,6 +37,7 @@ class TestData(TypedDict):
     clients: ModelMapping[Client]
     user_fields: ModelMapping[UserField]
     users: ModelMapping[User]
+    user_field_values: ModelMapping[UserFieldValue]
     login_sessions: ModelMapping[LoginSession]
     authorization_codes: ModelMapping[AuthorizationCode]
     refresh_tokens: ModelMapping[RefreshToken]
@@ -155,6 +157,34 @@ users: ModelMapping[User] = {
         email="anne@nantes.city",
         hashed_password=password_helper.hash("hermine"),
         tenant=tenants["secondary"],
+    ),
+}
+
+user_field_values: ModelMapping[UserFieldValue] = {
+    "regular_given_name": UserFieldValue(
+        value_string="Anne",
+        user=users["regular"],
+        user_field=user_fields["given_name"],
+    ),
+    "regular_gender": UserFieldValue(
+        value_string="female",
+        user=users["regular"],
+        user_field=user_fields["gender"],
+    ),
+    "regular_phone_number": UserFieldValue(
+        value_string="+33642424242",
+        user=users["regular"],
+        user_field=user_fields["phone_number"],
+    ),
+    "regular_phone_number_verified": UserFieldValue(
+        value_boolean=True,
+        user=users["regular"],
+        user_field=user_fields["phone_number_verified"],
+    ),
+    "secondary_regular_given_name": UserFieldValue(
+        value_string="Anne",
+        user=users["regular_secondary"],
+        user_field=user_fields["given_name"],
     ),
 }
 
@@ -422,6 +452,7 @@ data_mapping: TestData = {
     "clients": clients,
     "user_fields": user_fields,
     "users": users,
+    "user_field_values": user_field_values,
     "login_sessions": login_sessions,
     "authorization_codes": authorization_codes,
     "refresh_tokens": refresh_tokens,

@@ -8,15 +8,16 @@ from fastapi_users.authentication import (
     BearerTransport,
     Strategy,
 )
-from fastapi_users.manager import UserNotExists
+from fastapi_users.exceptions import UserNotExists
+from fastapi_users.manager import UUIDIDMixin
 from fastapi_users.password import PasswordHelperProtocol
 from fastapi_users_db_sqlalchemy import (
     SQLAlchemyBaseOAuthAccountTable,
-    SQLAlchemyBaseUserTable,
     SQLAlchemyUserDatabase,
 )
 from furl import furl
 from jwcrypto import jwk
+from pydantic import UUID4
 from sqlalchemy import select
 from sqlalchemy.orm import joinedload
 from sqlalchemy.sql import Select
@@ -46,19 +47,18 @@ from fief.dependencies.workspace_managers import get_user_manager as get_user_db
 from fief.locale import Translations
 from fief.managers import UserManager as UserDBManager
 from fief.models import Tenant, User, Workspace
-from fief.schemas.user import UserCreate, UserDB
+from fief.schemas.user import UserCreate
 from fief.settings import settings
 from fief.tasks import SendTask, on_after_forgot_password, on_after_register
 
 
-class UserManager(BaseUserManager[UserCreate, UserDB]):
-    user_db_model = UserDB
+class UserManager(UUIDIDMixin, BaseUserManager[User, UUID4]):
     reset_password_token_secret = settings.secret.get_secret_value()
     verification_token_secret = settings.secret.get_secret_value()
 
     def __init__(
         self,
-        user_db: SQLAlchemyUserDatabase[UserDB],
+        user_db: SQLAlchemyUserDatabase[User, UUID4],
         password_helper: PasswordHelperProtocol,
         workspace: Workspace,
         tenant: Tenant,
@@ -71,8 +71,8 @@ class UserManager(BaseUserManager[UserCreate, UserDB]):
         self.translations = translations
         self.send_task = send_task
 
-    async def validate_password(
-        self, password: str, user: Union[UserCreate, UserDB]
+    async def validate_password(  # type: ignore
+        self, password: str, user: Union[UserCreate, User]
     ) -> None:
         if len(password) < 8:
             raise InvalidPasswordException(
@@ -81,11 +81,11 @@ class UserManager(BaseUserManager[UserCreate, UserDB]):
                 )
             )
 
-    async def on_after_register(self, user: UserDB, request: Optional[Request] = None):
+    async def on_after_register(self, user: User, request: Optional[Request] = None):
         self.send_task(on_after_register, str(user.id), str(self.workspace.id))
 
     async def on_after_forgot_password(
-        self, user: UserDB, token: str, request: Optional[Request] = None
+        self, user: User, token: str, request: Optional[Request] = None
     ):
         reset_url = furl(self.tenant.url_for(cast(Request, request), "reset:reset.get"))
         reset_url.add(query_params={"token": token})
@@ -97,40 +97,35 @@ class UserManager(BaseUserManager[UserCreate, UserDB]):
         )
 
     async def on_after_request_verify(
-        self, user: UserDB, token: str, request: Optional[Request] = None
+        self, user: User, token: str, request: Optional[Request] = None
     ):
         print(f"Verification requested for user {user.id}. Verification token: {token}")
 
 
-class SQLAlchemyUserTenantDatabase(SQLAlchemyUserDatabase[UserDB]):
+class SQLAlchemyUserTenantDatabase(SQLAlchemyUserDatabase[User, UUID4]):
     def __init__(
         self,
-        user_db_model: Type[UserDB],
         session: AsyncSession,
         tenant: Tenant,
         user_table: Type[User],
         oauth_account_table: Optional[Type[SQLAlchemyBaseOAuthAccountTable]] = None,
     ):
-        super().__init__(
-            user_db_model,
-            session,
-            cast(Type[SQLAlchemyBaseUserTable], user_table),
-            oauth_account_table=oauth_account_table,
-        )
+        super().__init__(session, user_table, oauth_account_table=oauth_account_table)
         self.tenant = tenant
 
-    async def _get_user(self, statement: Select) -> Optional[UserDB]:
+    async def _get_user(self, statement: Select) -> Optional[User]:
         statement = statement.where(User.tenant_id == self.tenant.id)
+        print(statement)
         return await super()._get_user(statement)
 
 
-class JWTAccessTokenStrategy(Strategy[UserCreate, UserDB]):
+class JWTAccessTokenStrategy(Strategy[User, UUID4]):
     def __init__(self, key: jwk.JWK):
         self.key = key
 
     async def read_token(
-        self, token: Optional[str], user_manager: BaseUserManager[UserCreate, UserDB]
-    ) -> Optional[UserDB]:
+        self, token: Optional[str], user_manager: BaseUserManager[User, UUID4]
+    ) -> Optional[User]:
         if token is None:
             return None
 
@@ -154,12 +149,12 @@ async def get_jwt_access_token_strategy(
 async def get_user_db(
     session: AsyncSession = Depends(get_current_workspace_session),
     tenant: Tenant = Depends(get_current_tenant),
-) -> SQLAlchemyUserDatabase[UserDB]:
-    return SQLAlchemyUserTenantDatabase(UserDB, session, tenant, User)
+) -> SQLAlchemyUserDatabase[User, UUID4]:
+    return SQLAlchemyUserTenantDatabase(session, tenant, User)
 
 
 async def get_user_manager(
-    user_db: SQLAlchemyUserDatabase[UserDB] = Depends(get_user_db),
+    user_db: SQLAlchemyUserDatabase[User, UUID4] = Depends(get_user_db),
     tenant: Tenant = Depends(get_current_tenant),
     workspace: Workspace = Depends(get_current_workspace),
     translations: Translations = Depends(get_translations),
@@ -173,12 +168,12 @@ async def get_user_manager(
 async def get_user_db_from_create_user_internal(
     session: AsyncSession = Depends(get_current_workspace_session),
     tenant: Tenant = Depends(get_tenant_from_create_user_internal),
-) -> SQLAlchemyUserDatabase[UserDB]:
-    return SQLAlchemyUserTenantDatabase(UserDB, session, tenant, User)
+) -> SQLAlchemyUserDatabase[User, UUID4]:
+    return SQLAlchemyUserTenantDatabase(session, tenant, User)
 
 
 async def get_user_manager_from_create_user_internal(
-    user_db: SQLAlchemyUserDatabase[UserDB] = Depends(
+    user_db: SQLAlchemyUserDatabase[User, UUID4] = Depends(
         get_user_db_from_create_user_internal
     ),
     tenant: Tenant = Depends(get_tenant_from_create_user_internal),
@@ -206,7 +201,7 @@ class AuthorizationCodeBearerTransport(BearerTransport):
         )
 
 
-authentication_backend = AuthenticationBackend[UserCreate, UserDB](
+authentication_backend = AuthenticationBackend[User, UUID4](
     "jwt_access_token",
     AuthorizationCodeBearerTransport(
         "/authorize", "/api/token", "/api/token", {"openid": "openid"}

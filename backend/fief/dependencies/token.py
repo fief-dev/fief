@@ -3,7 +3,7 @@ from typing import AsyncGenerator, List, Optional, TypedDict
 
 from fastapi import Depends, Form
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
-from fastapi_users.manager import UserNotExists
+from fastapi_users.exceptions import UserNotExists
 from pydantic import UUID4
 
 from fief.crypto.code_challenge import verify_code_verifier
@@ -16,9 +16,8 @@ from fief.dependencies.workspace_managers import (
 )
 from fief.exceptions import TokenRequestException
 from fief.managers import AuthorizationCodeManager, ClientManager, RefreshTokenManager
-from fief.models import Client, ClientType
+from fief.models import Client, ClientType, User
 from fief.schemas.auth import TokenError
-from fief.schemas.user import UserDB
 
 ClientSecretBasicScheme = HTTPBasic(scheme_name="client_secret_basic", auto_error=False)
 
@@ -189,7 +188,7 @@ async def validate_grant_request(
 async def get_user_from_grant_request(
     grant_request: GrantRequest = Depends(validate_grant_request),
     user_manager: UserManager = Depends(get_user_manager),
-) -> UserDB:
+) -> User:
     try:
         return await user_manager.get(grant_request["user_id"])
     except UserNotExists as e:

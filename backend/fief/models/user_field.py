@@ -1,12 +1,16 @@
 from enum import Enum
-from typing import Any, List, Optional, TypedDict
+from typing import TYPE_CHECKING, Any, List, Optional, TypedDict
 
 from sqlalchemy import JSON, Column
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy import String
+from sqlalchemy.orm import relationship
 
 from fief.models.base import WorkspaceBase
 from fief.models.generics import CreatedUpdatedAt, UUIDModel
+
+if TYPE_CHECKING:
+    from fief.models.user_field_value import UserFieldValue
 
 
 class UserFieldType(str, Enum):
@@ -38,3 +42,7 @@ class UserField(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
     slug: str = Column(String(length=320), index=True, nullable=False, unique=True)
     type: UserFieldType = Column(SQLEnum(UserFieldType), index=True, nullable=True)
     configuration: UserFieldConfiguration = Column(JSON, nullable=False)
+
+    user_field_values: List["UserFieldValue"] = relationship(
+        "UserFieldValue", back_populates="user_field", cascade="all, delete"
+    )

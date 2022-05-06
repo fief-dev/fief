@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import JSONResponse
-from fastapi_users.manager import InvalidPasswordException, UserAlreadyExists
+from fastapi_users.exceptions import InvalidPasswordException, UserAlreadyExists
 from sqlalchemy.orm import joinedload
 
 from fief import schemas

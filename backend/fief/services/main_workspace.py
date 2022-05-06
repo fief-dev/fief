@@ -8,8 +8,8 @@ from fief.managers import (
     WorkspaceManager,
     WorkspaceUserManager,
 )
-from fief.models import Client, Workspace, WorkspaceUser
-from fief.schemas.user import UserCreateInternal, UserDB
+from fief.models import Client, User, Workspace, WorkspaceUser
+from fief.schemas.user import UserCreateInternal
 from fief.schemas.workspace import WorkspaceCreate
 from fief.services.workspace_db import WorkspaceDatabase
 from fief.settings import settings
@@ -96,7 +96,7 @@ async def create_main_fief_workspace() -> Workspace:
     return workspace
 
 
-async def create_main_fief_user(email: str, password: str) -> UserDB:
+async def create_main_fief_user(email: str, password: str) -> User:
     workspace = await get_main_fief_workspace()
 
     async with main_async_session_maker() as session:

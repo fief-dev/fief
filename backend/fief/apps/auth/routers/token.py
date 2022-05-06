@@ -14,9 +14,8 @@ from fief.dependencies.token import (
 )
 from fief.dependencies.workspace_managers import get_refresh_token_manager
 from fief.managers import RefreshTokenManager
-from fief.models import RefreshToken, Tenant, Workspace
+from fief.models import RefreshToken, Tenant, User, Workspace
 from fief.schemas.auth import TokenResponse
-from fief.schemas.user import UserDB
 from fief.settings import settings
 
 router = APIRouter()
@@ -26,7 +25,7 @@ router = APIRouter()
 async def token(
     response: Response,
     grant_request: GrantRequest = Depends(validate_grant_request),
-    user: UserDB = Depends(get_user_from_grant_request),
+    user: User = Depends(get_user_from_grant_request),
     refresh_token_manager: RefreshTokenManager = Depends(get_refresh_token_manager),
     workspace: Workspace = Depends(get_current_workspace),
     tenant: Tenant = Depends(get_current_tenant),
