@@ -14,7 +14,6 @@ class TestCLIInfo:
         mocked_get_settings.side_effect = ValidationError([], Settings)
 
         result = runner.invoke(app, ["info"])
-        print(result.output)
         assert result.exit_code == 1
         assert "❌ Some environment variables are missing or invalid." in result.stdout
 

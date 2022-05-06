@@ -115,7 +115,6 @@ class SQLAlchemyUserTenantDatabase(SQLAlchemyUserDatabase[User, UUID4]):
 
     async def _get_user(self, statement: Select) -> Optional[User]:
         statement = statement.where(User.tenant_id == self.tenant.id)
-        print(statement)
         return await super()._get_user(statement)
 
 
