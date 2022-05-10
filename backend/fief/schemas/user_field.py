@@ -8,7 +8,6 @@ from fief.schemas.generics import CreatedUpdatedAt, UUIDSchema
 
 class UserFieldConfiguration(BaseModel):
     choices: Optional[List[str]]
-    multiple: bool
     at_registration: bool
     required: bool
     editable: bool

@@ -11,11 +11,34 @@
     "LOCALE": "Locale",
     "TIMEZONE": "Timezone"
   },
+  "base": {
+    "name": "Name",
+    "slug": "Slug",
+    "type": "Type",
+    "default": "Default value",
+    "default_enabled": "Enabled",
+    "at_registration": "Ask at registration",
+    "required": "Required",
+    "editable": "Editable by the user"
+  },
   "list": {
     "title": "User fields",
     "create": "Create User field",
     "name": "Name",
     "slug": "Slug",
     "type": "Type"
+  },
+  "create": {
+    "title": "Create User field",
+    "cancel": "Cancel",
+    "submit": "Create"
+  },
+  "details": {
+    "submit": "Update",
+    "delete": "Delete"
+  },
+  "delete": {
+    "title": "Delete the User field \"{{name}}\"?",
+    "notice": "If you delete this field, the associated values on every users will also be deleted."
   }
 }

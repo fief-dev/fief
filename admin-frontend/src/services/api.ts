@@ -73,6 +73,18 @@ export class APIClient {
     return this.client.get('/user-fields/', { params });
   }
 
+  public createUserField(data: schemas.userField.UserFieldCreate): Promise<AxiosResponse<schemas.userField.UserField>> {
+    return this.client.post('/user-fields/', data);
+  }
+
+  public updateUserField(id: string, data: schemas.userField.UserFieldUpdate): Promise<AxiosResponse<schemas.userField.UserField>> {
+    return this.client.patch(`/user-fields/${id}`, data);
+  }
+
+  public deleteUserField(id: string): Promise<AxiosResponse<void>> {
+    return this.client.delete(`/user-fields/${id}`);
+  }
+
   public listAPIKeys(params: schemas.PaginationParameters = {}): Promise<AxiosResponse<schemas.PaginatedResults<schemas.adminAPIKey.AdminAPIKey>>> {
     return this.client.get('/api-keys/', { params });
   }

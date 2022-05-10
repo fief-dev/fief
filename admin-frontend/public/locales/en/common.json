@@ -5,7 +5,8 @@
     "USER_CREATE_UNKNOWN_TENANT": "This tenant is unknown. Please check that you selected a valid tenant.",
     "USER_CREATE_ALREADY_EXISTS": "A user with the same email address already exists on this tenant.",
     "USER_CREATE_INVALID_PASSWORD": "The password is invalid.",
-    "UNKNOWN_ERROR": "An unknown error has occured. It's probably an issue on our side. We'll investigate the situation."
+    "UNKNOWN_ERROR": "An unknown error has occured. It's probably an issue on our side. We'll investigate the situation.",
+    "USER_FIELD_SLUG_ALREADY_EXISTS": "A field with this slug already exists."
   },
   "common_errors": {
     "field_required": "This field is required."
@@ -33,5 +34,9 @@
   },
   "tenant_combobox": {
     "no_matching_tenant": "No tenant is matching your query."
+  },
+  "delete": {
+    "cancel": "Cancel",
+    "submit": "Delete"
   }
 }

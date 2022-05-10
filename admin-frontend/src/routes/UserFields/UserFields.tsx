@@ -3,10 +3,12 @@ import { useTranslation } from 'react-i18next';
 import { Column } from 'react-table';
 import { PlusIcon } from '@heroicons/react/solid';
 
+import CreateUserFieldModal from '../../components/CreateUserFieldModal/CreateUserFieldModal';
 import DataTable from '../../components/DataTable/DataTable';
 import Layout from '../../components/Layout/Layout';
 import { usePaginationAPI } from '../../hooks/api';
 import * as schemas from '../../schemas';
+import UserFieldDetails from '../../components/UserFieldDetails/UserFieldDetails';
 
 const UserFields: React.FunctionComponent = () => {
   const { t } = useTranslation(['user-fields']);
@@ -66,8 +68,13 @@ const UserFields: React.FunctionComponent = () => {
     setSelected(userField);
   }, [refresh]);
 
+  const onDeleted = useCallback(() => {
+    refresh();
+    setSelected(undefined);
+  }, [refresh]);
+
   return (
-    <Layout sidebar={selected ? <p>panel</p> : undefined}>
+    <Layout sidebar={selected ? <UserFieldDetails userField={selected} onUpdated={onUpdated} onDeleted={onDeleted} /> : undefined}>
       <div className="sm:flex sm:justify-between sm:items-center mb-8">
 
         <div className="mb-4 sm:mb-0">
@@ -99,12 +106,11 @@ const UserFields: React.FunctionComponent = () => {
         onPageChange={onPageChange}
       />
 
-
-      {/* <CreateClientModal
+      <CreateUserFieldModal
         open={showCreateModal}
         onCreated={onCreated}
         onClose={() => setShowCreateModal(false)}
-      /> */}
+      />
     </Layout>
   );
 };

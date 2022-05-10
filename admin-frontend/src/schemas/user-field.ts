@@ -15,7 +15,6 @@ export enum UserFieldType {
 
 export interface UserFieldConfiguration {
   choices?: string[];
-  multiple: boolean;
   at_registration: boolean;
   required: boolean;
   editable: boolean;
@@ -32,7 +31,7 @@ export interface UserFieldCreate {
 export interface UserFieldUpdate {
   name?: string;
   slug?: string;
-  configuration?: string;
+  configuration?: UserFieldConfiguration;
 }
 
 export interface BaseUserField extends UUIDSchema, CreatedUpdatedAt {

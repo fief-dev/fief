@@ -2,21 +2,27 @@ import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { useAPI } from '../../hooks/api';
-import * as schemas from '../../schemas';
-import { handleAPIError } from '../../services/api';
+import { APIClient, handleAPIError } from '../../services/api';
 import ErrorAlert from '../ErrorAlert/ErrorAlert';
 import LoadingButton from '../LoadingButton/LoadingButton';
 import Modal from '../Modal/Modal';
 
-interface DeleteAPIKeyModalProps {
-  apiKey: schemas.adminAPIKey.AdminAPIKey;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type ListMethodKeys<Set> = Set extends `delete${infer _X}` ? Set : never;
+type APIClientDeleteMethods = Pick<APIClient, ListMethodKeys<keyof APIClient>>;
+
+interface DeleteModalProps {
+  objectId: string;
+  method: keyof APIClientDeleteMethods;
+  title: string;
+  notice: string;
   open: boolean;
   onClose: () => void;
   onDeleted?: () => void;
 }
 
-const DeleteAPIKeyModal: React.FunctionComponent<DeleteAPIKeyModalProps> = ({ apiKey, open, onClose, onDeleted }) => {
-  const { t } = useTranslation(['api-keys']);
+const DeleteModal: React.FunctionComponent<DeleteModalProps> = ({ objectId, method, title, notice, open, onClose, onDeleted }) => {
+  const { t } = useTranslation(['common']);
   const api = useAPI();
 
   const [loading, setLoading] = useState(false);
@@ -25,7 +31,7 @@ const DeleteAPIKeyModal: React.FunctionComponent<DeleteAPIKeyModalProps> = ({ ap
   const onSubmit = useCallback(async () => {
     setLoading(true);
     try {
-      await api.deleteAPIKey(apiKey.id);
+      await api[method](objectId);
       if (onDeleted) {
         onDeleted();
       }
@@ -34,7 +40,7 @@ const DeleteAPIKeyModal: React.FunctionComponent<DeleteAPIKeyModalProps> = ({ ap
     } finally {
       setLoading(false);
     }
-  }, [api, apiKey, onDeleted]);
+  }, [api, method, objectId, onDeleted]);
 
   return (
     <Modal
@@ -42,12 +48,12 @@ const DeleteAPIKeyModal: React.FunctionComponent<DeleteAPIKeyModalProps> = ({ ap
       onClose={onClose}
     >
         <Modal.Header closeButton>
-          <Modal.Title>{t('delete.title', { name: apiKey.name })}</Modal.Title>
+          <Modal.Title>{title}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <div className="space-y-4">
             {errorMessage && <ErrorAlert message={t(`common:api_errors.${errorMessage}`)} />}
-            <p className="text-justify">{t('delete.notice')}</p>
+            <p className="text-justify">{notice}</p>
           </div>
         </Modal.Body>
         <Modal.Footer>
@@ -71,4 +77,4 @@ const DeleteAPIKeyModal: React.FunctionComponent<DeleteAPIKeyModalProps> = ({ ap
   );
 };
 
-export default DeleteAPIKeyModal;
+export default DeleteModal;
