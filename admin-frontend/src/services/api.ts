@@ -69,6 +69,10 @@ export class APIClient {
     return this.client.post('/users/', data);
   }
 
+  public listUserFields(params: schemas.PaginationParameters = {}): Promise<AxiosResponse<schemas.PaginatedResults<schemas.userField.UserField>>> {
+    return this.client.get('/user-fields/', { params });
+  }
+
   public listAPIKeys(params: schemas.PaginationParameters = {}): Promise<AxiosResponse<schemas.PaginatedResults<schemas.adminAPIKey.AdminAPIKey>>> {
     return this.client.get('/api-keys/', { params });
   }

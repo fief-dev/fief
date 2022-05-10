@@ -1,17 +1,22 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useContext, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Column } from 'react-table';
 import { PlusIcon } from '@heroicons/react/solid';
 
-
 import CreateUserModal from '../../components/CreateUserModal/CreateUserModal';
 import DataTable from '../../components/DataTable/DataTable';
 import Layout from '../../components/Layout/Layout';
+import UserFieldsSelector from '../../components/UserFieldsSelector/UserFieldsSelector';
+import UserFieldsSelectionContext from '../../contexts/user-fields-selection';
 import { usePaginationAPI } from '../../hooks/api';
+import { useUserFields } from '../../hooks/user-field';
 import * as schemas from '../../schemas';
 
 const Users: React.FunctionComponent = () => {
   const { t } = useTranslation(['users']);
+  const userFields = useUserFields();
+  const [userFieldsSelection] = useContext(UserFieldsSelectionContext);
+
   const {
     data: users,
     count,
@@ -24,21 +29,37 @@ const Users: React.FunctionComponent = () => {
   } = usePaginationAPI<'listUsers'>({ method: 'listUsers', limit: 10 });
 
   const columns = useMemo<Column<schemas.user.User>[]>(() => {
-    return [
-      {
-        Header: t('users:list.email') as string,
-        accessor: 'email',
-      },
-      {
-        Header: t('users:list.tenant') as string,
-        id: 'tenant_id',
-        accessor: 'tenant',
-        Cell: ({ cell: { value: tenant } }) => (
-          <>{tenant.name}</>
-        ),
-      },
-    ];
-  }, [t]);
+    return userFieldsSelection.filter(({ enabled }) => enabled).map<Column<schemas.user.User>>(({ id }) => {
+      if (id === 'id') {
+        return {
+          Header: t('users:list.id') as string,
+          accessor: 'id',
+        };
+      } else if (id === 'email') {
+        return {
+          Header: t('users:list.email') as string,
+          accessor: 'email',
+        };
+      } else if (id === 'tenant') {
+        return {
+          Header: t('users:list.tenant') as string,
+          id: 'tenant_id',
+          accessor: 'tenant',
+          Cell: ({ cell: { value: tenant } }) => (
+            <>{tenant.name}</>
+          )
+        };
+      } else {
+        const userField = userFields.find((userField) => userField.slug === id) as schemas.userField.UserField;
+        return {
+          Header: userField.name,
+          id: userField.id,
+          accessor: `fields.${userField.slug}` as any,
+          disableSortBy: true,
+        };
+      }
+    });
+  }, [t, userFields, userFieldsSelection]);
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const onCreated = useCallback(() => {
@@ -55,6 +76,7 @@ const Users: React.FunctionComponent = () => {
         </div>
 
         <div className="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
+          <UserFieldsSelector />
           <button
             className="btn bg-primary-500 hover:bg-primary-600 text-white"
             onClick={() => setShowCreateModal(true)}

@@ -4,9 +4,9 @@ from tests.data import TestData
 
 
 @pytest.mark.asyncio
-async def test_get_fields(test_data: TestData):
+async def test_fields(test_data: TestData):
     user = test_data["users"]["regular"]
-    assert user.get_fields() == {
+    assert user.fields == {
         "gender": "female",
         "given_name": "Anne",
         "phone_number": "+33642424242",

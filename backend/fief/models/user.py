@@ -41,7 +41,8 @@ class User(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
     def __repr__(self) -> str:
         return f"User(id={self.id}, email={self.email})"
 
-    def get_fields(self) -> Dict[str, Any]:
+    @property
+    def fields(self) -> Dict[str, Any]:
         return dict(
             user_field_value.get_slug_and_value()
             for user_field_value in self.user_field_values

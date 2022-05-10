@@ -1,6 +1,7 @@
 {
   "list": {
     "title": "Users",
+    "id": "ID",
     "email": "Email address",
     "tenant": "Tenant",
     "create": "Create User"

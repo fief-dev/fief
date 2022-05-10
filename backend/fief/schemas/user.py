@@ -1,12 +1,15 @@
+from typing import Any, Dict
 from fastapi_users import schemas
-from pydantic import UUID4
+from pydantic import UUID4, root_validator, Field
 
+from fief.models import User
 from fief.schemas.tenant import TenantEmbedded
 
 
 class UserRead(schemas.BaseUser):
     tenant_id: UUID4
     tenant: TenantEmbedded
+    fields: Dict[str, Any]
 
     class Config:
         orm_mode = True

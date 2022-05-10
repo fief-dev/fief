@@ -29,4 +29,5 @@ interface BaseUser extends UUIDSchema {
 
 export interface User extends BaseUser {
   tenant: TenantEmbedded;
+  fields: Record<string, any>;
 }

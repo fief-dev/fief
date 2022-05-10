@@ -13,7 +13,7 @@ def get_user_claims(user: User) -> Dict[str, Any]:
         "sub": str(user.id),
         "email": user.email,
         "tenant_id": str(user.tenant_id),
-        **user.get_fields(),
+        **user.fields,
     }
 
 
