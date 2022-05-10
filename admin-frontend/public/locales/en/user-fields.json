@@ -1,0 +1,21 @@
+{
+  "user_field_type": {
+    "STRING": "String",
+    "INTEGER": "Integer",
+    "BOOLEAN": "Boolean",
+    "DATE": "Date",
+    "DATETIME": "Date & Time",
+    "CHOICE": "Choice",
+    "PHONE_NUMBER": "Phone number",
+    "ADDRESS": "Address",
+    "LOCALE": "Locale",
+    "TIMEZONE": "Timezone"
+  },
+  "list": {
+    "title": "User fields",
+    "create": "Create User field",
+    "name": "Name",
+    "slug": "Slug",
+    "type": "Type"
+  }
+}

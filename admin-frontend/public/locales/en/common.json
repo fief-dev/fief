@@ -28,6 +28,7 @@
     "tenants": "Tenants",
     "clients": "Clients",
     "users": "Users",
+    "user-fields": "User fields",
     "api_keys": "API Keys"
   },
   "tenant_combobox": {
