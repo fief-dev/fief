@@ -6,8 +6,8 @@ WORKDIR /app
 
 RUN apk update \
     && apk add --virtual build-deps build-base \
-    && apk add --no-cache libffi-dev postgresql-dev mariadb-dev redis supervisor \
-    && pip install --upgrade pip \
+    && apk add --no-cache libffi-dev postgresql-dev mariadb-dev redis \
+    && pip install --upgrade pip supervisor \
     && python --version \
     && pip install fief-server==${FIEF_VERSION} \
     && apk del build-deps && \
@@ -20,4 +20,4 @@ ENV DATABASE_LOCATION=/data/db
 ENV PORT=8000
 EXPOSE ${PORT}
 
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
+CMD ["supervisord", "-c", "/etc/supervisord.conf"]
