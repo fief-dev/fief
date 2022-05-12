@@ -188,7 +188,6 @@ def quickstart(
             "docker run",
             "--name fief-server",
             f"-p {port}:{port}",
-            f"--add-host {host}:127.0.0.1",
             "-d",
             *[
                 f'-e "{name}={value}"'
