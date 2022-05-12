@@ -20,7 +20,7 @@ async def get_forgot_password_request(
     except ValidationError as e:
         raise FormValidationError(
             "forgot_password.html",
-            tenant,
+            {"form_data": form, "tenant": tenant},
             translations,
             e.raw_errors,
             ForgotPasswordRequest,
@@ -38,7 +38,7 @@ async def get_reset_password_request(
     except ValidationError as e:
         raise FormValidationError(
             "reset_password.html",
-            tenant,
+            {"form_data": form, "tenant": tenant},
             translations,
             e.raw_errors,
             ResetPasswordRequest,

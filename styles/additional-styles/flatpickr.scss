@@ -1,5 +1,5 @@
 // Import base styles
-@import '~flatpickr/dist/flatpickr.min.css';
+@use '../../backend/node_modules/flatpickr/dist/flatpickr.min.css';
 
 // Customise flatpickr
 $calendarPadding: 24px;

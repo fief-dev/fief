@@ -1,3 +1,5 @@
+{% import 'macros/form_inputs.html' as form_inputs %}
+
 {% extends "auth_layout.html" %}
 
 {% block head_title %}{{ _('Sign up') }}{% endblock %}
@@ -5,7 +7,7 @@
 {% block title %}{{ _('Sign up') }}{% endblock %}
 
 {% block auth_form %}
-  <form method="POST" action="{{ tenant.url_for(request, 'register:post') }}">
+  <form method="POST" action="{{ tenant.url_for(request, 'register:post') }}" novalidate>
     <div class="space-y-4">
       <div>
         <label class="block text-sm font-medium mb-1" for="input-email">{{ _('Email address') }}</label>
@@ -21,6 +23,17 @@
           <div id="errors-password" class="text-xs mt-1 text-red-500">{{ form_errors.password }}</div>
         {% endif %}
       </div>
+      {% for field in registration_user_fields %}
+        <div>
+          {{
+            form_inputs.user_field_input(
+              field,
+              form_data.get(field.slug) if form_data is defined else None,
+              form_errors.get(field.slug) if form_errors is defined else None,
+            )
+          }}
+        </div>
+      {% endfor %}
     </div>
     {% block csrf %}{{ super() }}{% endblock %}
     <div class="flex items-center justify-between mt-6">

@@ -1,8 +1,8 @@
-from typing import Any, Dict
-from fastapi_users import schemas
-from pydantic import UUID4, root_validator, Field
+from typing import Any, Dict, TypeVar
 
-from fief.models import User
+from fastapi_users import schemas
+from pydantic import UUID4
+
 from fief.schemas.tenant import TenantEmbedded
 
 
@@ -19,6 +19,9 @@ class UserCreate(schemas.BaseUserCreate):
     pass
 
 
+UC = TypeVar("UC", bound=UserCreate)
+
+
 class UserCreateInternal(UserCreate):
     """
     Utility model so that we can hook into the logic of UserManager.create
@@ -26,6 +29,9 @@ class UserCreateInternal(UserCreate):
     """
 
     tenant_id: UUID4
+
+
+UCI = TypeVar("UCI", bound=UserCreateInternal)
 
 
 class UserUpdate(schemas.BaseUserUpdate):

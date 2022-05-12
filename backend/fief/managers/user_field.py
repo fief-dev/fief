@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 
 from sqlalchemy import select
 
@@ -12,3 +12,12 @@ class UserFieldManager(BaseManager[UserField], UUIDManagerMixin[UserField]):
     async def get_by_slug(self, slug: str) -> Optional[UserField]:
         statement = select(UserField).where(UserField.slug == slug)
         return await self.get_one_or_none(statement)
+
+    async def get_registration_fields(self) -> List[UserField]:
+        statement = select(UserField)
+        user_fields = await self.list(statement)
+        return [
+            user_field
+            for user_field in user_fields
+            if user_field.configuration["at_registration"]
+        ]

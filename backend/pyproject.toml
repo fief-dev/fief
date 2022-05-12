@@ -41,6 +41,10 @@ ignore_missing_imports = true
 module = "pymysql.*"
 ignore_missing_imports = true
 
+[[tool.mypy.overrides]]
+module = "pycountry.*"
+ignore_missing_imports = true
+
 [tool.isort]
 profile = "black"
 
@@ -88,10 +92,13 @@ dependencies = [
     "gunicorn ==20.1.0",
     "Jinja2 ==3.0.3",
     "jwcrypto ==1.0",
+    "phonenumbers >=8.12.48,<8.13",
     "postmarker ==1.0",
     "psycopg2 ==2.9.3",
+    "pycountry >=22.3.5,<22.4",
     "pydantic[dotenv] ==1.9.0",
     "python-slugify ==6.1.1",
+    "pytz ==2022.1",
     "rich <11.0.0,>=10.14.0",  # Needed for the CLI. FIXME: Not latest version because Tryceratops is pinned to an old version.
     "sentry-sdk ==1.5.9",
     "sqlalchemy[mypy] ==1.4.36",
@@ -117,6 +124,7 @@ dev = [
   "sqlalchemy-utils",
   "tryceratops",
   "types-python-slugify",
+  "types-pytz",
 ]
 
 [project.scripts]
