@@ -50,3 +50,15 @@ class User(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
 
     def get_preferred_translations(self) -> Translations:
         return get_preferred_translations([])
+
+    def get_claims(self) -> Dict[str, Any]:
+        fields = dict(
+            user_field_value.get_slug_and_value(json_serializable=True)
+            for user_field_value in self.user_field_values
+        )
+        return {
+            "sub": str(self.id),
+            "email": self.email,
+            "tenant_id": str(self.tenant_id),
+            **fields,
+        }

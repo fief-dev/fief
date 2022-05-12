@@ -192,6 +192,10 @@ class TestPostRegister:
                 "email": "anne@bretagne.duchy",
                 "password": "hermine1",
                 "fields.given_name": "Anne",
+                "fields.address.line1": "4 place Marc Elder",
+                "fields.address.postal_code": "44000",
+                "fields.address.city": "Nantes",
+                "fields.address.country": "FR",
             },
             cookies=cookies,
         )
@@ -208,4 +212,14 @@ class TestPostRegister:
         user_manager = UserManager(workspace_session)
         user = await user_manager.get_by_id(session_token.user_id)
         assert user is not None
-        assert user.fields == {"given_name": "Anne"}
+        assert user.fields == {
+            "given_name": "Anne",
+            "address": {
+                "line1": "4 place Marc Elder",
+                "line2": None,
+                "postal_code": "44000",
+                "city": "Nantes",
+                "state": None,
+                "country": "FR",
+            },
+        }

@@ -1,20 +1,11 @@
 import base64
 import hashlib
 from datetime import datetime, timezone
-from typing import Any, Dict, Optional, Union
+from typing import Optional
 
 from jwcrypto import jwk, jwt
 
 from fief.models import Client, User
-
-
-def get_user_claims(user: User) -> Dict[str, Any]:
-    return {
-        "sub": str(user.id),
-        "email": user.email,
-        "tenant_id": str(user.tenant_id),
-        **user.fields,
-    }
 
 
 def generate_id_token(
@@ -51,7 +42,7 @@ def generate_id_token(
     exp = iat + lifetime_seconds
 
     claims = {
-        **get_user_claims(user),
+        **user.get_claims(),
         "iss": host,
         "aud": [client.client_id],
         "exp": exp,

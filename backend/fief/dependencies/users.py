@@ -94,8 +94,8 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, UUID4]):
         for registration_user_field in registration_user_fields:
             try:
                 user_field_value = UserFieldValue(user_field=registration_user_field)
-                user_field_value.value = getattr(
-                    user_create.fields, registration_user_field.slug
+                user_field_value.value = user_create.fields.get_value(
+                    registration_user_field.slug
                 )
                 user.user_field_values.append(user_field_value)
             except AttributeError:

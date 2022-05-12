@@ -53,9 +53,4 @@ class TestUserUserinfo:
         user = tenant_params.user
 
         json = response.json()
-        assert json == {
-            "sub": str(user.id),
-            "email": user.email,
-            "tenant_id": str(user.tenant_id),
-            **user.fields,
-        }
+        assert json == user.get_claims()

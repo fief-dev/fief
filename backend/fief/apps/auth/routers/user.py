@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Depends
 
-from fief.crypto.id_token import get_user_claims
 from fief.fastapi_users import current_active_user
 from fief.models import User
 
@@ -9,7 +8,7 @@ router = APIRouter()
 
 @router.get("/userinfo", name="user:userinfo.get")
 async def get_userinfo(user: User = Depends(current_active_user)):
-    return get_user_claims(user)
+    return user.get_claims()
 
 
 # OpenID specification requires the /userinfo endpoint
@@ -17,4 +16,4 @@ async def get_userinfo(user: User = Depends(current_active_user)):
 # https://openid.net/specs/openid-connect-core-1_0.html#UserInfoRequest
 @router.post("/userinfo", name="user:userinfo.post")
 async def post_userinfo(user: User = Depends(current_active_user)):
-    return get_user_claims(user)
+    return user.get_claims()

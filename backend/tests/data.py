@@ -1,6 +1,6 @@
 import secrets
 import uuid
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from typing import Mapping, Tuple, TypedDict
 
 from fief.crypto.code_challenge import get_code_verifier_hash
@@ -146,6 +146,45 @@ user_fields: ModelMapping[UserField] = {
             "default": False,
         },
     ),
+    "birthdate": UserField(
+        name="Birthdate",
+        slug="birthdate",
+        type=UserFieldType.DATE,
+        configuration={
+            "choices": None,
+            "default": None,
+            "at_registration": False,
+            "required": False,
+            "editable": True,
+            "default": False,
+        },
+    ),
+    "last_seen": UserField(
+        name="Last seen",
+        slug="last_seen",
+        type=UserFieldType.DATETIME,
+        configuration={
+            "choices": None,
+            "default": None,
+            "at_registration": False,
+            "required": False,
+            "editable": False,
+            "default": False,
+        },
+    ),
+    "address": UserField(
+        name="Address",
+        slug="address",
+        type=UserFieldType.ADDRESS,
+        configuration={
+            "choices": None,
+            "default": None,
+            "at_registration": True,
+            "required": False,
+            "editable": False,
+            "default": False,
+        },
+    ),
 }
 
 users: ModelMapping[User] = {
@@ -183,6 +222,26 @@ user_field_values: ModelMapping[UserFieldValue] = {
         value_boolean=True,
         user=users["regular"],
         user_field=user_fields["phone_number_verified"],
+    ),
+    "regular_birthdate": UserFieldValue(
+        value_date=date(1477, 1, 25),
+        user=users["regular"],
+        user_field=user_fields["birthdate"],
+    ),
+    "regular_last_seen": UserFieldValue(
+        value_datetime=datetime(2022, 1, 1, 0, 0, 0, tzinfo=timezone.utc),
+        user=users["regular"],
+        user_field=user_fields["last_seen"],
+    ),
+    "regular_address": UserFieldValue(
+        value_json={
+            "line1": "4 place Marc Elder",
+            "postal_code": "44000",
+            "city": "Nantes",
+            "country": "FR",
+        },
+        user=users["regular"],
+        user_field=user_fields["address"],
     ),
     "secondary_regular_given_name": UserFieldValue(
         value_string="Anne",

@@ -1,3 +1,4 @@
+from datetime import date, datetime
 from typing import TYPE_CHECKING, Any, Tuple
 
 from pydantic import UUID4
@@ -60,5 +61,10 @@ class UserFieldValue(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
         field_value = self._get_field_value()
         setattr(self, field_value, value)
 
-    def get_slug_and_value(self) -> Tuple[str, Any]:
-        return self.user_field.slug, self.value
+    def get_slug_and_value(self, *, json_serializable: bool = False) -> Tuple[str, Any]:
+        value = self.value
+        if json_serializable and (
+            isinstance(value, date) or isinstance(value, datetime)
+        ):
+            value = value.isoformat()
+        return self.user_field.slug, value

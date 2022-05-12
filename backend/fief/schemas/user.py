@@ -17,7 +17,11 @@ class UserRead(schemas.BaseUser):
 
 
 class UserFields(BaseModel):
-    pass
+    def get_value(self, field: str) -> Any:
+        value = getattr(self, field)
+        if isinstance(value, BaseModel):
+            return value.dict()
+        return value
 
 
 UF = TypeVar("UF", bound=UserFields)
