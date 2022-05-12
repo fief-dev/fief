@@ -16,7 +16,7 @@ from fief.managers import UserFieldManager
 from fief.models import UserField
 from fief.models.user_field import UserFieldType
 from fief.schemas.generics import true_bool_validator
-from fief.schemas.user import UC, UCI, UserCreate, UserCreateInternal
+from fief.schemas.user import UF, UserCreate, UserCreateInternal, UserFields
 
 
 async def get_paginated_user_fields(
@@ -85,23 +85,25 @@ def _get_pydantic_specification(user_fields: List[UserField]) -> Tuple[Any, Any]
 
 async def get_user_create_model(
     registration_user_fields: List[UserField] = Depends(get_registration_user_fields),
-) -> Type[UC]:
+) -> Type[UserCreate[UF]]:
     fields, validators = _get_pydantic_specification(registration_user_fields)
-    return create_model(
-        "UserCreate",
+    user_fields_model = create_model(
+        "UserFields",
         **fields,
         __validators__=validators,
-        __base__=UserCreate,  # type: ignore
+        __base__=UserFields,  # type: ignore
     )
+    return UserCreate[user_fields_model]  # type: ignore
 
 
 async def get_user_create_internal_model(
     registration_user_fields: List[UserField] = Depends(get_registration_user_fields),
-) -> Type[UCI]:
+) -> Type[UserCreateInternal[UF]]:
     fields, validators = _get_pydantic_specification(registration_user_fields)
-    return create_model(
-        "UserCreateInternal",
+    user_fields_model = create_model(
+        "UserFields",
         **fields,
         __validators__=validators,
-        __base__=UserCreateInternal,  # type: ignore
+        __base__=UserFields,  # type: ignore
     )
+    return UserCreateInternal[user_fields_model]  # type: ignore

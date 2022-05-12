@@ -16,7 +16,7 @@ from fief.dependencies.users import UserManager, get_user_manager
 from fief.exceptions import RegisterException
 from fief.models import Tenant
 from fief.schemas.register import RegisterError
-from fief.schemas.user import UC, UCI
+from fief.schemas.user import UF, UserCreate, UserCreateInternal
 from fief.services.authentication_flow import AuthenticationFlow
 
 router = APIRouter(dependencies=[Depends(check_csrf), Depends(get_translations)])
@@ -43,8 +43,10 @@ async def get_register(
 )
 async def post_register(
     request: Request,
-    user: UC = Depends(get_user_create),
-    user_create_internal_model: Type[UCI] = Depends(get_user_create_internal_model),
+    user: UserCreate[UF] = Depends(get_user_create),
+    user_create_internal_model: Type[UserCreateInternal[UF]] = Depends(
+        get_user_create_internal_model
+    ),
     user_manager: UserManager = Depends(get_user_manager),
     register_context: Dict[str, Any] = Depends(get_register_context),
     tenant: Tenant = Depends(get_current_tenant),

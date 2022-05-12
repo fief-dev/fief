@@ -1,4 +1,4 @@
-from typing import Any, Tuple
+from typing import TYPE_CHECKING, Any, Tuple
 
 from pydantic import UUID4
 from sqlalchemy import JSON, Boolean, Column, Date, ForeignKey, Integer, Text
@@ -9,6 +9,11 @@ from fief.models.base import WorkspaceBase
 from fief.models.generics import GUID, CreatedUpdatedAt, TIMESTAMPAware, UUIDModel
 from fief.models.user import User
 from fief.models.user_field import UserField, UserFieldType
+
+if TYPE_CHECKING:
+    hybrid_property = property
+else:
+    from sqlalchemy.ext.hybrid import hybrid_property
 
 
 class UserFieldValue(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
@@ -30,26 +35,30 @@ class UserFieldValue(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
         "UserField", back_populates="user_field_values", lazy="selectin"
     )
 
-    def get_value(self) -> Any:
+    def _get_field_value(self) -> str:
         user_field_type = self.user_field.type
-        if user_field_type in [
-            UserFieldType.STRING,
-            UserFieldType.CHOICE,
-            UserFieldType.PHONE_NUMBER,
-            UserFieldType.LOCALE,
-            UserFieldType.TIMEZONE,
-        ]:
-            return self.value_string
-        elif user_field_type in [UserFieldType.INTEGER]:
-            return self.value_integer
+        if user_field_type in [UserFieldType.INTEGER]:
+            return "value_integer"
         elif user_field_type in [UserFieldType.BOOLEAN]:
-            return self.value_boolean
+            return "value_boolean"
         elif user_field_type in [UserFieldType.DATE]:
-            return self.value_date
+            return "value_date"
         elif user_field_type in [UserFieldType.DATETIME]:
-            return self.value_datetime
+            return "value_datetime"
         elif user_field_type in [UserFieldType.ADDRESS]:
-            return self.value_json
+            return "value_json"
+        else:
+            return "value_string"
+
+    @hybrid_property
+    def value(self) -> Any:
+        field_value = self._get_field_value()
+        return getattr(self, field_value)
+
+    @value.setter
+    def value(self, value: Any):
+        field_value = self._get_field_value()
+        setattr(self, field_value, value)
 
     def get_slug_and_value(self) -> Tuple[str, Any]:
-        return self.user_field.slug, self.get_value()
+        return self.user_field.slug, self.value

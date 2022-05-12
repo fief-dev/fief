@@ -24,12 +24,15 @@
         {% endif %}
       </div>
       {% for field in registration_user_fields %}
+        {% set fields_data = form_data.get("fields") if form_data is defined else None %}
+        {% set fields_errors = form_errors.get("fields") if form_errors is defined else None %}
         <div>
           {{
             form_inputs.user_field_input(
               field,
-              form_data.get(field.slug) if form_data is defined else None,
-              form_errors.get(field.slug) if form_errors is defined else None,
+              "fields",
+              fields_data.get(field.slug) if fields_data else None,
+              fields_errors.get(field.slug) if fields_errors else None,
             )
           }}
         </div>

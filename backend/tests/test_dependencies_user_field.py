@@ -32,11 +32,13 @@ class TestGetUserCreateModel:
         user_create = model(
             email="anne@bretagne.duchy",
             password="hermine",
-            first_name="Anne",
+            fields={
+                "first_name": "Anne",
+            },
         )
 
         assert isinstance(user_create, model)
-        assert user_create.first_name == "Anne"
+        assert user_create.fields.first_name == "Anne"
 
     async def test_missing_required_field(self):
         user_fields: List[UserField] = [
@@ -56,11 +58,14 @@ class TestGetUserCreateModel:
         model = await get_user_create_model(user_fields)
 
         with pytest.raises(ValidationError) as e:
-            model(email="anne@bretagne.duchy", password="hermine")
+            model(email="anne@bretagne.duchy", password="hermine", fields={})
 
         errors = e.value.errors()
         assert len(errors) == 1
-        assert errors[0]["loc"] == ("first_name",)
+        assert errors[0]["loc"] == (
+            "fields",
+            "first_name",
+        )
 
     async def test_invalid_empty_string(self):
         user_fields: List[UserField] = [
@@ -80,11 +85,18 @@ class TestGetUserCreateModel:
         model = await get_user_create_model(user_fields)
 
         with pytest.raises(ValidationError) as e:
-            model(email="anne@bretagne.duchy", password="hermine", first_name="")
+            model(
+                email="anne@bretagne.duchy",
+                password="hermine",
+                fields={"first_name": ""},
+            )
 
         errors = e.value.errors()
         assert len(errors) == 1
-        assert errors[0]["loc"] == ("first_name",)
+        assert errors[0]["loc"] == (
+            "fields",
+            "first_name",
+        )
 
     async def test_missing_boolean_field(self):
         user_fields: List[UserField] = [
@@ -103,9 +115,9 @@ class TestGetUserCreateModel:
         ]
         model = await get_user_create_model(user_fields)
 
-        user_create = model(email="anne@bretagne.duchy", password="hermine")
+        user_create = model(email="anne@bretagne.duchy", password="hermine", fields={})
 
-        assert user_create.newsletter is False
+        assert user_create.fields.newsletter is False
 
     async def test_provided_boolean_field(self):
         user_fields: List[UserField] = [
@@ -125,10 +137,10 @@ class TestGetUserCreateModel:
         model = await get_user_create_model(user_fields)
 
         user_create = model(
-            email="anne@bretagne.duchy", password="hermine", newsletter="on"
+            email="anne@bretagne.duchy", password="hermine", fields={"newsletter": "on"}
         )
 
-        assert user_create.newsletter is True
+        assert user_create.fields.newsletter is True
 
     @pytest.mark.parametrize("value", [None, "off"])
     async def test_required_boolean_field_false(self, value: Optional[str]):
@@ -149,17 +161,17 @@ class TestGetUserCreateModel:
         model = await get_user_create_model(user_fields)
 
         with pytest.raises(ValidationError) as e:
-            values = {
-                "email": "anne@bretagne.duchy",
-                "password": "hermine",
-            }
+            fields = {}
             if value is not None:
-                values["consent"] = value
-            model(**values)
+                fields["consent"] = value
+            model(email="anne@bretagne.duchy", password="hermine", fields=fields)
 
         errors = e.value.errors()
         assert len(errors) == 1
-        assert errors[0]["loc"] == ("consent",)
+        assert errors[0]["loc"] == (
+            "fields",
+            "consent",
+        )
         assert errors[0]["type"] == "value_error.boolean.must_be_true"
 
     async def test_required_boolean_field_true(self):
@@ -180,7 +192,7 @@ class TestGetUserCreateModel:
         model = await get_user_create_model(user_fields)
 
         user_create = model(
-            email="anne@bretagne.duchy", password="hermine", consent="on"
+            email="anne@bretagne.duchy", password="hermine", fields={"consent": "on"}
         )
 
-        assert user_create.consent is True
+        assert user_create.fields.consent is True

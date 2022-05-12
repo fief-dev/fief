@@ -59,6 +59,7 @@ class TestCreateUser:
             json={
                 "email": "louis@bretagne.duchy",
                 "password": "hermine1",
+                "fields": {},
                 "tenant_id": str(not_existing_uuid),
             },
         )
@@ -78,6 +79,7 @@ class TestCreateUser:
             json={
                 "email": "anne@bretagne.duchy",
                 "password": "hermine1",
+                "fields": {},
                 "tenant_id": str(tenant.id),
             },
         )
@@ -97,6 +99,7 @@ class TestCreateUser:
             json={
                 "email": "louis@bretagne.duchy",
                 "password": "h",
+                "fields": {},
                 "tenant_id": str(tenant.id),
             },
         )
@@ -117,6 +120,7 @@ class TestCreateUser:
             json={
                 "email": "louis@bretagne.duchy",
                 "password": "hermine1",
+                "fields": {},
                 "tenant_id": str(tenant.id),
             },
         )

@@ -105,12 +105,13 @@
   {% endif %}
 {%- endmacro %}
 
-{% macro user_field_input(field, value = None, error = None) -%}
+{% macro user_field_input(field, prefix = 'fields', value = None, error = None) -%}
+  {% set slug = prefix ~ "." ~ field.slug %}
   {% if field.type in ["INTEGER"] %}
     {{
       integer_input(
         field.name,
-        field.slug,
+        slug,
         field.configuration.required,
         value,
         error,
@@ -120,7 +121,7 @@
     {{
       datetime_input(
         field.name,
-        field.slug,
+        slug,
         field.configuration.required,
         field.type == "DATETIME",
         value,
@@ -131,7 +132,7 @@
     {{
       boolean_input(
         field.name,
-        field.slug,
+        slug,
         field.configuration.required,
         value,
         error,
@@ -141,7 +142,7 @@
     {{
       phone_input(
         field.name,
-        field.slug,
+        slug,
         field.configuration.required,
         value,
         error,
@@ -151,7 +152,7 @@
     {{
       address_input(
         field.name,
-        field.slug,
+        slug,
         field.configuration.required,
         value,
         error,
@@ -161,7 +162,7 @@
     {{
       timezone_input(
         field.name,
-        field.slug,
+        slug,
         field.configuration.required,
         value,
         error,
@@ -171,7 +172,7 @@
     {{
       string_input(
         field.name,
-        field.slug,
+        slug,
         field.configuration.required,
         value,
         error,
