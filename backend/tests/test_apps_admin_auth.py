@@ -18,16 +18,14 @@ class TestAuthLogin:
     async def test_success(
         self, test_client_admin: httpx.AsyncClient, fief_client_mock: MagicMock
     ):
-        fief_client_mock.auth_url.side_effect = AsyncMock(
-            return_value="http://localhost/authorize"
-        )
+        fief_client_mock.auth_url.side_effect = AsyncMock(return_value="/authorize")
 
         response = await test_client_admin.get("/auth/login")
 
         assert response.status_code == status.HTTP_302_FOUND
 
         location = response.headers["Location"]
-        assert location == "http://localhost/authorize"
+        assert location == "/authorize"
 
         fief_client_mock.auth_url.assert_called_once_with(
             redirect_uri="http://api.fief.dev/auth/callback",
@@ -108,10 +106,7 @@ class TestAuthLogout:
         assert response.status_code == status.HTTP_302_FOUND
 
         location = response.headers["Location"]
-        assert (
-            location
-            == "https://bretagne.fief.dev/logout?redirect_uri=http://api.fief.dev/admin/"
-        )
+        assert location == "/logout?redirect_uri=http://api.fief.dev/admin/"
 
         assert "Set-Cookie" in response.headers
 

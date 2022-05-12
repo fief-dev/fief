@@ -172,7 +172,6 @@ def quickstart(
         "PORT": port,
         "ROOT_DOMAIN": f"{host}:{port}",
         "FIEF_DOMAIN": f"{host}:{port}",
-        "FIEF_BASE_URL": f"http{'s' if ssl else ''}://{host}:{port}",
     }
     if not ssl:
         environment_variables.update(
