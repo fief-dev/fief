@@ -1,4 +1,4 @@
-from typing import Dict, Optional, Type, Union, cast
+from typing import Dict, List, Optional, Type, Union, cast
 
 from fastapi import Depends, Request
 from fastapi.security import OAuth2AuthorizationCodeBearer
@@ -46,8 +46,8 @@ from fief.dependencies.tenant import (
 from fief.dependencies.workspace_managers import get_user_manager as get_user_db_manager
 from fief.locale import Translations
 from fief.managers import UserManager as UserDBManager
-from fief.models import Tenant, User, Workspace
-from fief.schemas.user import UserCreate
+from fief.models import Tenant, User, UserField, UserFieldValue, Workspace
+from fief.schemas.user import UF, UserCreate
 from fief.settings import settings
 from fief.tasks import SendTask, on_after_forgot_password, on_after_register
 
@@ -80,6 +80,28 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, UUID4]):
                     "The password should be at least 8 characters."
                 )
             )
+
+    async def create_with_fields(
+        self,
+        user_create: UserCreate[UF],
+        *,
+        registration_user_fields: List[UserField],
+        safe: bool = False,
+        request: Optional[Request] = None,
+    ) -> User:
+        user = await self.create(user_create, safe, request)
+
+        for registration_user_field in registration_user_fields:
+            try:
+                user_field_value = UserFieldValue(user_field=registration_user_field)
+                user_field_value.value = getattr(
+                    user_create.fields, registration_user_field.slug
+                )
+                user.user_field_values.append(user_field_value)
+            except AttributeError:
+                pass
+
+        return await self.user_db.update(user, {})
 
     async def on_after_register(self, user: User, request: Optional[Request] = None):
         self.send_task(on_after_register, str(user.id), str(self.workspace.id))

@@ -72,7 +72,7 @@ class RegisterException(Exception):
         self,
         error: RegisterError,
         context: Dict[str, Any],
-        form_data: Optional[FormData] = None,
+        form_data: Optional[Dict[str, Any]] = None,
         *,
         fatal: bool = False,
     ) -> None:

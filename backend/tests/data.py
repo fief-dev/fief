@@ -102,8 +102,9 @@ user_fields: ModelMapping[UserField] = {
         slug="given_name",
         type=UserFieldType.STRING,
         configuration={
-            "multiple": False,
-            "at_registration": False,
+            "choices": None,
+            "default": None,
+            "at_registration": True,
             "required": False,
             "editable": True,
         },
@@ -114,7 +115,7 @@ user_fields: ModelMapping[UserField] = {
         type=UserFieldType.CHOICE,
         configuration={
             "choices": ["male", "female", "non_binary"],
-            "multiple": False,
+            "default": None,
             "at_registration": False,
             "required": False,
             "editable": True,
@@ -125,7 +126,8 @@ user_fields: ModelMapping[UserField] = {
         slug="phone_number",
         type=UserFieldType.PHONE_NUMBER,
         configuration={
-            "multiple": False,
+            "choices": None,
+            "default": None,
             "at_registration": False,
             "required": False,
             "editable": True,
@@ -136,7 +138,8 @@ user_fields: ModelMapping[UserField] = {
         slug="phone_number_verified",
         type=UserFieldType.BOOLEAN,
         configuration={
-            "multiple": False,
+            "choices": None,
+            "default": None,
             "at_registration": False,
             "required": False,
             "editable": False,
