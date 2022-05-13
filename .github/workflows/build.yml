@@ -135,6 +135,7 @@ jobs:
       - name: Create release
         uses: ncipollo/release-action@v1
         with:
+          body: ${{ github.event.head_commit.message }}
           artifacts: backend/dist/*.whl,backend/dist/*.tar.gz
           token: ${{ secrets.GITHUB_TOKEN }}
 
