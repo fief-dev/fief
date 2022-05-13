@@ -1,9 +1,30 @@
-from typing import Any, List, Optional
+from datetime import date, datetime
+from typing import Any, List, Mapping, Optional, Type
 
-from pydantic import BaseModel
+from pydantic import BaseModel, constr
 
 from fief.models import UserFieldType
-from fief.schemas.generics import CreatedUpdatedAt, UUIDSchema
+from fief.schemas.generics import (
+    Address,
+    CreatedUpdatedAt,
+    Locale,
+    PhoneNumber,
+    Timezone,
+    UUIDSchema,
+)
+
+USER_FIELD_TYPE_MAP: Mapping[UserFieldType, Type[Any]] = {
+    UserFieldType.STRING: constr(min_length=1),
+    UserFieldType.INTEGER: int,
+    UserFieldType.BOOLEAN: bool,
+    UserFieldType.DATE: date,
+    UserFieldType.DATETIME: datetime,
+    UserFieldType.CHOICE: str,
+    UserFieldType.PHONE_NUMBER: PhoneNumber,
+    UserFieldType.ADDRESS: Address,
+    UserFieldType.LOCALE: Locale,
+    UserFieldType.TIMEZONE: Timezone,
+}
 
 
 class UserFieldConfiguration(BaseModel):
