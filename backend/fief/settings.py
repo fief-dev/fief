@@ -73,7 +73,7 @@ class Settings(BaseSettings):
     access_id_token_lifetime_seconds: int = 3600
     refresh_token_lifetime_seconds: int = 3600 * 24 * 30
 
-    fief_domain: str = "fief.localhost:8000"
+    fief_domain: str = "localhost:8000"
     fief_client_id: str
     fief_client_secret: str
     fief_encryption_key: Optional[str] = None

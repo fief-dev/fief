@@ -72,7 +72,7 @@ async def logout(
     await manager.delete(session_token)
 
     response = RedirectResponse(
-        url=f"/logout?redirect_uri={request.base_url}admin/",
+        url=f"//{settings.fief_domain}/logout?redirect_uri={request.base_url}admin/",
         status_code=status.HTTP_302_FOUND,
     )
     response.delete_cookie(

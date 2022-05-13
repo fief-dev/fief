@@ -17,9 +17,14 @@ class FiefAsyncRelativeEndpoints(FiefAsync):
 
         For the Fief-ception, we always need to call them from localhost,
         so we just get rid of the scheme and host part.
+
+        The only exception is `authorization_endpoint`:
+        in this case, we want it to be absolute because it's returned to the
+        user and loaded by its browser on the outside.
         """
+        netloc = settings.fief_domain if field == "authorization_endpoint" else ""
         url = super()._get_endpoint_url(openid_configuration, field)
-        return urlunsplit(("", "", *urlsplit(url)[2:]))
+        return urlunsplit(("", netloc, *urlsplit(url)[2:]))
 
 
 fief = FiefAsyncRelativeEndpoints(
