@@ -1,7 +1,4 @@
 <p align="center">
-<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors-)
-<!-- ALL-CONTRIBUTORS-BADGE:END -->
   <img src="https://raw.githubusercontent.com/fief-dev/.github/main/logos/logo-full-red.svg?sanitize=true" alt="Fief" width="256">
 </p>
 
@@ -16,15 +13,13 @@
 
 ## Contributing
 
+<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+[![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors-)
+<!-- ALL-CONTRIBUTORS-BADGE:END -->
+
 All contributions to improve the project are welcome! In particular, bug and documentation fixes are really appreciated.
 
 For new features and larger improvements, we kindly ask you to [**open a discussion first**](https://github.com/fief-dev/fief/discussions/new?category=ideas) about your idea, what motivates it and how you plan to implement it **before you start working**. It'll avoid frustration on both sides if we decide not to integrate your code in the project.
-
-## License
-
-Fief is [fair-code](http://faircode.io) distributed under [**MIT with Commons Clause**](https://github.com/fief-dev/fief/blob/main/LICENSE) license.
-
-## Contributors ✨
 
 Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
 
@@ -42,4 +37,6 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
-This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
+## License
+
+Fief is [fair-code](http://faircode.io) distributed under [**MIT with Commons Clause**](https://github.com/fief-dev/fief/blob/main/LICENSE) license.
