@@ -9,7 +9,6 @@ import asgi_lifespan
 import httpx
 import pytest
 from fastapi import FastAPI
-from fief_client import Fief
 from sqlalchemy import engine
 from sqlalchemy_utils import create_database, drop_database
 
@@ -23,7 +22,7 @@ from fief.db.main import get_main_async_session
 from fief.db.types import DatabaseType, get_driver
 from fief.db.workspace import get_connection
 from fief.dependencies.current_workspace import get_current_workspace_session
-from fief.dependencies.fief import get_fief
+from fief.dependencies.fief import FiefAsyncRelativeEndpoints, get_fief
 from fief.dependencies.tasks import get_send_task
 from fief.dependencies.workspace_creation import get_workspace_creation
 from fief.dependencies.workspace_db import get_workspace_db
@@ -220,7 +219,7 @@ async def workspace_creation_mock() -> MagicMock:
 
 @pytest.fixture
 async def fief_client_mock() -> MagicMock:
-    return MagicMock(spec=Fief)
+    return MagicMock(spec=FiefAsyncRelativeEndpoints)
 
 
 @pytest.fixture

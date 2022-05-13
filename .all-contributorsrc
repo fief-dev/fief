@@ -1,0 +1,35 @@
+{
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "contributors": [
+    {
+      "login": "shrike71",
+      "name": "shrike71",
+      "avatar_url": "https://avatars.githubusercontent.com/u/748514?v=4",
+      "profile": "https://github.com/shrike71",
+      "contributions": [
+        "bug",
+        "ideas"
+      ]
+    },
+    {
+      "login": "trisongz",
+      "name": "trisongz",
+      "avatar_url": "https://avatars.githubusercontent.com/u/4735784?v=4",
+      "profile": "https://growthengineai.com",
+      "contributions": [
+        "example",
+        "ideas"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "projectName": "fief",
+  "projectOwner": "fief-dev",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "skipCi": true
+}

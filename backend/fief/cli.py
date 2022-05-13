@@ -172,7 +172,6 @@ def quickstart(
         "PORT": port,
         "ROOT_DOMAIN": f"{host}:{port}",
         "FIEF_DOMAIN": f"{host}:{port}",
-        "FIEF_BASE_URL": f"http{'s' if ssl else ''}://{host}:{port}",
     }
     if not ssl:
         environment_variables.update(
@@ -189,7 +188,6 @@ def quickstart(
             "docker run",
             "--name fief-server",
             f"-p {port}:{port}",
-            f"--add-host {host}:127.0.0.1",
             "-d",
             *[
                 f'-e "{name}={value}"'

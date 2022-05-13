@@ -109,7 +109,7 @@ class TestAuthLogout:
         location = response.headers["Location"]
         assert (
             location
-            == "https://bretagne.fief.dev/logout?redirect_uri=http://api.fief.dev/admin/"
+            == f"//{settings.fief_domain}/logout?redirect_uri=http://api.fief.dev/admin/"
         )
 
         assert "Set-Cookie" in response.headers

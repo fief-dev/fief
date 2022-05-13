@@ -2,11 +2,10 @@ import json
 
 from fastapi import APIRouter, Depends, Query, Request, status
 from fastapi.responses import RedirectResponse
-from fief_client import FiefAsync
 
 from fief.crypto.token import generate_token
 from fief.dependencies.admin_session import get_admin_session_token, get_userinfo
-from fief.dependencies.fief import get_fief
+from fief.dependencies.fief import FiefAsyncRelativeEndpoints, get_fief
 from fief.dependencies.main_managers import get_admin_session_token_manager
 from fief.managers import AdminSessionTokenManager
 from fief.models import AdminSessionToken
@@ -17,7 +16,9 @@ router = APIRouter()
 
 @router.get("/login", name="admin.auth:login")
 async def login(
-    request: Request, screen: str = Query("login"), fief: FiefAsync = Depends(get_fief)
+    request: Request,
+    screen: str = Query("login"),
+    fief: FiefAsyncRelativeEndpoints = Depends(get_fief),
 ):
     url = await fief.auth_url(
         redirect_uri=request.url_for("admin.auth:callback"),
@@ -31,7 +32,7 @@ async def login(
 async def callback(
     request: Request,
     code: str = Query(...),
-    fief: FiefAsync = Depends(get_fief),
+    fief: FiefAsyncRelativeEndpoints = Depends(get_fief),
     manager: AdminSessionTokenManager = Depends(get_admin_session_token_manager),
 ):
     tokens, userinfo = await fief.auth_callback(
@@ -67,12 +68,11 @@ async def logout(
     request: Request,
     session_token: AdminSessionToken = Depends(get_admin_session_token),
     manager: AdminSessionTokenManager = Depends(get_admin_session_token_manager),
-    fief: FiefAsync = Depends(get_fief),
 ):
     await manager.delete(session_token)
 
     response = RedirectResponse(
-        url=f"{fief.base_url}/logout?redirect_uri={request.base_url}admin/",
+        url=f"//{settings.fief_domain}/logout?redirect_uri={request.base_url}admin/",
         status_code=status.HTTP_302_FOUND,
     )
     response.delete_cookie(
