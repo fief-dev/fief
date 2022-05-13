@@ -40,6 +40,8 @@ class Settings(BaseSettings):
     secret: SecretStr
     encryption_key: bytes
 
+    generated_jwk_size: int = 4096
+
     database_type: DatabaseType = DatabaseType.SQLITE
     database_url: Optional[str] = None
     database_host: Optional[str] = None
