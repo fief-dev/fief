@@ -1,21 +1,37 @@
+{% macro form_input_label(name, id, required = False) -%}
+  <label class="block text-sm font-medium mb-1" for="{{ id }}">
+    {{ name }}
+    {% if required %}
+      <span class="text-rose-500">*</span>
+    {% endif %}
+  </label>
+
+{%- endmacro %}
+
 {% macro string_input(name, slug, required, value = None, error = None) -%}
-  <label class="block text-sm font-medium mb-1" for="input-{{ slug }}">{{ name }}</label>
-  <input id="input-{{ slug }}" class="form-input w-full" type="text" name="{{ slug }}" value="{{ value if value else '' }}" {{ 'required' if required else '' }} />
+  {% set id = "input-" ~ slug %}
+  {{ form_input_label(name, id, required) }}
+  <input id="{{ id }}" class="form-input w-full" type="text" name="{{ slug }}" value="{{ value if value else '' }}" {{ 'required' if required else '' }} />
   {% if error %}
     <div id="errors-{{ slug }}" class="text-xs mt-1 text-red-500">{{ error }}</div>
   {% endif %}
 {%- endmacro %}
 
 {% macro integer_input(name, slug, required, value = None, error = None) -%}
-  <label class="block text-sm font-medium mb-1" for="input-{{ slug }}">{{ name }}</label>
-  <input id="input-{{ slug }}" class="form-input w-full" type="number" name="{{ slug }}" value="{{ value if value else '' }}" {{ 'required' if required else '' }} />
+  {% set id = "input-" ~ slug %}
+  {{ form_input_label(name, id, required) }}
+  <input id="{{ id }}" class="form-input w-full" type="number" name="{{ slug }}" value="{{ value if value else '' }}" {{ 'required' if required else '' }} />
   {% if error %}
     <div id="errors-{{ slug }}" class="text-xs mt-1 text-red-500">{{ error }}</div>
   {% endif %}
 {%- endmacro %}
 
 {% macro boolean_input(name, slug, required, value = None, error = None) -%}
-  <label class="block text-sm font-medium mb-1" for="input-{{ slug }}">{{ name }}
+  <label class="block text-sm font-medium mb-1" for="input-{{ slug }}">
+    {{ name }}
+    {% if required %}
+      <span class="text-rose-500">*</span>
+    {% endif %}
     <input id="input-{{ slug }}" class="form-checkbox" type="checkbox" name="{{ slug }}" {{ 'checked' if value else '' }} {{ 'required' if required else '' }} />
   </label>
   {% if error %}
@@ -24,16 +40,18 @@
 {%- endmacro %}
 
 {% macro datetime_input(name, slug, required, time, value = None, error = None) -%}
-  <label class="block text-sm font-medium mb-1" for="input-{{ slug }}">{{ name }}</label>
-  <input id="input-{{ slug }}" class="form-input w-full" type="{{ 'datetime-local' if time else 'date' }}" name="{{ slug }}" value="{{ value if value else '' }}" {{ 'required' if required else '' }} />
+  {% set id = "input-" ~ slug %}
+  {{ form_input_label(name, id, required) }}
+  <input id="{{ id }}" class="form-input w-full" type="{{ 'datetime-local' if time else 'date' }}" name="{{ slug }}" value="{{ value if value else '' }}" {{ 'required' if required else '' }} />
   {% if error %}
     <div id="errors-{{ slug }}" class="text-xs mt-1 text-red-500">{{ error }}</div>
   {% endif %}
 {%- endmacro %}
 
 {% macro phone_input(name, slug, required, value = None, error = None) -%}
-  <label class="block text-sm font-medium mb-1" for="input-{{ slug }}">{{ name }}</label>
-  <input id="input-{{ slug }}" class="form-input w-full" type="tel" placeholder="+42102030405" name="{{ slug }}" value="{{ value if value else '' }}" {{ 'required' if required else '' }} />
+  {% set id = "input-" ~ slug %}
+  {{ form_input_label(name, id, required) }}
+  <input id="{{ id }}" class="form-input w-full" type="tel" placeholder="+42102030405" name="{{ slug }}" value="{{ value if value else '' }}" {{ 'required' if required else '' }} />
   {% if error %}
     <div id="errors-{{ slug }}" class="text-xs mt-1 text-red-500">{{ error }}</div>
   {% endif %}
@@ -41,16 +59,17 @@
 
 {% macro address_input(name, slug, required, value = None, error = None) -%}
   <div class="space-y-2">
-    <label class="block text-sm font-medium mb-1" for="input-{{ slug }}">{{ name }}</label>
+    {% set id = "input-" ~ slug %}
+    {{ form_input_label(name, id, required) }}
     <div>
-      <label class="block text-sm font-medium mb-1" for="input-{{ slug }}-line1">{{ _('Address line 1') }}</label>
+      {{ form_input_label( _('Address line 1'), id ~ "-line1", required) }}
       <input id="input-{{ slug }}-line1" class="form-input w-full" type="text" name="{{ slug }}.line1" value="{{ value.line1 if value else '' }}" {{ 'required' if required else '' }} />
       {% if error and error.get("line1") %}
       <div id="errors-{{ slug }}-line1" class="text-xs mt-1 text-red-500">{{ error.get("line1") }}</div>
       {% endif %}
     </div>
     <div>
-      <label class="block text-sm font-medium mb-1" for="input-{{ slug }}-line2">{{ _('Address line 2') }}</label>
+      {{ form_input_label( _('Address line 2'), id ~ "-line2", False) }}
       <input id="input-{{ slug }}-line2" class="form-input w-full" type="text" name="{{ slug }}.line2" value="{{ value.line2 if value else '' }}" />
       {% if error and error.get("line2") %}
       <div id="errors-{{ slug }}-line2" class="text-xs mt-1 text-red-500">{{ error.get("line2") }}</div>
@@ -58,14 +77,14 @@
     </div>
     <div class="grid grid-cols-2 gap-2">
       <div>
-        <label class="block text-sm font-medium mb-1" for="input-{{ slug }}-postal_code">{{ _('Postal code') }}</label>
+        {{ form_input_label( _('Postal code'), id ~ "-postal_code", required) }}
         <input id="input-{{ slug }}-postal_code" class="form-input w-full" type="text" name="{{ slug }}.postal_code" value="{{ value.postal_code if value else '' }}" {{ 'required' if required else '' }} />
         {% if error and error.get("postal_code") %}
         <div id="errors-{{ slug }}-postal_code" class="text-xs mt-1 text-red-500">{{ error.get("postal_code") }}</div>
         {% endif %}
       </div>
       <div>
-        <label class="block text-sm font-medium mb-1" for="input-{{ slug }}-city">{{ _('City') }}</label>
+        {{ form_input_label( _('City'), id ~ "-city", required) }}
         <input id="input-{{ slug }}-city" class="form-input w-full" type="text" name="{{ slug }}.city" value="{{ value.city if value else '' }}" {{ 'required' if required else '' }} />
         {% if error and error.get("city") %}
         <div id="errors-{{ slug }}-city" class="text-xs mt-1 text-red-500">{{ error.get("city") }}</div>
@@ -73,14 +92,14 @@
       </div>
     </div>
     <div>
-      <label class="block text-sm font-medium mb-1" for="input-{{ slug }}-state">{{ _('State') }}</label>
+      {{ form_input_label( _('State'), id ~ "-state", False) }}
       <input id="input-{{ slug }}-state" class="form-input w-full" type="text" name="{{ slug }}.state" value="{{ value.state if value else '' }}" />
       {% if error and error.get("state") %}
       <div id="errors-{{ slug }}-state" class="text-xs mt-1 text-red-500">{{ error.get("state") }}</div>
       {% endif %}
     </div>
     <div>
-      <label class="block text-sm font-medium mb-1" for="input-{{ slug }}-country">{{ _('Country') }}</label>
+      {{ form_input_label( _('Country'), id ~ "-country", required) }}
       <select id="input-{{ slug }}-country" class="form-select w-full" type="text" name="{{ slug }}.country" {{ 'required' if required else '' }} >
         {% for country in countries %}
           <option value="{{ country.alpha_2 }}" {{ 'selected' if value and value.country == country.alpha_2 else '' }}>{{ country.name }}</option>
@@ -94,7 +113,8 @@
 {%- endmacro %}
 
 {% macro timezone_input(name, slug, required, value = None, error = None) -%}
-  <label class="block text-sm font-medium mb-1" for="input-{{ slug }}">{{ name }}</label>
+  {% set id = "input-" ~ slug %}
+  {{ form_input_label(name, id, required) }}
   <select id="input-{{ slug }}" class="form-select w-full" type="text" name="{{ slug }}" {{ 'required' if required else '' }} >
     {% for timezone in timezones %}
       <option value="{{ timezone }}" {{ 'selected' if value == timezone else '' }}>{{ timezone }}</option>
