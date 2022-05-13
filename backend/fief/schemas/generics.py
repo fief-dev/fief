@@ -4,11 +4,8 @@ from typing import Any, Dict, Generic, List, Optional, TypeVar
 import phonenumbers
 import pycountry
 import pytz
-from babel import Locale as BabelLocale
-from babel.core import UnknownLocaleError
 from pydantic import UUID4, BaseModel, Field, PydanticValueError
 from pydantic.generics import GenericModel
-from pytz import common_timezones
 
 PM = TypeVar("PM", bound=BaseModel)
 
@@ -107,30 +104,6 @@ class Address(BaseModel):
     city: str = Field(..., min_length=1)
     state: Optional[str] = Field(None, min_length=1)
     country: CountryCode
-
-
-class LocaleError(PydanticValueError):
-    code = "locale.invalid"
-    msg_template = "value is not a valid locale"
-
-
-class Locale(str):
-    @classmethod
-    def __modify_schema__(cls, field_schema: Dict[str, Any]) -> None:
-        field_schema.update(type="string")
-
-    @classmethod
-    def __get_validators__(cls):
-        yield cls.validate
-
-    @classmethod
-    def validate(cls, value: str) -> str:
-        try:
-            locale = BabelLocale.parse(value)
-        except (UnknownLocaleError, ValueError) as e:
-            raise LocaleError() from e
-        else:
-            return str(locale)
 
 
 class TimezoneError(PydanticValueError):

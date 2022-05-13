@@ -47,7 +47,6 @@ def upgrade():
                 "CHOICE",
                 "PHONE_NUMBER",
                 "ADDRESS",
-                "LOCALE",
                 "TIMEZONE",
                 name="userfieldtype",
             ),

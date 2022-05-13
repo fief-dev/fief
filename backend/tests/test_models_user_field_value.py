@@ -14,7 +14,6 @@ from fief.models import UserField, UserFieldType, UserFieldValue
         pytest.param(
             UserFieldType.PHONE_NUMBER, "VALUE", "value_string", id="PHONE_NUMBER"
         ),
-        pytest.param(UserFieldType.LOCALE, "VALUE", "value_string", id="LOCALE"),
         pytest.param(UserFieldType.TIMEZONE, "VALUE", "value_string", id="TIMEZONE"),
         pytest.param(UserFieldType.INTEGER, 123, "value_integer", id="INTEGER"),
         pytest.param(UserFieldType.BOOLEAN, True, "value_boolean", id="BOOLEAN"),
@@ -52,7 +51,6 @@ def test_value_getter(user_field_type: UserFieldType, value: Any, field: str):
         pytest.param(
             UserFieldType.PHONE_NUMBER, "VALUE", "value_string", id="PHONE_NUMBER"
         ),
-        pytest.param(UserFieldType.LOCALE, "VALUE", "value_string", id="LOCALE"),
         pytest.param(UserFieldType.TIMEZONE, "VALUE", "value_string", id="TIMEZONE"),
         pytest.param(UserFieldType.INTEGER, 123, "value_integer", id="INTEGER"),
         pytest.param(UserFieldType.BOOLEAN, True, "value_boolean", id="BOOLEAN"),

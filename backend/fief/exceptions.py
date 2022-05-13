@@ -27,7 +27,6 @@ PYDANTIC_ERROR_MESSAGES = {
     "value_error.phone_number.invalid": _("This phone number is invalid."),
     "value_error.phone_number.missing_region": _("The country code is missing."),
     "value_error.country_code.invalid": _("This country code is invalid."),
-    "value_error.locale.invalid": _("This language is invalid."),
     "value_error.timezone.invalid": _("This timezone is invalid."),
     "value_error.boolean.must_be_true": _("This must be checked."),
     "type_error.bool": _("This value is invalid."),

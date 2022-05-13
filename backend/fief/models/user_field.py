@@ -22,7 +22,6 @@ class UserFieldType(str, Enum):
     CHOICE = "CHOICE"
     PHONE_NUMBER = "PHONE_NUMBER"
     ADDRESS = "ADDRESS"
-    LOCALE = "LOCALE"
     TIMEZONE = "TIMEZONE"
 
 

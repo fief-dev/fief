@@ -9,7 +9,6 @@ export enum UserFieldType {
     CHOICE = 'CHOICE',
     PHONE_NUMBER = 'PHONE_NUMBER',
     ADDRESS = 'ADDRESS',
-    LOCALE = 'LOCALE',
     TIMEZONE = 'TIMEZONE',
 }
 

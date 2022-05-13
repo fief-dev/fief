@@ -3,7 +3,7 @@ from typing import Any, Dict
 import pytest
 from pydantic import BaseModel, ValidationError
 
-from fief.schemas.generics import Address, Locale, PhoneNumber, Timezone
+from fief.schemas.generics import Address, PhoneNumber, Timezone
 
 
 class TestPhoneNumber:
@@ -85,34 +85,6 @@ class TestAddress:
         assert o.address.city == "Nantes"
         assert o.address.state is None
         assert o.address.country == "FR"
-
-
-class TestLocale:
-    class Model(BaseModel):
-        locale: Locale
-
-    @pytest.mark.parametrize("locale", ["abc", "aa_BB", "en-US"])
-    def test_invalid(self, locale: str):
-        with pytest.raises(ValidationError) as e:
-            TestLocale.Model(locale=locale)
-
-        errors = e.value.errors()
-        assert len(errors) == 1
-        assert errors[0]["loc"] == ("locale",)
-
-    @pytest.mark.parametrize(
-        "locale,formatted",
-        [
-            ("fr_FR", "fr_FR"),
-            ("fr", "fr"),
-            ("en_US", "en_US"),
-            ("FR_FR", "fr_FR"),
-        ],
-    )
-    def test_valid(self, locale: str, formatted: str):
-        o = TestLocale.Model(locale=locale)
-
-        assert o.locale == formatted
 
 
 class TestTimezone:

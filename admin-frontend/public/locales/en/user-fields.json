@@ -8,7 +8,6 @@
     "CHOICE": "Choice",
     "PHONE_NUMBER": "Phone number",
     "ADDRESS": "Address",
-    "LOCALE": "Locale",
     "TIMEZONE": "Timezone"
   },
   "base": {

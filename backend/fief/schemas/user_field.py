@@ -7,7 +7,6 @@ from fief.models import UserFieldType
 from fief.schemas.generics import (
     Address,
     CreatedUpdatedAt,
-    Locale,
     PhoneNumber,
     Timezone,
     UUIDSchema,
@@ -22,7 +21,6 @@ USER_FIELD_TYPE_MAP: Mapping[UserFieldType, Type[Any]] = {
     UserFieldType.CHOICE: str,
     UserFieldType.PHONE_NUMBER: PhoneNumber,
     UserFieldType.ADDRESS: Address,
-    UserFieldType.LOCALE: Locale,
     UserFieldType.TIMEZONE: Timezone,
 }
 
