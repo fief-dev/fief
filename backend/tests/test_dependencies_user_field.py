@@ -196,3 +196,56 @@ class TestGetUserCreateModel:
         )
 
         assert user_create.fields.consent is True
+
+    async def test_invalid_choice(self):
+        user_fields: List[UserField] = [
+            UserField(
+                name="Choice",
+                slug="choice",
+                type=UserFieldType.CHOICE,
+                configuration={
+                    "at_registration": True,
+                    "required": True,
+                    "editable": True,
+                    "default": None,
+                    "choices": [("a", "A"), ("b", "B"), ("c", "C")],
+                },
+            ),
+        ]
+        model = await get_user_create_model(user_fields)
+
+        with pytest.raises(ValidationError) as e:
+            model(
+                email="anne@bretagne.duchy", password="hermine", fields={"choice": "d"}
+            )
+
+        errors = e.value.errors()
+        assert len(errors) == 1
+        assert errors[0]["loc"] == (
+            "fields",
+            "choice",
+        )
+        assert errors[0]["type"] == "type_error.enum"
+
+    async def test_valid_choice(self):
+        user_fields: List[UserField] = [
+            UserField(
+                name="Choice",
+                slug="choice",
+                type=UserFieldType.CHOICE,
+                configuration={
+                    "at_registration": True,
+                    "required": True,
+                    "editable": True,
+                    "default": None,
+                    "choices": [("a", "A"), ("b", "B"), ("c", "C")],
+                },
+            ),
+        ]
+        model = await get_user_create_model(user_fields)
+
+        user_create = model(
+            email="anne@bretagne.duchy", password="hermine", fields={"choice": "a"}
+        )
+
+        assert user_create.fields.choice == "a"

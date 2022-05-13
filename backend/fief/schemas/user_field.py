@@ -1,8 +1,10 @@
 from datetime import date, datetime
-from typing import Any, List, Mapping, Optional, Type
+from enum import Enum
+from typing import Any, List, Mapping, Optional, Tuple, Type
 
 from pydantic import BaseModel, constr
 
+from fief.models import UserField as UserFieldModel
 from fief.models import UserFieldType
 from fief.schemas.generics import (
     Address,
@@ -25,8 +27,21 @@ USER_FIELD_TYPE_MAP: Mapping[UserFieldType, Type[Any]] = {
 }
 
 
+def get_user_field_pydantic_type(field: UserFieldModel) -> Type[Any]:
+    if field.type == UserFieldType.CHOICE:
+        choices = (
+            field.configuration["choices"] if field.configuration["choices"] else []
+        )
+        return Enum(  # type: ignore
+            f"{field.slug.capitalize()}Enum",
+            [(value, value) for (value, _) in choices],
+            type=str,
+        )
+    return USER_FIELD_TYPE_MAP[field.type]
+
+
 class UserFieldConfiguration(BaseModel):
-    choices: Optional[List[str]]
+    choices: Optional[List[Tuple[str, str]]]
     at_registration: bool
     required: bool
     editable: bool

@@ -1,4 +1,3 @@
-from collections import defaultdict
 from gettext import gettext as _
 from typing import Any, Dict, List, Optional, Union
 
@@ -31,11 +30,8 @@ PYDANTIC_ERROR_MESSAGES = {
     "value_error.boolean.must_be_true": _("This must be checked."),
     "type_error.bool": _("This value is invalid."),
     "type_error.integer": _("This value is invalid."),
+    "type_error.enum": _("This value is invalid."),
 }
-
-
-def _recursive_defaultdict_factory():
-    return defaultdict(_recursive_defaultdict_factory)
 
 
 class FormValidationError(ValidationError):
@@ -53,13 +49,11 @@ class FormValidationError(ValidationError):
         super().__init__(*args, **kwargs)
 
     def form_errors(self) -> Dict[Union[str, int], Any]:
-        form_errors: Dict[Union[str, int], Any] = defaultdict(
-            _recursive_defaultdict_factory
-        )
+        form_errors: Dict[Union[str, int], Any] = {}
         for error in self.errors():
             error_dict = form_errors
             for key in error["loc"][:-1]:
-                error_dict = error_dict[key]
+                error_dict = error_dict.setdefault(key, {})
             error_dict[error["loc"][-1]] = self.translations.gettext(
                 PYDANTIC_ERROR_MESSAGES[error["type"]]
             )

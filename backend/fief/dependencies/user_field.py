@@ -17,7 +17,7 @@ from fief.models import UserField
 from fief.models.user_field import UserFieldType
 from fief.schemas.generics import true_bool_validator
 from fief.schemas.user import UF, UserCreate, UserCreateInternal, UserFields
-from fief.schemas.user_field import USER_FIELD_TYPE_MAP
+from fief.schemas.user_field import get_user_field_pydantic_type
 
 
 async def get_paginated_user_fields(
@@ -51,7 +51,7 @@ def _get_pydantic_specification(user_fields: List[UserField]) -> Tuple[Any, Any]
     fields: Any = {}
     validators: Any = {}
     for field in user_fields:
-        field_type = USER_FIELD_TYPE_MAP[field.type]
+        field_type = get_user_field_pydantic_type(field)
         required = field.get_required()
         default = None
 

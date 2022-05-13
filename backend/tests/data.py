@@ -114,7 +114,7 @@ user_fields: ModelMapping[UserField] = {
         slug="gender",
         type=UserFieldType.CHOICE,
         configuration={
-            "choices": ["male", "female", "non_binary"],
+            "choices": [("M", "male"), ("F", "female"), ("N", "non_binary")],
             "default": None,
             "at_registration": False,
             "required": False,

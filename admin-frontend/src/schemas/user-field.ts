@@ -13,7 +13,7 @@ export enum UserFieldType {
 }
 
 export interface UserFieldConfiguration {
-  choices?: string[];
+  choices?: [string, string][];
   at_registration: boolean;
   required: boolean;
   editable: boolean;

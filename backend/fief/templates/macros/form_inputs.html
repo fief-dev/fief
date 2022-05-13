@@ -5,124 +5,116 @@
       <span class="text-rose-500">*</span>
     {% endif %}
   </label>
-
 {%- endmacro %}
 
-{% macro string_input(name, slug, required, value = None, error = None) -%}
-  {% set id = "input-" ~ slug %}
-  {{ form_input_label(name, id, required) }}
-  <input id="{{ id }}" class="form-input w-full" type="text" name="{{ slug }}" value="{{ value if value else '' }}" {{ 'required' if required else '' }} />
+{% macro form_input_error(name, error) -%}
   {% if error %}
-    <div id="errors-{{ slug }}" class="text-xs mt-1 text-red-500">{{ error }}</div>
+    <div id="errors-{{ name }}" class="text-xs mt-1 text-red-500">{{ error }}</div>
   {% endif %}
 {%- endmacro %}
 
-{% macro integer_input(name, slug, required, value = None, error = None) -%}
-  {% set id = "input-" ~ slug %}
-  {{ form_input_label(name, id, required) }}
-  <input id="{{ id }}" class="form-input w-full" type="number" name="{{ slug }}" value="{{ value if value else '' }}" {{ 'required' if required else '' }} />
-  {% if error %}
-    <div id="errors-{{ slug }}" class="text-xs mt-1 text-red-500">{{ error }}</div>
-  {% endif %}
+{% macro text_input(label, name, required, type = 'text', value = None, error = None) -%}
+  {% set id = "input-" ~ name %}
+  {{ form_input_label(label, id, required) }}
+  <input id="{{ id }}" class="form-input w-full" type="{{ type }}" name="{{ name }}" value="{{ value if value else '' }}" {{ 'required' if required else '' }} />
+  {{ form_input_error(name, error) }}
 {%- endmacro %}
 
-{% macro boolean_input(name, slug, required, value = None, error = None) -%}
-  <label class="block text-sm font-medium mb-1" for="input-{{ slug }}">
-    {{ name }}
+{% macro integer_input(label, name, required, value = None, error = None) -%}
+  {% set id = "input-" ~ name %}
+  {{ form_input_label(label, id, required) }}
+  <input id="{{ id }}" class="form-input w-full" type="number" name="{{ name }}" value="{{ value if value else '' }}" {{ 'required' if required else '' }} />
+  {{ form_input_error(name, error) }}
+{%- endmacro %}
+
+{% macro boolean_input(label, name, required, value = None, error = None) -%}
+  <label class="block text-sm font-medium mb-1" for="input-{{ name }}">
+    {{ label }}
     {% if required %}
       <span class="text-rose-500">*</span>
     {% endif %}
-    <input id="input-{{ slug }}" class="form-checkbox" type="checkbox" name="{{ slug }}" {{ 'checked' if value else '' }} {{ 'required' if required else '' }} />
+    <input id="input-{{ name }}" class="form-checkbox" type="checkbox" name="{{ name }}" {{ 'checked' if value else '' }} {{ 'required' if required else '' }} />
   </label>
-  {% if error %}
-    <div id="errors-{{ slug }}" class="text-xs mt-1 text-red-500">{{ error }}</div>
-  {% endif %}
+  {{ form_input_error(name, error) }}
 {%- endmacro %}
 
-{% macro datetime_input(name, slug, required, time, value = None, error = None) -%}
-  {% set id = "input-" ~ slug %}
-  {{ form_input_label(name, id, required) }}
-  <input id="{{ id }}" class="form-input w-full" type="{{ 'datetime-local' if time else 'date' }}" name="{{ slug }}" value="{{ value if value else '' }}" {{ 'required' if required else '' }} />
-  {% if error %}
-    <div id="errors-{{ slug }}" class="text-xs mt-1 text-red-500">{{ error }}</div>
-  {% endif %}
+{% macro choice_input(label, name, required, choices, value = None, error = None) -%}
+  {% set id = "input-" ~ name %}
+  {{ form_input_label(label, id, required) }}
+  <select id="{{ id }}" class="form-select w-full" type="text" name="{{ name }}" {{ 'required' if required else '' }} >
+    {% for (value, label) in choices %}
+      <option value="{{ value }}" {{ 'selected' if value == choice else '' }}>{{ label }}</option>
+      {% endfor %}
+  </select>
+  {{ form_input_error(name, error) }}
 {%- endmacro %}
 
-{% macro phone_input(name, slug, required, value = None, error = None) -%}
-  {% set id = "input-" ~ slug %}
-  {{ form_input_label(name, id, required) }}
-  <input id="{{ id }}" class="form-input w-full" type="tel" placeholder="+42102030405" name="{{ slug }}" value="{{ value if value else '' }}" {{ 'required' if required else '' }} />
-  {% if error %}
-    <div id="errors-{{ slug }}" class="text-xs mt-1 text-red-500">{{ error }}</div>
-  {% endif %}
+{% macro datetime_input(label, name, required, time, value = None, error = None) -%}
+  {% set id = "input-" ~ name %}
+  {{ form_input_label(label, id, required) }}
+  <input id="{{ id }}" class="form-input w-full" type="{{ 'datetime-local' if time else 'date' }}" name="{{ name }}" value="{{ value if value else '' }}" {{ 'required' if required else '' }} />
+  {{ form_input_error(name, error) }}
 {%- endmacro %}
 
-{% macro address_input(name, slug, required, value = None, error = None) -%}
+{% macro phone_input(label, name, required, value = None, error = None) -%}
+  {% set id = "input-" ~ name %}
+  {{ form_input_label(label, id, required) }}
+  <input id="{{ id }}" class="form-input w-full" type="tel" placeholder="+42102030405" name="{{ name }}" value="{{ value if value else '' }}" {{ 'required' if required else '' }} />
+  {{ form_input_error(name, error) }}
+{%- endmacro %}
+
+{% macro address_input(label, name, required, value = None, error = None) -%}
   <div class="space-y-2">
-    {% set id = "input-" ~ slug %}
-    {{ form_input_label(name, id, required) }}
+    {% set id = "input-" ~ name %}
+    {{ form_input_label(label, id, required) }}
     <div>
       {{ form_input_label( _('Address line 1'), id ~ "-line1", required) }}
-      <input id="input-{{ slug }}-line1" class="form-input w-full" type="text" name="{{ slug }}.line1" value="{{ value.line1 if value else '' }}" {{ 'required' if required else '' }} />
-      {% if error and error.get("line1") %}
-      <div id="errors-{{ slug }}-line1" class="text-xs mt-1 text-red-500">{{ error.get("line1") }}</div>
-      {% endif %}
+      <input id="input-{{ name }}-line1" class="form-input w-full" type="text" name="{{ name }}.line1" value="{{ value.line1 if value else '' }}" {{ 'required' if required else '' }} />
+      {{ form_input_error(name, error.get("line1") if error else None) }}
     </div>
     <div>
       {{ form_input_label( _('Address line 2'), id ~ "-line2", False) }}
-      <input id="input-{{ slug }}-line2" class="form-input w-full" type="text" name="{{ slug }}.line2" value="{{ value.line2 if value else '' }}" />
-      {% if error and error.get("line2") %}
-      <div id="errors-{{ slug }}-line2" class="text-xs mt-1 text-red-500">{{ error.get("line2") }}</div>
-      {% endif %}
+      <input id="input-{{ name }}-line2" class="form-input w-full" type="text" name="{{ name }}.line2" value="{{ value.line2 if value else '' }}" />
+      {{ form_input_error(name, error.get("line2") if error else None) }}
     </div>
     <div class="grid grid-cols-2 gap-2">
       <div>
         {{ form_input_label( _('Postal code'), id ~ "-postal_code", required) }}
-        <input id="input-{{ slug }}-postal_code" class="form-input w-full" type="text" name="{{ slug }}.postal_code" value="{{ value.postal_code if value else '' }}" {{ 'required' if required else '' }} />
-        {% if error and error.get("postal_code") %}
-        <div id="errors-{{ slug }}-postal_code" class="text-xs mt-1 text-red-500">{{ error.get("postal_code") }}</div>
-        {% endif %}
+        <input id="input-{{ name }}-postal_code" class="form-input w-full" type="text" name="{{ name }}.postal_code" value="{{ value.postal_code if value else '' }}" {{ 'required' if required else '' }} />
+        {{ form_input_error(name, error.get("postal_code") if error else None) }}
       </div>
       <div>
         {{ form_input_label( _('City'), id ~ "-city", required) }}
-        <input id="input-{{ slug }}-city" class="form-input w-full" type="text" name="{{ slug }}.city" value="{{ value.city if value else '' }}" {{ 'required' if required else '' }} />
-        {% if error and error.get("city") %}
-        <div id="errors-{{ slug }}-city" class="text-xs mt-1 text-red-500">{{ error.get("city") }}</div>
-        {% endif %}
+        <input id="input-{{ name }}-city" class="form-input w-full" type="text" name="{{ name }}.city" value="{{ value.city if value else '' }}" {{ 'required' if required else '' }} />
+        {{ form_input_error(name, error.get("city") if error else None) }}
       </div>
     </div>
     <div>
       {{ form_input_label( _('State'), id ~ "-state", False) }}
-      <input id="input-{{ slug }}-state" class="form-input w-full" type="text" name="{{ slug }}.state" value="{{ value.state if value else '' }}" />
-      {% if error and error.get("state") %}
-      <div id="errors-{{ slug }}-state" class="text-xs mt-1 text-red-500">{{ error.get("state") }}</div>
-      {% endif %}
+      <input id="input-{{ name }}-state" class="form-input w-full" type="text" name="{{ name }}.state" value="{{ value.state if value else '' }}" />
+      {{ form_input_error(name, error.get("state") if error else None) }}
     </div>
     <div>
       {{ form_input_label( _('Country'), id ~ "-country", required) }}
-      <select id="input-{{ slug }}-country" class="form-select w-full" type="text" name="{{ slug }}.country" {{ 'required' if required else '' }} >
+      <select id="input-{{ name }}-country" class="form-select w-full" type="text" name="{{ name }}.country" {{ 'required' if required else '' }} >
         {% for country in countries %}
           <option value="{{ country.alpha_2 }}" {{ 'selected' if value and value.country == country.alpha_2 else '' }}>{{ country.name }}</option>
         {% endfor %}
       </select>
-      {% if error and error.get("country") %}
-      <div id="errors-{{ slug }}-country" class="text-xs mt-1 text-red-500">{{ error.get("country") }}</div>
-      {% endif %}
+      {{ form_input_error(name, error.get("country") if error else None) }}
     </div>
   </div>
 {%- endmacro %}
 
-{% macro timezone_input(name, slug, required, value = None, error = None) -%}
-  {% set id = "input-" ~ slug %}
+{% macro timezone_input(label, name, required, value = None, error = None) -%}
+  {% set id = "input-" ~ name %}
   {{ form_input_label(name, id, required) }}
-  <select id="input-{{ slug }}" class="form-select w-full" type="text" name="{{ slug }}" {{ 'required' if required else '' }} >
+  <select id="{{ id }}" class="form-select w-full" type="text" name="{{ name }}" {{ 'required' if required else '' }} >
     {% for timezone in timezones %}
       <option value="{{ timezone }}" {{ 'selected' if value == timezone else '' }}>{{ timezone }}</option>
     {% endfor %}
   </select>
-  {% if error %}
-    <div id="errors-{{ slug }}" class="text-xs mt-1 text-red-500">{{ error }}</div>
-  {% endif %}
+  {{ form_input_error(name, error) }}
 {%- endmacro %}
 
 {% macro user_field_input(field, prefix = 'fields', value = None, error = None) -%}
@@ -154,6 +146,17 @@
         field.name,
         slug,
         field.configuration.required,
+        value,
+        error,
+      )
+    }}
+  {% elif field.type in ["CHOICE"] %}
+    {{
+      choice_input(
+        field.name,
+        slug,
+        field.configuration.required,
+        field.configuration.choices if field.configuration.choices else [],
         value,
         error,
       )
@@ -190,10 +193,11 @@
     }}
   {% else %}
     {{
-      string_input(
+      text_input(
         field.name,
         slug,
         field.configuration.required,
+        'text',
         value,
         error,
       )

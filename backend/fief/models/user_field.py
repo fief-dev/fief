@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import TYPE_CHECKING, Any, List, Optional, TypedDict
+from typing import TYPE_CHECKING, Any, List, Optional, Tuple, TypedDict
 
 from sqlalchemy import JSON, Column
 from sqlalchemy import Enum as SQLEnum
@@ -26,7 +26,7 @@ class UserFieldType(str, Enum):
 
 
 class UserFieldConfiguration(TypedDict):
-    choices: Optional[List[str]]
+    choices: Optional[List[Tuple[str, str]]]
     at_registration: bool
     required: bool
     editable: bool
