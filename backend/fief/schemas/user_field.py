@@ -1,6 +1,6 @@
 from datetime import date, datetime
 from enum import Enum
-from typing import Any, List, Mapping, Optional, Tuple, Type
+from typing import Any, List, Mapping, Optional, Tuple, Type, Union
 
 from pydantic import BaseModel, constr
 
@@ -45,7 +45,7 @@ class UserFieldConfiguration(BaseModel):
     at_registration: bool
     required: bool
     editable: bool
-    default: Optional[Any]
+    default: Optional[Union[str, int, bool, date, datetime, Timezone]]
 
 
 class UserFieldCreate(BaseModel):

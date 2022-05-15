@@ -8,6 +8,7 @@ import { useFieldRequiredErrorMessage } from '../../hooks/errors';
 import * as schemas from '../../schemas';
 import DatePicker from '../DatePicker/DatePicker';
 import FormErrorMessage from '../FormErrorMessage/FormErrorMessage';
+import TimezoneInput from '../TimezoneInput/TimezoneInput';
 
 interface UserFieldFormProps {
   update: boolean;
@@ -18,7 +19,7 @@ const UserFieldForm: React.FunctionComponent<UserFieldFormProps> = ({ update }) 
 
   const form = useFormContext<schemas.userField.UserFieldCreate | schemas.userField.UserFieldUpdate>();
   const { register, setValue, watch, control, formState: { errors, touchedFields } } = form;
-  const { fields: choices, append, remove } = useFieldArray({ control, name: 'configuration.choices' });
+  const { fields: choices, append, remove } = useFieldArray({ control, name: 'configuration.choices', shouldUnregister: true });
   const fieldRequiredErrorMessage = useFieldRequiredErrorMessage();
 
   const name = watch('name');
@@ -115,62 +116,72 @@ const UserFieldForm: React.FunctionComponent<UserFieldFormProps> = ({ update }) 
           </button>
         </div>
       }
-      <div>
-        <label className="block text-sm font-medium mb-1" htmlFor="default">{t('base.default')}</label>
-        {type === schemas.userField.UserFieldType.STRING &&
-          <input
-            id="default"
-            className="form-input w-full"
-            type="text"
-            {...register('configuration.default')}
-          />
-        }
-        {type === schemas.userField.UserFieldType.INTEGER &&
-          <input
-            id="default"
-            className="form-input w-full"
-            type="number"
-            {...register('configuration.default')}
-          />
-        }
-        {type === schemas.userField.UserFieldType.BOOLEAN &&
-          <label className="flex items-center text-sm font-medium" htmlFor="default">
+      {type !== schemas.userField.UserFieldType.ADDRESS && type !== schemas.userField.UserFieldType.PHONE_NUMBER &&
+        <div>
+          <label className="block text-sm font-medium mb-1" htmlFor="default">{t('base.default')}</label>
+          {type === schemas.userField.UserFieldType.STRING &&
             <input
               id="default"
-              className="form-checkbox"
-              type="checkbox"
+              className="form-input w-full"
+              type="text"
               {...register('configuration.default')}
             />
-            <span className="ml-2">{t('base.default_enabled')}</span>
-          </label>
-        }
-        {type === schemas.userField.UserFieldType.CHOICE &&
-          <select
-            id="default"
-            className="form-select w-full"
-            {...register('configuration.default')}
-          >
-            <option value=""></option>
-            {choicesDynamic && choicesDynamic.map((choice) =>
-              <option key={choice[0]} value={choice[0]}>{choice[1]}</option>
-            )}
-          </select>
-        }
-        {(type === schemas.userField.UserFieldType.DATE || type === schemas.userField.UserFieldType.DATETIME) &&
-          <Controller
-            name="configuration.default"
-            control={control}
-            render={({ field: { onChange, value } }) =>
-              <DatePicker
-                value={value}
-                onChange={onChange}
-                time={type === schemas.userField.UserFieldType.DATETIME}
+          }
+          {type === schemas.userField.UserFieldType.INTEGER &&
+            <input
+              id="default"
+              className="form-input w-full"
+              type="number"
+              {...register('configuration.default')}
+            />
+          }
+          {type === schemas.userField.UserFieldType.BOOLEAN &&
+            <label className="flex items-center text-sm font-medium" htmlFor="default">
+              <input
+                id="default"
+                className="form-checkbox"
+                type="checkbox"
+                {...register('configuration.default')}
               />
-            }
-          />
-        }
-        <FormErrorMessage errors={errors} name="configuration.default" />
-      </div>
+              <span className="ml-2">{t('base.default_enabled')}</span>
+            </label>
+          }
+          {type === schemas.userField.UserFieldType.CHOICE &&
+            <select
+              id="default"
+              className="form-select w-full"
+              {...register('configuration.default')}
+            >
+              <option value=""></option>
+              {choicesDynamic && choicesDynamic.map((choice) =>
+                <option key={choice[0]} value={choice[0]}>{choice[1]}</option>
+              )}
+            </select>
+          }
+          {(type === schemas.userField.UserFieldType.DATE || type === schemas.userField.UserFieldType.DATETIME) &&
+            <Controller
+              name="configuration.default"
+              control={control}
+              render={({ field: { onChange, value } }) =>
+                <DatePicker
+                  value={value}
+                  onChange={onChange}
+                  time={type === schemas.userField.UserFieldType.DATETIME}
+                />
+              }
+            />
+          }
+          {type === schemas.userField.UserFieldType.TIMEZONE &&
+            <TimezoneInput
+              id="default"
+              className="form-select w-full"
+              allowEmpty
+              {...register('configuration.default')}
+            />
+          }
+          <FormErrorMessage errors={errors} name="configuration.default" />
+        </div>
+      }
       <div>
         <label className="flex items-center text-sm font-medium" htmlFor="at_registration">
           <input

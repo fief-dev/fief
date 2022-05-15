@@ -114,7 +114,9 @@ class TimezoneError(PydanticValueError):
 class Timezone(str):
     @classmethod
     def __modify_schema__(cls, field_schema: Dict[str, Any]) -> None:
-        field_schema.update(type="enum", enum=sorted(pytz.common_timezones))
+        field_schema.update(
+            type="enum", enum=sorted(pytz.common_timezones), title="timezone"
+        )
 
     @classmethod
     def __get_validators__(cls):

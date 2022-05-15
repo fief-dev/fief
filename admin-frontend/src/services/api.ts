@@ -25,6 +25,10 @@ export class APIClient {
     return `${BASE_URL}/auth/logout`;
   }
 
+  public getOpenAPI(): Promise<AxiosResponse<Record<string, any>>> {
+    return this.client.get('/openapi.json');
+  }
+
   public getUserinfo(): Promise<AxiosResponse<schemas.user.CurrentUser>> {
     return this.client.get('/auth/userinfo');
   }
