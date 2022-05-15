@@ -21,7 +21,11 @@ const UserFields: React.FunctionComponent = () => {
     sorting,
     onSortingChange,
     refresh,
-  } = usePaginationAPI<'listUserFields'>({ method: 'listUserFields', limit: 10 });
+  } = usePaginationAPI<'listUserFields'>({
+    method: 'listUserFields',
+    limit: 10,
+    initialSorting: [{ id: 'name' }],
+  });
 
   const [selected, setSelected] = useState<schemas.userField.UserField | undefined>();
 
