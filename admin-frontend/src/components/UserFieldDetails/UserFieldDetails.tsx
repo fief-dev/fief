@@ -20,11 +20,21 @@ const UserFieldDetails: React.FunctionComponent<UserFieldDetailsProps> = ({ user
   const { t } = useTranslation(['user-fields']);
   const api = useAPI();
 
-  const form = useForm<schemas.userField.UserFieldUpdate>({ defaultValues: userField });
+  const getSafeDefaultValue = (userField: schemas.userField.UserField): schemas.userField.UserField => {
+    return {
+      ...userField,
+      configuration: {
+        ...userField.configuration,
+        choices: userField.configuration.choices || undefined,
+      }
+    };
+  };
+
+  const form = useForm<schemas.userField.UserFieldUpdate>({ defaultValues: getSafeDefaultValue(userField) });
   const { handleSubmit, reset } = form;
 
   useEffect(() => {
-    reset(userField);
+    reset(getSafeDefaultValue(userField));
   }, [reset, userField]);
 
   const [loading, setLoading] = useState(false);
@@ -41,7 +51,7 @@ const UserFieldDetails: React.FunctionComponent<UserFieldDetailsProps> = ({ user
     try {
       const { data: updatedUserField } = await api.updateUserField(userField.id, data);
       onUpdated(updatedUserField);
-      reset(updatedUserField);
+      reset(getSafeDefaultValue(updatedUserField));
     } catch (err) {
       const errorMessage = handleAPIError(err);
       setErrorMessage(errorMessage);
