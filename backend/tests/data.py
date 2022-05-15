@@ -143,7 +143,6 @@ user_fields: ModelMapping[UserField] = {
             "at_registration": False,
             "required": False,
             "editable": False,
-            "default": False,
         },
     ),
     "birthdate": UserField(
@@ -156,7 +155,6 @@ user_fields: ModelMapping[UserField] = {
             "at_registration": False,
             "required": False,
             "editable": True,
-            "default": False,
         },
     ),
     "last_seen": UserField(
@@ -169,7 +167,6 @@ user_fields: ModelMapping[UserField] = {
             "at_registration": False,
             "required": False,
             "editable": False,
-            "default": False,
         },
     ),
     "address": UserField(
@@ -182,7 +179,18 @@ user_fields: ModelMapping[UserField] = {
             "at_registration": True,
             "required": False,
             "editable": False,
+        },
+    ),
+    "onboarding_done": UserField(
+        name="Onboarding done",
+        slug="onboarding_done",
+        type=UserFieldType.BOOLEAN,
+        configuration={
+            "choices": None,
             "default": False,
+            "at_registration": False,
+            "required": False,
+            "editable": False,
         },
     ),
 }

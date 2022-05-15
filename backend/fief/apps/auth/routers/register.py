@@ -13,8 +13,8 @@ from fief.dependencies.locale import Translations, get_gettext, get_translations
 from fief.dependencies.register import get_register_context, get_user_create
 from fief.dependencies.tenant import get_current_tenant
 from fief.dependencies.user_field import (
-    get_registration_user_fields,
     get_user_create_internal_model,
+    get_user_fields,
 )
 from fief.dependencies.users import UserManager, get_user_manager
 from fief.exceptions import RegisterException
@@ -53,7 +53,7 @@ async def post_register(
         get_user_create_internal_model
     ),
     user_manager: UserManager = Depends(get_user_manager),
-    registration_user_fields: List[UserField] = Depends(get_registration_user_fields),
+    user_fields: List[UserField] = Depends(get_user_fields),
     register_context: Dict[str, Any] = Depends(get_register_context),
     tenant: Tenant = Depends(get_current_tenant),
     authentication_flow: AuthenticationFlow = Depends(get_authentication_flow),
@@ -65,7 +65,7 @@ async def post_register(
         )
         created_user = await user_manager.create_with_fields(
             user_create,
-            registration_user_fields=registration_user_fields,
+            user_fields=user_fields,
             safe=True,
             request=request,
         )

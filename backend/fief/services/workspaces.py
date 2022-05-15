@@ -1,8 +1,6 @@
 from dataclasses import dataclass
 from typing import List, Optional
 
-from sqlalchemy import select
-
 from fief.db.main import main_async_session_maker
 from fief.db.workspace import get_workspace_session
 from fief.managers import UserManager, WorkspaceManager
@@ -24,7 +22,7 @@ class Workspaces:
     async def get_stats(self) -> List[WorkspaceStats]:
         stats: List[WorkspaceStats] = []
 
-        workspaces = await self.workspace_manager.list(select(Workspace))
+        workspaces = await self.workspace_manager.all()
         for workspace in workspaces:
             try:
                 async with get_workspace_session(workspace) as session:

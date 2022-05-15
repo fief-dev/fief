@@ -41,6 +41,12 @@ async def get_user_field_by_id_or_404(
     return user_field
 
 
+async def get_user_fields(
+    manager: UserFieldManager = Depends(get_user_field_manager),
+) -> List[UserField]:
+    return await manager.all()
+
+
 async def get_registration_user_fields(
     manager: UserFieldManager = Depends(get_user_field_manager),
 ) -> List[UserField]:

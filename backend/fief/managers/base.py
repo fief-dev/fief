@@ -120,6 +120,9 @@ class BaseManager(BaseManagerProtocol, Generic[M]):
                     )
         return statement
 
+    async def all(self) -> List[M]:
+        return await self.list(select(self.model))
+
     async def get_one_or_none(self, statement: Select) -> Optional[M]:
         results = await self._execute_statement(statement)
         object = results.first()

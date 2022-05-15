@@ -222,4 +222,5 @@ class TestPostRegister:
                 "state": None,
                 "country": "FR",
             },
+            "onboarding_done": False,  # Default value
         }
