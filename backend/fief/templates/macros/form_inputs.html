@@ -41,9 +41,12 @@
 {% macro choice_input(label, name, required, choices, value = None, error = None) -%}
   {% set id = "input-" ~ name %}
   {{ form_input_label(label, id, required) }}
-  <select id="{{ id }}" class="form-select w-full" type="text" name="{{ name }}" {{ 'required' if required else '' }} >
-    {% for (value, label) in choices %}
-      <option value="{{ value }}" {{ 'selected' if value == choice else '' }}>{{ label }}</option>
+  <select id="{{ id }}" class="form-select w-full" type="text" name="{{ name }}" {{ 'required' if required else '' }}>
+    {% if not required %}
+      <option value=""></option>
+    {% endif %}
+    {% for (choice_value, choice_label) in choices %}
+      <option value="{{ choice_value }}" {{ 'selected' if value == choice_value else '' }}>{{ choice_label }}</option>
       {% endfor %}
   </select>
   {{ form_input_error(name, error) }}
@@ -109,7 +112,10 @@
 {% macro timezone_input(label, name, required, value = None, error = None) -%}
   {% set id = "input-" ~ name %}
   {{ form_input_label(name, id, required) }}
-  <select id="{{ id }}" class="form-select w-full" type="text" name="{{ name }}" {{ 'required' if required else '' }} >
+  <select id="{{ id }}" class="form-select w-full" type="text" name="{{ name }}" {{ 'required' if required else '' }}>
+    {% if not required %}
+      <option value=""></option>
+    {% endif %}
     {% for timezone in timezones %}
       <option value="{{ timezone }}" {{ 'selected' if value == timezone else '' }}>{{ timezone }}</option>
     {% endfor %}
@@ -119,6 +125,7 @@
 
 {% macro user_field_input(field, prefix = 'fields', value = None, error = None) -%}
   {% set slug = prefix ~ "." ~ field.slug %}
+  {% set value = value if value else field.configuration.default %}
   {% if field.type in ["INTEGER"] %}
     {{
       integer_input(

@@ -23,7 +23,7 @@ const CreateUserFieldModal: React.FunctionComponent<CreateUserFieldModalProps> =
   const form = useForm<schemas.userField.UserFieldCreate>({
     defaultValues: {
       type: schemas.userField.UserFieldType.STRING,
-      configuration: { editable: true },
+      configuration: { editable: true, default: null },
     },
   });
   const { handleSubmit, reset } = form;
