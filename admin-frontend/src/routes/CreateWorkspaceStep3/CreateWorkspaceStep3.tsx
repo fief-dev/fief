@@ -8,10 +8,9 @@ import FormErrorMessage from '../../components/FormErrorMessage/FormErrorMessage
 import OnboardingLayout from '../../components/OnboardingLayout/OnboardingLayout';
 import SuccessAlert from '../../components/SuccessAlert/SuccessAlert';
 import CreateWorkspaceContext from '../../contexts/create-workspace';
-import { useAPI } from '../../hooks/api';
+import { useAPI, useAPIErrorHandler } from '../../hooks/api';
 import { useFieldRequiredErrorMessage } from '../../hooks/errors';
 import * as schemas from '../../schemas';
-import { handleAPIError } from '../../services/api';
 
 const CreateWorkspaceStep3: React.FunctionComponent = () => {
   const { t } = useTranslation('workspaces');
@@ -22,8 +21,9 @@ const CreateWorkspaceStep3: React.FunctionComponent = () => {
   const [checkConnectionError, setCheckConnectionError] = useState<string | undefined>(undefined);
 
   const [createWorkspace, setCreateWorkspace] = useContext(CreateWorkspaceContext);
-  const { register, handleSubmit, formState: { errors } } = useForm<schemas.workspace.WorkspaceCreate>({ defaultValues: createWorkspace });
+  const { register, handleSubmit, setError, formState: { errors } } = useForm<schemas.workspace.WorkspaceCreate>({ defaultValues: createWorkspace });
   const fieldRequiredErrorMessage = useFieldRequiredErrorMessage();
+  const handleAPIError = useAPIErrorHandler(setCheckConnectionError, setError);
 
   const onCheckConnection: SubmitHandler<schemas.workspace.WorkspaceCreate> = useCallback(async (data) => {
     setCheckConnectionSuccess(false);
@@ -32,10 +32,9 @@ const CreateWorkspaceStep3: React.FunctionComponent = () => {
       await api.checkConnectionWorkspace(data);
       setCheckConnectionSuccess(true);
     } catch (err) {
-      const message = handleAPIError(err);
-      setCheckConnectionError(message);
+      handleAPIError(err);
     }
-  }, [api]);
+  }, [api, handleAPIError]);
 
   const onSubmit: SubmitHandler<schemas.workspace.WorkspaceCreate> = useCallback((data) => {
     setCreateWorkspace({

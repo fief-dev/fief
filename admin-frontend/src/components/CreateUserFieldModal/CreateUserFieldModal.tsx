@@ -2,9 +2,8 @@ import { useCallback, useState } from 'react';
 import { FormProvider, SubmitHandler, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
-import { useAPI } from '../../hooks/api';
+import { useAPI, useAPIErrorHandler } from '../../hooks/api';
 import * as schemas from '../../schemas';
-import { handleAPIError } from '../../services/api';
 import ErrorAlert from '../ErrorAlert/ErrorAlert';
 import LoadingButton from '../LoadingButton/LoadingButton';
 import Modal from '../Modal/Modal';
@@ -26,10 +25,11 @@ const CreateUserFieldModal: React.FunctionComponent<CreateUserFieldModalProps> =
       configuration: { editable: true, default: null },
     },
   });
-  const { handleSubmit, reset } = form;
+  const { handleSubmit, reset, setError } = form;
 
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | undefined>();
+  const handleAPIError = useAPIErrorHandler(setErrorMessage, setError);
 
   const onSubmit: SubmitHandler<schemas.userField.UserFieldCreate> = useCallback(async (data) => {
     setLoading(true);
@@ -40,12 +40,11 @@ const CreateUserFieldModal: React.FunctionComponent<CreateUserFieldModalProps> =
         reset();
       }
     } catch (err) {
-      const errorMessage = handleAPIError(err);
-      setErrorMessage(errorMessage);
+      handleAPIError(err);
     } finally {
       setLoading(false);
     }
-  }, [api, onCreated, reset]);
+  }, [api, onCreated, reset, handleAPIError]);
 
   return (
     <Modal

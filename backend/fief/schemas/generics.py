@@ -123,7 +123,9 @@ class Timezone(str):
         yield cls.validate
 
     @classmethod
-    def validate(cls, value: str) -> str:
+    def validate(cls, value: Any) -> str:
+        if not isinstance(value, str):
+            raise TypeError()
         try:
             timezone = pytz.timezone(value)
         except pytz.exceptions.UnknownTimeZoneError as e:

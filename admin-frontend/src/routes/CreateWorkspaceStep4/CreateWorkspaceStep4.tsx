@@ -6,9 +6,8 @@ import ErrorAlert from '../../components/ErrorAlert/ErrorAlert';
 import LoadingButton from '../../components/LoadingButton/LoadingButton';
 import OnboardingLayout from '../../components/OnboardingLayout/OnboardingLayout';
 import CreateWorkspaceContext from '../../contexts/create-workspace';
-import { useAPI } from '../../hooks/api';
+import { useAPI, useAPIErrorHandler } from '../../hooks/api';
 import * as schemas from '../../schemas';
-import { handleAPIError } from '../../services/api';
 
 const CreateWorkspaceStep4: React.FunctionComponent = () => {
   const { t } = useTranslation('workspaces');
@@ -17,6 +16,7 @@ const CreateWorkspaceStep4: React.FunctionComponent = () => {
   const [createWorkspace] = useContext(CreateWorkspaceContext);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | undefined>();
+  const handleAPIError = useAPIErrorHandler(setErrorMessage);
 
   const onSubmit: React.FormEventHandler<HTMLFormElement> = useCallback(async (event) => {
     event.preventDefault();
@@ -25,11 +25,11 @@ const CreateWorkspaceStep4: React.FunctionComponent = () => {
       const { data: workspace } = await api.createWorkspace(createWorkspace as schemas.workspace.WorkspaceCreate);
       window.location.href = `${window.location.protocol}//${workspace.domain}/admin/`;
     } catch (err) {
-      setErrorMessage(handleAPIError(err));
+      handleAPIError(err);
     } finally {
       setLoading(false);
     }
-  }, [createWorkspace, api]);
+  }, [createWorkspace, api, handleAPIError]);
 
   return (
     <OnboardingLayout active={4}>

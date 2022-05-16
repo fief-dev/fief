@@ -1,10 +1,11 @@
 import { AxiosResponse } from 'axios';
 import * as R from 'ramda';
 import { useCallback, useContext, useEffect, useState } from 'react';
+import { UseFormSetError } from 'react-hook-form';
 import { SortingRule } from 'react-table';
 
 import APIClientContext from '../contexts/api';
-import { APIClient } from '../services/api';
+import { APIClient, handleAPIError } from '../services/api';
 import * as schemas from '../schemas';
 
 export const useAPI = (): APIClient => {
@@ -107,4 +108,19 @@ export const usePaginationAPI = <M extends keyof APIClientListMethods>({ method,
     sorting,
     onSortingChange,
   };
+};
+
+export const useAPIErrorHandler = (setGlobalMessage: (message: string) => void, setFieldMessage?: UseFormSetError<any>): (err: unknown) => void => {
+  return useCallback((err: unknown) => {
+    const [globalMessage, fieldsMessages] = handleAPIError(err);
+    if (globalMessage) {
+      setGlobalMessage(globalMessage);
+    }
+    if (setFieldMessage) {
+      for (const fieldMessage of fieldsMessages) {
+        const loc = fieldMessage.loc[0] === 'body' ? fieldMessage.loc.slice(1) : fieldMessage.loc;
+        setFieldMessage(loc.join('.'), { message: fieldMessage.msg, type: fieldMessage.type });
+      }
+    }
+  }, [setGlobalMessage, setFieldMessage]);
 };

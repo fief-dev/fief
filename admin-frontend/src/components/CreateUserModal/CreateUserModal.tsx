@@ -38,7 +38,7 @@ const CreateUserModal: React.FunctionComponent<CreateUserModalProps> = ({ open, 
         reset();
       }
     } catch (err) {
-      const errorMessage = handleAPIError(err);
+      const [errorMessage] = handleAPIError(err);
       if (errorMessage === 'USER_CREATE_INVALID_PASSWORD') {
         const reason = (err as AxiosError).response?.data.reason;
         setError('password', { type: 'manual', message: reason });

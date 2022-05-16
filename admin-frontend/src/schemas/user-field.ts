@@ -1,15 +1,27 @@
 import { CreatedUpdatedAt, UUIDSchema } from './generics';
 
 export enum UserFieldType {
-    STRING = 'STRING',
-    INTEGER = 'INTEGER',
-    BOOLEAN = 'BOOLEAN',
-    DATE = 'DATE',
-    DATETIME = 'DATETIME',
-    CHOICE = 'CHOICE',
-    PHONE_NUMBER = 'PHONE_NUMBER',
-    ADDRESS = 'ADDRESS',
-    TIMEZONE = 'TIMEZONE',
+  STRING = 'STRING',
+  INTEGER = 'INTEGER',
+  BOOLEAN = 'BOOLEAN',
+  DATE = 'DATE',
+  DATETIME = 'DATETIME',
+  CHOICE = 'CHOICE',
+  PHONE_NUMBER = 'PHONE_NUMBER',
+  ADDRESS = 'ADDRESS',
+  TIMEZONE = 'TIMEZONE',
+}
+
+export const USER_FIELD_CAN_HAVE_DEFAULT: Record<UserFieldType, boolean> = {
+  [UserFieldType.STRING]: true,
+  [UserFieldType.INTEGER]: true,
+  [UserFieldType.BOOLEAN]: true,
+  [UserFieldType.DATE]: false,
+  [UserFieldType.DATETIME]: false,
+  [UserFieldType.CHOICE]: true,
+  [UserFieldType.PHONE_NUMBER]: false,
+  [UserFieldType.ADDRESS]: false,
+  [UserFieldType.TIMEZONE]: true,
 }
 
 export interface UserFieldConfiguration {
@@ -40,4 +52,4 @@ export interface BaseUserField extends UUIDSchema, CreatedUpdatedAt {
   configuration: UserFieldConfiguration;
 }
 
-export interface UserField extends BaseUserField {}
+export interface UserField extends BaseUserField { }

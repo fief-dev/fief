@@ -1,8 +1,8 @@
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { useAPI } from '../../hooks/api';
-import { APIClient, handleAPIError } from '../../services/api';
+import { useAPI, useAPIErrorHandler } from '../../hooks/api';
+import { APIClient } from '../../services/api';
 import ErrorAlert from '../ErrorAlert/ErrorAlert';
 import LoadingButton from '../LoadingButton/LoadingButton';
 import Modal from '../Modal/Modal';
@@ -27,6 +27,7 @@ const DeleteModal: React.FunctionComponent<DeleteModalProps> = ({ objectId, meth
 
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | undefined>();
+  const handleAPIError = useAPIErrorHandler(setErrorMessage);
 
   const onSubmit = useCallback(async () => {
     setLoading(true);
@@ -36,11 +37,11 @@ const DeleteModal: React.FunctionComponent<DeleteModalProps> = ({ objectId, meth
         onDeleted();
       }
     } catch (err) {
-      setErrorMessage(handleAPIError(err));
+      handleAPIError(err);
     } finally {
       setLoading(false);
     }
-  }, [api, method, objectId, onDeleted]);
+  }, [api, method, objectId, onDeleted, handleAPIError]);
 
   return (
     <Modal

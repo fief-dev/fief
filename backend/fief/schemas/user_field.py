@@ -1,8 +1,9 @@
 from datetime import date, datetime
 from enum import Enum
-from typing import Any, List, Mapping, Optional, Tuple, Type, Union
+from typing import Any, Generic, List, Mapping, Optional, Tuple, Type, TypeVar, Union
 
 from pydantic import BaseModel, constr
+from pydantic.generics import GenericModel
 
 from fief.models import UserField as UserFieldModel
 from fief.models import UserFieldType
@@ -26,6 +27,21 @@ USER_FIELD_TYPE_MAP: Mapping[UserFieldType, Type[Any]] = {
     UserFieldType.TIMEZONE: Timezone,
 }
 
+USER_FIELD_CAN_HAVE_DEFAULT: Mapping[UserFieldType, bool] = {
+    UserFieldType.STRING: True,
+    UserFieldType.INTEGER: True,
+    UserFieldType.BOOLEAN: True,
+    UserFieldType.DATE: False,
+    UserFieldType.DATETIME: False,
+    UserFieldType.CHOICE: True,
+    UserFieldType.PHONE_NUMBER: False,
+    UserFieldType.ADDRESS: False,
+    UserFieldType.TIMEZONE: True,
+}
+
+D = TypeVar("D", Timezone, bool, int, str)
+UFT = TypeVar("UFT", bound=UserFieldType)
+
 
 def get_user_field_pydantic_type(field: UserFieldModel) -> Type[Any]:
     if field.type == UserFieldType.CHOICE:
@@ -40,12 +56,25 @@ def get_user_field_pydantic_type(field: UserFieldModel) -> Type[Any]:
     return USER_FIELD_TYPE_MAP[field.type]
 
 
-class UserFieldConfiguration(BaseModel):
-    choices: Optional[List[Tuple[str, str]]]
+class UserFieldConfigurationBase(BaseModel):
     at_registration: bool
     required: bool
     editable: bool
-    default: Optional[Union[str, int, bool, date, datetime, Timezone]]
+
+
+class UserFieldConfiguration(UserFieldConfigurationBase):
+    choices: Optional[List[Tuple[str, str]]]
+    default: Optional[Union[Timezone, bool, int, str]]
+
+
+class UserFieldConfigurationDefault(
+    GenericModel, Generic[D], UserFieldConfigurationBase
+):
+    default: Optional[D]
+
+
+class UserFieldConfigurationChoice(UserFieldConfigurationDefault[str]):
+    choices: Optional[List[Tuple[str, str]]]
 
 
 class UserFieldCreate(BaseModel):

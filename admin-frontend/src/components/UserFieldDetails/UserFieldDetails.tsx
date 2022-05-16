@@ -2,9 +2,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { FormProvider, SubmitHandler, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
-import { useAPI } from '../../hooks/api';
+import { useAPI, useAPIErrorHandler } from '../../hooks/api';
 import * as schemas from '../../schemas';
-import { handleAPIError } from '../../services/api';
 import DeleteModal from '../DeleteModal/DeleteModal';
 import ErrorAlert from '../ErrorAlert/ErrorAlert';
 import LoadingButton from '../LoadingButton/LoadingButton';
@@ -31,7 +30,7 @@ const UserFieldDetails: React.FunctionComponent<UserFieldDetailsProps> = ({ user
   };
 
   const form = useForm<schemas.userField.UserFieldUpdate>({ defaultValues: getSafeDefaultValue(userField) });
-  const { handleSubmit, reset } = form;
+  const { handleSubmit, reset, setError } = form;
 
   useEffect(() => {
     reset(getSafeDefaultValue(userField));
@@ -39,6 +38,7 @@ const UserFieldDetails: React.FunctionComponent<UserFieldDetailsProps> = ({ user
 
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | undefined>();
+  const handleAPIError = useAPIErrorHandler(setErrorMessage, setError);
 
   const onUpdated = useCallback((userField: schemas.userField.UserField) => {
     if (_onUpdated) {
@@ -53,12 +53,11 @@ const UserFieldDetails: React.FunctionComponent<UserFieldDetailsProps> = ({ user
       onUpdated(updatedUserField);
       reset(getSafeDefaultValue(updatedUserField));
     } catch (err) {
-      const errorMessage = handleAPIError(err);
-      setErrorMessage(errorMessage);
+      handleAPIError(err);
     } finally {
       setLoading(false);
     }
-  }, [userField, api, onUpdated, reset]);
+  }, [userField, api, onUpdated, reset, handleAPIError]);
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 

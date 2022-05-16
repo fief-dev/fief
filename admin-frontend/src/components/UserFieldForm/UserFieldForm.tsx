@@ -116,7 +116,7 @@ const UserFieldForm: React.FunctionComponent<UserFieldFormProps> = ({ update }) 
           </button>
         </div>
       }
-      {type !== schemas.userField.UserFieldType.ADDRESS && type !== schemas.userField.UserFieldType.PHONE_NUMBER &&
+      {schemas.userField.USER_FIELD_CAN_HAVE_DEFAULT[type] &&
         <div>
           <label className="block text-sm font-medium mb-1" htmlFor="default">{t('base.default')}</label>
           {type === schemas.userField.UserFieldType.STRING &&

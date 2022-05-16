@@ -6,9 +6,8 @@ interface TimezoneInputProps extends React.DetailedHTMLProps<React.SelectHTMLAtt
   allowEmpty?: boolean;
 }
 
-const TimezoneInput = React.forwardRef<any, TimezoneInputProps>((props, ref) => {
+const TimezoneInput = React.forwardRef<any, TimezoneInputProps>(({ allowEmpty, ...props }, ref) => {
   const [timezones, loading] = useTimezonesCache();
-  const { allowEmpty } = props;
 
   return (
     <>

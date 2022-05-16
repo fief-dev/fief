@@ -2,10 +2,9 @@ import { useCallback, useState } from 'react';
 import { Controller, FormProvider, SubmitHandler, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
-import { useAPI } from '../../hooks/api';
+import { useAPI, useAPIErrorHandler } from '../../hooks/api';
 import { useFieldRequiredErrorMessage } from '../../hooks/errors';
 import * as schemas from '../../schemas';
-import { handleAPIError } from '../../services/api';
 import ErrorAlert from '../ErrorAlert/ErrorAlert';
 import FormErrorMessage from '../FormErrorMessage/FormErrorMessage';
 import LoadingButton from '../LoadingButton/LoadingButton';
@@ -24,13 +23,14 @@ const CreateClientModal: React.FunctionComponent<CreateClientModalProps> = ({ op
   const api = useAPI();
 
   const form = useForm<schemas.client.ClientCreateForm>({ defaultValues: { client_type: schemas.client.ClientType.CONFIDENTIAL, redirect_uris: [{ id: '', value: '' }] } });
-  const { register, handleSubmit, watch, control, reset, formState: { errors } } = form;
+  const { register, handleSubmit, watch, control, reset, setError, formState: { errors } } = form;
   const fieldRequiredErrorMessage = useFieldRequiredErrorMessage();
 
   const clientType = watch('client_type');
 
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | undefined>();
+  const handleAPIError = useAPIErrorHandler(setErrorMessage, setError);
 
   const onSubmit: SubmitHandler<schemas.client.ClientCreateForm> = useCallback(async (data) => {
     setLoading(true);
@@ -45,12 +45,11 @@ const CreateClientModal: React.FunctionComponent<CreateClientModalProps> = ({ op
         reset();
       }
     } catch (err) {
-      const errorMessage = handleAPIError(err);
-      setErrorMessage(errorMessage);
+      handleAPIError(err);
     } finally {
       setLoading(false);
     }
-  }, [api, onCreated, reset]);
+  }, [api, onCreated, reset, handleAPIError]);
 
   return (
     <Modal

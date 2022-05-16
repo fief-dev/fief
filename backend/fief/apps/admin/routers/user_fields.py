@@ -6,6 +6,8 @@ from fief.dependencies.pagination import PaginatedObjects
 from fief.dependencies.user_field import (
     get_paginated_user_fields,
     get_user_field_by_id_or_404,
+    get_validated_user_field_create,
+    get_validated_user_field_update,
 )
 from fief.dependencies.workspace_managers import get_user_field_manager
 from fief.errors import APIErrorCode
@@ -43,7 +45,9 @@ async def list_user_fields(
     status_code=status.HTTP_201_CREATED,
 )
 async def create_user_field(
-    user_field_create: schemas.user_field.UserFieldCreate,
+    user_field_create: schemas.user_field.UserFieldCreate = Depends(
+        get_validated_user_field_create
+    ),
     manager: UserFieldManager = Depends(get_user_field_manager),
 ) -> schemas.user_field.UserField:
     existing_user_field = await manager.get_by_slug(user_field_create.slug)
@@ -63,7 +67,9 @@ async def create_user_field(
     "/{id:uuid}", name="user_fields:update", response_model=schemas.user_field.UserField
 )
 async def update_user_field(
-    user_field_update: schemas.user_field.UserFieldUpdate,
+    user_field_update: schemas.user_field.UserFieldUpdate = Depends(
+        get_validated_user_field_update
+    ),
     user_field: UserField = Depends(get_user_field_by_id_or_404),
     manager: UserFieldManager = Depends(get_user_field_manager),
 ) -> schemas.user_field.UserField:

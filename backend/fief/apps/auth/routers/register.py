@@ -12,10 +12,7 @@ from fief.dependencies.form import get_form_data_dict
 from fief.dependencies.locale import Translations, get_gettext, get_translations
 from fief.dependencies.register import get_register_context, get_user_create
 from fief.dependencies.tenant import get_current_tenant
-from fief.dependencies.user_field import (
-    get_user_create_internal_model,
-    get_user_fields,
-)
+from fief.dependencies.user_field import get_user_create_internal_model, get_user_fields
 from fief.dependencies.users import UserManager, get_user_manager
 from fief.exceptions import RegisterException
 from fief.models import Tenant, UserField
