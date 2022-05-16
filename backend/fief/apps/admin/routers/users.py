@@ -1,3 +1,5 @@
+from typing import List
+
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import JSONResponse
 from fastapi_users.exceptions import InvalidPasswordException, UserAlreadyExists
@@ -6,15 +8,17 @@ from sqlalchemy.orm import joinedload
 from fief import schemas
 from fief.dependencies.admin_authentication import is_authenticated_admin
 from fief.dependencies.pagination import PaginatedObjects
+from fief.dependencies.user_field import get_user_fields
 from fief.dependencies.users import (
     UserManager,
     get_paginated_users,
+    get_user_create_internal,
     get_user_manager_from_create_user_internal,
 )
 from fief.dependencies.workspace_managers import get_user_manager as get_user_db_manager
 from fief.errors import APIErrorCode
 from fief.managers import UserManager as UserDBManager
-from fief.models import User
+from fief.models import User, UserField
 from fief.schemas.generics import PaginatedResults
 
 router = APIRouter(dependencies=[Depends(is_authenticated_admin)])
@@ -40,13 +44,16 @@ async def list_users(
     status_code=status.HTTP_201_CREATED,
 )
 async def create_user(
-    user_create: schemas.user.UserCreateInternal,
     request: Request,
+    user_create: schemas.user.UserCreateInternal = Depends(get_user_create_internal),
+    user_fields: List[UserField] = Depends(get_user_fields),
     user_manager: UserManager = Depends(get_user_manager_from_create_user_internal),
     user_db_manager: UserDBManager = Depends(get_user_db_manager),
 ):
     try:
-        created_user = await user_manager.create(user_create, request=request)
+        created_user = await user_manager.create_with_fields(
+            user_create, user_fields=user_fields, request=request
+        )
     except UserAlreadyExists as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

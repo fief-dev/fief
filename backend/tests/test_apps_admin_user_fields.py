@@ -88,7 +88,6 @@ class TestCreateUserField:
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
         json = response.json()
-        print(json)
         assert json["detail"][0]["loc"] == ["body", "configuration", "default"]
 
     @pytest.mark.authenticated_admin

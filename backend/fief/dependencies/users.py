@@ -1,6 +1,7 @@
 from typing import Dict, List, Optional, Type, Union, cast
 
 from fastapi import Depends, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.security import OAuth2AuthorizationCodeBearer
 from fastapi_users import BaseUserManager, InvalidPasswordException
 from fastapi_users.authentication import (
@@ -17,7 +18,7 @@ from fastapi_users_db_sqlalchemy import (
 )
 from furl import furl
 from jwcrypto import jwk
-from pydantic import UUID4
+from pydantic import UUID4, ValidationError, create_model
 from sqlalchemy import select
 from sqlalchemy.orm import joinedload
 from sqlalchemy.sql import Select
@@ -43,11 +44,12 @@ from fief.dependencies.tenant import (
     get_current_tenant,
     get_tenant_from_create_user_internal,
 )
+from fief.dependencies.user_field import get_admin_user_create_internal_model
 from fief.dependencies.workspace_managers import get_user_manager as get_user_db_manager
 from fief.locale import Translations
 from fief.managers import UserManager as UserDBManager
 from fief.models import Tenant, User, UserField, UserFieldValue, Workspace
-from fief.schemas.user import UF, UserCreate
+from fief.schemas.user import UF, UserCreate, UserCreateInternal
 from fief.settings import settings
 from fief.tasks import SendTask, on_after_forgot_password, on_after_register
 
@@ -239,3 +241,21 @@ async def get_paginated_users(
 ) -> PaginatedObjects[User]:
     statement = select(User).options(joinedload(User.tenant))
     return await get_paginated_objects(statement, pagination, ordering, manager)
+
+
+async def get_user_create_internal(
+    request: Request,
+    user_create_internal_model: Type[UserCreateInternal[UF]] = Depends(
+        get_admin_user_create_internal_model
+    ),
+) -> UserCreateInternal[UF]:
+    body_model = create_model(
+        "UserCreateInternalBody",
+        body=(user_create_internal_model, ...),
+    )
+    try:
+        validated_user_create_internal = body_model(body=await request.json())
+    except ValidationError as e:
+        raise RequestValidationError(e.raw_errors) from e
+    else:
+        return validated_user_create_internal.body  # type: ignore

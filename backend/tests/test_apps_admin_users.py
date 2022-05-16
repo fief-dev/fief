@@ -111,6 +111,28 @@ class TestCreateUser:
         assert "reason" in json
 
     @pytest.mark.authenticated_admin
+    async def test_invalid_field_value(
+        self, test_client_admin: httpx.AsyncClient, test_data: TestData
+    ):
+        tenant = test_data["tenants"]["default"]
+        response = await test_client_admin.post(
+            "/users/",
+            json={
+                "email": "louis@bretagne.duchy",
+                "password": "hermine1",
+                "fields": {
+                    "last_seen": "INVALID_VALUE",
+                },
+                "tenant_id": str(tenant.id),
+            },
+        )
+
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+        json = response.json()
+        assert json["detail"][0]["loc"] == ["body", "fields", "last_seen"]
+
+    @pytest.mark.authenticated_admin
     async def test_valid(
         self, test_client_admin: httpx.AsyncClient, test_data: TestData
     ):
@@ -120,7 +142,10 @@ class TestCreateUser:
             json={
                 "email": "louis@bretagne.duchy",
                 "password": "hermine1",
-                "fields": {},
+                "fields": {
+                    "onboarding_done": True,
+                    "last_seen": "2022-01-01T13:37:00+00:00",
+                },
                 "tenant_id": str(tenant.id),
             },
         )
@@ -130,3 +155,6 @@ class TestCreateUser:
         json = response.json()
         assert json["email"] == "louis@bretagne.duchy"
         assert json["tenant_id"] == str(tenant.id)
+
+        assert json["fields"]["onboarding_done"] is True
+        assert json["fields"]["last_seen"] == "2022-01-01T13:37:00+00:00"

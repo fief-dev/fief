@@ -2,7 +2,7 @@ from datetime import date, datetime
 from enum import Enum
 from typing import Any, Generic, List, Mapping, Optional, Tuple, Type, TypeVar, Union
 
-from pydantic import BaseModel, constr
+from pydantic import BaseModel, StrictBool, StrictInt, StrictStr, constr
 from pydantic.generics import GenericModel
 
 from fief.models import UserField as UserFieldModel
@@ -64,7 +64,7 @@ class UserFieldConfigurationBase(BaseModel):
 
 class UserFieldConfiguration(UserFieldConfigurationBase):
     choices: Optional[List[Tuple[str, str]]]
-    default: Optional[Union[Timezone, bool, int, str]]
+    default: Optional[Union[Timezone, StrictBool, StrictInt, StrictStr]]
 
 
 class UserFieldConfigurationDefault(

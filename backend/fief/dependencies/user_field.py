@@ -201,3 +201,16 @@ async def get_user_create_internal_model(
         __base__=UserFields,  # type: ignore
     )
     return UserCreateInternal[user_fields_model]  # type: ignore
+
+
+async def get_admin_user_create_internal_model(
+    user_fields: List[UserField] = Depends(get_user_fields),
+) -> Type[UserCreateInternal[UF]]:
+    fields, validators = _get_pydantic_specification(user_fields)
+    user_fields_model = create_model(
+        "UserFields",
+        **fields,
+        __validators__=validators,
+        __base__=UserFields,  # type: ignore
+    )
+    return UserCreateInternal[user_fields_model]  # type: ignore
