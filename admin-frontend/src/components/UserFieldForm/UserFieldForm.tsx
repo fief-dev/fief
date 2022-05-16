@@ -1,12 +1,11 @@
 import { TrashIcon } from '@heroicons/react/solid';
 import { useEffect } from 'react';
-import { Controller, useFieldArray, useFormContext } from 'react-hook-form';
+import { useFieldArray, useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import slugify from 'slugify';
 
 import { useFieldRequiredErrorMessage } from '../../hooks/errors';
 import * as schemas from '../../schemas';
-import DatePicker from '../DatePicker/DatePicker';
 import FormErrorMessage from '../FormErrorMessage/FormErrorMessage';
 import TimezoneInput from '../TimezoneInput/TimezoneInput';
 
@@ -132,7 +131,7 @@ const UserFieldForm: React.FunctionComponent<UserFieldFormProps> = ({ update }) 
               id="default"
               className="form-input w-full"
               type="number"
-              {...register('configuration.default')}
+              {...register('configuration.default', { valueAsNumber: true })}
             />
           }
           {type === schemas.userField.UserFieldType.BOOLEAN &&
@@ -157,19 +156,6 @@ const UserFieldForm: React.FunctionComponent<UserFieldFormProps> = ({ update }) 
                 <option key={choice[0]} value={choice[0]}>{choice[1]}</option>
               )}
             </select>
-          }
-          {(type === schemas.userField.UserFieldType.DATE || type === schemas.userField.UserFieldType.DATETIME) &&
-            <Controller
-              name="configuration.default"
-              control={control}
-              render={({ field: { onChange, value } }) =>
-                <DatePicker
-                  value={value}
-                  onChange={onChange}
-                  time={type === schemas.userField.UserFieldType.DATETIME}
-                />
-              }
-            />
           }
           {type === schemas.userField.UserFieldType.TIMEZONE &&
             <TimezoneInput
