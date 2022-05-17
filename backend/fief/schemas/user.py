@@ -1,16 +1,20 @@
-from typing import Any, Dict, Generic, TypeVar
+from datetime import date, datetime
+from typing import Any, Dict, Generic, TypeVar, Union
 
 from fastapi_users import schemas
-from pydantic import UUID4, BaseModel, Field
+from pydantic import UUID4, BaseModel, Field, StrictBool, StrictInt, StrictStr
 from pydantic.generics import GenericModel
 
 from fief.schemas.tenant import TenantEmbedded
+from fief.schemas.generics import Timezone, Address
 
 
 class UserRead(schemas.BaseUser):
     tenant_id: UUID4
     tenant: TenantEmbedded
-    fields: Dict[str, Any]
+    fields: Dict[
+        str, Union[Address, Timezone, StrictBool, StrictInt, StrictStr, datetime, date]
+    ]
 
     class Config:
         orm_mode = True

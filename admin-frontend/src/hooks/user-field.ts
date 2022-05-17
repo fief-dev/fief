@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import * as schemas from '../schemas';
 import { useAPI } from './api';
@@ -17,4 +17,16 @@ export const useUserFields = (): schemas.userField.UserField[] => {
   }, [getUserFields]);
 
   return userFields;
+};
+
+export const useUserFieldsDefaultValues = (): Record<string, any> => {
+  const userFields = useUserFields();
+
+  return useMemo(() => userFields.reduce(
+    (defaultValues, userField) => ({
+      ...defaultValues,
+      [userField.slug]: userField.configuration.default ? userField.configuration.default : null,
+    }),
+    {},
+  ), [userFields]);
 };

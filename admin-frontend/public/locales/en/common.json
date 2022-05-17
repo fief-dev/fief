@@ -38,5 +38,13 @@
   "delete": {
     "cancel": "Cancel",
     "submit": "Delete"
+  },
+  "address": {
+    "line1": "Address line 1",
+    "line2": "Address line 2",
+    "postal_code": "Postal code",
+    "city": "City",
+    "state": "State",
+    "country": "Country"
   }
 }

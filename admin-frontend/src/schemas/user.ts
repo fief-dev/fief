@@ -13,6 +13,7 @@ interface UserCreate {
   is_active?: boolean;
   is_superuser?: boolean;
   is_verified?: boolean;
+  fields: Record<string, any>;
 }
 
 export interface UserCreateInternal extends UserCreate {

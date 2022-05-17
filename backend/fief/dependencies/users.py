@@ -96,8 +96,10 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, UUID4]):
         for user_field in user_fields:
             user_field_value = UserFieldValue(user_field=user_field)
             try:
-                user_field_value.value = user_create.fields.get_value(user_field.slug)
-                user.user_field_values.append(user_field_value)
+                value = user_create.fields.get_value(user_field.slug)
+                if value is not None:
+                    user_field_value.value = user_create.fields.get_value(user_field.slug)
+                    user.user_field_values.append(user_field_value)
             except AttributeError:
                 default = user_field.get_default()
                 if default is not None:
