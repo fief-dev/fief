@@ -21,8 +21,8 @@
     "default": "Default value",
     "default_enabled": "Enabled",
     "at_registration": "Ask at registration",
-    "required": "Required",
-    "editable": "Editable by the user"
+    "at_update": "Ask at profile update",
+    "required": "Required"
   },
   "list": {
     "title": "User fields",

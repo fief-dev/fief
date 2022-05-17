@@ -17,7 +17,7 @@ from fief.managers import UserFieldManager
 from fief.models import UserField
 from fief.models.user_field import UserFieldType
 from fief.schemas.generics import true_bool_validator
-from fief.schemas.user import UF, UserCreate, UserCreateInternal, UserFields
+from fief.schemas.user import UF, UserCreate, UserCreateInternal, UserFields, UserUpdate
 from fief.schemas.user_field import (
     USER_FIELD_CAN_HAVE_DEFAULT,
     USER_FIELD_TYPE_MAP,
@@ -140,6 +140,12 @@ async def get_registration_user_fields(
     return await manager.get_registration_fields()
 
 
+async def get_update_user_fields(
+    manager: UserFieldManager = Depends(get_user_field_manager),
+) -> List[UserField]:
+    return await manager.get_update_fields()
+
+
 def _get_pydantic_specification(user_fields: List[UserField]) -> Tuple[Any, Any]:
     fields: Any = {}
     validators: Any = {}
@@ -214,3 +220,16 @@ async def get_admin_user_create_internal_model(
         __base__=UserFields,  # type: ignore
     )
     return UserCreateInternal[user_fields_model]  # type: ignore
+
+
+async def get_user_update_model(
+    update_user_fields: List[UserField] = Depends(get_update_user_fields),
+) -> Type[UserUpdate[UF]]:
+    fields, validators = _get_pydantic_specification(update_user_fields)
+    user_fields_model = create_model(
+        "UserFields",
+        **fields,
+        __validators__=validators,
+        __base__=UserFields,  # type: ignore
+    )
+    return UserUpdate[user_fields_model]  # type: ignore

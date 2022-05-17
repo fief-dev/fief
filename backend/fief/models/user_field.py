@@ -28,8 +28,8 @@ class UserFieldType(str, Enum):
 class UserFieldConfiguration(TypedDict):
     choices: Optional[List[Tuple[str, str]]]
     at_registration: bool
+    at_update: bool
     required: bool
-    editable: bool
     default: Optional[Any]
 
 

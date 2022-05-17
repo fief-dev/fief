@@ -1,12 +1,12 @@
 from datetime import date, datetime
-from typing import Any, Dict, Generic, TypeVar, Union
+from typing import Any, Dict, Generic, Optional, TypeVar, Union
 
 from fastapi_users import schemas
 from pydantic import UUID4, BaseModel, Field, StrictBool, StrictInt, StrictStr
 from pydantic.generics import GenericModel
 
+from fief.schemas.generics import Address, Timezone
 from fief.schemas.tenant import TenantEmbedded
-from fief.schemas.generics import Timezone, Address
 
 
 class UserRead(schemas.BaseUser):
@@ -44,5 +44,5 @@ class UserCreateInternal(UserCreate[UF], Generic[UF]):
     tenant_id: UUID4
 
 
-class UserUpdate(schemas.BaseUserUpdate):
-    pass
+class UserUpdate(GenericModel, Generic[UF], schemas.BaseUserUpdate):
+    fields: Optional[UF] = Field(exclude=True)

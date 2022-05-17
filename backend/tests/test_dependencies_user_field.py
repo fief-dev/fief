@@ -19,7 +19,7 @@ class TestGetUserCreateModel:
                 configuration={
                     "at_registration": True,
                     "required": True,
-                    "editable": True,
+                    "at_update": True,
                     "default": None,
                     "choices": None,
                 },
@@ -49,7 +49,7 @@ class TestGetUserCreateModel:
                 configuration={
                     "at_registration": True,
                     "required": True,
-                    "editable": True,
+                    "at_update": True,
                     "default": None,
                     "choices": None,
                 },
@@ -76,7 +76,7 @@ class TestGetUserCreateModel:
                 configuration={
                     "at_registration": True,
                     "required": True,
-                    "editable": True,
+                    "at_update": True,
                     "default": None,
                     "choices": None,
                 },
@@ -107,7 +107,7 @@ class TestGetUserCreateModel:
                 configuration={
                     "at_registration": True,
                     "required": False,
-                    "editable": True,
+                    "at_update": True,
                     "default": None,
                     "choices": None,
                 },
@@ -128,7 +128,7 @@ class TestGetUserCreateModel:
                 configuration={
                     "at_registration": True,
                     "required": False,
-                    "editable": True,
+                    "at_update": True,
                     "default": None,
                     "choices": None,
                 },
@@ -152,7 +152,7 @@ class TestGetUserCreateModel:
                 configuration={
                     "at_registration": True,
                     "required": True,
-                    "editable": True,
+                    "at_update": True,
                     "default": None,
                     "choices": None,
                 },
@@ -183,7 +183,7 @@ class TestGetUserCreateModel:
                 configuration={
                     "at_registration": True,
                     "required": True,
-                    "editable": True,
+                    "at_update": True,
                     "default": None,
                     "choices": None,
                 },
@@ -206,7 +206,7 @@ class TestGetUserCreateModel:
                 configuration={
                     "at_registration": True,
                     "required": True,
-                    "editable": True,
+                    "at_update": True,
                     "default": None,
                     "choices": [("a", "A"), ("b", "B"), ("c", "C")],
                 },
@@ -236,7 +236,7 @@ class TestGetUserCreateModel:
                 configuration={
                     "at_registration": True,
                     "required": True,
-                    "editable": True,
+                    "at_update": True,
                     "default": None,
                     "choices": [("a", "A"), ("b", "B"), ("c", "C")],
                 },

@@ -28,6 +28,7 @@ from fief.settings import settings
 ModelMapping = Mapping[str, M]
 
 now = datetime.now(timezone.utc)
+hashed_password = password_helper.hash("hermine")
 
 
 class TestData(TypedDict):
@@ -105,8 +106,8 @@ user_fields: ModelMapping[UserField] = {
             "choices": None,
             "default": None,
             "at_registration": True,
+            "at_update": True,
             "required": False,
-            "editable": True,
         },
     ),
     "gender": UserField(
@@ -117,8 +118,8 @@ user_fields: ModelMapping[UserField] = {
             "choices": [("M", "male"), ("F", "female"), ("N", "non_binary")],
             "default": None,
             "at_registration": False,
+            "at_update": True,
             "required": False,
-            "editable": True,
         },
     ),
     "phone_number": UserField(
@@ -129,8 +130,8 @@ user_fields: ModelMapping[UserField] = {
             "choices": None,
             "default": None,
             "at_registration": False,
+            "at_update": True,
             "required": False,
-            "editable": True,
         },
     ),
     "phone_number_verified": UserField(
@@ -141,8 +142,8 @@ user_fields: ModelMapping[UserField] = {
             "choices": None,
             "default": None,
             "at_registration": False,
+            "at_update": False,
             "required": False,
-            "editable": False,
         },
     ),
     "birthdate": UserField(
@@ -153,8 +154,8 @@ user_fields: ModelMapping[UserField] = {
             "choices": None,
             "default": None,
             "at_registration": False,
+            "at_update": True,
             "required": False,
-            "editable": True,
         },
     ),
     "last_seen": UserField(
@@ -165,8 +166,8 @@ user_fields: ModelMapping[UserField] = {
             "choices": None,
             "default": None,
             "at_registration": False,
+            "at_update": False,
             "required": False,
-            "editable": False,
         },
     ),
     "address": UserField(
@@ -177,8 +178,8 @@ user_fields: ModelMapping[UserField] = {
             "choices": None,
             "default": None,
             "at_registration": True,
+            "at_update": False,
             "required": False,
-            "editable": False,
         },
     ),
     "onboarding_done": UserField(
@@ -189,8 +190,8 @@ user_fields: ModelMapping[UserField] = {
             "choices": None,
             "default": False,
             "at_registration": False,
+            "at_update": False,
             "required": False,
-            "editable": False,
         },
     ),
 }
@@ -199,14 +200,20 @@ users: ModelMapping[User] = {
     "regular": User(
         id=uuid.uuid4(),
         email="anne@bretagne.duchy",
-        hashed_password=password_helper.hash("hermine"),
+        hashed_password=hashed_password,
         tenant=tenants["default"],
     ),
     "regular_secondary": User(
         id=uuid.uuid4(),
         email="anne@nantes.city",
-        hashed_password=password_helper.hash("hermine"),
+        hashed_password=hashed_password,
         tenant=tenants["secondary"],
+    ),
+    "regular_default_2": User(
+        id=uuid.uuid4(),
+        email="isabeau@bretagne.duchy",
+        hashed_password=hashed_password,
+        tenant=tenants["default"],
     ),
 }
 
@@ -251,10 +258,20 @@ user_field_values: ModelMapping[UserFieldValue] = {
         user=users["regular"],
         user_field=user_fields["address"],
     ),
+    "regular_onboarding_done": UserFieldValue(
+        value_boolean=False,
+        user=users["regular"],
+        user_field=user_fields["onboarding_done"],
+    ),
     "secondary_regular_given_name": UserFieldValue(
         value_string="Anne",
         user=users["regular_secondary"],
         user_field=user_fields["given_name"],
+    ),
+    "secondary_onboarding_done": UserFieldValue(
+        value_boolean=False,
+        user=users["regular_secondary"],
+        user_field=user_fields["onboarding_done"],
     ),
 }
 

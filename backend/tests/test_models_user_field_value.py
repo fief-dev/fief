@@ -33,7 +33,7 @@ def test_value_getter(user_field_type: UserFieldType, value: Any, field: str):
             "choices": None,
             "at_registration": False,
             "required": False,
-            "editable": False,
+            "at_update": False,
             "default": None,
         },
     )
@@ -70,7 +70,7 @@ def test_value_setter(user_field_type: UserFieldType, value: Any, expected_field
             "choices": None,
             "at_registration": False,
             "required": False,
-            "editable": False,
+            "at_update": False,
             "default": None,
         },
     )

@@ -44,12 +44,15 @@ from fief.dependencies.tenant import (
     get_current_tenant,
     get_tenant_from_create_user_internal,
 )
-from fief.dependencies.user_field import get_admin_user_create_internal_model
+from fief.dependencies.user_field import (
+    get_admin_user_create_internal_model,
+    get_user_update_model,
+)
 from fief.dependencies.workspace_managers import get_user_manager as get_user_db_manager
 from fief.locale import Translations
 from fief.managers import UserManager as UserDBManager
 from fief.models import Tenant, User, UserField, UserFieldValue, Workspace
-from fief.schemas.user import UF, UserCreate, UserCreateInternal
+from fief.schemas.user import UF, UserCreate, UserCreateInternal, UserUpdate
 from fief.settings import settings
 from fief.tasks import SendTask, on_after_forgot_password, on_after_register
 
@@ -98,7 +101,7 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, UUID4]):
             try:
                 value = user_create.fields.get_value(user_field.slug)
                 if value is not None:
-                    user_field_value.value = user_create.fields.get_value(user_field.slug)
+                    user_field_value.value = value
                     user.user_field_values.append(user_field_value)
             except AttributeError:
                 default = user_field.get_default()
@@ -107,6 +110,46 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, UUID4]):
                     user.user_field_values.append(user_field_value)
 
         return await self.user_db.update(user, {})
+
+    async def update_with_fields(
+        self,
+        user_update: UserUpdate[UF],
+        user: User,
+        *,
+        user_fields: List[UserField],
+        safe: bool = False,
+        request: Optional[Request] = None,
+    ) -> User:
+        user = await self.update(user_update, user, safe, request)
+
+        if user_update.fields is not None:
+            for user_field in user_fields:
+                existing_user_field_value = user.get_user_field_value(user_field)
+                # Update existing value
+                if existing_user_field_value is not None:
+                    try:
+                        value = user_update.fields.get_value(user_field.slug)
+                        if value is not None:
+                            existing_user_field_value.value = value
+                    except AttributeError:
+                        pass
+                # Create new value
+                else:
+                    user_field_value = UserFieldValue(user_field=user_field)
+                    try:
+                        value = user_update.fields.get_value(user_field.slug)
+                        if value is not None:
+                            user_field_value.value = value
+                            user.user_field_values.append(user_field_value)
+                    except AttributeError:
+                        default = user_field.get_default()
+                        if default is not None:
+                            user_field_value.value = default
+                            user.user_field_values.append(user_field_value)
+
+            user = await self.user_db.update(user, {})
+
+        return user
 
     async def on_after_register(self, user: User, request: Optional[Request] = None):
         self.send_task(on_after_register, str(user.id), str(self.workspace.id))
@@ -261,3 +304,19 @@ async def get_user_create_internal(
         raise RequestValidationError(e.raw_errors) from e
     else:
         return validated_user_create_internal.body  # type: ignore
+
+
+async def get_user_update(
+    request: Request,
+    user_update_model: Type[UserUpdate[UF]] = Depends(get_user_update_model),
+) -> UserUpdate[UF]:
+    body_model = create_model(
+        "UserUpdateBoy",
+        body=(user_update_model, ...),
+    )
+    try:
+        validated_user_update = body_model(body=await request.json())
+    except ValidationError as e:
+        raise RequestValidationError(e.raw_errors) from e
+    else:
+        return validated_user_update.body  # type: ignore

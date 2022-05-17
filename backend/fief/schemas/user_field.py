@@ -59,7 +59,7 @@ def get_user_field_pydantic_type(field: UserFieldModel) -> Type[Any]:
 class UserFieldConfigurationBase(BaseModel):
     at_registration: bool
     required: bool
-    editable: bool
+    at_update: bool
 
 
 class UserFieldConfiguration(UserFieldConfigurationBase):

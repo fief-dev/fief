@@ -140,12 +140,6 @@ class BaseManager(BaseManagerProtocol, Generic[M]):
         await self.session.refresh(object)
         return object
 
-    async def create_many(self, objects: List[M]) -> List[M]:
-        for object in objects:
-            self.session.add(object)
-        await self.session.commit()
-        return objects
-
     async def update(self, object: M) -> None:
         self.session.add(object)
         await self.session.commit()

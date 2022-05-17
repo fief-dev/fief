@@ -21,6 +21,7 @@ async def test_fields(test_data: TestData):
             "city": "Nantes",
             "country": "FR",
         },
+        "onboarding_done": False,
     }
 
 
@@ -43,4 +44,5 @@ async def test_get_claims(test_data: TestData):
             "city": "Nantes",
             "country": "FR",
         },
+        "onboarding_done": False,
     }

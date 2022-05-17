@@ -28,7 +28,7 @@ export interface UserFieldConfiguration {
   choices?: [string, string][];
   at_registration: boolean;
   required: boolean;
-  editable: boolean;
+  at_update: boolean;
   default?: any;
 }
 

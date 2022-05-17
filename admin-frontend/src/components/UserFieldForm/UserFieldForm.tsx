@@ -181,6 +181,18 @@ const UserFieldForm: React.FunctionComponent<UserFieldFormProps> = ({ update }) 
         <FormErrorMessage errors={errors} name="at_registration" />
       </div>
       <div>
+        <label className="flex items-center text-sm font-medium" htmlFor="at_update">
+          <input
+            id="at_update"
+            className="form-checkbox"
+            type="checkbox"
+            {...register('configuration.at_update')}
+          />
+          <span className="ml-2">{t('base.at_update')}</span>
+        </label>
+        <FormErrorMessage errors={errors} name="at_update" />
+      </div>
+      <div>
         <label className="flex items-center text-sm font-medium" htmlFor="required">
           <input
             id="required"
@@ -191,18 +203,6 @@ const UserFieldForm: React.FunctionComponent<UserFieldFormProps> = ({ update }) 
           <span className="ml-2">{t('base.required')}</span>
         </label>
         <FormErrorMessage errors={errors} name="required" />
-      </div>
-      <div>
-        <label className="flex items-center text-sm font-medium" htmlFor="editable">
-          <input
-            id="editable"
-            className="form-checkbox"
-            type="checkbox"
-            {...register('configuration.editable')}
-          />
-          <span className="ml-2">{t('base.editable')}</span>
-        </label>
-        <FormErrorMessage errors={errors} name="editable" />
       </div>
     </>
   );
