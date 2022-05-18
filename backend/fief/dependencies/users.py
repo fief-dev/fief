@@ -1,6 +1,6 @@
 from typing import Dict, List, Optional, Type, Union, cast
 
-from fastapi import Depends, Request
+from fastapi import Depends, HTTPException, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.security import OAuth2AuthorizationCodeBearer
 from fastapi_users import BaseUserManager, InvalidPasswordException
@@ -46,6 +46,7 @@ from fief.dependencies.tenant import (
 )
 from fief.dependencies.user_field import (
     get_admin_user_create_internal_model,
+    get_admin_user_update_model,
     get_user_update_model,
 )
 from fief.dependencies.workspace_managers import get_user_manager as get_user_db_manager
@@ -288,6 +289,37 @@ async def get_paginated_users(
     return await get_paginated_objects(statement, pagination, ordering, manager)
 
 
+async def get_user_by_id_or_404(
+    id: UUID4,
+    manager: UserDBManager = Depends(get_user_db_manager),
+) -> User:
+    user = await manager.get_by_id(id, (joinedload(User.tenant),))
+
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+
+    return user
+
+
+async def get_user_db_from_user(
+    user: User = Depends(get_user_by_id_or_404),
+    session: AsyncSession = Depends(get_current_workspace_session),
+) -> SQLAlchemyUserDatabase[User, UUID4]:
+    return SQLAlchemyUserTenantDatabase(session, user.tenant, User)
+
+
+async def get_user_manager_from_user(
+    user: User = Depends(get_user_by_id_or_404),
+    user_db: SQLAlchemyUserDatabase[User, UUID4] = Depends(get_user_db_from_user),
+    workspace: Workspace = Depends(get_current_workspace),
+    translations: Translations = Depends(get_translations),
+    send_task: SendTask = Depends(get_send_task),
+):
+    return UserManager(
+        user_db, password_helper, workspace, user.tenant, translations, send_task
+    )
+
+
 async def get_user_create_internal(
     request: Request,
     user_create_internal_model: Type[UserCreateInternal[UF]] = Depends(
@@ -311,7 +343,23 @@ async def get_user_update(
     user_update_model: Type[UserUpdate[UF]] = Depends(get_user_update_model),
 ) -> UserUpdate[UF]:
     body_model = create_model(
-        "UserUpdateBoy",
+        "UserUpdateBody",
+        body=(user_update_model, ...),
+    )
+    try:
+        validated_user_update = body_model(body=await request.json())
+    except ValidationError as e:
+        raise RequestValidationError(e.raw_errors) from e
+    else:
+        return validated_user_update.body  # type: ignore
+
+
+async def get_admin_user_update(
+    request: Request,
+    user_update_model: Type[UserUpdate[UF]] = Depends(get_admin_user_update_model),
+) -> UserUpdate[UF]:
+    body_model = create_model(
+        "UserUpdateBody",
         body=(user_update_model, ...),
     )
     try:

@@ -155,6 +155,100 @@ class TestCreateUser:
         json = response.json()
         assert json["email"] == "louis@bretagne.duchy"
         assert json["tenant_id"] == str(tenant.id)
+        assert json["tenant"]["id"] == str(tenant.id)
 
         assert json["fields"]["onboarding_done"] is True
         assert json["fields"]["last_seen"] == "2022-01-01T13:37:00+00:00"
+
+
+@pytest.mark.asyncio
+@pytest.mark.workspace_host
+class TestUpdateUser:
+    async def test_unauthorized(
+        self, test_client_admin: httpx.AsyncClient, test_data: TestData
+    ):
+        user = test_data["users"]["regular"]
+        response = await test_client_admin.patch(f"/users/{user.id}", json={})
+
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+    @pytest.mark.authenticated_admin
+    async def test_unknown_user(
+        self, test_client_admin: httpx.AsyncClient, not_existing_uuid: uuid.UUID
+    ):
+        response = await test_client_admin.patch(f"/users/{not_existing_uuid}", json={})
+
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    @pytest.mark.authenticated_admin
+    async def test_existing_email_address(
+        self, test_client_admin: httpx.AsyncClient, test_data: TestData
+    ):
+        user = test_data["users"]["regular"]
+        response = await test_client_admin.patch(
+            f"/users/{user.id}",
+            json={"email": "isabeau@bretagne.duchy"},
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+        json = response.json()
+        assert json["detail"] == APIErrorCode.USER_UPDATE_EMAIL_ALREADY_EXISTS
+
+    @pytest.mark.authenticated_admin
+    async def test_invalid_password(
+        self, test_client_admin: httpx.AsyncClient, test_data: TestData
+    ):
+        user = test_data["users"]["regular"]
+        response = await test_client_admin.patch(
+            f"/users/{user.id}",
+            json={"password": "h"},
+        )
+
+        print(response.json())
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+        json = response.json()
+        assert json["detail"] == APIErrorCode.USER_UPDATE_INVALID_PASSWORD
+        assert "reason" in json
+
+    @pytest.mark.authenticated_admin
+    async def test_invalid_field_value(
+        self, test_client_admin: httpx.AsyncClient, test_data: TestData
+    ):
+        user = test_data["users"]["regular"]
+        response = await test_client_admin.patch(
+            f"/users/{user.id}", json={"fields": {"last_seen": "INVALID_VALUE"}}
+        )
+
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+        json = response.json()
+        assert json["detail"][0]["loc"] == ["body", "fields", "last_seen"]
+
+    @pytest.mark.authenticated_admin
+    async def test_valid(
+        self, test_client_admin: httpx.AsyncClient, test_data: TestData
+    ):
+        user = test_data["users"]["regular"]
+        response = await test_client_admin.patch(
+            f"/users/{user.id}",
+            json={
+                "email": "anne+updated@bretagne.duchy",
+                "password": "hermine1",
+                "fields": {
+                    "onboarding_done": True,
+                    "last_seen": "2022-01-01T13:37:00+00:00",
+                },
+            },
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+
+        json = response.json()
+        assert json["email"] == "anne+updated@bretagne.duchy"
+
+        assert json["fields"]["onboarding_done"] is True
+        assert json["fields"]["last_seen"] == "2022-01-01T13:37:00+00:00"
+
+        assert json["tenant"]["id"] == str(user.tenant_id)
