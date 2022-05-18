@@ -17,11 +17,6 @@ const UserFieldsSelectionContextProvider: React.FunctionComponent = ({ children 
         enabled: false,
       },
       {
-        id: 'email',
-        name: t('users:list.email'),
-        enabled: true,
-      },
-      {
         id: 'tenant',
         name: t('users:list.tenant'),
         enabled: true,

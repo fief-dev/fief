@@ -1,19 +1,17 @@
 import { AxiosError } from 'axios';
 import { useCallback, useEffect, useState } from 'react';
-import { Controller, SubmitHandler, useForm, FormProvider } from 'react-hook-form';
+import { SubmitHandler, useForm, FormProvider } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
 import { useAPI } from '../../hooks/api';
-import { useFieldRequiredErrorMessage } from '../../hooks/errors';
-import { useUserFields, useUserFieldsDefaultValues } from '../../hooks/user-field';
+import { useUserFieldsDefaultValues } from '../../hooks/user-field';
 import * as schemas from '../../schemas';
 import { handleAPIError } from '../../services/api';
+import { cleanUserRequestData } from '../../services/user';
 import ErrorAlert from '../ErrorAlert/ErrorAlert';
-import FormErrorMessage from '../FormErrorMessage/FormErrorMessage';
 import LoadingButton from '../LoadingButton/LoadingButton';
 import Modal from '../Modal/Modal';
-import TenantCombobox from '../TenantCombobox/TenantCombobox';
-import UserFieldInput from '../UserFieldInput/UserFieldInput';
+import UserForm from '../UserForm/UserForm';
 
 interface CreateUserModalProps {
   open: boolean;
@@ -24,12 +22,10 @@ interface CreateUserModalProps {
 const CreateUserModal: React.FunctionComponent<CreateUserModalProps> = ({ open, onClose, onCreated }) => {
   const { t } = useTranslation(['users']);
   const api = useAPI();
-  const userFields = useUserFields();
   const userFieldsDefaultValues = useUserFieldsDefaultValues();
 
   const form = useForm<schemas.user.UserCreateInternal>({ defaultValues: { fields: userFieldsDefaultValues } });
-  const { register, handleSubmit, control, setError, reset, formState: { errors } } = form;
-  const fieldRequiredErrorMessage = useFieldRequiredErrorMessage();
+  const { handleSubmit, setError, reset } = form;
 
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | undefined>();
@@ -37,7 +33,7 @@ const CreateUserModal: React.FunctionComponent<CreateUserModalProps> = ({ open, 
   const onSubmit: SubmitHandler<schemas.user.UserCreateInternal> = useCallback(async (data) => {
     setLoading(true);
     try {
-      const { data: user } = await api.createUser(data);
+      const { data: user } = await api.createUser(cleanUserRequestData<schemas.user.UserCreateInternal>(data));
       if (onCreated) {
         onCreated(user);
         reset();
@@ -76,46 +72,7 @@ const CreateUserModal: React.FunctionComponent<CreateUserModalProps> = ({ open, 
           <Modal.Body>
             <div className="space-y-4">
               {errorMessage && <ErrorAlert message={t(`common:api_errors.${errorMessage}`)} />}
-              <div>
-                <label className="block text-sm font-medium mb-1" htmlFor="email">{t('create.email')}</label>
-                <input
-                  id="email"
-                  className="form-input w-full"
-                  type="email"
-                  {...register('email', { required: fieldRequiredErrorMessage })}
-                />
-                <FormErrorMessage errors={errors} name="email" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1" htmlFor="password">{t('create.password')}</label>
-                <input
-                  id="password"
-                  className="form-input w-full"
-                  type="password"
-                  {...register('password', { required: fieldRequiredErrorMessage })}
-                />
-                <FormErrorMessage errors={errors} name="password" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1" htmlFor="tenant_id">{t('create.tenant')}</label>
-                <Controller
-                  name="tenant_id"
-                  control={control}
-                  rules={{ required: fieldRequiredErrorMessage }}
-                  render={({ field: { onChange, value } }) =>
-                    <TenantCombobox
-                      onChange={onChange}
-                      value={value}
-                    />
-                  }
-                />
-                <FormErrorMessage errors={errors} name="tenant_id" />
-              </div>
-              {userFields.map((userField) =>
-                <div key={userField.slug}>
-                  <UserFieldInput userField={userField} path="fields" />
-                </div>
-              )}
+              <UserForm update={false} />
             </div>
           </Modal.Body>
           <Modal.Footer>

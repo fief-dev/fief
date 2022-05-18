@@ -73,6 +73,10 @@ export class APIClient {
     return this.client.post('/users/', data);
   }
 
+  public updateUser(id: string, data: schemas.user.UserUpdate): Promise<AxiosResponse<schemas.user.User>> {
+    return this.client.patch(`/users/${id}`, data);
+  }
+
   public listUserFields(params: schemas.PaginationParameters = {}): Promise<AxiosResponse<schemas.PaginatedResults<schemas.userField.UserField>>> {
     return this.client.get('/user-fields/', { params });
   }

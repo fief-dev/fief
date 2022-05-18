@@ -5,11 +5,11 @@ from fastapi_users import schemas
 from pydantic import UUID4, BaseModel, Field, StrictBool, StrictInt, StrictStr
 from pydantic.generics import GenericModel
 
-from fief.schemas.generics import Address, Timezone
+from fief.schemas.generics import Address, CreatedUpdatedAt, Timezone
 from fief.schemas.tenant import TenantEmbedded
 
 
-class UserRead(schemas.BaseUser):
+class UserRead(schemas.BaseUser, CreatedUpdatedAt):
     tenant_id: UUID4
     tenant: TenantEmbedded
     fields: Dict[

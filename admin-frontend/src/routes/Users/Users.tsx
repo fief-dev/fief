@@ -6,6 +6,7 @@ import { PlusIcon } from '@heroicons/react/solid';
 import CreateUserModal from '../../components/CreateUserModal/CreateUserModal';
 import DataTable from '../../components/DataTable/DataTable';
 import Layout from '../../components/Layout/Layout';
+import UserDetails from '../../components/UserDetails/UserDetails';
 import UserFieldsSelector from '../../components/UserFieldsSelector/UserFieldsSelector';
 import UserFieldValue from '../../components/UserFieldValue/UserFieldValue';
 import UserFieldsSelectionContext from '../../contexts/user-fields-selection';
@@ -29,6 +30,16 @@ const Users: React.FunctionComponent = () => {
     refresh,
   } = usePaginationAPI<'listUsers'>({ method: 'listUsers', limit: 10 });
 
+  const [selected, setSelected] = useState<schemas.user.User | undefined>();
+
+  const onUserSelected = useCallback((user: schemas.user.User) => {
+    if (selected && selected.id === user.id) {
+      setSelected(undefined);
+    } else {
+      setSelected(user);
+    }
+  }, [selected]);
+
   const columns = useMemo<Column<schemas.user.User>[]>(() => {
     return userFieldsSelection.filter(({ enabled }) => enabled).reduce<Column<schemas.user.User>[]>(
       (columns, { id }) => {
@@ -38,14 +49,6 @@ const Users: React.FunctionComponent = () => {
             {
               Header: t('users:list.id') as string,
               accessor: 'id',
-            },
-          ];
-        } else if (id === 'email') {
-          return [
-            ...columns,
-            {
-              Header: t('users:list.email') as string,
-              accessor: 'email',
             },
           ];
         } else if (id === 'tenant') {
@@ -80,9 +83,17 @@ const Users: React.FunctionComponent = () => {
           }
         }
       },
-      [],
+      [
+        {
+          Header: t('users:list.email') as string,
+          accessor: 'email',
+          Cell: ({ cell: { value }, row: { original } }) => (
+            <span className="font-medium text-slate-800 hover:text-slate-900 cursor-pointer" onClick={() => onUserSelected(original)}>{value}</span>
+          )
+        },
+      ],
     );
-  }, [t, userFields, userFieldsSelection]);
+  }, [t, userFields, userFieldsSelection, onUserSelected]);
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const onCreated = useCallback(() => {
@@ -90,8 +101,13 @@ const Users: React.FunctionComponent = () => {
     refresh();
   }, [refresh]);
 
+  const onUpdated = useCallback((user: schemas.user.User) => {
+    refresh();
+    setSelected(user);
+  }, [refresh]);
+
   return (
-    <Layout>
+    <Layout sidebar={selected ? <UserDetails user={selected} onUpdated={onUpdated} /> : undefined}>
       <div className="sm:flex sm:justify-between sm:items-center mb-8">
 
         <div className="mb-4 sm:mb-0">
