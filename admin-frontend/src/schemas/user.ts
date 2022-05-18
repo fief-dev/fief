@@ -1,4 +1,4 @@
-import { UUIDSchema } from './generics';
+import { CreatedUpdatedAt, UUIDSchema } from './generics';
 import { TenantEmbedded } from './tenant';
 
 
@@ -13,10 +13,20 @@ interface UserCreate {
   is_active?: boolean;
   is_superuser?: boolean;
   is_verified?: boolean;
+  fields: Record<string, any>;
 }
 
 export interface UserCreateInternal extends UserCreate {
   tenant_id: string;
+}
+
+export interface UserUpdate {
+  email?: string;
+  password?: string;
+  is_active?: boolean;
+  is_superuser?: boolean;
+  is_verified?: boolean;
+  fields?: Record<string, any>;
 }
 
 interface BaseUser extends UUIDSchema {
@@ -27,6 +37,7 @@ interface BaseUser extends UUIDSchema {
   tenant_id: string;
 }
 
-export interface User extends BaseUser {
+export interface User extends BaseUser, CreatedUpdatedAt {
   tenant: TenantEmbedded;
+  fields: Record<string, any>;
 }

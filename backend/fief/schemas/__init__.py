@@ -6,6 +6,7 @@ from fief.schemas import (
     reset,
     tenant,
     user,
+    user_field,
     well_known,
     workspace,
 )
@@ -19,5 +20,6 @@ __all__ = [
     "reset",
     "tenant",
     "user",
+    "user_field",
     "well_known",
 ]

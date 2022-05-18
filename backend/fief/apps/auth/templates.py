@@ -1,4 +1,6 @@
 from fastapi.templating import Jinja2Templates
+from pycountry import countries
+from pytz import common_timezones
 from starlette.background import BackgroundTasks
 
 from fief.locale import Translations
@@ -9,6 +11,10 @@ class LocaleJinja2Templates(Jinja2Templates):
     def _create_env(self, directory):
         env = super()._create_env(directory)
         env.add_extension("jinja2.ext.i18n")
+
+        env.globals["countries"] = sorted(countries, key=lambda c: c.name)
+        env.globals["timezones"] = sorted(common_timezones)
+
         return env
 
     def LocaleTemplateResponse(

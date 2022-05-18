@@ -20,8 +20,6 @@
   },
   "delete": {
     "title": "Delete the API Key \"{{name}}\"?",
-    "notice": "If you delete this key, every applications using this key won't be able to access the API anymore.",
-    "cancel": "Cancel",
-    "submit": "Delete"
+    "notice": "If you delete this key, every applications using this key won't be able to access the API anymore."
   }
 }

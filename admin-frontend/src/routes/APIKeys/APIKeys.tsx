@@ -10,7 +10,7 @@ import Layout from '../../components/Layout/Layout';
 import { usePaginationAPI } from '../../hooks/api';
 import * as schemas from '../../schemas';
 import APIKeyTokenModal from '../../components/APIKeyTokenModal/APIKeyTokenModal';
-import DeleteAPIKeyModal from '../../components/DeleteAPIKeyModal/DeleteAPIKeyModal';
+import DeleteModal from '../../components/DeleteModal/DeleteModal';
 
 const APIKeys: React.FunctionComponent = () => {
   const { t } = useTranslation(['api-keys']);
@@ -125,11 +125,14 @@ const APIKeys: React.FunctionComponent = () => {
       />
 
       {apiKeyToDelete &&
-        <DeleteAPIKeyModal
-          apiKey={apiKeyToDelete}
+        <DeleteModal
+          objectId={apiKeyToDelete.id}
+          method="deleteAPIKey"
+          title={t('delete.title', { name: apiKeyToDelete.name })}
+          notice={t('delete.notice')}
           open={showDeleteModal}
-          onDeleted={onDeleted}
           onClose={() => setShowDeleteModal(false)}
+          onDeleted={onDeleted}
         />
       }
 

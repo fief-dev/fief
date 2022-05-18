@@ -1,0 +1,213 @@
+{% macro form_input_label(name, id, required = False) -%}
+  <label class="block text-sm font-medium mb-1" for="{{ id }}">
+    {{ name }}
+    {% if required %}
+      <span class="text-rose-500">*</span>
+    {% endif %}
+  </label>
+{%- endmacro %}
+
+{% macro form_input_error(name, error) -%}
+  {% if error %}
+    <div id="errors-{{ name }}" class="text-xs mt-1 text-red-500">{{ error }}</div>
+  {% endif %}
+{%- endmacro %}
+
+{% macro text_input(label, name, required, type = 'text', value = None, error = None) -%}
+  {% set id = "input-" ~ name %}
+  {{ form_input_label(label, id, required) }}
+  <input id="{{ id }}" class="form-input w-full" type="{{ type }}" name="{{ name }}" value="{{ value if value else '' }}" {{ 'required' if required else '' }} />
+  {{ form_input_error(name, error) }}
+{%- endmacro %}
+
+{% macro integer_input(label, name, required, value = None, error = None) -%}
+  {% set id = "input-" ~ name %}
+  {{ form_input_label(label, id, required) }}
+  <input id="{{ id }}" class="form-input w-full" type="number" name="{{ name }}" value="{{ value if value else '' }}" {{ 'required' if required else '' }} />
+  {{ form_input_error(name, error) }}
+{%- endmacro %}
+
+{% macro boolean_input(label, name, required, value = None, error = None) -%}
+  <label class="block text-sm font-medium mb-1" for="input-{{ name }}">
+    {{ label }}
+    {% if required %}
+      <span class="text-rose-500">*</span>
+    {% endif %}
+    <input id="input-{{ name }}" class="form-checkbox" type="checkbox" name="{{ name }}" {{ 'checked' if value else '' }} {{ 'required' if required else '' }} />
+  </label>
+  {{ form_input_error(name, error) }}
+{%- endmacro %}
+
+{% macro choice_input(label, name, required, choices, value = None, error = None) -%}
+  {% set id = "input-" ~ name %}
+  {{ form_input_label(label, id, required) }}
+  <select id="{{ id }}" class="form-select w-full" type="text" name="{{ name }}" {{ 'required' if required else '' }}>
+    {% if not required %}
+      <option value=""></option>
+    {% endif %}
+    {% for (choice_value, choice_label) in choices %}
+      <option value="{{ choice_value }}" {{ 'selected' if value == choice_value else '' }}>{{ choice_label }}</option>
+      {% endfor %}
+  </select>
+  {{ form_input_error(name, error) }}
+{%- endmacro %}
+
+{% macro datetime_input(label, name, required, time, value = None, error = None) -%}
+  {% set id = "input-" ~ name %}
+  {{ form_input_label(label, id, required) }}
+  <input id="{{ id }}" class="form-input w-full" type="{{ 'datetime-local' if time else 'date' }}" name="{{ name }}" value="{{ value if value else '' }}" {{ 'required' if required else '' }} />
+  {{ form_input_error(name, error) }}
+{%- endmacro %}
+
+{% macro phone_input(label, name, required, value = None, error = None) -%}
+  {% set id = "input-" ~ name %}
+  {{ form_input_label(label, id, required) }}
+  <input id="{{ id }}" class="form-input w-full" type="tel" placeholder="+42102030405" name="{{ name }}" value="{{ value if value else '' }}" {{ 'required' if required else '' }} />
+  {{ form_input_error(name, error) }}
+{%- endmacro %}
+
+{% macro address_input(label, name, required, value = None, error = None) -%}
+  <div class="space-y-2">
+    {% set id = "input-" ~ name %}
+    {{ form_input_label(label, id, required) }}
+    <div>
+      {{ form_input_label( _('Address line 1'), id ~ "-line1", required) }}
+      <input id="input-{{ name }}-line1" class="form-input w-full" type="text" name="{{ name }}.line1" value="{{ value.line1 if value else '' }}" {{ 'required' if required else '' }} />
+      {{ form_input_error(name, error.get("line1") if error else None) }}
+    </div>
+    <div>
+      {{ form_input_label( _('Address line 2'), id ~ "-line2", False) }}
+      <input id="input-{{ name }}-line2" class="form-input w-full" type="text" name="{{ name }}.line2" value="{{ value.line2 if value else '' }}" />
+      {{ form_input_error(name, error.get("line2") if error else None) }}
+    </div>
+    <div class="grid grid-cols-2 gap-2">
+      <div>
+        {{ form_input_label( _('Postal code'), id ~ "-postal_code", required) }}
+        <input id="input-{{ name }}-postal_code" class="form-input w-full" type="text" name="{{ name }}.postal_code" value="{{ value.postal_code if value else '' }}" {{ 'required' if required else '' }} />
+        {{ form_input_error(name, error.get("postal_code") if error else None) }}
+      </div>
+      <div>
+        {{ form_input_label( _('City'), id ~ "-city", required) }}
+        <input id="input-{{ name }}-city" class="form-input w-full" type="text" name="{{ name }}.city" value="{{ value.city if value else '' }}" {{ 'required' if required else '' }} />
+        {{ form_input_error(name, error.get("city") if error else None) }}
+      </div>
+    </div>
+    <div>
+      {{ form_input_label( _('State'), id ~ "-state", False) }}
+      <input id="input-{{ name }}-state" class="form-input w-full" type="text" name="{{ name }}.state" value="{{ value.state if value else '' }}" />
+      {{ form_input_error(name, error.get("state") if error else None) }}
+    </div>
+    <div>
+      {{ form_input_label( _('Country'), id ~ "-country", required) }}
+      <select id="input-{{ name }}-country" class="form-select w-full" type="text" name="{{ name }}.country" {{ 'required' if required else '' }} >
+        {% for country in countries %}
+          <option value="{{ country.alpha_2 }}" {{ 'selected' if value and value.country == country.alpha_2 else '' }}>{{ country.name }}</option>
+        {% endfor %}
+      </select>
+      {{ form_input_error(name, error.get("country") if error else None) }}
+    </div>
+  </div>
+{%- endmacro %}
+
+{% macro timezone_input(label, name, required, value = None, error = None) -%}
+  {% set id = "input-" ~ name %}
+  {{ form_input_label(name, id, required) }}
+  <select id="{{ id }}" class="form-select w-full" type="text" name="{{ name }}" {{ 'required' if required else '' }}>
+    {% if not required %}
+      <option value=""></option>
+    {% endif %}
+    {% for timezone in timezones %}
+      <option value="{{ timezone }}" {{ 'selected' if value == timezone else '' }}>{{ timezone }}</option>
+    {% endfor %}
+  </select>
+  {{ form_input_error(name, error) }}
+{%- endmacro %}
+
+{% macro user_field_input(field, prefix = 'fields', value = None, error = None) -%}
+  {% set slug = prefix ~ "." ~ field.slug %}
+  {% set value = value if value else field.configuration.default %}
+  {% if field.type in ["INTEGER"] %}
+    {{
+      integer_input(
+        field.name,
+        slug,
+        field.configuration.required,
+        value,
+        error,
+      )
+    }}
+  {% elif field.type in ["DATE", "DATETIME"] %}
+    {{
+      datetime_input(
+        field.name,
+        slug,
+        field.configuration.required,
+        field.type == "DATETIME",
+        value,
+        error,
+      )
+    }}
+  {% elif field.type in ["BOOLEAN"] %}
+    {{
+      boolean_input(
+        field.name,
+        slug,
+        field.configuration.required,
+        value,
+        error,
+      )
+    }}
+  {% elif field.type in ["CHOICE"] %}
+    {{
+      choice_input(
+        field.name,
+        slug,
+        field.configuration.required,
+        field.configuration.choices if field.configuration.choices else [],
+        value,
+        error,
+      )
+    }}
+  {% elif field.type in ["PHONE_NUMBER"] %}
+    {{
+      phone_input(
+        field.name,
+        slug,
+        field.configuration.required,
+        value,
+        error,
+      )
+    }}
+  {% elif field.type in ["ADDRESS"] %}
+    {{
+      address_input(
+        field.name,
+        slug,
+        field.configuration.required,
+        value,
+        error,
+      )
+    }}
+  {% elif field.type in ["TIMEZONE"] %}
+    {{
+      timezone_input(
+        field.name,
+        slug,
+        field.configuration.required,
+        value,
+        error,
+      )
+    }}
+  {% else %}
+    {{
+      text_input(
+        field.name,
+        slug,
+        field.configuration.required,
+        'text',
+        value,
+        error,
+      )
+    }}
+  {% endif %}
+{%- endmacro %}

@@ -14,7 +14,6 @@ from sqlalchemy_utils import create_database, drop_database
 
 from fief.apps import admin_app, auth_app
 from fief.crypto.access_token import generate_access_token
-from fief.crypto.id_token import get_user_claims
 from fief.crypto.token import generate_token
 from fief.csrf import check_csrf
 from fief.db import AsyncConnection, AsyncEngine, AsyncSession
@@ -31,10 +30,10 @@ from fief.models import (
     AdminAPIKey,
     AdminSessionToken,
     MainBase,
+    User,
     Workspace,
     WorkspaceUser,
 )
-from fief.schemas.user import UserDB
 from fief.services.workspace_creation import WorkspaceCreation
 from fief.services.workspace_db import WorkspaceDatabase
 from fief.settings import settings
@@ -239,9 +238,12 @@ def workspace_host(
 
 
 @pytest.fixture
-def workspace_admin_user() -> UserDB:
-    return UserDB(
-        email="dev@bretagne.duchy", hashed_password="dev", tenant_id=uuid.uuid4()
+def workspace_admin_user() -> User:
+    return User(
+        id=uuid.uuid4(),
+        email="dev@bretagne.duchy",
+        hashed_password="dev",
+        tenant_id=uuid.uuid4(),
     )
 
 
@@ -249,7 +251,7 @@ def workspace_admin_user() -> UserDB:
 async def admin_session_token(
     main_session: AsyncSession,
     workspace: Workspace,
-    workspace_admin_user: UserDB,
+    workspace_admin_user: User,
 ) -> AsyncGenerator[Tuple[AdminSessionToken, str], None]:
     workspace_user = WorkspaceUser(
         workspace_id=workspace.id, user_id=workspace_admin_user.id
@@ -261,7 +263,7 @@ async def admin_session_token(
     session_token = AdminSessionToken(
         token=token_hash,
         raw_tokens="{}",
-        raw_userinfo=json.dumps(get_user_claims(workspace_admin_user)),
+        raw_userinfo=json.dumps(workspace_admin_user.get_claims()),
     )
     main_session.add(session_token)
 
@@ -368,7 +370,7 @@ def access_token(
             user_tenant.get_sign_jwk(),
             user_tenant.get_host(workspace.domain),
             client,
-            UserDB.from_orm(user),
+            user,
             ["openid"],
             3600,
         )

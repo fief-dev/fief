@@ -5,6 +5,7 @@ import './i18n';
 import DBConnectionErrorAlert from './components/DBConnectionErrorAlert/DBConnectionErrorAlert';
 import WorkspaceContextProvider from './components/WorkspaceContextProvider/WorkspaceContextProvider';
 import UserContextProvider from './components/UserContextProvider/UserContextProvider';
+import UserFieldsSelectionContextProvider from './components/UserFieldsSelectionContextProvider/UserFieldsSelectionContextProvider';
 import APIClientContext from './contexts/api';
 import { useCurrentWorkspace, useWorkspacesCache } from './hooks/workspace';
 import APIKeys from './routes/APIKeys/APIKeys';
@@ -17,6 +18,7 @@ import CreateWorkspaceStep4 from './routes/CreateWorkspaceStep4/CreateWorkspaceS
 import Dashboard from './routes/Dashboard/Dashboard';
 import SelectWorkspace from './routes/SelectWorkspace/SelectWorkspace';
 import Tenants from './routes/Tenants/Tenants';
+import UserFields from './routes/UserFields/UserFields';
 import Users from './routes/Users/Users';
 import { APIClient } from './services/api';
 
@@ -49,7 +51,8 @@ function App() {
               <Route path="/" element={<Dashboard />} />
               <Route path="/tenants" element={<Tenants />} />
               <Route path="/clients" element={<Clients />} />
-              <Route path="/users" element={<Users />} />
+              <Route path="/users" element={<UserFieldsSelectionContextProvider><Users /></UserFieldsSelectionContextProvider>} />
+              <Route path="/user-fields" element={<UserFields />} />
               <Route path="/api-keys" element={<APIKeys />} />
               <Route path="/select-workspace" element={<SelectWorkspace />} />
               <Route path="/create-workspace" element={<CreateWorkspace />}>

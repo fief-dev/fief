@@ -10,6 +10,8 @@ from fief.models.refresh_token import RefreshToken
 from fief.models.session_token import SessionToken
 from fief.models.tenant import Tenant
 from fief.models.user import User
+from fief.models.user_field import UserField, UserFieldType
+from fief.models.user_field_value import UserFieldValue
 from fief.models.workspace import Workspace
 from fief.models.workspace_user import WorkspaceUser
 
@@ -31,4 +33,7 @@ __all__ = [
     "M_UUID",
     "Tenant",
     "User",
+    "UserField",
+    "UserFieldType",
+    "UserFieldValue",
 ]

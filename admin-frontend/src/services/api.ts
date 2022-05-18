@@ -25,6 +25,10 @@ export class APIClient {
     return `${BASE_URL}/auth/logout`;
   }
 
+  public getOpenAPI(): Promise<AxiosResponse<Record<string, any>>> {
+    return this.client.get('/openapi.json');
+  }
+
   public getUserinfo(): Promise<AxiosResponse<schemas.user.CurrentUser>> {
     return this.client.get('/auth/userinfo');
   }
@@ -69,6 +73,26 @@ export class APIClient {
     return this.client.post('/users/', data);
   }
 
+  public updateUser(id: string, data: schemas.user.UserUpdate): Promise<AxiosResponse<schemas.user.User>> {
+    return this.client.patch(`/users/${id}`, data);
+  }
+
+  public listUserFields(params: schemas.PaginationParameters = {}): Promise<AxiosResponse<schemas.PaginatedResults<schemas.userField.UserField>>> {
+    return this.client.get('/user-fields/', { params });
+  }
+
+  public createUserField(data: schemas.userField.UserFieldCreate): Promise<AxiosResponse<schemas.userField.UserField>> {
+    return this.client.post('/user-fields/', data);
+  }
+
+  public updateUserField(id: string, data: schemas.userField.UserFieldUpdate): Promise<AxiosResponse<schemas.userField.UserField>> {
+    return this.client.patch(`/user-fields/${id}`, data);
+  }
+
+  public deleteUserField(id: string): Promise<AxiosResponse<void>> {
+    return this.client.delete(`/user-fields/${id}`);
+  }
+
   public listAPIKeys(params: schemas.PaginationParameters = {}): Promise<AxiosResponse<schemas.PaginatedResults<schemas.adminAPIKey.AdminAPIKey>>> {
     return this.client.get('/api-keys/', { params });
   }
@@ -84,13 +108,23 @@ export class APIClient {
 
 export const isAxiosException = (e: unknown): e is AxiosError<{ detail: any }> => R.has('isAxiosError', e);
 
-export const handleAPIError = (err: unknown): string => {
+interface FieldError {
+  loc: string[];
+  msg: string;
+  type: string;
+}
+
+export const handleAPIError = (err: unknown): [string | undefined, FieldError[]] => {
   if (isAxiosException(err)) {
     const response = err.response;
-    if (response && response.status === 400) {
-      return response.data.detail;
-    } else {
-      return 'UNKNOWN_ERROR';
+    if (response) {
+      if (response.status === 422) {
+        return [undefined, response.data.detail];
+      } else if (response.status === 400) {
+        return [response.data.detail, []];
+      } else {
+        return ['UNKNOWN_ERROR', []];
+      }
     }
   }
   throw err;

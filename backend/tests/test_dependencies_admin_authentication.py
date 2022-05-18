@@ -86,7 +86,6 @@ async def test_valid_admin_session(
 ):
     async with test_client_admin_generator(app) as test_client:
         response = await test_client.get("/protected")
-        print(response.json())
         assert response.status_code == status.HTTP_200_OK
 
 
@@ -120,5 +119,4 @@ async def test_valid_admin_api_key(
 ):
     async with test_client_admin_generator(app) as test_client:
         response = await test_client.get("/protected")
-        print(response.json())
         assert response.status_code == status.HTTP_200_OK

@@ -1,6 +1,6 @@
 import secrets
 import uuid
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from typing import Mapping, Tuple, TypedDict
 
 from fief.crypto.code_challenge import get_code_verifier_hash
@@ -19,12 +19,16 @@ from fief.models import (
     SessionToken,
     Tenant,
     User,
+    UserField,
+    UserFieldType,
+    UserFieldValue,
 )
 from fief.settings import settings
 
 ModelMapping = Mapping[str, M]
 
 now = datetime.now(timezone.utc)
+hashed_password = password_helper.hash("hermine")
 
 
 class TestData(TypedDict):
@@ -32,7 +36,9 @@ class TestData(TypedDict):
 
     tenants: ModelMapping[Tenant]
     clients: ModelMapping[Client]
+    user_fields: ModelMapping[UserField]
     users: ModelMapping[User]
+    user_field_values: ModelMapping[UserFieldValue]
     login_sessions: ModelMapping[LoginSession]
     authorization_codes: ModelMapping[AuthorizationCode]
     refresh_tokens: ModelMapping[RefreshToken]
@@ -91,18 +97,181 @@ clients: ModelMapping[Client] = {
     ),
 }
 
+user_fields: ModelMapping[UserField] = {
+    "given_name": UserField(
+        name="Given name",
+        slug="given_name",
+        type=UserFieldType.STRING,
+        configuration={
+            "choices": None,
+            "default": None,
+            "at_registration": True,
+            "at_update": True,
+            "required": False,
+        },
+    ),
+    "gender": UserField(
+        name="Gender",
+        slug="gender",
+        type=UserFieldType.CHOICE,
+        configuration={
+            "choices": [("M", "male"), ("F", "female"), ("N", "non_binary")],
+            "default": None,
+            "at_registration": False,
+            "at_update": True,
+            "required": False,
+        },
+    ),
+    "phone_number": UserField(
+        name="Phone number",
+        slug="phone_number",
+        type=UserFieldType.PHONE_NUMBER,
+        configuration={
+            "choices": None,
+            "default": None,
+            "at_registration": False,
+            "at_update": True,
+            "required": False,
+        },
+    ),
+    "phone_number_verified": UserField(
+        name="Phone number verified",
+        slug="phone_number_verified",
+        type=UserFieldType.BOOLEAN,
+        configuration={
+            "choices": None,
+            "default": None,
+            "at_registration": False,
+            "at_update": False,
+            "required": False,
+        },
+    ),
+    "birthdate": UserField(
+        name="Birthdate",
+        slug="birthdate",
+        type=UserFieldType.DATE,
+        configuration={
+            "choices": None,
+            "default": None,
+            "at_registration": False,
+            "at_update": True,
+            "required": False,
+        },
+    ),
+    "last_seen": UserField(
+        name="Last seen",
+        slug="last_seen",
+        type=UserFieldType.DATETIME,
+        configuration={
+            "choices": None,
+            "default": None,
+            "at_registration": False,
+            "at_update": False,
+            "required": False,
+        },
+    ),
+    "address": UserField(
+        name="Address",
+        slug="address",
+        type=UserFieldType.ADDRESS,
+        configuration={
+            "choices": None,
+            "default": None,
+            "at_registration": True,
+            "at_update": False,
+            "required": False,
+        },
+    ),
+    "onboarding_done": UserField(
+        name="Onboarding done",
+        slug="onboarding_done",
+        type=UserFieldType.BOOLEAN,
+        configuration={
+            "choices": None,
+            "default": False,
+            "at_registration": False,
+            "at_update": False,
+            "required": False,
+        },
+    ),
+}
+
 users: ModelMapping[User] = {
     "regular": User(
         id=uuid.uuid4(),
         email="anne@bretagne.duchy",
-        hashed_password=password_helper.hash("hermine"),
+        hashed_password=hashed_password,
         tenant=tenants["default"],
     ),
     "regular_secondary": User(
         id=uuid.uuid4(),
         email="anne@nantes.city",
-        hashed_password=password_helper.hash("hermine"),
+        hashed_password=hashed_password,
         tenant=tenants["secondary"],
+    ),
+    "regular_default_2": User(
+        id=uuid.uuid4(),
+        email="isabeau@bretagne.duchy",
+        hashed_password=hashed_password,
+        tenant=tenants["default"],
+    ),
+}
+
+user_field_values: ModelMapping[UserFieldValue] = {
+    "regular_given_name": UserFieldValue(
+        value_string="Anne",
+        user=users["regular"],
+        user_field=user_fields["given_name"],
+    ),
+    "regular_gender": UserFieldValue(
+        value_string="female",
+        user=users["regular"],
+        user_field=user_fields["gender"],
+    ),
+    "regular_phone_number": UserFieldValue(
+        value_string="+33642424242",
+        user=users["regular"],
+        user_field=user_fields["phone_number"],
+    ),
+    "regular_phone_number_verified": UserFieldValue(
+        value_boolean=True,
+        user=users["regular"],
+        user_field=user_fields["phone_number_verified"],
+    ),
+    "regular_birthdate": UserFieldValue(
+        value_date=date(1477, 1, 25),
+        user=users["regular"],
+        user_field=user_fields["birthdate"],
+    ),
+    "regular_last_seen": UserFieldValue(
+        value_datetime=datetime(2022, 1, 1, 0, 0, 0, tzinfo=timezone.utc),
+        user=users["regular"],
+        user_field=user_fields["last_seen"],
+    ),
+    "regular_address": UserFieldValue(
+        value_json={
+            "line1": "4 place Marc Elder",
+            "postal_code": "44000",
+            "city": "Nantes",
+            "country": "FR",
+        },
+        user=users["regular"],
+        user_field=user_fields["address"],
+    ),
+    "regular_onboarding_done": UserFieldValue(
+        value_boolean=False,
+        user=users["regular"],
+        user_field=user_fields["onboarding_done"],
+    ),
+    "secondary_regular_given_name": UserFieldValue(
+        value_string="Anne",
+        user=users["regular_secondary"],
+        user_field=user_fields["given_name"],
+    ),
+    "secondary_onboarding_done": UserFieldValue(
+        value_boolean=False,
+        user=users["regular_secondary"],
+        user_field=user_fields["onboarding_done"],
     ),
 }
 
@@ -368,7 +537,9 @@ grants: ModelMapping[Grant] = {
 data_mapping: TestData = {
     "tenants": tenants,
     "clients": clients,
+    "user_fields": user_fields,
     "users": users,
+    "user_field_values": user_field_values,
     "login_sessions": login_sessions,
     "authorization_codes": authorization_codes,
     "refresh_tokens": refresh_tokens,

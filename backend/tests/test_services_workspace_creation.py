@@ -15,8 +15,7 @@ from fief.managers import (
     WorkspaceManager,
     WorkspaceUserManager,
 )
-from fief.models import Client, Tenant, Workspace
-from fief.schemas.user import UserDB
+from fief.models import User, Workspace
 from fief.schemas.workspace import WorkspaceCreate
 from fief.services.workspace_creation import WorkspaceCreation
 from fief.services.workspace_db import (
@@ -112,14 +111,14 @@ class TestWorkspaceCreationCreate:
 
         async with get_workspace_session(workspace) as session:
             tenant_manager = TenantManager(session)
-            tenants = await tenant_manager.list(select(Tenant))
+            tenants = await tenant_manager.all()
 
             assert len(tenants) == 1
             tenant = tenants[0]
             assert tenant.default
 
             client_manager = ClientManager(session)
-            clients = await client_manager.list(select(Client))
+            clients = await client_manager.all()
 
             assert len(clients) == 1
             client = clients[0]
@@ -130,7 +129,7 @@ class TestWorkspaceCreationCreate:
         self,
         workspace_create: WorkspaceCreate,
         workspace_creation: WorkspaceCreation,
-        workspace_admin_user: UserDB,
+        workspace_admin_user: User,
         main_session: AsyncSession,
     ):
         workspace = await workspace_creation.create(
@@ -147,7 +146,7 @@ class TestWorkspaceCreationCreate:
         self,
         workspace_create: WorkspaceCreate,
         workspace_creation: WorkspaceCreation,
-        workspace_admin_user: UserDB,
+        workspace_admin_user: User,
         workspace_session: AsyncSession,
         test_data: TestData,
     ):
@@ -179,7 +178,7 @@ class TestWorkspaceCreationCreate:
 
         async with get_workspace_session(workspace) as session:
             client_manager = ClientManager(session)
-            clients = await client_manager.list(select(Client))
+            clients = await client_manager.all()
             client = clients[0]
 
             assert client.encrypt_jwk == "ENCRYPTION_KEY"

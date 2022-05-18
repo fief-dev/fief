@@ -1,10 +1,11 @@
 import uuid
 from datetime import datetime, timezone
-from typing import TypeVar
+from typing import TYPE_CHECKING, Optional, TypeVar
 
 from pydantic import UUID4
 from sqlalchemy import TIMESTAMP, Column
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import declarative_mixin
 from sqlalchemy.sql import func
 from sqlalchemy.types import CHAR, TypeDecorator
 
@@ -52,8 +53,12 @@ class BaseModel:
     pass
 
 
+@declarative_mixin
 class UUIDModel(BaseModel):
-    id: UUID4 = Column(GUID, primary_key=True, default=uuid.uuid4)  # type: ignore
+    if TYPE_CHECKING:
+        id: UUID4
+    else:
+        id: UUID4 = Column(GUID, primary_key=True, default=uuid.uuid4)
 
 
 def now_utc():
@@ -71,28 +76,33 @@ class TIMESTAMPAware(TypeDecorator):
     impl = TIMESTAMP
     cache_ok = True
 
-    def process_result_value(self, value: datetime, dialect):
-        if dialect.name != "postgresql":
+    def process_result_value(self, value: Optional[datetime], dialect):
+        if value is not None and dialect.name != "postgresql":
             return value.replace(tzinfo=timezone.utc)
         return value
 
 
+@declarative_mixin
 class CreatedUpdatedAt(BaseModel):
-    created_at: datetime = Column(  # type: ignore
-        TIMESTAMPAware(timezone=True),
-        nullable=False,
-        index=True,
-        default=now_utc,
-        server_default=func.now(),
-    )
-    updated_at: datetime = Column(  # type: ignore
-        TIMESTAMPAware(timezone=True),
-        nullable=False,
-        index=True,
-        default=now_utc,
-        server_default=func.now(),
-        onupdate=now_utc,
-    )
+    if TYPE_CHECKING:
+        created_at: datetime
+        updated_at: datetime
+    else:
+        created_at: datetime = Column(
+            TIMESTAMPAware(timezone=True),
+            nullable=False,
+            index=True,
+            default=now_utc,
+            server_default=func.now(),
+        )
+        updated_at: datetime = Column(
+            TIMESTAMPAware(timezone=True),
+            nullable=False,
+            index=True,
+            default=now_utc,
+            server_default=func.now(),
+            onupdate=now_utc,
+        )
 
 
 M = TypeVar("M", bound=BaseModel)

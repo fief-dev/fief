@@ -2,10 +2,9 @@ import { useCallback, useState } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
-import { useAPI } from '../../hooks/api';
+import { useAPI, useAPIErrorHandler } from '../../hooks/api';
 import { useFieldRequiredErrorMessage } from '../../hooks/errors';
 import * as schemas from '../../schemas';
-import { handleAPIError } from '../../services/api';
 import ErrorAlert from '../ErrorAlert/ErrorAlert';
 import FormErrorMessage from '../FormErrorMessage/FormErrorMessage';
 import LoadingButton from '../LoadingButton/LoadingButton';
@@ -21,11 +20,12 @@ const CreateAPIKeyModal: React.FunctionComponent<CreateAPIKeyModalProps> = ({ op
   const { t } = useTranslation(['api-keys']);
   const api = useAPI();
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<schemas.adminAPIKey.AdminAPIKeyCreate>();
+  const { register, handleSubmit, reset, setError, formState: { errors } } = useForm<schemas.adminAPIKey.AdminAPIKeyCreate>();
   const fieldRequiredErrorMessage = useFieldRequiredErrorMessage();
 
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | undefined>();
+  const handleAPIError = useAPIErrorHandler(setErrorMessage, setError);
 
   const onSubmit: SubmitHandler<schemas.adminAPIKey.AdminAPIKeyCreate> = useCallback(async (data) => {
     setLoading(true);
@@ -36,11 +36,11 @@ const CreateAPIKeyModal: React.FunctionComponent<CreateAPIKeyModalProps> = ({ op
         reset();
       }
     } catch (err) {
-      setErrorMessage(handleAPIError(err));
+      handleAPIError(err);
     } finally {
       setLoading(false);
     }
-  }, [api, onCreated, reset]);
+  }, [api, onCreated, reset, handleAPIError]);
 
   return (
     <Modal

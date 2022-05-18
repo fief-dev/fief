@@ -4,8 +4,7 @@ import httpx
 import pytest
 from fastapi import status
 
-from fief.models import Workspace
-from fief.schemas.user import UserDB
+from fief.models import User, Workspace
 from fief.services.workspace_db import WorkspaceDatabaseConnectionError
 
 
@@ -136,7 +135,7 @@ class TestCreateWorkspace:
         test_client_admin: httpx.AsyncClient,
         workspace_creation_mock: MagicMock,
         workspace: Workspace,
-        workspace_admin_user: UserDB,
+        workspace_admin_user: User,
     ):
         workspace_creation_mock.create.side_effect = AsyncMock(return_value=workspace)
 

@@ -1,0 +1,47 @@
+{
+  "user_field_type": {
+    "STRING": "String",
+    "INTEGER": "Integer",
+    "BOOLEAN": "Boolean",
+    "DATE": "Date",
+    "DATETIME": "Date & Time",
+    "CHOICE": "Choice",
+    "PHONE_NUMBER": "Phone number",
+    "ADDRESS": "Address",
+    "TIMEZONE": "Timezone"
+  },
+  "base": {
+    "name": "Name",
+    "slug": "Slug",
+    "type": "Type",
+    "choices": "Choices",
+    "choices_value": "Value",
+    "choices_label": "Label",
+    "choices_add": "Add",
+    "default": "Default value",
+    "default_enabled": "Enabled",
+    "at_registration": "Ask at registration",
+    "at_update": "Ask at profile update",
+    "required": "Required"
+  },
+  "list": {
+    "title": "User fields",
+    "create": "Create User field",
+    "name": "Name",
+    "slug": "Slug",
+    "type": "Type"
+  },
+  "create": {
+    "title": "Create User field",
+    "cancel": "Cancel",
+    "submit": "Create"
+  },
+  "details": {
+    "submit": "Update",
+    "delete": "Delete"
+  },
+  "delete": {
+    "title": "Delete the User field \"{{name}}\"?",
+    "notice": "If you delete this field, the associated values on every users will also be deleted."
+  }
+}

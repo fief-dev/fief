@@ -2,10 +2,9 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { FormProvider, SubmitHandler, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
-import { useAPI } from '../../hooks/api';
+import { useAPI, useAPIErrorHandler } from '../../hooks/api';
 import { useFieldRequiredErrorMessage } from '../../hooks/errors';
 import * as schemas from '../../schemas';
-import { handleAPIError } from '../../services/api';
 import ErrorAlert from '../ErrorAlert/ErrorAlert';
 import FormErrorMessage from '../FormErrorMessage/FormErrorMessage';
 import LoadingButton from '../LoadingButton/LoadingButton';
@@ -31,7 +30,7 @@ const EditClientModal: React.FunctionComponent<EditClientModalProps> = ({ client
     [client],
   );
   const form = useForm<schemas.client.ClientUpdateForm>({ defaultValues });
-  const { register, handleSubmit, watch, reset, formState: { errors } } = form;
+  const { register, handleSubmit, watch, reset, setError, formState: { errors } } = form;
   const fieldRequiredErrorMessage = useFieldRequiredErrorMessage();
 
   const clientType = watch('client_type');
@@ -42,6 +41,7 @@ const EditClientModal: React.FunctionComponent<EditClientModalProps> = ({ client
 
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | undefined>();
+  const handleAPIError = useAPIErrorHandler(setErrorMessage, setError);
 
   const onSubmit: SubmitHandler<schemas.client.ClientUpdateForm> = useCallback(async (data) => {
     setLoading(true);
@@ -56,12 +56,11 @@ const EditClientModal: React.FunctionComponent<EditClientModalProps> = ({ client
         reset();
       }
     } catch (err) {
-      const errorMessage = handleAPIError(err);
-      setErrorMessage(errorMessage);
+      handleAPIError(err);
     } finally {
       setLoading(false);
     }
-  }, [client, api, onUpdated, reset]);
+  }, [client, api, onUpdated, reset, handleAPIError]);
 
   const onClose = useCallback(() => {
     _onClose();

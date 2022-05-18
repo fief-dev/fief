@@ -120,6 +120,9 @@ class BaseManager(BaseManagerProtocol, Generic[M]):
                     )
         return statement
 
+    async def all(self) -> List[M]:
+        return await self.list(select(self.model))
+
     async def get_one_or_none(self, statement: Select) -> Optional[M]:
         results = await self._execute_statement(statement)
         object = results.first()
@@ -136,12 +139,6 @@ class BaseManager(BaseManagerProtocol, Generic[M]):
         await self.session.commit()
         await self.session.refresh(object)
         return object
-
-    async def create_many(self, objects: List[M]) -> List[M]:
-        for object in objects:
-            self.session.add(object)
-        await self.session.commit()
-        return objects
 
     async def update(self, object: M) -> None:
         self.session.add(object)
