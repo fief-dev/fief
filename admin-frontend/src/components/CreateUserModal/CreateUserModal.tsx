@@ -32,6 +32,7 @@ const CreateUserModal: React.FunctionComponent<CreateUserModalProps> = ({ open, 
 
   const onSubmit: SubmitHandler<schemas.user.UserCreateInternal> = useCallback(async (data) => {
     setLoading(true);
+    setErrorMessage(undefined);
     try {
       const { data: user } = await api.createUser(cleanUserRequestData<schemas.user.UserCreateInternal>(data));
       if (onCreated) {
@@ -41,7 +42,7 @@ const CreateUserModal: React.FunctionComponent<CreateUserModalProps> = ({ open, 
     } catch (err) {
       const [globalMessage, fieldsMessages] = handleAPIError(err);
       if (globalMessage === 'USER_CREATE_INVALID_PASSWORD') {
-        const reason = (err as AxiosError).response?.data.reason;
+        const reason = (err as AxiosError<any, any>).response?.data.reason;
         setError('password', { type: 'manual', message: reason });
       }
       for (const fieldMessage of fieldsMessages) {
@@ -51,7 +52,6 @@ const CreateUserModal: React.FunctionComponent<CreateUserModalProps> = ({ open, 
       setErrorMessage(globalMessage);
     } finally {
       setLoading(false);
-      setErrorMessage(undefined);
     }
   }, [api, onCreated, setError, reset]);
 

@@ -1,5 +1,4 @@
 import axios, { AxiosError, AxiosInstance, AxiosResponse } from 'axios';
-import * as R from 'ramda';
 
 import * as schemas from '../schemas';
 
@@ -106,7 +105,7 @@ export class APIClient {
   }
 }
 
-export const isAxiosException = (e: unknown): e is AxiosError<{ detail: any }> => R.has('isAxiosError', e);
+export const isAxiosException = (e: unknown): e is AxiosError<{ detail: any }> => e instanceof AxiosError;
 
 interface FieldError {
   loc: string[];

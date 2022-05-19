@@ -51,7 +51,7 @@ const Combobox: React.FunctionComponent<ComboboxProps> = ({ initialOptions, noOp
       <div className="relative">
         <BaseCombobox.Input<"input", ComboboxOption>
           onChange={(event) => setQuery(event.target.value)}
-          displayValue={(option) => option.label}
+          displayValue={(option) => option?.label}
           className="form-input w-full"
         />
         <BaseCombobox.Button className="ml-3 absolute inset-y-0 right-0 flex items-center pr-2">

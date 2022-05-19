@@ -18,7 +18,7 @@ const DBConnectionErrorAlert: React.FunctionComponent<DBConnectionErrorAlertProp
         setMessage(undefined);
         return response;
       },
-      (error: AxiosError) => {
+      (error: AxiosError<any, any>) => {
         if (error.response && error.response.status === 503) {
           setMessage(error.response.data.detail)
         }
