@@ -6,7 +6,7 @@ interface OnboardingLayoutProps {
   active: number;
 }
 
-const OnboardingLayout: React.FunctionComponent<OnboardingLayoutProps> = ({ steps, active, children }) => {
+const OnboardingLayout: React.FunctionComponent<React.PropsWithChildren<OnboardingLayoutProps>> = ({ steps, active, children }) => {
   return (
     <main className="bg-white">
 

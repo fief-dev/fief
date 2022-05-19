@@ -12,7 +12,7 @@ import { useAPI, useAPIErrorHandler } from '../../hooks/api';
 import { useFieldRequiredErrorMessage } from '../../hooks/errors';
 import * as schemas from '../../schemas';
 
-const CreateWorkspaceStep3: React.FunctionComponent = () => {
+const CreateWorkspaceStep3: React.FunctionComponent<React.PropsWithChildren<unknown>> = () => {
   const { t } = useTranslation('workspaces');
   const api = useAPI();
   const navigate = useNavigate();

@@ -2,7 +2,7 @@ interface LoadingButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
   loading: boolean;
 }
 
-const LoadingButton: React.FunctionComponent<LoadingButtonProps> = ({ children, loading, className, ...props }) => {
+const LoadingButton: React.FunctionComponent<React.PropsWithChildren<LoadingButtonProps>> = ({ children, loading, className, ...props }) => {
   return (
     <button
       className={`${className} ${loading ? 'disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed ' : ''}`}

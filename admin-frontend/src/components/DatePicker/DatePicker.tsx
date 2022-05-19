@@ -6,7 +6,7 @@ interface DatePickerProps {
   time: boolean;
 }
 
-const DatePicker: React.FunctionComponent<DatePickerProps> = ({ value, onChange, time }) => {
+const DatePicker: React.FunctionComponent<React.PropsWithChildren<DatePickerProps>> = ({ value, onChange, time }) => {
   const dateElement = useDatePicker(value, time, onChange);
   return (
     <div>

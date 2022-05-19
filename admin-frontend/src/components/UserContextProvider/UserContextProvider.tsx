@@ -4,7 +4,7 @@ import UserContext from '../../contexts/user';
 import { useGetCurrentUser } from '../../hooks/user';
 import * as schemas from '../../schemas';
 
-const UserContextProvider: React.FunctionComponent = ({ children }) => {
+const UserContextProvider: React.FunctionComponent<React.PropsWithChildren<unknown>> = ({ children }) => {
   const getCurrentUser = useGetCurrentUser();
   const [currentUser, setCurrentUser] = useState<schemas.user.CurrentUser>();
 

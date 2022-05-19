@@ -12,7 +12,7 @@ import * as schemas from '../../schemas';
 import APIKeyTokenModal from '../../components/APIKeyTokenModal/APIKeyTokenModal';
 import DeleteModal from '../../components/DeleteModal/DeleteModal';
 
-const APIKeys: React.FunctionComponent = () => {
+const APIKeys: React.FunctionComponent<React.PropsWithChildren<unknown>> = () => {
   const { t } = useTranslation(['api-keys']);
   const {
     data: apiKeys,

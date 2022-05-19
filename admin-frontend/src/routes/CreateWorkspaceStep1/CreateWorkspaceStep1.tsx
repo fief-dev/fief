@@ -9,7 +9,7 @@ import CreateWorkspacesContext from '../../contexts/create-workspace';
 import { useFieldRequiredErrorMessage } from '../../hooks/errors';
 import * as schemas from '../../schemas';
 
-const CreateWorkspaceStep1: React.FunctionComponent = () => {
+const CreateWorkspaceStep1: React.FunctionComponent<React.PropsWithChildren<unknown>> = () => {
   const { t } = useTranslation('workspaces');
   const navigate = useNavigate();
 

@@ -8,7 +8,7 @@ interface LayoutProps {
   sidebar?: React.ReactNode;
 }
 
-const Layout: React.FunctionComponent<LayoutProps> = ({ children, sidebar }) => {
+const Layout: React.FunctionComponent<React.PropsWithChildren<LayoutProps>> = ({ children, sidebar }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (

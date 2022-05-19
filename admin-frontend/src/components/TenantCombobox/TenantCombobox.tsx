@@ -9,12 +9,12 @@ interface TenantComboboxProps {
   onChange?: (value: string) => void;
 }
 
-const TenantCombobox: React.FunctionComponent<TenantComboboxProps> = ({ value, onChange }) => {
+const TenantCombobox: React.FunctionComponent<React.PropsWithChildren<TenantComboboxProps>> = ({ value, onChange }) => {
   const { t } = useTranslation(['common']);
   const api = useAPI();
 
   const listTenants = useCallback(async (query?: string): Promise<ComboboxOption[]> => {
-    const { data: { results } } = await api.listTenants({ ...query ? { query } : {} });
+    const { data: { results } } = await api.listTenants({ ...(query ? { query } : {}) });
     return results.map((tenant) => ({ value: tenant.id, label: tenant.name }));
   }, [api]);
 

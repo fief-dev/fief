@@ -14,8 +14,8 @@
   "pagination": {
     "previous": "Previous",
     "next": "Next",
-    "showing_one": "Showing <1>{{firstIndex}}</1> to <2>{{lastIndex}}</2> of <3>{{count}}</3> result",
-    "showing_other": "Showing <1>{{firstIndex}}</1> to <2>{{lastIndex}}</2> of <3>{{count}}</3> results"
+    "showing_one": "Showing <format>{{firstIndex}}</format> to <format>{{lastIndex}}</format> of <format>{{count}}</format> result",
+    "showing_other": "Showing <format>{{firstIndex}}</format> to <format>{{lastIndex}}</format> of <format>{{count}}</format> results"
   },
   "workspace_switcher": {
     "create": "Create new workspace"

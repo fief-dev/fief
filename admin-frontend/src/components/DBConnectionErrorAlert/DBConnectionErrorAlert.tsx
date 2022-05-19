@@ -7,7 +7,7 @@ import { useAPI } from '../../hooks/api';
 interface DBConnectionErrorAlertProps {
 }
 
-const DBConnectionErrorAlert: React.FunctionComponent<DBConnectionErrorAlertProps> = () => {
+const DBConnectionErrorAlert: React.FunctionComponent<React.PropsWithChildren<DBConnectionErrorAlertProps>> = () => {
   const { t } = useTranslation(['common']);
   const api = useAPI();
   const [message, setMessage] = useState<string | undefined>();

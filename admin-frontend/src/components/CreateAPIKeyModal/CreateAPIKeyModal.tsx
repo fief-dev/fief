@@ -16,7 +16,7 @@ interface CreateAPIKeyModalProps {
   onCreated?: (user: schemas.adminAPIKey.AdminAPIKeyCreateResponse) => void;
 }
 
-const CreateAPIKeyModal: React.FunctionComponent<CreateAPIKeyModalProps> = ({ open, onClose, onCreated }) => {
+const CreateAPIKeyModal: React.FunctionComponent<React.PropsWithChildren<CreateAPIKeyModalProps>> = ({ open, onClose, onCreated }) => {
   const { t } = useTranslation(['api-keys']);
   const api = useAPI();
 

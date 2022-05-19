@@ -14,7 +14,7 @@ interface UserFieldInputProps {
   path: string;
 }
 
-const UserFieldInput: React.FunctionComponent<UserFieldInputProps> = ({ userField, path }) => {
+const UserFieldInput: React.FunctionComponent<React.PropsWithChildren<UserFieldInputProps>> = ({ userField, path }) => {
   const { t } = useTranslation();
   const fieldRequiredErrorMessage = useFieldRequiredErrorMessage();
 

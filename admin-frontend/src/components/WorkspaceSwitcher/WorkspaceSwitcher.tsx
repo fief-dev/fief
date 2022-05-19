@@ -11,7 +11,7 @@ import * as schemas from '../../schemas';
 interface WorkspaceSwitcherProps {
 }
 
-const WorkspaceSwitcher: React.FunctionComponent<WorkspaceSwitcherProps> = () => {
+const WorkspaceSwitcher: React.FunctionComponent<React.PropsWithChildren<WorkspaceSwitcherProps>> = () => {
   const { t } = useTranslation(['common']);
   const [workspaces] = useWorkspacesCache();
   const [workspace, setWorkspace] = useContext(WorkspaceContext);

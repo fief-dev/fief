@@ -42,7 +42,7 @@ export const useWorkspacesCache = (): [schemas.workspace.WorkspacePublic[], bool
 };
 
 export const useCurrentWorkspace = (): [schemas.workspace.WorkspacePublic | undefined, boolean, Dispatch<schemas.workspace.WorkspacePublic>] => {
-  const [workspaces] = useWorkspacesCache();
+  const [workspaces, workspacesLoading] = useWorkspacesCache();
   const [currentWorskpaceLoading, setCurrentWorkspaceLoading] = useState(true);
   const [workspace, setWorkspace] = useState<schemas.workspace.WorkspacePublic | undefined>();
 
@@ -55,14 +55,14 @@ export const useCurrentWorkspace = (): [schemas.workspace.WorkspacePublic | unde
   }, [workspaces]);
 
   useEffect(() => {
-    if (!workspace) {
+    if (!workspace && !workspacesLoading) {
       setCurrentWorkspaceLoading(true);
       getWorkspace().then((workspace) => {
         setWorkspace(workspace);
         setCurrentWorkspaceLoading(false);
       });
     }
-  }, [getWorkspace, workspace]);
+  }, [getWorkspace, workspace, workspacesLoading]);
 
   return [workspace, currentWorskpaceLoading, setWorkspace];
 };

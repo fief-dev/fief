@@ -11,7 +11,7 @@ interface PaginationProps {
   onPageChanged: (page: number) => void;
 }
 
-const Pagination: React.FunctionComponent<PaginationProps> = ({ current, max, pageSize, count, onPageChanged }) => {
+const Pagination: React.FunctionComponent<React.PropsWithChildren<PaginationProps>> = ({ current, max, pageSize, count, onPageChanged }) => {
   const { t } = useTranslation('common');
 
   const firstIndex = useMemo(() => (current - 1) * pageSize + 1, [current, pageSize]);
@@ -36,11 +36,13 @@ const Pagination: React.FunctionComponent<PaginationProps> = ({ current, max, pa
         </ul>
       </nav>
       <div className="text-sm text-slate-500 text-center sm:text-left">
-        <Trans t={t} i18nKey="pagination.showing" transKeepBasicHtmlNodesFor={['span']} values={{ firstIndex, lastIndex }} count={count}>
-          <span className="font-medium text-slate-600">{{ firstIndex }}</span>
-          <span className="font-medium text-slate-600">{{ lastIndex }}</span>
-          <span className="font-medium text-slate-600">{{ count }}</span>
-        </Trans>
+        <Trans
+          t={t}
+          i18nKey="pagination.showing"
+          components={{ format: <span className="font-medium text-slate-600" /> }}
+          values={{ firstIndex, lastIndex }}
+          count={count}
+        />
       </div>
     </div>
   );

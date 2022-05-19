@@ -16,7 +16,7 @@ interface SidebarProps {
   setOpen: Dispatch<boolean>;
 }
 
-const Sidebar: React.FunctionComponent<SidebarProps> = ({ open, setOpen }) => {
+const Sidebar: React.FunctionComponent<React.PropsWithChildren<SidebarProps>> = ({ open, setOpen }) => {
   const { t } = useTranslation('common');
   const { pathname } = useLocation();
 

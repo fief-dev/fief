@@ -9,7 +9,7 @@ import { ReactComponent as CloudIcon } from '../../images/icons/cloud.svg';
 import { ReactComponent as CogwheelIcon } from '../../images/icons/cogwheel.svg';
 
 
-const CreateWorkspaceStep2: React.FunctionComponent = () => {
+const CreateWorkspaceStep2: React.FunctionComponent<React.PropsWithChildren<unknown>> = () => {
   const { t } = useTranslation('workspaces');
   const navigate = useNavigate();
 

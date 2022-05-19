@@ -4,7 +4,7 @@ interface WarningAlertProps {
   message: string;
 }
 
-const WarningAlert: React.FunctionComponent<WarningAlertProps> = ({ message }) => {
+const WarningAlert: React.FunctionComponent<React.PropsWithChildren<WarningAlertProps>> = ({ message }) => {
   return (
     <div className="px-4 py-2 rounded-sm text-sm bg-yellow-100 border-yellow-200 text-yellow-600">
       <div className="flex w-full justify-between items-start">

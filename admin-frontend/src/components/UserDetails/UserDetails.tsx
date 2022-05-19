@@ -17,7 +17,7 @@ interface UserDetailsProps {
   onUpdated?: (client: schemas.user.User) => void;
 }
 
-const UserDetails: React.FunctionComponent<UserDetailsProps> = ({ user, onUpdated: _onUpdated }) => {
+const UserDetails: React.FunctionComponent<React.PropsWithChildren<UserDetailsProps>> = ({ user, onUpdated: _onUpdated }) => {
   const { t } = useTranslation(['users']);
   const api = useAPI();
   const userFieldsDefaultValues = useUserFieldsDefaultValues();

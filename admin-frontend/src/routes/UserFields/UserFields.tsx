@@ -10,7 +10,7 @@ import { usePaginationAPI } from '../../hooks/api';
 import * as schemas from '../../schemas';
 import UserFieldDetails from '../../components/UserFieldDetails/UserFieldDetails';
 
-const UserFields: React.FunctionComponent = () => {
+const UserFields: React.FunctionComponent<React.PropsWithChildren<unknown>> = () => {
   const { t } = useTranslation(['user-fields']);
   const {
     data: userFields,

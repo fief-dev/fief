@@ -9,7 +9,7 @@ import { usePaginationAPI } from '../../hooks/api';
 import * as schemas from '../../schemas';
 import { FIEF_INSTANCE } from '../../services/api';
 
-const Tenants: React.FunctionComponent = () => {
+const Tenants: React.FunctionComponent<React.PropsWithChildren<unknown>> = () => {
   const { t } = useTranslation(['tenants']);
   const {
     data: tenants,

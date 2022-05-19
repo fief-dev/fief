@@ -5,7 +5,7 @@ interface DateTimeProps {
   displayTime?: boolean;
 }
 
-const DateTime: React.FunctionComponent<DateTimeProps> = ({ datetime, displayTime }) => {
+const DateTime: React.FunctionComponent<React.PropsWithChildren<DateTimeProps>> = ({ datetime, displayTime }) => {
   const formatted = useFormattedDateTime(datetime, displayTime ? displayTime : false);
   return (
     <>{formatted}</>

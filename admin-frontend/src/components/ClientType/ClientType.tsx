@@ -8,7 +8,7 @@ interface ClientTypeProps {
   tooltip?: boolean;
 }
 
-const ClientType: React.FunctionComponent<ClientTypeProps> = ({ type, tooltip }) => {
+const ClientType: React.FunctionComponent<React.PropsWithChildren<ClientTypeProps>> = ({ type, tooltip }) => {
   const { t } = useTranslation('clients');
 
   return (

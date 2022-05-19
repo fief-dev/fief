@@ -13,7 +13,7 @@ interface UserFieldFormProps {
   update: boolean;
 }
 
-const UserFieldForm: React.FunctionComponent<UserFieldFormProps> = ({ update }) => {
+const UserFieldForm: React.FunctionComponent<React.PropsWithChildren<UserFieldFormProps>> = ({ update }) => {
   const { t } = useTranslation(['user-fields']);
 
   const form = useFormContext<schemas.userField.UserFieldCreate | schemas.userField.UserFieldUpdate>();

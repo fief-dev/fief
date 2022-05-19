@@ -12,7 +12,7 @@ interface UserFormProps {
   update: boolean;
 }
 
-const UserForm: React.FunctionComponent<UserFormProps> = ({ update }) => {
+const UserForm: React.FunctionComponent<React.PropsWithChildren<UserFormProps>> = ({ update }) => {
   const { t } = useTranslation(['users']);
   const userFields = useUserFields();
 

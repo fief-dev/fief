@@ -14,7 +14,7 @@ import { usePaginationAPI } from '../../hooks/api';
 import { useUserFields } from '../../hooks/user-field';
 import * as schemas from '../../schemas';
 
-const Users: React.FunctionComponent = () => {
+const Users: React.FunctionComponent<React.PropsWithChildren<unknown>> = () => {
   const { t } = useTranslation(['users']);
   const userFields = useUserFields();
   const [userFieldsSelection] = useContext(UserFieldsSelectionContext);
@@ -75,7 +75,7 @@ const Users: React.FunctionComponent = () => {
                 disableSortBy: true,
                 Cell: (({ cell: { value } }) => (
                   <UserFieldValue userField={userField} value={value} />
-                )) as React.FC<React.PropsWithChildren<CellProps<any>>>
+                )) as React.FC<CellProps<schemas.user.User, any>>
               },
             ];
           } else {
@@ -87,9 +87,9 @@ const Users: React.FunctionComponent = () => {
         {
           Header: t('users:list.email') as string,
           accessor: 'email',
-          Cell: ({ cell: { value }, row: { original } }) => (
+          Cell: (({ cell: { value }, row: { original } }) => (
             <span className="font-medium text-slate-800 hover:text-slate-900 cursor-pointer" onClick={() => onUserSelected(original)}>{value}</span>
-          )
+          )) as React.FC<CellProps<schemas.user.User, string>>
         },
       ],
     );

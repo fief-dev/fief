@@ -31,7 +31,7 @@ interface UserFieldsSelectorItemProps {
 interface UserFieldsSelectorProps {
 }
 
-const UserFieldsSelectorItem: React.FunctionComponent<UserFieldsSelectorItemProps> = ({ id, userField, onToggle }) => {
+const UserFieldsSelectorItem: React.FunctionComponent<React.PropsWithChildren<UserFieldsSelectorItemProps>> = ({ id, userField, onToggle }) => {
   const {
     attributes,
     listeners,
@@ -66,7 +66,7 @@ const UserFieldsSelectorItem: React.FunctionComponent<UserFieldsSelectorItemProp
   );
 };
 
-const UserFieldsSelector: React.FunctionComponent<UserFieldsSelectorProps> = () => {
+const UserFieldsSelector: React.FunctionComponent<React.PropsWithChildren<UserFieldsSelectorProps>> = () => {
   const [userFieldsSelection, setUserFieldsSelection] = useContext(UserFieldsSelectionContext);
 
   let [referenceElement, setReferenceElement] = useState<HTMLButtonElement | null>();

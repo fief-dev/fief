@@ -7,7 +7,7 @@ interface TooltipProps {
 
 }
 
-const Tooltip: React.FunctionComponent<TooltipProps> = ({ children }) => {
+const Tooltip: React.FunctionComponent<React.PropsWithChildren<TooltipProps>> = ({ children }) => {
   const [open, setOpen] = useState(false);
   const [referenceElement, setReferenceElement] = useState<HTMLDivElement | null>();
   const [popperElement, setPopperElement] = useState<HTMLDivElement | null>();

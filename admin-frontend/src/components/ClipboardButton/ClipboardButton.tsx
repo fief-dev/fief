@@ -5,7 +5,7 @@ interface ClipboardButtonProps {
   text: string;
 }
 
-const ClipboardButton: React.FunctionComponent<ClipboardButtonProps> = ({ text }) => {
+const ClipboardButton: React.FunctionComponent<React.PropsWithChildren<ClipboardButtonProps>> = ({ text }) => {
   const [copied, setCopied] = useClipboard(text, { successDuration: 5000 });
 
   return (

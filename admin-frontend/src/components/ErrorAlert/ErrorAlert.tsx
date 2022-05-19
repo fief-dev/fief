@@ -4,7 +4,7 @@ interface ErrorAlertProps {
   message: string;
 }
 
-const ErrorAlert: React.FunctionComponent<ErrorAlertProps> = ({ message }) => {
+const ErrorAlert: React.FunctionComponent<React.PropsWithChildren<ErrorAlertProps>> = ({ message }) => {
   return (
     <div className="px-4 py-2 rounded-sm text-sm bg-red-100 border border-red-200 text-red-600">
       <div className="flex w-full justify-between items-start">

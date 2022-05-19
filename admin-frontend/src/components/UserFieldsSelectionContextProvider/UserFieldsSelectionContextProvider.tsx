@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import UserFieldsSelectionContext, { UserFieldSelection } from '../../contexts/user-fields-selection';
 import { useUserFields } from '../../hooks/user-field';
 
-const UserFieldsSelectionContextProvider: React.FunctionComponent = ({ children }) => {
+const UserFieldsSelectionContextProvider: React.FunctionComponent<React.PropsWithChildren<unknown>> = ({ children }) => {
   const { t } = useTranslation(['users']);
   const userFields = useUserFields();
   const [userFieldsSelection, setUserFieldsSelection] = useState<UserFieldSelection[]>([]);

@@ -15,7 +15,7 @@ interface CreateUserFieldModalProps {
   onCreated?: (client: schemas.userField.UserField) => void;
 }
 
-const CreateUserFieldModal: React.FunctionComponent<CreateUserFieldModalProps> = ({ open, onClose, onCreated }) => {
+const CreateUserFieldModal: React.FunctionComponent<React.PropsWithChildren<CreateUserFieldModalProps>> = ({ open, onClose, onCreated }) => {
   const { t } = useTranslation(['user-fields']);
   const api = useAPI();
 

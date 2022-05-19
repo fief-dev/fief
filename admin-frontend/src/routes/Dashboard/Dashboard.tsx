@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import Layout from '../../components/Layout/Layout';
 
-const Dashboard: React.FunctionComponent = () => {
+const Dashboard: React.FunctionComponent<React.PropsWithChildren<unknown>> = () => {
   const { t } = useTranslation(['dashboard']);
 
   return (

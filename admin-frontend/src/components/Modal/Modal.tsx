@@ -13,7 +13,7 @@ interface ModalProps {
   onClose?: () => void;
 }
 
-const Modal: React.FunctionComponent<ModalProps> = ({ open, onClose, children }) => {
+const Modal: React.FunctionComponent<React.PropsWithChildren<ModalProps>> = ({ open, onClose, children }) => {
   return (
     <Transition appear show={open} as={Fragment}>
       <Dialog
@@ -70,7 +70,7 @@ interface ModalHeaderProps {
   closeButton?: boolean;
 }
 
-const ModalHeader: React.FunctionComponent<ModalHeaderProps> = ({ children, closeButton }) => {
+const ModalHeader: React.FunctionComponent<React.PropsWithChildren<ModalHeaderProps>> = ({ children, closeButton }) => {
   const { onClose } = useContext(ModalContext);
 
   return (
@@ -92,13 +92,13 @@ ModalHeader.defaultProps = {
   closeButton: false,
 };
 
-const ModalTitle: React.FunctionComponent = ({ children }) => {
+const ModalTitle: React.FunctionComponent<React.PropsWithChildren<unknown>> = ({ children }) => {
   return (
     <Dialog.Title className="font-semibold text-slate-800">{children}</Dialog.Title>
   )
 };
 
-const ModalBody: React.FunctionComponent = ({ children }) => {
+const ModalBody: React.FunctionComponent<React.PropsWithChildren<unknown>> = ({ children }) => {
   return (
     <div className="p-5">
       {children}
@@ -106,7 +106,7 @@ const ModalBody: React.FunctionComponent = ({ children }) => {
   )
 };
 
-const ModalFooter: React.FunctionComponent = ({ children }) => {
+const ModalFooter: React.FunctionComponent<React.PropsWithChildren<unknown>> = ({ children }) => {
   return (
     <div className="p-5 p-5 flex flex-wrap justify-end space-x-2">
       {children}

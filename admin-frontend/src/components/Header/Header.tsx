@@ -1,4 +1,4 @@
-import { Dispatch } from 'react';
+import { Dispatch, MouseEvent } from 'react';
 import { MenuIcon } from '@heroicons/react/solid';
 
 import WorkspaceSwitcher from '../WorkspaceSwitcher/WorkspaceSwitcher';
@@ -9,7 +9,14 @@ interface HeaderProps {
   setSidebarOpen: Dispatch<boolean>;
 }
 
-const Header: React.FunctionComponent<HeaderProps> = ({ sidebarOpen, setSidebarOpen }) => {
+const Header: React.FunctionComponent<React.PropsWithChildren<HeaderProps>> = ({ sidebarOpen, setSidebarOpen }) => {
+
+  const onBurgerButtonClick = (e: MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setSidebarOpen(!sidebarOpen);
+  }
+
   return (
     <header className="sticky top-0 bg-white border-b border-slate-200 z-10">
       <div className="px-4 sm:px-6 lg:px-8">
@@ -22,7 +29,7 @@ const Header: React.FunctionComponent<HeaderProps> = ({ sidebarOpen, setSidebarO
               className="text-slate-500 hover:text-slate-600 lg:hidden"
               aria-controls="sidebar"
               aria-expanded={sidebarOpen}
-              onClick={() => setSidebarOpen(!sidebarOpen)}
+              onClick={onBurgerButtonClick}
             >
               <span className="sr-only">Open sidebar</span>
               <MenuIcon className="w-6 h-6 fill-current" />

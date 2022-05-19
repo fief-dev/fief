@@ -9,7 +9,7 @@ interface UserFieldValueProps {
   value: any;
 }
 
-const UserFieldValue: React.FunctionComponent<UserFieldValueProps> = ({ userField, value }) => {
+const UserFieldValue: React.FunctionComponent<React.PropsWithChildren<UserFieldValueProps>> = ({ userField, value }) => {
   const { type, configuration: { choices } } = userField;
 
   const valueElement: React.ReactElement = useMemo(() => {

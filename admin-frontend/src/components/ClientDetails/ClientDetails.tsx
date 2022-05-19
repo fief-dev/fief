@@ -15,7 +15,7 @@ interface ClientDetailsProps {
   onUpdated?: (client: schemas.client.Client) => void;
 }
 
-const ClientDetails: React.FunctionComponent<ClientDetailsProps> = ({ client, onUpdated: _onUpdated }) => {
+const ClientDetails: React.FunctionComponent<React.PropsWithChildren<ClientDetailsProps>> = ({ client, onUpdated: _onUpdated }) => {
   const { t } = useTranslation(['clients']);
   const api = useAPI();
 

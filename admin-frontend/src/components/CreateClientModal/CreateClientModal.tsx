@@ -18,7 +18,7 @@ interface CreateClientModalProps {
   onCreated?: (client: schemas.client.Client) => void;
 }
 
-const CreateClientModal: React.FunctionComponent<CreateClientModalProps> = ({ open, onClose, onCreated }) => {
+const CreateClientModal: React.FunctionComponent<React.PropsWithChildren<CreateClientModalProps>> = ({ open, onClose, onCreated }) => {
   const { t } = useTranslation(['clients']);
   const api = useAPI();
 

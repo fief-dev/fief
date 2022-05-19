@@ -15,7 +15,7 @@ interface ComboboxProps {
   onChange?: (value: string) => void;
 }
 
-const Combobox: React.FunctionComponent<ComboboxProps> = ({ initialOptions, noOptionLabel, onSearch, value, onChange: _onChange }) => {
+const Combobox: React.FunctionComponent<React.PropsWithChildren<ComboboxProps>> = ({ initialOptions, noOptionLabel, onSearch, value, onChange: _onChange }) => {
   const [selected, setSelected] = useState<ComboboxOption | undefined>(undefined);
   const [options, setOptions] = useState<ComboboxOption[]>([]);
   const [query, setQuery] = useState('');

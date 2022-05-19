@@ -19,7 +19,7 @@ interface CreateUserModalProps {
   onCreated?: (user: schemas.user.User) => void;
 }
 
-const CreateUserModal: React.FunctionComponent<CreateUserModalProps> = ({ open, onClose, onCreated }) => {
+const CreateUserModal: React.FunctionComponent<React.PropsWithChildren<CreateUserModalProps>> = ({ open, onClose, onCreated }) => {
   const { t } = useTranslation(['users']);
   const api = useAPI();
   const userFieldsDefaultValues = useUserFieldsDefaultValues();

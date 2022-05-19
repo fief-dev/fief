@@ -11,7 +11,7 @@ interface APIKeyTokenModalProps {
   onClose: () => void;
 }
 
-const APIKeyTokenModal: React.FunctionComponent<APIKeyTokenModalProps> = ({ apiKey, open, onClose }) => {
+const APIKeyTokenModal: React.FunctionComponent<React.PropsWithChildren<APIKeyTokenModalProps>> = ({ apiKey, open, onClose }) => {
   const { t } = useTranslation(['api-keys']);
 
   return (

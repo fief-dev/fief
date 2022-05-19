@@ -12,7 +12,7 @@ const LOCALHOST_DOMAIN_PATTERN = new RegExp(/([^.]+\.)?localhost(\d+)?/i);
 interface RedirectURISInputProps {
 }
 
-const RedirectURISInput: React.FunctionComponent<RedirectURISInputProps> = () => {
+const RedirectURISInput: React.FunctionComponent<React.PropsWithChildren<RedirectURISInputProps>> = () => {
   const { t } = useTranslation(['clients']);
   const { register, control, formState: { errors } } = useFormContext<schemas.client.RedirectURISForm>();
 

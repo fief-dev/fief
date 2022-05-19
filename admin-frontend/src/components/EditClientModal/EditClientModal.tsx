@@ -18,7 +18,7 @@ interface EditClientModalProps {
   onUpdated?: (client: schemas.client.Client) => void;
 }
 
-const EditClientModal: React.FunctionComponent<EditClientModalProps> = ({ client, open, onClose: _onClose, onUpdated }) => {
+const EditClientModal: React.FunctionComponent<React.PropsWithChildren<EditClientModalProps>> = ({ client, open, onClose: _onClose, onUpdated }) => {
   const { t } = useTranslation(['clients']);
   const api = useAPI();
 

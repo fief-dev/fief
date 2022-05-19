@@ -15,7 +15,7 @@ interface UserFieldDetailsProps {
   onDeleted?: () => void;
 }
 
-const UserFieldDetails: React.FunctionComponent<UserFieldDetailsProps> = ({ userField, onUpdated: _onUpdated, onDeleted: _onDeleted }) => {
+const UserFieldDetails: React.FunctionComponent<React.PropsWithChildren<UserFieldDetailsProps>> = ({ userField, onUpdated: _onUpdated, onDeleted: _onDeleted }) => {
   const { t } = useTranslation(['user-fields']);
   const api = useAPI();
 

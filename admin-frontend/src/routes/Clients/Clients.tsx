@@ -11,7 +11,7 @@ import * as schemas from '../../schemas';
 import CreateClientModal from '../../components/CreateClientModal/CreateClientModal';
 import ClientType from '../../components/ClientType/ClientType';
 
-const Clients: React.FunctionComponent = () => {
+const Clients: React.FunctionComponent<React.PropsWithChildren<unknown>> = () => {
   const { t } = useTranslation(['clients']);
   const {
     data: clients,

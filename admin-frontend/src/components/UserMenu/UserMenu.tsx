@@ -10,7 +10,7 @@ import UserAvatar from '../UserAvatar/UserAvatar';
 interface UserMenuProps {
 }
 
-const UserMenu: React.FunctionComponent<UserMenuProps> = () => {
+const UserMenu: React.FunctionComponent<React.PropsWithChildren<UserMenuProps>> = () => {
   const { t } = useTranslation(['common']);
   const user = useCurrentUser();
 

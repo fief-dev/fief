@@ -9,7 +9,7 @@ import CreateWorkspaceContext from '../../contexts/create-workspace';
 import { useAPI, useAPIErrorHandler } from '../../hooks/api';
 import * as schemas from '../../schemas';
 
-const CreateWorkspaceStep4: React.FunctionComponent = () => {
+const CreateWorkspaceStep4: React.FunctionComponent<React.PropsWithChildren<unknown>> = () => {
   const { t } = useTranslation('workspaces');
   const api = useAPI();
 

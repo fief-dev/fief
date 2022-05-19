@@ -21,7 +21,7 @@ interface DeleteModalProps {
   onDeleted?: () => void;
 }
 
-const DeleteModal: React.FunctionComponent<DeleteModalProps> = ({ objectId, method, title, notice, open, onClose, onDeleted }) => {
+const DeleteModal: React.FunctionComponent<React.PropsWithChildren<DeleteModalProps>> = ({ objectId, method, title, notice, open, onClose, onDeleted }) => {
   const { t } = useTranslation(['common']);
   const api = useAPI();
 

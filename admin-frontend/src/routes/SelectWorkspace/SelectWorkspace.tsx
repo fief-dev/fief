@@ -5,7 +5,7 @@ import { ReactComponent as FiefLogo } from '../../images/logos/fief-logo-red.svg
 import { useWorkspacesCache } from '../../hooks/workspace';
 import { Link } from 'react-router-dom';
 
-const SelectWorkspace: React.FunctionComponent = () => {
+const SelectWorkspace: React.FunctionComponent<React.PropsWithChildren<unknown>> = () => {
   const { t } = useTranslation('workspaces');
   const [workspaces] = useWorkspacesCache();
 
