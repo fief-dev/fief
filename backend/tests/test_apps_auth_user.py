@@ -5,7 +5,6 @@ import pytest
 from fastapi import status
 
 from fief.errors import APIErrorCode
-from tests.data import TestData
 from tests.types import TenantParams
 
 
@@ -131,6 +130,7 @@ class TestUserUpdateProfile:
 
         json = response.json()
 
-        assert json["given_name"] == "Isabeau"
-        assert json["gender"] == "F"
-        assert json["onboarding_done"] is False  # Non-updatable field
+        assert "fields" in json
+        assert json["fields"]["given_name"] == "Isabeau"
+        assert json["fields"]["gender"] == "F"
+        assert json["fields"]["onboarding_done"] is False  # Non-updatable field

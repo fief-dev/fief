@@ -67,5 +67,8 @@ class User(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
             "sub": str(self.id),
             "email": self.email,
             "tenant_id": str(self.tenant_id),
-            **fields,
+            "is_active": self.is_active,
+            "is_superuser": self.is_superuser,
+            "is_verified": self.is_verified,
+            "fields": fields,
         }
