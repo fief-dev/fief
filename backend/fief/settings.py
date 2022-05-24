@@ -32,7 +32,8 @@ class Settings(BaseSettings):
     environment: Environment = Environment.DEVELOPMENT
     log_level: str = "INFO"
     unit_tests: bool = False
-    sentry_dsn: Optional[str] = None
+    sentry_dsn_server: Optional[str] = None
+    sentry_dsn_worker: Optional[str] = None
     root_domain: str = "localhost:8000"
     allow_origin_regex: str = "http://.*localhost:[0-9]+"
     port: int = 8000

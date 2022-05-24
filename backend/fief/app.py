@@ -9,7 +9,7 @@ from fief.db.workspace import workspace_engine_manager
 from fief.settings import settings
 
 sentry_sdk.init(
-    dsn=settings.sentry_dsn,
+    dsn=settings.sentry_dsn_server,
     environment=settings.environment.value,
     release=__version__,
     integrations=[RedisIntegration()],
