@@ -1,13 +1,8 @@
-from typing import TYPE_CHECKING
-
 from sqlalchemy import engine, event
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
 from fief.settings import settings
-
-if TYPE_CHECKING:
-    from fief.models import Workspace
 
 
 def create_engine(database_url: engine.URL) -> AsyncEngine:
