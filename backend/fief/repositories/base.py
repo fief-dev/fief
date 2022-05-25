@@ -1,8 +1,6 @@
 import asyncio
 from typing import (
     Any,
-    ClassVar,
-    Dict,
     Generic,
     List,
     Optional,
@@ -23,7 +21,7 @@ from sqlalchemy.sql import Select
 from fief.models.generics import M_UUID, M
 
 
-class BaseManagerProtocol(Protocol[M]):
+class BaseRepositoryProtocol(Protocol[M]):
     model: Type[M]
     session: AsyncSession
 
@@ -59,14 +57,14 @@ class BaseManagerProtocol(Protocol[M]):
         ...  # pragma: no cover
 
 
-class UUIDManagerProtocol(BaseManagerProtocol, Protocol[M_UUID]):
+class UUIDRepositoryProtocol(BaseRepositoryProtocol, Protocol[M_UUID]):
     model: Type[M_UUID]
 
     async def get_by_id(self, id: UUID4) -> Optional[M_UUID]:
         ...  # pragma: no cover
 
 
-class BaseManager(BaseManagerProtocol, Generic[M]):
+class BaseRepository(BaseRepositoryProtocol, Generic[M]):
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
@@ -160,9 +158,9 @@ class BaseManager(BaseManagerProtocol, Generic[M]):
         return await self.session.execute(statement)
 
 
-class UUIDManagerMixin(Generic[M_UUID]):
+class UUIDRepositoryMixin(Generic[M_UUID]):
     async def get_by_id(
-        self: UUIDManagerProtocol[M_UUID],
+        self: UUIDRepositoryProtocol[M_UUID],
         id: UUID4,
         options: Optional[Sequence[Any]] = None,
     ) -> Optional[M_UUID]:
@@ -174,8 +172,10 @@ class UUIDManagerMixin(Generic[M_UUID]):
         return await self.get_one_or_none(statement)
 
 
-MANAGER = TypeVar("MANAGER", bound=BaseManager)
+REPOSITORY = TypeVar("REPOSITORY", bound=BaseRepository)
 
 
-def get_manager(manager_class: Type[MANAGER], session: AsyncSession) -> MANAGER:
-    return manager_class(session)
+def get_repository(
+    repository_class: Type[REPOSITORY], session: AsyncSession
+) -> REPOSITORY:
+    return repository_class(session)

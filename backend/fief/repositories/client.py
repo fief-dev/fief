@@ -2,11 +2,11 @@ from typing import Optional
 
 from sqlalchemy import select
 
-from fief.managers.base import BaseManager, UUIDManagerMixin
 from fief.models import Client
+from fief.repositories.base import BaseRepository, UUIDRepositoryMixin
 
 
-class ClientManager(BaseManager[Client], UUIDManagerMixin[Client]):
+class ClientRepository(BaseRepository[Client], UUIDRepositoryMixin[Client]):
     model = Client
 
     async def get_by_client_id(self, client_id: str) -> Optional[Client]:

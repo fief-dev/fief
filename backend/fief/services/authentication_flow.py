@@ -9,12 +9,6 @@ from pydantic import UUID4
 from fief.crypto.access_token import generate_access_token
 from fief.crypto.id_token import generate_id_token, get_validation_hash
 from fief.crypto.token import generate_token
-from fief.managers import (
-    AuthorizationCodeManager,
-    GrantManager,
-    LoginSessionManager,
-    SessionTokenManager,
-)
 from fief.models import (
     AuthorizationCode,
     Client,
@@ -25,6 +19,12 @@ from fief.models import (
     User,
     Workspace,
 )
+from fief.repositories import (
+    AuthorizationCodeRepository,
+    GrantRepository,
+    LoginSessionRepository,
+    SessionTokenRepository,
+)
 from fief.settings import settings
 
 ResponseType = TypeVar("ResponseType", bound=Response)
@@ -33,15 +33,15 @@ ResponseType = TypeVar("ResponseType", bound=Response)
 class AuthenticationFlow:
     def __init__(
         self,
-        authorization_code_manager: AuthorizationCodeManager,
-        login_session_manager: LoginSessionManager,
-        session_token_manager: SessionTokenManager,
-        grant_manager: GrantManager,
+        authorization_code_repository: AuthorizationCodeRepository,
+        login_session_repository: LoginSessionRepository,
+        session_token_repository: SessionTokenRepository,
+        grant_repository: GrantRepository,
     ) -> None:
-        self.authorization_code_manager = authorization_code_manager
-        self.login_session_manager = login_session_manager
-        self.session_token_manager = session_token_manager
-        self.grant_manager = grant_manager
+        self.authorization_code_repository = authorization_code_repository
+        self.login_session_repository = login_session_repository
+        self.session_token_repository = session_token_repository
+        self.grant_repository = grant_repository
 
     async def create_login_session(
         self,
@@ -70,7 +70,7 @@ class AuthenticationFlow:
             login_session.code_challenge = code_challenge
             login_session.code_challenge_method = code_challenge_method
 
-        login_session = await self.login_session_manager.create(login_session)
+        login_session = await self.login_session_repository.create(login_session)
 
         response.set_cookie(
             settings.login_session_cookie_name,
@@ -88,7 +88,7 @@ class AuthenticationFlow:
             settings.login_session_cookie_name,
             domain=settings.login_session_cookie_domain,
         )
-        await self.login_session_manager.delete(login_session)
+        await self.login_session_repository.delete(login_session)
         return response
 
     async def create_session_token(
@@ -98,7 +98,7 @@ class AuthenticationFlow:
         expires_at = datetime.now(timezone.utc) + timedelta(
             seconds=settings.session_lifetime_seconds
         )
-        await self.session_token_manager.create(
+        await self.session_token_repository.create(
             SessionToken(token=token_hash, expires_at=expires_at, user_id=user_id)
         )
         response.set_cookie(
@@ -120,18 +120,18 @@ class AuthenticationFlow:
         session_token: Optional[SessionToken],
     ) -> ResponseType:
         if session_token is not None:
-            await self.session_token_manager.delete(session_token)
+            await self.session_token_repository.delete(session_token)
         return await self.create_session_token(response, user_id)
 
     async def create_or_update_grant(
         self, user_id: UUID4, client: Client, scope: List[str]
     ) -> Grant:
-        grant = await self.grant_manager.get_by_user_and_client(user_id, client.id)
+        grant = await self.grant_repository.get_by_user_and_client(user_id, client.id)
         if grant is not None:
             grant.scope = scope
-            await self.grant_manager.update(grant)
+            await self.grant_repository.update(grant)
         else:
-            grant = await self.grant_manager.create(
+            grant = await self.grant_repository.create(
                 Grant(scope=scope, user_id=user_id, client=client)
             )
         return grant
@@ -148,7 +148,7 @@ class AuthenticationFlow:
     ) -> RedirectResponse:
         code, code_hash = generate_token()
         c_hash = get_validation_hash(code)
-        authorization_code = await self.authorization_code_manager.create(
+        authorization_code = await self.authorization_code_repository.create(
             AuthorizationCode(
                 code=code_hash,
                 c_hash=c_hash,

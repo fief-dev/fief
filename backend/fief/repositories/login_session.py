@@ -2,11 +2,13 @@ from typing import Optional
 
 from sqlalchemy import select
 
-from fief.managers.base import BaseManager, UUIDManagerMixin
 from fief.models import LoginSession
+from fief.repositories.base import BaseRepository, UUIDRepositoryMixin
 
 
-class LoginSessionManager(BaseManager[LoginSession], UUIDManagerMixin[LoginSession]):
+class LoginSessionRepository(
+    BaseRepository[LoginSession], UUIDRepositoryMixin[LoginSession]
+):
     model = LoginSession
 
     async def get_by_token(self, token: str) -> Optional[LoginSession]:

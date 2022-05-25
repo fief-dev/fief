@@ -1,10 +1,10 @@
 from sqlalchemy import select
 
-from fief.managers.base import BaseManager, UUIDManagerMixin
 from fief.models import User
+from fief.repositories.base import BaseRepository, UUIDRepositoryMixin
 
 
-class UserManager(BaseManager[User], UUIDManagerMixin[User]):
+class UserRepository(BaseRepository[User], UUIDRepositoryMixin[User]):
     model = User
 
     async def count_all(self) -> int:

@@ -3,11 +3,13 @@ from typing import Optional
 
 from sqlalchemy import select
 
-from fief.managers.base import BaseManager, UUIDManagerMixin
 from fief.models import SessionToken
+from fief.repositories.base import BaseRepository, UUIDRepositoryMixin
 
 
-class SessionTokenManager(BaseManager[SessionToken], UUIDManagerMixin[SessionToken]):
+class SessionTokenRepository(
+    BaseRepository[SessionToken], UUIDRepositoryMixin[SessionToken]
+):
     model = SessionToken
 
     async def get_by_token(

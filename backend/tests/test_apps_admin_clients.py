@@ -8,7 +8,7 @@ from jwcrypto import jwk
 
 from fief.db import AsyncSession
 from fief.errors import APIErrorCode
-from fief.managers import ClientManager
+from fief.repositories import ClientRepository
 from tests.data import TestData
 
 
@@ -247,8 +247,8 @@ class TestCreateEncryptionKey:
         assert key.has_private == True
         assert key.has_public == True
 
-        manager = ClientManager(workspace_session)
-        updated_client = await manager.get_by_id(client.id)
+        repository = ClientRepository(workspace_session)
+        updated_client = await repository.get_by_id(client.id)
         assert updated_client is not None
         assert updated_client.encrypt_jwk is not None
 

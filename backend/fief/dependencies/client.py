@@ -11,25 +11,25 @@ from fief.dependencies.pagination import (
     get_paginated_objects,
     get_pagination,
 )
-from fief.dependencies.workspace_managers import get_client_manager
-from fief.managers import ClientManager
+from fief.dependencies.workspace_repositories import get_client_repository
 from fief.models import Client
+from fief.repositories import ClientRepository
 
 
 async def get_paginated_clients(
     pagination: Pagination = Depends(get_pagination),
     ordering: Ordering = Depends(get_ordering),
-    manager: ClientManager = Depends(get_client_manager),
+    repository: ClientRepository = Depends(get_client_repository),
 ) -> Tuple[List[Client], int]:
     statement = select(Client)
-    return await get_paginated_objects(statement, pagination, ordering, manager)
+    return await get_paginated_objects(statement, pagination, ordering, repository)
 
 
 async def get_client_by_id_or_404(
     id: UUID4,
-    manager: ClientManager = Depends(get_client_manager),
+    repository: ClientRepository = Depends(get_client_repository),
 ) -> Client:
-    client = await manager.get_by_id(id)
+    client = await repository.get_by_id(id)
 
     if client is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)

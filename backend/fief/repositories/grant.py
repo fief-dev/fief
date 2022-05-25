@@ -3,11 +3,11 @@ from typing import Optional
 from pydantic import UUID4
 from sqlalchemy import select
 
-from fief.managers.base import BaseManager, UUIDManagerMixin
 from fief.models import Grant
+from fief.repositories.base import BaseRepository, UUIDRepositoryMixin
 
 
-class GrantManager(BaseManager[Grant], UUIDManagerMixin[Grant]):
+class GrantRepository(BaseRepository[Grant], UUIDRepositoryMixin[Grant]):
     model = Grant
 
     async def get_by_user_and_client(

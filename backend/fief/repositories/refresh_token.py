@@ -3,11 +3,13 @@ from typing import Optional
 
 from sqlalchemy import select
 
-from fief.managers.base import BaseManager, UUIDManagerMixin
 from fief.models import RefreshToken
+from fief.repositories.base import BaseRepository, UUIDRepositoryMixin
 
 
-class RefreshTokenManager(BaseManager[RefreshToken], UUIDManagerMixin[RefreshToken]):
+class RefreshTokenRepository(
+    BaseRepository[RefreshToken], UUIDRepositoryMixin[RefreshToken]
+):
     model = RefreshToken
 
     async def get_by_token(

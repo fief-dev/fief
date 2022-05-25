@@ -13,9 +13,9 @@ from fief.db import AsyncSession
 from fief.db.engine import AsyncSession, create_async_session_maker, create_engine
 from fief.db.workspace import get_connection
 from fief.locale import Translations
-from fief.managers import TenantManager, WorkspaceManager
 from fief.models import Tenant, User, Workspace
 from fief.paths import EMAIL_TEMPLATES_DIRECTORY
+from fief.repositories import TenantRepository, WorkspaceRepository
 from fief.services.email import EmailProvider
 from fief.settings import settings
 
@@ -95,8 +95,8 @@ class TaskBase:
 
     async def _get_workspace(self, workspace_id: UUID4) -> Workspace:
         async with self.get_main_session() as session:
-            manager = WorkspaceManager(session)
-            workspace = await manager.get_by_id(workspace_id)
+            repository = WorkspaceRepository(session)
+            workspace = await repository.get_by_id(workspace_id)
             if workspace is None:
                 raise TaskError()
             return workspace
@@ -113,8 +113,8 @@ class TaskBase:
 
     async def _get_tenant(self, tenant_id: UUID4, workspace: Workspace) -> Tenant:
         async with self.get_workspace_session(workspace) as session:
-            manager = TenantManager(session)
-            tenant = await manager.get_by_id(tenant_id)
+            repository = TenantRepository(session)
+            tenant = await repository.get_by_id(tenant_id)
             if tenant is None:
                 raise TaskError()
             return tenant

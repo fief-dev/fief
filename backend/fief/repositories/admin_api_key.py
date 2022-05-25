@@ -2,11 +2,13 @@ from typing import Optional
 
 from sqlalchemy import select
 
-from fief.managers.base import BaseManager, UUIDManagerMixin
 from fief.models import AdminAPIKey
+from fief.repositories.base import BaseRepository, UUIDRepositoryMixin
 
 
-class AdminAPIKeyManager(BaseManager[AdminAPIKey], UUIDManagerMixin[AdminAPIKey]):
+class AdminAPIKeyRepository(
+    BaseRepository[AdminAPIKey], UUIDRepositoryMixin[AdminAPIKey]
+):
     model = AdminAPIKey
 
     async def get_by_token(self, token: str) -> Optional[AdminAPIKey]:

@@ -5,11 +5,11 @@ from typing import Optional
 from slugify import slugify
 from sqlalchemy import select
 
-from fief.managers.base import BaseManager, UUIDManagerMixin
 from fief.models import Tenant
+from fief.repositories.base import BaseRepository, UUIDRepositoryMixin
 
 
-class TenantManager(BaseManager[Tenant], UUIDManagerMixin[Tenant]):
+class TenantRepository(BaseRepository[Tenant], UUIDRepositoryMixin[Tenant]):
     model = Tenant
 
     async def get_default(self) -> Optional[Tenant]:

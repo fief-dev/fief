@@ -2,12 +2,12 @@ from typing import Optional
 
 from sqlalchemy import select
 
-from fief.managers.base import BaseManager, UUIDManagerMixin
 from fief.models import AdminSessionToken
+from fief.repositories.base import BaseRepository, UUIDRepositoryMixin
 
 
-class AdminSessionTokenManager(
-    BaseManager[AdminSessionToken], UUIDManagerMixin[AdminSessionToken]
+class AdminSessionTokenRepository(
+    BaseRepository[AdminSessionToken], UUIDRepositoryMixin[AdminSessionToken]
 ):
     model = AdminSessionToken
 

@@ -2,11 +2,11 @@ from typing import Optional
 
 from sqlalchemy import select
 
-from fief.managers.base import BaseManager, UUIDManagerMixin
 from fief.models import Permission
+from fief.repositories.base import BaseRepository, UUIDRepositoryMixin
 
 
-class PermissionManager(BaseManager[Permission], UUIDManagerMixin[Permission]):
+class PermissionRepository(BaseRepository[Permission], UUIDRepositoryMixin[Permission]):
     model = Permission
 
     async def get_by_codename(self, codename: str) -> Optional[Permission]:

@@ -12,10 +12,10 @@ from fief.dependencies.pagination import (
     get_paginated_objects,
     get_pagination,
 )
-from fief.dependencies.workspace_managers import get_user_field_manager
-from fief.managers import UserFieldManager
+from fief.dependencies.workspace_repositories import get_user_field_repository
 from fief.models import UserField
 from fief.models.user_field import UserFieldType
+from fief.repositories import UserFieldRepository
 from fief.schemas.generics import true_bool_validator
 from fief.schemas.user import UF, UserCreate, UserCreateInternal, UserFields, UserUpdate
 from fief.schemas.user_field import (
@@ -33,17 +33,17 @@ from fief.schemas.user_field import (
 async def get_paginated_user_fields(
     pagination: Pagination = Depends(get_pagination),
     ordering: Ordering = Depends(get_ordering),
-    manager: UserFieldManager = Depends(get_user_field_manager),
+    repository: UserFieldRepository = Depends(get_user_field_repository),
 ) -> Tuple[List[UserField], int]:
     statement = select(UserField)
-    return await get_paginated_objects(statement, pagination, ordering, manager)
+    return await get_paginated_objects(statement, pagination, ordering, repository)
 
 
 async def get_user_field_by_id_or_404(
     id: UUID4,
-    manager: UserFieldManager = Depends(get_user_field_manager),
+    repository: UserFieldRepository = Depends(get_user_field_repository),
 ) -> UserField:
-    user_field = await manager.get_by_id(id)
+    user_field = await repository.get_by_id(id)
 
     if user_field is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
@@ -52,9 +52,9 @@ async def get_user_field_by_id_or_404(
 
 
 async def get_user_fields(
-    manager: UserFieldManager = Depends(get_user_field_manager),
+    repository: UserFieldRepository = Depends(get_user_field_repository),
 ) -> List[UserField]:
-    return await manager.all()
+    return await repository.all()
 
 
 async def get_user_field_create_internal_model(user_field_create: UserFieldCreate):
@@ -135,15 +135,15 @@ async def get_validated_user_field_update(
 
 
 async def get_registration_user_fields(
-    manager: UserFieldManager = Depends(get_user_field_manager),
+    repository: UserFieldRepository = Depends(get_user_field_repository),
 ) -> List[UserField]:
-    return await manager.get_registration_fields()
+    return await repository.get_registration_fields()
 
 
 async def get_update_user_fields(
-    manager: UserFieldManager = Depends(get_user_field_manager),
+    repository: UserFieldRepository = Depends(get_user_field_repository),
 ) -> List[UserField]:
-    return await manager.get_update_fields()
+    return await repository.get_update_fields()
 
 
 def _get_pydantic_specification(user_fields: List[UserField]) -> Tuple[Any, Any]:

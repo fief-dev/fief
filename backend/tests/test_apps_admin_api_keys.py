@@ -7,8 +7,8 @@ from fastapi import status
 
 from fief.crypto.token import generate_token, get_token_hash
 from fief.db import AsyncSession
-from fief.managers import AdminAPIKeyManager
 from fief.models import AdminAPIKey, Workspace
+from fief.repositories import AdminAPIKeyRepository
 
 
 @pytest.mark.asyncio
@@ -77,8 +77,8 @@ class TestCreateAPIKey:
         assert json["token"] != "**********"
         assert json["workspace_id"] == str(workspace.id)
 
-        api_key_manager = AdminAPIKeyManager(main_session)
-        api_key = await api_key_manager.get_by_id(json["id"])
+        api_key_repository = AdminAPIKeyRepository(main_session)
+        api_key = await api_key_repository.get_by_id(json["id"])
         assert api_key is not None
         assert api_key.token == get_token_hash(json["token"])
 
@@ -120,16 +120,16 @@ class TestDeleteAPIKey:
         main_session: AsyncSession,
         workspace: Workspace,
     ):
-        api_key_manager = AdminAPIKeyManager(main_session)
+        api_key_repository = AdminAPIKeyRepository(main_session)
         _, token_hash = generate_token()
         api_key = AdminAPIKey(
             name="New API Key", token=token_hash, workspace_id=workspace.id
         )
-        api_key = await api_key_manager.create(api_key)
+        api_key = await api_key_repository.create(api_key)
 
         response = await test_client_admin.delete(f"/api-keys/{api_key.id}")
 
         assert response.status_code == status.HTTP_204_NO_CONTENT
 
-        deleted_api_key = await api_key_manager.get_by_id(api_key.id)
+        deleted_api_key = await api_key_repository.get_by_id(api_key.id)
         assert deleted_api_key is None

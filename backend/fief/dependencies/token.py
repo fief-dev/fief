@@ -9,14 +9,18 @@ from pydantic import UUID4
 from fief.crypto.code_challenge import verify_code_verifier
 from fief.crypto.token import get_token_hash
 from fief.dependencies.users import UserManager, get_user_manager
-from fief.dependencies.workspace_managers import (
-    get_authorization_code_manager,
-    get_client_manager,
-    get_refresh_token_manager,
+from fief.dependencies.workspace_repositories import (
+    get_authorization_code_repository,
+    get_client_repository,
+    get_refresh_token_repository,
 )
 from fief.exceptions import TokenRequestException
-from fief.managers import AuthorizationCodeManager, ClientManager, RefreshTokenManager
 from fief.models import Client, ClientType, User
+from fief.repositories import (
+    AuthorizationCodeRepository,
+    ClientRepository,
+    RefreshTokenRepository,
+)
 from fief.schemas.auth import TokenError
 
 ClientSecretBasicScheme = HTTPBasic(scheme_name="client_secret_basic", auto_error=False)
@@ -40,12 +44,12 @@ async def get_grant_type(grant_type: Optional[str] = Form(None)) -> str:
 
 async def authenticate_client_secret_basic(
     credentials: Optional[HTTPBasicCredentials] = Depends(ClientSecretBasicScheme),
-    client_manager: ClientManager = Depends(get_client_manager),
+    client_repository: ClientRepository = Depends(get_client_repository),
 ) -> Optional[Client]:
     if credentials is None:
         return None
 
-    return await client_manager.get_by_client_id_and_secret(
+    return await client_repository.get_by_client_id_and_secret(
         credentials.username, credentials.password
     )
 
@@ -53,24 +57,24 @@ async def authenticate_client_secret_basic(
 async def authenticate_client_secret_post(
     client_id: Optional[str] = Form(None),
     client_secret: Optional[str] = Form(None),
-    client_manager: ClientManager = Depends(get_client_manager),
+    client_repository: ClientRepository = Depends(get_client_repository),
 ) -> Optional[Client]:
     if client_id is None or client_secret is None:
         return None
 
-    return await client_manager.get_by_client_id_and_secret(client_id, client_secret)
+    return await client_repository.get_by_client_id_and_secret(client_id, client_secret)
 
 
 async def authenticate_none(
     client_id: Optional[str] = Form(None),
-    client_manager: ClientManager = Depends(get_client_manager),
+    client_repository: ClientRepository = Depends(get_client_repository),
     grant_type: str = Depends(get_grant_type),
     code_verifier: Optional[str] = Form(None),
 ) -> Optional[Client]:
     if client_id is None:
         return None
 
-    client = await client_manager.get_by_client_id(client_id)
+    client = await client_repository.get_by_client_id(client_id)
 
     if (
         client is None
@@ -108,10 +112,12 @@ async def validate_grant_request(
     scope: Optional[str] = Form(None),
     grant_type: str = Depends(get_grant_type),
     client: Client = Depends(authenticate_client),
-    authorization_code_manager: AuthorizationCodeManager = Depends(
-        get_authorization_code_manager
+    authorization_code_repository: AuthorizationCodeRepository = Depends(
+        get_authorization_code_repository
     ),
-    refresh_token_manager: RefreshTokenManager = Depends(get_refresh_token_manager),
+    refresh_token_repository: RefreshTokenRepository = Depends(
+        get_refresh_token_repository
+    ),
 ) -> AsyncGenerator[GrantRequest, None]:
     if grant_type == "authorization_code":
         if code is None:
@@ -121,7 +127,7 @@ async def validate_grant_request(
             raise TokenRequestException(TokenError.get_invalid_request())
 
         code_hash = get_token_hash(code)
-        authorization_code = await authorization_code_manager.get_valid_by_code(
+        authorization_code = await authorization_code_repository.get_valid_by_code(
             code_hash
         )
         if authorization_code is None:
@@ -151,14 +157,14 @@ async def validate_grant_request(
             "client": client,
         }
 
-        await authorization_code_manager.delete(authorization_code)
+        await authorization_code_repository.delete(authorization_code)
         return
     elif grant_type == "refresh_token":
         if refresh_token_token is None:
             raise TokenRequestException(TokenError.get_invalid_request())
 
         token_hash = get_token_hash(refresh_token_token)
-        refresh_token = await refresh_token_manager.get_by_token(token_hash)
+        refresh_token = await refresh_token_repository.get_by_token(token_hash)
 
         if refresh_token is None:
             raise TokenRequestException(TokenError.get_invalid_grant())
@@ -179,7 +185,7 @@ async def validate_grant_request(
             "client": client,
         }
 
-        await refresh_token_manager.delete(refresh_token)
+        await refresh_token_repository.delete(refresh_token)
         return
 
     raise TokenRequestException(TokenError.get_unsupported_grant_type())

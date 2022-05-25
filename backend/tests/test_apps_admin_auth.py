@@ -7,8 +7,8 @@ from fastapi import status
 
 from fief.crypto.token import get_token_hash
 from fief.db import AsyncSession
-from fief.managers import AdminSessionTokenManager
 from fief.models import AdminSessionToken, User
+from fief.repositories import AdminSessionTokenRepository
 from fief.settings import settings
 
 
@@ -64,9 +64,9 @@ class TestAuthCallback:
         session_cookie = response.cookies.get(settings.fief_admin_session_cookie_name)
         assert session_cookie is not None
 
-        admin_session_token_manager = AdminSessionTokenManager(main_session)
+        admin_session_token_repository = AdminSessionTokenRepository(main_session)
         session_token_hash = get_token_hash(session_cookie)
-        session_token = await admin_session_token_manager.get_by_token(
+        session_token = await admin_session_token_repository.get_by_token(
             session_token_hash
         )
         assert session_token is not None
@@ -114,8 +114,8 @@ class TestAuthLogout:
 
         assert "Set-Cookie" in response.headers
 
-        admin_session_token_manager = AdminSessionTokenManager(main_session)
-        deleted_admin_session_token = await admin_session_token_manager.get_by_id(
+        admin_session_token_repository = AdminSessionTokenRepository(main_session)
+        deleted_admin_session_token = await admin_session_token_repository.get_by_id(
             admin_session_token[0].id
         )
         assert deleted_admin_session_token is None

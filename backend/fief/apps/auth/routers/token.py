@@ -12,9 +12,9 @@ from fief.dependencies.token import (
     get_user_from_grant_request,
     validate_grant_request,
 )
-from fief.dependencies.workspace_managers import get_refresh_token_manager
-from fief.managers import RefreshTokenManager
+from fief.dependencies.workspace_repositories import get_refresh_token_repository
 from fief.models import RefreshToken, Tenant, User, Workspace
+from fief.repositories import RefreshTokenRepository
 from fief.schemas.auth import TokenResponse
 from fief.settings import settings
 
@@ -26,7 +26,9 @@ async def token(
     response: Response,
     grant_request: GrantRequest = Depends(validate_grant_request),
     user: User = Depends(get_user_from_grant_request),
-    refresh_token_manager: RefreshTokenManager = Depends(get_refresh_token_manager),
+    refresh_token_repository: RefreshTokenRepository = Depends(
+        get_refresh_token_repository
+    ),
     workspace: Workspace = Depends(get_current_workspace),
     tenant: Tenant = Depends(get_current_tenant),
 ):
@@ -76,7 +78,7 @@ async def token(
             client_id=client.id,
             authenticated_at=authenticated_at,
         )
-        refresh_token = await refresh_token_manager.create(refresh_token)
+        refresh_token = await refresh_token_repository.create(refresh_token)
         token_response.refresh_token = token
 
     response.headers["Cache-Control"] = "no-store"

@@ -18,10 +18,10 @@ from fief.dependencies.users import (
     get_user_manager_from_create_user_internal,
     get_user_manager_from_user,
 )
-from fief.dependencies.workspace_managers import get_user_manager as get_user_db_manager
+from fief.dependencies.workspace_repositories import get_user_repository
 from fief.errors import APIErrorCode
-from fief.managers import UserManager as UserDBManager
 from fief.models import User, UserField
+from fief.repositories import UserRepository
 from fief.schemas.generics import PaginatedResults
 
 router = APIRouter(dependencies=[Depends(is_authenticated_admin)])
@@ -51,7 +51,7 @@ async def create_user(
     user_create: schemas.user.UserCreateInternal = Depends(get_user_create_internal),
     user_fields: List[UserField] = Depends(get_user_fields),
     user_manager: UserManager = Depends(get_user_manager_from_create_user_internal),
-    user_db_manager: UserDBManager = Depends(get_user_db_manager),
+    user_repository: UserRepository = Depends(get_user_repository),
 ):
     try:
         created_user = await user_manager.create_with_fields(
@@ -72,7 +72,7 @@ async def create_user(
             status_code=status.HTTP_400_BAD_REQUEST,
         )
 
-    user = await user_db_manager.get_by_id(created_user.id, (joinedload(User.tenant),))
+    user = await user_repository.get_by_id(created_user.id, (joinedload(User.tenant),))
 
     return schemas.user.UserRead.from_orm(user)
 

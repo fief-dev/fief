@@ -3,13 +3,13 @@ from typing import Optional
 
 from sqlalchemy import select
 
-from fief.managers.base import BaseManager, UUIDManagerMixin
 from fief.models import AuthorizationCode
+from fief.repositories.base import BaseRepository, UUIDRepositoryMixin
 from fief.settings import settings
 
 
-class AuthorizationCodeManager(
-    BaseManager[AuthorizationCode], UUIDManagerMixin[AuthorizationCode]
+class AuthorizationCodeRepository(
+    BaseRepository[AuthorizationCode], UUIDRepositoryMixin[AuthorizationCode]
 ):
     model = AuthorizationCode
 

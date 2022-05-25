@@ -5,12 +5,12 @@ from typing import Optional
 from slugify import slugify
 from sqlalchemy import select
 
-from fief.managers.base import BaseManager, UUIDManagerMixin
 from fief.models import Workspace
+from fief.repositories.base import BaseRepository, UUIDRepositoryMixin
 from fief.settings import settings
 
 
-class WorkspaceManager(BaseManager[Workspace], UUIDManagerMixin[Workspace]):
+class WorkspaceRepository(BaseRepository[Workspace], UUIDRepositoryMixin[Workspace]):
     model = Workspace
 
     async def get_by_domain(self, domain: str) -> Optional[Workspace]:

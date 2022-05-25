@@ -3,11 +3,13 @@ from typing import Optional
 from pydantic import UUID4
 from sqlalchemy import select
 
-from fief.managers.base import BaseManager, UUIDManagerMixin
 from fief.models import WorkspaceUser
+from fief.repositories.base import BaseRepository, UUIDRepositoryMixin
 
 
-class WorkspaceUserManager(BaseManager[WorkspaceUser], UUIDManagerMixin[WorkspaceUser]):
+class WorkspaceUserRepository(
+    BaseRepository[WorkspaceUser], UUIDRepositoryMixin[WorkspaceUser]
+):
     model = WorkspaceUser
 
     async def get_by_workspace_and_user(

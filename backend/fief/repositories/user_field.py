@@ -2,11 +2,11 @@ from typing import List, Optional
 
 from sqlalchemy import select
 
-from fief.managers.base import BaseManager, UUIDManagerMixin
 from fief.models import UserField
+from fief.repositories.base import BaseRepository, UUIDRepositoryMixin
 
 
-class UserFieldManager(BaseManager[UserField], UUIDManagerMixin[UserField]):
+class UserFieldRepository(BaseRepository[UserField], UUIDRepositoryMixin[UserField]):
     model = UserField
 
     async def get_by_slug(self, slug: str) -> Optional[UserField]:

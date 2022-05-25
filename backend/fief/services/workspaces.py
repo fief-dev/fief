@@ -3,8 +3,8 @@ from typing import List, Optional
 
 from fief.db.main import main_async_session_maker
 from fief.db.workspace import get_workspace_session
-from fief.managers import UserManager, WorkspaceManager
 from fief.models import Workspace
+from fief.repositories import UserRepository, WorkspaceRepository
 
 
 @dataclass
@@ -16,18 +16,18 @@ class WorkspaceStats:
 
 
 class Workspaces:
-    def __init__(self, workspace_manager: WorkspaceManager) -> None:
-        self.workspace_manager = workspace_manager
+    def __init__(self, workspace_repository: WorkspaceRepository) -> None:
+        self.workspace_repository = workspace_repository
 
     async def get_stats(self) -> List[WorkspaceStats]:
         stats: List[WorkspaceStats] = []
 
-        workspaces = await self.workspace_manager.all()
+        workspaces = await self.workspace_repository.all()
         for workspace in workspaces:
             try:
                 async with get_workspace_session(workspace) as session:
-                    user_manager = UserManager(session)
-                    nb_users = await user_manager.count_all()
+                    user_repository = UserRepository(session)
+                    nb_users = await user_repository.count_all()
                     stats.append(
                         WorkspaceStats(
                             workspace=workspace,
@@ -50,6 +50,6 @@ class Workspaces:
 
 async def get_workspaces_stats() -> List[WorkspaceStats]:
     async with main_async_session_maker() as session:
-        workspace_manager = WorkspaceManager(session)
-        workspaces = Workspaces(workspace_manager)
+        workspace_repository = WorkspaceRepository(session)
+        workspaces = Workspaces(workspace_repository)
         return await workspaces.get_stats()

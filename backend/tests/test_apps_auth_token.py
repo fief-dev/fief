@@ -7,8 +7,8 @@ from fastapi import status
 
 from fief.crypto.token import get_token_hash
 from fief.db import AsyncSession
-from fief.managers import AuthorizationCodeManager, RefreshTokenManager
 from fief.models import Client
+from fief.repositories import AuthorizationCodeRepository, RefreshTokenRepository
 from tests.data import TestData, authorization_code_codes, refresh_token_tokens
 from tests.helpers import id_token_assertions
 from tests.types import TenantParams
@@ -400,16 +400,16 @@ class TestAuthTokenAuthorizationCode:
         assert json["token_type"] == "bearer"
         assert json["expires_in"] == 3600
 
-        authorization_code_manager = AuthorizationCodeManager(workspace_session)
-        used_authorization_code = await authorization_code_manager.get_by_code(
+        authorization_code_repository = AuthorizationCodeRepository(workspace_session)
+        used_authorization_code = await authorization_code_repository.get_by_code(
             authorization_code_code[1]
         )
         assert used_authorization_code is None
 
         if "offline_access" in authorization_code.scope:
             assert json["refresh_token"] is not None
-            refresh_token_manager = RefreshTokenManager(workspace_session)
-            refresh_token = await refresh_token_manager.get_by_token(
+            refresh_token_repository = RefreshTokenRepository(workspace_session)
+            refresh_token = await refresh_token_repository.get_by_token(
                 get_token_hash(json["refresh_token"])
             )
             assert refresh_token is not None
@@ -699,8 +699,8 @@ class TestAuthTokenRefreshToken:
         if "offline_access" in refresh_token.scope:
             assert json["refresh_token"] is not None
             assert get_token_hash(json["refresh_token"]) != refresh_token.token
-            refresh_token_manager = RefreshTokenManager(workspace_session)
-            old_refresh_token = await refresh_token_manager.get_by_token(
+            refresh_token_repository = RefreshTokenRepository(workspace_session)
+            old_refresh_token = await refresh_token_repository.get_by_token(
                 refresh_token.token
             )
             assert old_refresh_token is None
