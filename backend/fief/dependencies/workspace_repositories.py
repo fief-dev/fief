@@ -7,6 +7,7 @@ from fief.repositories import (
     ClientRepository,
     GrantRepository,
     LoginSessionRepository,
+    PermissionRepository,
     RefreshTokenRepository,
     SessionTokenRepository,
     TenantRepository,
@@ -68,3 +69,9 @@ async def get_grant_repository(
     session: AsyncSession = Depends(get_current_workspace_session),
 ) -> GrantRepository:
     return get_repository(GrantRepository, session)
+
+
+async def get_permission_repository(
+    session: AsyncSession = Depends(get_current_workspace_session),
+) -> PermissionRepository:
+    return get_repository(PermissionRepository, session)
