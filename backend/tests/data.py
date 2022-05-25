@@ -15,7 +15,9 @@ from fief.models import (
     Grant,
     LoginSession,
     M,
+    Permission,
     RefreshToken,
+    Role,
     SessionToken,
     Tenant,
     User,
@@ -44,6 +46,7 @@ class TestData(TypedDict):
     refresh_tokens: ModelMapping[RefreshToken]
     session_tokens: ModelMapping[SessionToken]
     grants: ModelMapping[Grant]
+    permissions: ModelMapping[Permission]
 
 
 tenants: ModelMapping[Tenant] = {
@@ -534,6 +537,25 @@ grants: ModelMapping[Grant] = {
     ),
 }
 
+permissions: ModelMapping[Permission] = {
+    "castles:create": Permission(
+        name="Create Castles",
+        codename="castles:create",
+    ),
+    "castles:read": Permission(
+        name="Read Castles",
+        codename="castles:read",
+    ),
+    "castles:update": Permission(
+        name="Update Castles",
+        codename="castles:update",
+    ),
+    "castles:delete": Permission(
+        name="Delete Castles",
+        codename="castles:delete",
+    ),
+}
+
 data_mapping: TestData = {
     "tenants": tenants,
     "clients": clients,
@@ -545,6 +567,7 @@ data_mapping: TestData = {
     "refresh_tokens": refresh_tokens,
     "session_tokens": session_tokens,
     "grants": grants,
+    "permissions": permissions,
 }
 
 __all__ = [

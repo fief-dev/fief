@@ -6,7 +6,9 @@ from fief.models.client import Client, ClientType
 from fief.models.generics import M_UUID, M
 from fief.models.grant import Grant
 from fief.models.login_session import LoginSession
+from fief.models.permission import Permission
 from fief.models.refresh_token import RefreshToken
+from fief.models.role import Role, RolePermission
 from fief.models.session_token import SessionToken
 from fief.models.tenant import Tenant
 from fief.models.user import User
@@ -27,7 +29,10 @@ __all__ = [
     "Grant",
     "LoginSession",
     "MainBase",
+    "Permission",
     "RefreshToken",
+    "Role",
+    "RolePermission",
     "SessionToken",
     "M",
     "M_UUID",
