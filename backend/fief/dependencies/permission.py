@@ -29,9 +29,9 @@ async def get_permission_by_id_or_404(
     id: UUID4,
     repository: PermissionRepository = Depends(get_permission_repository),
 ) -> Permission:
-    user_field = await repository.get_by_id(id)
+    permission = await repository.get_by_id(id)
 
-    if user_field is None:
+    if permission is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
 
-    return user_field
+    return permission

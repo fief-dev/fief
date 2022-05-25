@@ -47,6 +47,7 @@ class TestData(TypedDict):
     session_tokens: ModelMapping[SessionToken]
     grants: ModelMapping[Grant]
     permissions: ModelMapping[Permission]
+    roles: ModelMapping[Role]
 
 
 tenants: ModelMapping[Tenant] = {
@@ -556,6 +557,24 @@ permissions: ModelMapping[Permission] = {
     ),
 }
 
+roles: ModelMapping[Role] = {
+    "castles_visitor": Role(
+        name="Castles Visitor",
+        granted_by_default=True,
+        permissions=[permissions["castles:read"]],
+    ),
+    "castles_manager": Role(
+        name="Castles Manager",
+        granted_by_default=False,
+        permissions=[
+            permissions["castles:read"],
+            permissions["castles:create"],
+            permissions["castles:update"],
+            permissions["castles:delete"],
+        ],
+    ),
+}
+
 data_mapping: TestData = {
     "tenants": tenants,
     "clients": clients,
@@ -568,6 +587,7 @@ data_mapping: TestData = {
     "session_tokens": session_tokens,
     "grants": grants,
     "permissions": permissions,
+    "roles": roles,
 }
 
 __all__ = [
