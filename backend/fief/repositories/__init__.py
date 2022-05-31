@@ -12,6 +12,8 @@ from fief.repositories.session_token import SessionTokenRepository
 from fief.repositories.tenant import TenantRepository
 from fief.repositories.user import UserRepository
 from fief.repositories.user_field import UserFieldRepository
+from fief.repositories.user_permission import UserPermissionRepository
+from fief.repositories.user_role import UserRoleRepository
 from fief.repositories.workspace import WorkspaceRepository
 from fief.repositories.workspace_user import WorkspaceUserRepository
 
@@ -31,5 +33,7 @@ __all__ = [
     "TenantRepository",
     "UserRepository",
     "UserFieldRepository",
+    "UserPermissionRepository",
+    "UserRoleRepository",
     "get_repository",
 ]

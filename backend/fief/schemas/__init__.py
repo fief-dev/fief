@@ -9,6 +9,8 @@ from fief.schemas import (
     tenant,
     user,
     user_field,
+    user_permission,
+    user_role,
     well_known,
     workspace,
 )
@@ -25,5 +27,7 @@ __all__ = [
     "tenant",
     "user",
     "user_field",
+    "user_permission",
+    "user_role",
     "well_known",
 ]

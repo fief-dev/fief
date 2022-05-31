@@ -24,6 +24,8 @@ from fief.models import (
     UserField,
     UserFieldType,
     UserFieldValue,
+    UserPermission,
+    UserRole,
 )
 from fief.settings import settings
 
@@ -48,6 +50,8 @@ class TestData(TypedDict):
     grants: ModelMapping[Grant]
     permissions: ModelMapping[Permission]
     roles: ModelMapping[Role]
+    user_permissions: ModelMapping[UserPermission]
+    user_roles: ModelMapping[UserRole]
 
 
 tenants: ModelMapping[Tenant] = {
@@ -575,6 +579,25 @@ roles: ModelMapping[Role] = {
     ),
 }
 
+user_permissions: ModelMapping[UserPermission] = {
+    "default_castles_visitor_from_role": UserPermission(
+        user=users["regular"],
+        permission=permissions["castles:read"],
+        from_role=roles["castles_visitor"],
+    ),
+    "default_castles_delete_direct": UserPermission(
+        user=users["regular"],
+        permission=permissions["castles:delete"],
+    ),
+}
+
+user_roles: ModelMapping[UserRole] = {
+    "default_castles_visitor": UserRole(
+        user=users["regular"],
+        role=roles["castles_visitor"],
+    ),
+}
+
 data_mapping: TestData = {
     "tenants": tenants,
     "clients": clients,
@@ -588,6 +611,8 @@ data_mapping: TestData = {
     "grants": grants,
     "permissions": permissions,
     "roles": roles,
+    "user_permissions": user_permissions,
+    "user_roles": user_roles,
 }
 
 __all__ = [

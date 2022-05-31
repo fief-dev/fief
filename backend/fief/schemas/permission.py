@@ -22,3 +22,7 @@ class BasePermission(UUIDSchema, CreatedUpdatedAt):
 
 class Permission(BasePermission):
     pass
+
+
+class PermissionEmbedded(BasePermission):
+    pass

@@ -25,3 +25,7 @@ class BaseRole(UUIDSchema, CreatedUpdatedAt):
 
 class Role(BaseRole):
     permissions: List[Permission]
+
+
+class RoleEmbedded(BaseRole):
+    pass
