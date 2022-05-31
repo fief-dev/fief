@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import Any, Callable, Coroutine, List, Tuple
 
 from fastapi import Depends, HTTPException, status
 from pydantic import UUID4
@@ -12,7 +12,7 @@ from fief.dependencies.pagination import (
     get_pagination,
 )
 from fief.dependencies.workspace_repositories import get_permission_repository
-from fief.models import Permission
+from fief.models import Permission, User
 from fief.repositories import PermissionRepository
 
 
@@ -35,3 +35,18 @@ async def get_permission_by_id_or_404(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
 
     return permission
+
+
+UserPermissionsGetter = Callable[[User], Coroutine[Any, Any, List[str]]]
+
+
+async def get_user_permissions_getter(
+    repository: PermissionRepository = Depends(get_permission_repository),
+) -> UserPermissionsGetter:
+    async def _get_user_permissions(user: User) -> List[str]:
+        permissions = await repository.list(
+            repository.get_user_permissions_statement(user.id)
+        )
+        return [permission.codename for permission in permissions]
+
+    return _get_user_permissions

@@ -20,6 +20,7 @@ def generate_access_token(
     client: Client,
     user: User,
     scope: List[str],
+    permissions: List[str],
     lifetime_seconds: int,
 ) -> str:
     iat = int(datetime.now(timezone.utc).timestamp())
@@ -33,6 +34,7 @@ def generate_access_token(
         "iat": iat,
         "azp": client.client_id,
         "scope": " ".join(scope),
+        "permissions": permissions,
     }
 
     token = jwt.JWT(header={"alg": "RS256"}, claims=claims)

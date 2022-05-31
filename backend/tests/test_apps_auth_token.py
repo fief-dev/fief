@@ -10,7 +10,7 @@ from fief.db import AsyncSession
 from fief.models import Client
 from fief.repositories import AuthorizationCodeRepository, RefreshTokenRepository
 from tests.data import TestData, authorization_code_codes, refresh_token_tokens
-from tests.helpers import id_token_assertions
+from tests.helpers import access_token_assertions, id_token_assertions
 from tests.types import TenantParams
 
 AUTH_METHODS = ["client_secret_basic", "client_secret_post"]
@@ -400,6 +400,12 @@ class TestAuthTokenAuthorizationCode:
         assert json["token_type"] == "bearer"
         assert json["expires_in"] == 3600
 
+        await access_token_assertions(
+            access_token=json["access_token"],
+            jwk=tenant.get_sign_jwk(),
+            user=authorization_code.user,
+        )
+
         authorization_code_repository = AuthorizationCodeRepository(workspace_session)
         used_authorization_code = await authorization_code_repository.get_by_code(
             authorization_code_code[1]
@@ -695,6 +701,12 @@ class TestAuthTokenRefreshToken:
         assert isinstance(json["id_token"], str)
         assert json["token_type"] == "bearer"
         assert json["expires_in"] == 3600
+
+        await access_token_assertions(
+            access_token=json["access_token"],
+            jwk=tenant.get_sign_jwk(),
+            user=refresh_token.user,
+        )
 
         if "offline_access" in refresh_token.scope:
             assert json["refresh_token"] is not None

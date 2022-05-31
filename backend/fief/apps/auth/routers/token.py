@@ -6,6 +6,10 @@ from fief.crypto.access_token import generate_access_token
 from fief.crypto.id_token import generate_id_token
 from fief.crypto.token import generate_token
 from fief.dependencies.current_workspace import get_current_workspace
+from fief.dependencies.permission import (
+    UserPermissionsGetter,
+    get_user_permissions_getter,
+)
 from fief.dependencies.tenant import get_current_tenant
 from fief.dependencies.token import (
     GrantRequest,
@@ -26,6 +30,7 @@ async def token(
     response: Response,
     grant_request: GrantRequest = Depends(validate_grant_request),
     user: User = Depends(get_user_from_grant_request),
+    get_user_permissions: UserPermissionsGetter = Depends(get_user_permissions_getter),
     refresh_token_repository: RefreshTokenRepository = Depends(
         get_refresh_token_repository
     ),
@@ -37,6 +42,7 @@ async def token(
     nonce = grant_request["nonce"]
     c_hash = grant_request["c_hash"]
     client = grant_request["client"]
+    permissions = await get_user_permissions(user)
 
     tenant_host = tenant.get_host(workspace.domain)
     access_token = generate_access_token(
@@ -45,6 +51,7 @@ async def token(
         client,
         user,
         scope,
+        permissions,
         settings.access_id_token_lifetime_seconds,
     )
     id_token = generate_id_token(

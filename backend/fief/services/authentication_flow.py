@@ -9,6 +9,7 @@ from pydantic import UUID4
 from fief.crypto.access_token import generate_access_token
 from fief.crypto.id_token import generate_id_token, get_validation_hash
 from fief.crypto.token import generate_token
+from fief.dependencies.permission import UserPermissionsGetter
 from fief.models import (
     AuthorizationCode,
     Client,
@@ -37,11 +38,13 @@ class AuthenticationFlow:
         login_session_repository: LoginSessionRepository,
         session_token_repository: SessionTokenRepository,
         grant_repository: GrantRepository,
+        get_user_permissions: UserPermissionsGetter,
     ) -> None:
         self.authorization_code_repository = authorization_code_repository
         self.login_session_repository = login_session_repository
         self.session_token_repository = session_token_repository
         self.grant_repository = grant_repository
+        self.get_user_permissions = get_user_permissions
 
     async def create_login_session(
         self,
@@ -176,12 +179,14 @@ class AuthenticationFlow:
         access_token: Optional[str] = None
 
         if login_session.response_type in ["code token", "code id_token token"]:
+            permissions = await self.get_user_permissions(user)
             access_token = generate_access_token(
                 tenant.get_sign_jwk(),
                 tenant_host,
                 client,
                 user,
                 login_session.scope,
+                permissions,
                 settings.access_id_token_lifetime_seconds,
             )
             params["access_token"] = access_token
