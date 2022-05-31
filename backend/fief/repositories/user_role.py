@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 
 from pydantic import UUID4
 from sqlalchemy import select
@@ -27,3 +27,6 @@ class UserRoleRepository(BaseRepository[UserRole], UUIDRepositoryMixin[UserRole]
         return await self.get_one_or_none(
             select(UserRole).where(UserRole.user_id == user, UserRole.role_id == role)
         )
+
+    async def get_by_role(self, role: UUID4) -> List[UserRole]:
+        return await self.list(select(UserRole).where(UserRole.role_id == role))
