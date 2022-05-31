@@ -9,6 +9,7 @@ from typing import (
     Tuple,
     Type,
     TypeVar,
+    Union,
 )
 
 from pydantic import UUID4
@@ -16,7 +17,7 @@ from sqlalchemy import func, select
 from sqlalchemy.engine import Result
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import InstrumentedAttribute, RelationshipProperty
-from sqlalchemy.sql import Select
+from sqlalchemy.sql import Executable, Select
 
 from fief.models.generics import M_UUID, M
 
@@ -147,6 +148,12 @@ class BaseRepository(BaseRepositoryProtocol, Generic[M]):
         await self.session.delete(object)
         await self.session.commit()
 
+    async def create_many(self, objects: List[M]) -> List[M]:
+        for object in objects:
+            self.session.add(object)
+        await self.session.commit()
+        return objects
+
     async def _count(self, statement: Select) -> int:
         count_statement = statement.with_only_columns(
             [func.count()], maintain_column_froms=True  # type: ignore
@@ -154,7 +161,7 @@ class BaseRepository(BaseRepositoryProtocol, Generic[M]):
         results = await self._execute_statement(count_statement)
         return results.scalar_one()
 
-    async def _execute_statement(self, statement: Select) -> Result:
+    async def _execute_statement(self, statement: Executable) -> Result:
         return await self.session.execute(statement)
 
 

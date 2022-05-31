@@ -6,9 +6,11 @@ from fastapi_users.exceptions import InvalidPasswordException, UserAlreadyExists
 from pydantic import UUID4
 from sqlalchemy.orm import joinedload
 
-from fief import schemas
+from fief import schemas, tasks
 from fief.dependencies.admin_authentication import is_authenticated_admin
+from fief.dependencies.current_workspace import get_current_workspace
 from fief.dependencies.pagination import PaginatedObjects
+from fief.dependencies.tasks import get_send_task
 from fief.dependencies.user_field import get_user_fields
 from fief.dependencies.users import (
     UserManager,
@@ -29,7 +31,7 @@ from fief.dependencies.workspace_repositories import (
     get_user_role_repository,
 )
 from fief.errors import APIErrorCode
-from fief.models import User, UserField, UserPermission, UserRole
+from fief.models import User, UserField, UserPermission, UserRole, Workspace
 from fief.repositories import (
     PermissionRepository,
     RoleRepository,
@@ -38,6 +40,7 @@ from fief.repositories import (
     UserRoleRepository,
 )
 from fief.schemas.generics import PaginatedResults
+from fief.tasks import SendTask
 
 router = APIRouter(dependencies=[Depends(is_authenticated_admin)])
 
@@ -238,6 +241,8 @@ async def create_user_role(
     user: User = Depends(get_user_by_id_or_404),
     role_repository: RoleRepository = Depends(get_role_repository),
     user_role_repository: UserRoleRepository = Depends(get_user_role_repository),
+    workspace: Workspace = Depends(get_current_workspace),
+    send_task: SendTask = Depends(get_send_task),
 ) -> None:
     role_id = user_role_create.id
     role = await role_repository.get_by_id(role_id)
@@ -260,6 +265,8 @@ async def create_user_role(
     user_role = UserRole(user_id=user.id, role_id=role_id)
     await user_role_repository.create(user_role)
 
+    send_task(tasks.on_user_role_created, str(user.id), str(role.id), str(workspace.id))
+
 
 @router.delete(
     "/{id:uuid}/roles/{role_id:uuid}",
@@ -270,9 +277,13 @@ async def delete_user_role(
     role_id: UUID4,
     user: User = Depends(get_user_by_id_or_404),
     user_role_repository: UserRoleRepository = Depends(get_user_role_repository),
+    workspace: Workspace = Depends(get_current_workspace),
+    send_task: SendTask = Depends(get_send_task),
 ) -> None:
     user_role = await user_role_repository.get_by_role_and_user(user.id, role_id)
     if user_role is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
 
     await user_role_repository.delete(user_role)
+
+    send_task(tasks.on_user_role_deleted, str(user.id), str(role_id), str(workspace.id))

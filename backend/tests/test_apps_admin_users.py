@@ -1,4 +1,5 @@
 import uuid
+from unittest.mock import MagicMock
 
 import httpx
 import pytest
@@ -6,7 +7,9 @@ from fastapi import status
 
 from fief.db import AsyncSession
 from fief.errors import APIErrorCode
+from fief.models import Workspace
 from fief.repositories import UserPermissionRepository, UserRoleRepository
+from fief.tasks import on_user_role_created, on_user_role_deleted
 from tests.data import TestData
 
 
@@ -559,7 +562,9 @@ class TestCreateUserRole:
         self,
         test_client_admin: httpx.AsyncClient,
         test_data: TestData,
+        workspace: Workspace,
         workspace_session: AsyncSession,
+        send_task_mock: MagicMock,
     ):
         role = test_data["roles"]["castles_manager"]
         user = test_data["users"]["regular"]
@@ -575,6 +580,10 @@ class TestCreateUserRole:
         )
         assert len(user_roles) == 2
         assert role.id in [user_role.role_id for user_role in user_roles]
+
+        send_task_mock.assert_called_once_with(
+            on_user_role_created, str(user.id), str(role.id), str(workspace.id)
+        )
 
 
 @pytest.mark.asyncio
@@ -618,7 +627,9 @@ class TestDeleteUserRole:
         self,
         test_client_admin: httpx.AsyncClient,
         test_data: TestData,
+        workspace: Workspace,
         workspace_session: AsyncSession,
+        send_task_mock: MagicMock,
     ):
         role = test_data["roles"]["castles_visitor"]
         user = test_data["users"]["regular"]
@@ -631,3 +642,7 @@ class TestDeleteUserRole:
             user_role_repository.get_by_user_statement(user.id)
         )
         assert len(user_roles) == 0
+
+        send_task_mock.assert_called_once_with(
+            on_user_role_deleted, str(user.id), str(role.id), str(workspace.id)
+        )
