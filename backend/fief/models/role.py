@@ -1,4 +1,4 @@
-from typing import List
+from typing import TYPE_CHECKING, List
 
 from sqlalchemy import Boolean, Column, ForeignKey, String, Table
 from sqlalchemy.orm import relationship
@@ -6,6 +6,9 @@ from sqlalchemy.orm import relationship
 from fief.models.base import WorkspaceBase, get_prefixed_tablename
 from fief.models.generics import CreatedUpdatedAt, UUIDModel
 from fief.models.permission import Permission
+
+if TYPE_CHECKING:
+    from fief.models.user_permission import UserPermission
 
 RolePermission = Table(
     "roles_permissions",
@@ -31,6 +34,9 @@ class Role(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
 
     permissions: List[Permission] = relationship(
         "Permission", secondary=RolePermission, lazy="selectin"
+    )
+    user_permissions: List["UserPermission"] = relationship(
+        "UserPermission", cascade="all, delete"
     )
 
     def __repr__(self) -> str:

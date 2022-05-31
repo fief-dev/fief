@@ -24,7 +24,7 @@ class UserPermission(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
 
     user: User = relationship("User")
     permission: Permission = relationship("Permission")
-    from_role: Role = relationship("Role")
+    from_role: Role = relationship("Role", back_populates="user_permissions")
 
     def __repr__(self) -> str:
         return f"UserPermission(id={self.id}, user_id={self.user_id}, permission_id={self.permission_id}), from_role_id={self.from_role_id}"
