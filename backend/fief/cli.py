@@ -6,6 +6,7 @@ import uvicorn
 from alembic import command
 from alembic.config import Config
 from dramatiq import cli as dramatiq_cli
+from fastapi_users.exceptions import InvalidPasswordException, UserAlreadyExists
 from pydantic import ValidationError
 from rich.console import Console
 from rich.table import Table
@@ -132,6 +133,12 @@ def create_main_user(
         typer.echo("Main Fief user created")
     except CreateMainFiefUserError as e:
         typer.echo("An error occured")
+        raise typer.Exit(code=1) from e
+    except UserAlreadyExists as e:
+        typer.echo("User already exists")
+        raise typer.Exit(code=1) from e
+    except InvalidPasswordException as e:
+        typer.echo(e.reason)
         raise typer.Exit(code=1) from e
 
 
