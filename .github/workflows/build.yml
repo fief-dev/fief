@@ -51,6 +51,7 @@ jobs:
             database_password: null
 
     steps:
+      - uses: actions/checkout@v3
       - uses: ./.github/actions/checkout
         with:
           github_token: ${{ secrets.GH_GLOBAL_TOKEN }}
@@ -69,6 +70,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - uses: actions/checkout@v3
       - uses: ./.github/actions/checkout
         with:
           github_token: ${{ secrets.GH_GLOBAL_TOKEN }}
@@ -96,6 +98,7 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/')
 
     steps:
+      - uses: actions/checkout@v3
       - uses: ./.github/actions/checkout
         with:
           github_token: ${{ secrets.GH_GLOBAL_TOKEN }}
@@ -154,6 +157,7 @@ jobs:
       IMAGE_NAME: ${{ github.repository }}
 
     steps:
+      - uses: actions/checkout@v3
       - uses: ./.github/actions/checkout
         with:
           github_token: ${{ secrets.GH_GLOBAL_TOKEN }}
