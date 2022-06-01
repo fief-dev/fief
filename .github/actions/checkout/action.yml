@@ -1,0 +1,23 @@
+name: "Checkout repository"
+description: "Action to help checkout the repository with or without the private submodule."
+
+inputs:
+  github_token:
+    description: "GitHub token"
+    required: false
+
+runs:
+  using: "composite"
+
+  steps:
+    - name: "Checkout with private submodules"
+      uses: actions/checkout@v3
+      if: ${{ inputs.github_token != '' }}
+      with:
+        token: ${{ inputs.github_token }}
+        submodules: recursive
+    - name: "Checkout without private submodules"
+      uses: actions/checkout@v3
+      if: ${{ inputs.github_token == '' }}
+      with:
+        submodules: false
