@@ -84,6 +84,7 @@ jobs:
     needs: [test-admin-frontend]
 
     steps:
+      - uses: actions/checkout@v3
       - uses: ./.github/actions/checkout
         with:
           github_token: ${{ secrets.GH_GLOBAL_TOKEN }}
