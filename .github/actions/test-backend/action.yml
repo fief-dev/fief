@@ -36,14 +36,6 @@ runs:
         python -m pip install --upgrade pip
         pip install flit
         flit install --deps develop
-    - name: Lint with isort, black and tryceratops
-      shell: bash
-      working-directory: backend
-      run: |
-        isort --check .
-        black --check .
-        mypy fief/
-        tryceratops fief/
     - name: Test with pytest
       shell: bash
       working-directory: backend

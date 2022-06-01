@@ -5,8 +5,21 @@ on:
   pull_request:
 
 jobs:
+  lint-backend:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: "Checkout with private submodules if possible"
+        uses: ./.github/actions/checkout
+        with:
+          github_token: ${{ secrets.GH_GLOBAL_TOKEN }}
+      - name: Lint backend
+        uses: ./.github/actions/lint-backend
+
   test-backend:
     runs-on: ubuntu-latest
+    needs: [lint-backend]
 
     services:
       postgres:
