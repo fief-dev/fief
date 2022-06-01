@@ -6,11 +6,8 @@ import uvicorn
 from alembic import command
 from alembic.config import Config
 from dramatiq import cli as dramatiq_cli
+from fastapi_users.exceptions import InvalidPasswordException, UserAlreadyExists
 from pydantic import ValidationError
-from fastapi_users.exceptions import (
-    InvalidPasswordException,
-    UserAlreadyExists,
-)
 from rich.console import Console
 from rich.table import Table
 from sqlalchemy import create_engine, select
