@@ -4,16 +4,16 @@ description: "Run the tests for the React admin frontend"
 inputs:
   github_token:
     description: "GitHub token"
-    required: true
+    required: false
 
 runs:
   using: "composite"
 
   steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       with:
         token: ${{ inputs.github_token }}
-        submodules: recursive
+        submodules: ${{ inputs.github_token && 'recursive' || false }}
     - name: Use Node.js
       uses: actions/setup-node@v3
       with:

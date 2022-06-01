@@ -51,7 +51,7 @@ jobs:
             database_password: null
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Test backend with ${{ matrix.database_type }} database
         uses: ./.github/actions/test-backend
         with:
@@ -67,7 +67,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Test admin frontend
         uses: ./.github/actions/test-admin-frontend
         with:
@@ -78,7 +78,7 @@ jobs:
     needs: [test-admin-frontend]
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Build admin frontend
         uses: ./.github/actions/build-admin-frontend
         with:
@@ -90,7 +90,7 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/')
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           token: ${{ secrets.GH_GLOBAL_TOKEN }}
           submodules: recursive
@@ -149,7 +149,7 @@ jobs:
       IMAGE_NAME: ${{ github.repository }}
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           token: ${{ secrets.GH_GLOBAL_TOKEN }}
           submodules: recursive
