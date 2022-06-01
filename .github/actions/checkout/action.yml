@@ -1,5 +1,5 @@
-name: "Prepare CI"
-description: "Action to help checkout the repository with or without the private submodule and restore Pip cache."
+name: "Checkout repository"
+description: "Action to help checkout the repository with or without the private submodule."
 
 inputs:
   github_token:
@@ -21,9 +21,3 @@ runs:
       if: ${{ inputs.github_token == '' }}
       with:
         submodules: false
-    - uses: actions/cache@v3
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-        restore-keys: |
-          ${{ runner.os }}-pip-

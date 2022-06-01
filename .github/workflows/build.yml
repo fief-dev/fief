@@ -10,8 +10,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - name: "Prepare CI"
-        uses: ./.github/actions/prepare
+      - name: "Checkout with private submodules if possible"
+        uses: ./.github/actions/checkout
         with:
           github_token: ${{ secrets.GH_GLOBAL_TOKEN }}
       - name: Lint backend
@@ -65,8 +65,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - name: "Prepare CI"
-        uses: ./.github/actions/prepare
+      - name: "Checkout with private submodules if possible"
+        uses: ./.github/actions/checkout
         with:
           github_token: ${{ secrets.GH_GLOBAL_TOKEN }}
       - name: Test backend with ${{ matrix.database_type }} database
@@ -84,8 +84,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - name: "Prepare CI"
-        uses: ./.github/actions/prepare
+      - name: "Checkout with private submodules if possible"
+        uses: ./.github/actions/checkout
         with:
           github_token: ${{ secrets.GH_GLOBAL_TOKEN }}
       - name: Test admin frontend
@@ -97,8 +97,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - name: "Prepare CI"
-        uses: ./.github/actions/prepare
+      - name: "Checkout with private submodules if possible"
+        uses: ./.github/actions/checkout
         with:
           github_token: ${{ secrets.GH_GLOBAL_TOKEN }}
       - name: Build admin frontend
@@ -111,8 +111,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - name: "Prepare CI"
-        uses: ./.github/actions/prepare
+      - name: "Checkout with private submodules if possible"
+        uses: ./.github/actions/checkout
         with:
           github_token: ${{ secrets.GH_GLOBAL_TOKEN }}
       - name: Set up Python 3.10
@@ -171,8 +171,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - name: "Prepare CI"
-        uses: ./.github/actions/prepare
+      - name: "Checkout with private submodules if possible"
+        uses: ./.github/actions/checkout
         with:
           github_token: ${{ secrets.GH_GLOBAL_TOKEN }}
       - name: Wait package to be truly available from PyPI
