@@ -2,9 +2,6 @@ name: "Test backend"
 description: "Run the tests for the Python backend"
 
 inputs:
-  github_token:
-    description: "GitHub token"
-    required: false
   database_type:
     description: "DB type"
     required: true
@@ -28,9 +25,6 @@ runs:
   using: "composite"
 
   steps:
-    - uses: ./.github/actions/checkout
-      with:
-        github_token: ${{ inputs.github_token }}
     - name: Set up Python 3.10
       uses: actions/setup-python@v2
       with:

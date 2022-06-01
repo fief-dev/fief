@@ -52,13 +52,13 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - uses: ./.github/actions/checkout
+      - name: "Checkout with private submodules if possible"
+        uses: ./.github/actions/checkout
         with:
           github_token: ${{ secrets.GH_GLOBAL_TOKEN }}
       - name: Test backend with ${{ matrix.database_type }} database
         uses: ./.github/actions/test-backend
         with:
-          github_token: ${{ secrets.GH_GLOBAL_TOKEN }}
           database_type: ${{ matrix.database_type }}
           database_host: ${{ matrix.database_host }}
           database_port: ${{ matrix.database_port }}
@@ -71,13 +71,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - uses: ./.github/actions/checkout
+      - name: "Checkout with private submodules if possible"
+        uses: ./.github/actions/checkout
         with:
           github_token: ${{ secrets.GH_GLOBAL_TOKEN }}
       - name: Test admin frontend
         uses: ./.github/actions/test-admin-frontend
-        with:
-          github_token: ${{ secrets.GH_GLOBAL_TOKEN }}
 
   build-admin-frontend:
     runs-on: ubuntu-latest
@@ -85,13 +84,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - uses: ./.github/actions/checkout
+      - name: "Checkout with private submodules if possible"
+        uses: ./.github/actions/checkout
         with:
           github_token: ${{ secrets.GH_GLOBAL_TOKEN }}
       - name: Build admin frontend
         uses: ./.github/actions/build-admin-frontend
-        with:
-          github_token: ${{ secrets.GH_GLOBAL_TOKEN }}
 
   pypi-release:
     runs-on: ubuntu-latest
@@ -100,7 +98,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - uses: ./.github/actions/checkout
+      - name: "Checkout with private submodules if possible"
+        uses: ./.github/actions/checkout
         with:
           github_token: ${{ secrets.GH_GLOBAL_TOKEN }}
       - name: Set up Python 3.10
@@ -159,7 +158,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - uses: ./.github/actions/checkout
+      - name: "Checkout with private submodules if possible"
+        uses: ./.github/actions/checkout
         with:
           github_token: ${{ secrets.GH_GLOBAL_TOKEN }}
       - name: Wait package to be truly available from PyPI
