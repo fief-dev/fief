@@ -3,7 +3,7 @@ from typing import List, Optional
 from pydantic import UUID4, BaseModel
 
 from fief.schemas.generics import CreatedUpdatedAt, UUIDSchema
-from fief.schemas.permission import Permission
+from fief.schemas.permission import PermissionEmbedded
 
 
 class RoleCreate(BaseModel):
@@ -24,7 +24,7 @@ class BaseRole(UUIDSchema, CreatedUpdatedAt):
 
 
 class Role(BaseRole):
-    permissions: List[Permission]
+    permissions: List[PermissionEmbedded]
 
 
 class RoleEmbedded(BaseRole):

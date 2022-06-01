@@ -9,7 +9,7 @@ from fief.db import AsyncSession
 from fief.errors import APIErrorCode
 from fief.models import Workspace
 from fief.repositories import UserPermissionRepository, UserRoleRepository
-from fief.tasks import on_user_role_created, on_user_role_deleted
+from fief.tasks import on_after_register, on_user_role_created, on_user_role_deleted
 from tests.data import TestData
 
 
@@ -139,7 +139,11 @@ class TestCreateUser:
 
     @pytest.mark.authenticated_admin
     async def test_valid(
-        self, test_client_admin: httpx.AsyncClient, test_data: TestData
+        self,
+        test_client_admin: httpx.AsyncClient,
+        test_data: TestData,
+        send_task_mock: MagicMock,
+        workspace: Workspace,
     ):
         tenant = test_data["tenants"]["default"]
         response = await test_client_admin.post(
@@ -164,6 +168,10 @@ class TestCreateUser:
 
         assert json["fields"]["onboarding_done"] is True
         assert json["fields"]["last_seen"] == "2022-01-01T13:37:00+00:00"
+
+        send_task_mock.assert_called_once_with(
+            on_after_register, json["id"], str(workspace.id)
+        )
 
 
 @pytest.mark.asyncio
