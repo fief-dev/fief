@@ -30,7 +30,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
   <tr>
     <td align="center"><a href="https://github.com/shrike71"><img src="https://avatars.githubusercontent.com/u/748514?v=4?s=100" width="100px;" alt=""/><br /><sub><b>shrike71</b></sub></a><br /><a href="https://github.com/fief-dev/fief/issues?q=author%3Ashrike71" title="Bug reports">🐛</a> <a href="#ideas-shrike71" title="Ideas, Planning, & Feedback">🤔</a></td>
     <td align="center"><a href="https://growthengineai.com"><img src="https://avatars.githubusercontent.com/u/4735784?v=4?s=100" width="100px;" alt=""/><br /><sub><b>trisongz</b></sub></a><br /><a href="#example-trisongz" title="Examples">💡</a> <a href="#ideas-trisongz" title="Ideas, Planning, & Feedback">🤔</a></td>
-    <td align="center"><a href="https://github.com/davidbrochart"><img src="https://avatars.githubusercontent.com/u/4711805?v=4?s=100" width="100px;" alt=""/><br /><sub><b>David Brochart</b></sub></a><br /><a href="https://github.com/fief-dev/fief/commits?author=davidbrochart" title="Documentation">📖</a></td>
+    <td align="center"><a href="https://github.com/davidbrochart"><img src="https://avatars.githubusercontent.com/u/4711805?v=4?s=100" width="100px;" alt=""/><br /><sub><b>David Brochart</b></sub></a><br /><a href="https://github.com/fief-dev/fief/commits?author=davidbrochart" title="Documentation">📖</a> <a href="https://github.com/fief-dev/fief/commits?author=davidbrochart" title="Code">💻</a></td>
   </tr>
 </table>
 
