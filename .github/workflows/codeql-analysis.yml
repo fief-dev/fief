@@ -39,7 +39,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Checkout repository
-      uses: ./.github/actions/checkout
+      uses: ./.github/actions/prepare
       with:
         github_token: ${{ secrets.GH_GLOBAL_TOKEN }}
 
