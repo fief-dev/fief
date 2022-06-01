@@ -38,10 +38,9 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: ./.github/actions/checkout
       with:
-        token: ${{ secrets.GH_GLOBAL_TOKEN }}
-        submodules: recursive
+        github_token: ${{ secrets.GH_GLOBAL_TOKEN }}
 
     # Initializes the CodeQL tools for scanning.
     - name: Initialize CodeQL
