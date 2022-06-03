@@ -16,6 +16,7 @@ import CreateWorkspaceStep2 from './routes/CreateWorkspaceStep2/CreateWorkspaceS
 import CreateWorkspaceStep3 from './routes/CreateWorkspaceStep3/CreateWorkspaceStep3';
 import CreateWorkspaceStep4 from './routes/CreateWorkspaceStep4/CreateWorkspaceStep4';
 import Dashboard from './routes/Dashboard/Dashboard';
+import Permissions from './routes/Permissions/Permissions';
 import SelectWorkspace from './routes/SelectWorkspace/SelectWorkspace';
 import Tenants from './routes/Tenants/Tenants';
 import UserFields from './routes/UserFields/UserFields';
@@ -53,6 +54,7 @@ function App() {
               <Route path="/clients" element={<Clients />} />
               <Route path="/users" element={<UserFieldsSelectionContextProvider><Users /></UserFieldsSelectionContextProvider>} />
               <Route path="/user-fields" element={<UserFields />} />
+              <Route path="/permissions" element={<Permissions />} />
               <Route path="/api-keys" element={<APIKeys />} />
               <Route path="/select-workspace" element={<SelectWorkspace />} />
               <Route path="/create-workspace" element={<CreateWorkspace />}>

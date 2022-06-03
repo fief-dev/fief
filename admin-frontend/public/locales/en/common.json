@@ -6,7 +6,9 @@
     "USER_CREATE_ALREADY_EXISTS": "A user with the same email address already exists on this tenant.",
     "USER_CREATE_INVALID_PASSWORD": "The password is invalid.",
     "UNKNOWN_ERROR": "An unknown error has occured. It's probably an issue on our side. We'll investigate the situation.",
-    "USER_FIELD_SLUG_ALREADY_EXISTS": "A field with this slug already exists."
+    "USER_FIELD_SLUG_ALREADY_EXISTS": "A field with this slug already exists.",
+    "PERMISSION_CREATE_CODENAME_ALREADY_EXISTS": "A permission already exists with this codename. A codename must be unique within your workspace.",
+    "PERMISSION_UPDATE_CODENAME_ALREADY_EXISTS": "A permission already exists with this codename. A codename must be unique within your workspace."
   },
   "common_errors": {
     "field_required": "This field is required."
@@ -30,6 +32,9 @@
     "clients": "Clients",
     "users": "Users",
     "user-fields": "User fields",
+    "rbac": "Access control",
+    "permissions": "Permissions",
+    "roles": "Roles",
     "api_keys": "API Keys"
   },
   "tenant_combobox": {

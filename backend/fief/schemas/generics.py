@@ -4,17 +4,22 @@ from typing import Any, Dict, Generic, List, Optional, TypeVar
 import phonenumbers
 import pycountry
 import pytz
-from pydantic import UUID4, BaseModel, Field, PydanticValueError
+from pydantic import UUID4
+from pydantic import BaseModel as PydanticBaseModel
+from pydantic import Field, PydanticValueError
 from pydantic.generics import GenericModel
+
+
+class BaseModel(PydanticBaseModel):
+    class Config:
+        orm_mode = True
+
 
 PM = TypeVar("PM", bound=BaseModel)
 
 
 class UUIDSchema(BaseModel):
     id: UUID4
-
-    class Config:
-        orm_mode = True
 
 
 class CreatedUpdatedAt(BaseModel):

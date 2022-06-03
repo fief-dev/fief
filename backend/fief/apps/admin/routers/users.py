@@ -138,10 +138,10 @@ async def update_user(
 
 @router.get(
     "/{id:uuid}/permissions",
-    name="users:get_permissions",
+    name="users:list_permissions",
     response_model=PaginatedResults[schemas.user_permission.UserPermission],
 )
-async def get_user_permissions(
+async def list_user_permissions(
     paginated_user_permissions: PaginatedObjects[UserPermission] = Depends(
         get_paginated_user_permissions
     ),
@@ -216,10 +216,10 @@ async def delete_user_permission(
 
 @router.get(
     "/{id:uuid}/roles",
-    name="users:get_roles",
+    name="users:list_roles",
     response_model=PaginatedResults[schemas.user_role.UserRole],
 )
-async def get_user_roles(
+async def list_user_roles(
     paginated_user_roles: PaginatedObjects[UserRole] = Depends(
         get_paginated_user_roles
     ),

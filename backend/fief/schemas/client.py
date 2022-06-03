@@ -1,11 +1,11 @@
 import re
 from typing import List, Optional
 
-from pydantic import UUID4, AnyUrl, BaseModel, Field, SecretStr, validator
+from pydantic import UUID4, AnyUrl, Field, SecretStr, validator
 
 from fief.errors import APIErrorCode
 from fief.models.client import ClientType
-from fief.schemas.generics import CreatedUpdatedAt, UUIDSchema
+from fief.schemas.generics import BaseModel, CreatedUpdatedAt, UUIDSchema
 from fief.schemas.tenant import TenantEmbedded
 
 LOCALHOST_HOST_PATTERN = re.compile(r"([^\.]+\.)?localhost(\d+)?", flags=re.IGNORECASE)

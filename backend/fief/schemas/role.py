@@ -1,8 +1,8 @@
 from typing import List, Optional
 
-from pydantic import UUID4, BaseModel
+from pydantic import UUID4
 
-from fief.schemas.generics import CreatedUpdatedAt, UUIDSchema
+from fief.schemas.generics import BaseModel, CreatedUpdatedAt, UUIDSchema
 from fief.schemas.permission import PermissionEmbedded
 
 

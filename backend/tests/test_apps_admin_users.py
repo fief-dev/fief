@@ -269,7 +269,7 @@ class TestUpdateUser:
 
 @pytest.mark.asyncio
 @pytest.mark.workspace_host
-class TestGetUserPermissions:
+class TestListUserPermissions:
     async def test_unauthorized(
         self, test_client_admin: httpx.AsyncClient, test_data: TestData
     ):
@@ -303,6 +303,7 @@ class TestGetUserPermissions:
         assert len(json["results"]) == 2
 
         for result in json["results"]:
+            assert "id" not in result
             assert result["user_id"] == str(user.id)
             assert "permission" in result
             assert result["permission_id"] == result["permission"]["id"]
@@ -468,7 +469,7 @@ class TestDeleteUserPermission:
 
 @pytest.mark.asyncio
 @pytest.mark.workspace_host
-class TestGetUserRoles:
+class TestListUserRoles:
     async def test_unauthorized(
         self, test_client_admin: httpx.AsyncClient, test_data: TestData
     ):
@@ -500,6 +501,7 @@ class TestGetUserRoles:
         assert len(json["results"]) == 1
 
         for result in json["results"]:
+            assert "id" not in result
             assert result["user_id"] == str(user.id)
             assert "role" in result
             assert result["role_id"] == result["role"]["id"]
