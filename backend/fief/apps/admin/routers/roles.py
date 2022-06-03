@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 
 from fief import schemas
 from fief.dependencies.admin_authentication import is_authenticated_admin
@@ -109,7 +109,10 @@ async def update_role(
 
 
 @router.delete(
-    "/{id:uuid}", name="roles:delete", status_code=status.HTTP_204_NO_CONTENT
+    "/{id:uuid}",
+    name="roles:delete",
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
 )
 async def delete_role(
     role: Role = Depends(get_role_by_id_or_404),

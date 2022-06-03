@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 
 from fief import schemas
 from fief.dependencies.admin_authentication import is_authenticated_admin
@@ -88,7 +88,10 @@ async def update_permission(
 
 
 @router.delete(
-    "/{id:uuid}", name="permissions:delete", status_code=status.HTTP_204_NO_CONTENT
+    "/{id:uuid}",
+    name="permissions:delete",
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
 )
 async def delete_permission(
     permission: Permission = Depends(get_permission_by_id_or_404),

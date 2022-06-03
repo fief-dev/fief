@@ -1,6 +1,6 @@
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from fastapi.responses import JSONResponse
 from fastapi_users.exceptions import InvalidPasswordException, UserAlreadyExists
 from pydantic import UUID4
@@ -197,6 +197,7 @@ async def create_user_permission(
     "/{id:uuid}/permissions/{permission_id:uuid}",
     name="users:delete_permission",
     status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
 )
 async def delete_user_permission(
     permission_id: UUID4,
@@ -272,6 +273,7 @@ async def create_user_role(
     "/{id:uuid}/roles/{role_id:uuid}",
     name="users:delete_role",
     status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
 )
 async def delete_user_role(
     role_id: UUID4,

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Response, status
 
 from fief import schemas
 from fief.crypto.token import generate_token
@@ -57,6 +57,7 @@ async def create_api_key(
     name="api_keys:delete",
     dependencies=[Depends(get_admin_session_token)],
     status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
 )
 async def delete_api_key(
     api_key: AdminAPIKey = Depends(get_api_key_by_id_or_404),

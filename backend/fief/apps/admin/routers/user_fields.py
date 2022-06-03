@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 
 from fief import schemas
 from fief.dependencies.admin_authentication import is_authenticated_admin
@@ -92,7 +92,10 @@ async def update_user_field(
 
 
 @router.delete(
-    "/{id:uuid}", name="user_fields:delete", status_code=status.HTTP_204_NO_CONTENT
+    "/{id:uuid}",
+    name="user_fields:delete",
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
 )
 async def delete_user_field(
     user_field: UserField = Depends(get_user_field_by_id_or_404),
