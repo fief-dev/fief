@@ -1,4 +1,4 @@
-import { CreatedUpdatedAt, UUIDSchema } from './generics';
+import { CreatedUpdatedAt, PaginationParameters, UUIDSchema } from './generics';
 import { PermissionEmbedded } from './permission';
 
 export interface RoleCreate {
@@ -23,3 +23,7 @@ export interface Role extends BaseRole {
 }
 
 export interface RoleEmbedded extends BaseRole { }
+
+export interface RoleListParameters extends PaginationParameters {
+  query?: string;
+}

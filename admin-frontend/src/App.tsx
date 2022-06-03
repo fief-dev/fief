@@ -17,10 +17,11 @@ import CreateWorkspaceStep3 from './routes/CreateWorkspaceStep3/CreateWorkspaceS
 import CreateWorkspaceStep4 from './routes/CreateWorkspaceStep4/CreateWorkspaceStep4';
 import Dashboard from './routes/Dashboard/Dashboard';
 import Permissions from './routes/Permissions/Permissions';
+import Roles from './routes/Roles/Roles';
 import SelectWorkspace from './routes/SelectWorkspace/SelectWorkspace';
 import Tenants from './routes/Tenants/Tenants';
-import UserFields from './routes/UserFields/UserFields';
 import Users from './routes/Users/Users';
+import UserFields from './routes/UserFields/UserFields';
 import { APIClient } from './services/api';
 
 function App() {
@@ -55,6 +56,7 @@ function App() {
               <Route path="/users" element={<UserFieldsSelectionContextProvider><Users /></UserFieldsSelectionContextProvider>} />
               <Route path="/user-fields" element={<UserFields />} />
               <Route path="/permissions" element={<Permissions />} />
+              <Route path="/roles" element={<Roles />} />
               <Route path="/api-keys" element={<APIKeys />} />
               <Route path="/select-workspace" element={<SelectWorkspace />} />
               <Route path="/create-workspace" element={<CreateWorkspace />}>

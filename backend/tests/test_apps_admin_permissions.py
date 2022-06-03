@@ -1,12 +1,12 @@
 import uuid
-from typing import Dict
+from typing import Any, Dict
 
 import httpx
 import pytest
 from fastapi import status
 
 from fief.errors import APIErrorCode
-from tests.data import TestData
+from tests.data import TestData, data_mapping
 
 
 @pytest.mark.asyncio
@@ -17,16 +17,27 @@ class TestListPermissions:
 
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
+    @pytest.mark.parametrize(
+        "params,nb_results",
+        [
+            ({}, len(data_mapping["permissions"])),
+            ({"query": "create"}, 1),
+        ],
+    )
     @pytest.mark.authenticated_admin
     async def test_valid(
-        self, test_client_admin: httpx.AsyncClient, test_data: TestData
+        self,
+        params: Dict[str, Any],
+        nb_results: int,
+        test_client_admin: httpx.AsyncClient,
+        test_data: TestData,
     ):
-        response = await test_client_admin.get("/permissions/")
+        response = await test_client_admin.get("/permissions/", params=params)
 
         assert response.status_code == status.HTTP_200_OK
 
         json = response.json()
-        assert json["count"] == len(test_data["permissions"])
+        assert json["count"] == nb_results
 
 
 @pytest.mark.asyncio

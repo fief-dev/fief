@@ -1,6 +1,6 @@
-from typing import Any, Callable, Coroutine, List, Tuple
+from typing import Any, Callable, Coroutine, List, Optional, Tuple
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Query, status
 from pydantic import UUID4
 from sqlalchemy import select
 
@@ -17,11 +17,19 @@ from fief.repositories import PermissionRepository
 
 
 async def get_paginated_permissions(
+    query: Optional[str] = Query(None),
     pagination: Pagination = Depends(get_pagination),
     ordering: Ordering = Depends(get_ordering),
     repository: PermissionRepository = Depends(get_permission_repository),
 ) -> Tuple[List[Permission], int]:
     statement = select(Permission)
+
+    if query is not None:
+        statement = statement.where(
+            Permission.name.ilike(f"%{query}%")
+            | Permission.codename.ilike(f"%{query}%")
+        )
+
     return await get_paginated_objects(statement, pagination, ordering, repository)
 
 

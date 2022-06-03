@@ -120,7 +120,7 @@ export class APIClient {
     return this.client.delete(`/user-fields/${id}`);
   }
 
-  public listPermissions(params: schemas.PaginationParameters = {}): Promise<AxiosResponse<schemas.PaginatedResults<schemas.permission.Permission>>> {
+  public listPermissions(params: schemas.permission.PermissionListParameters = {}): Promise<AxiosResponse<schemas.PaginatedResults<schemas.permission.Permission>>> {
     return this.client.get('/permissions/', { params });
   }
 
@@ -136,7 +136,7 @@ export class APIClient {
     return this.client.delete(`/permissions/${id}`);
   }
 
-  public listRoles(params: schemas.PaginationParameters = {}): Promise<AxiosResponse<schemas.PaginatedResults<schemas.role.Role>>> {
+  public listRoles(params: schemas.role.RoleListParameters = {}): Promise<AxiosResponse<schemas.PaginatedResults<schemas.role.Role>>> {
     return this.client.get('/roles/', { params });
   }
 

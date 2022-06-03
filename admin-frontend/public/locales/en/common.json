@@ -40,6 +40,9 @@
   "tenant_combobox": {
     "no_matching_tenant": "No tenant is matching your query."
   },
+  "permission_combobox": {
+    "no_matching_permission": "No permission is matching your query."
+  },
   "delete": {
     "cancel": "Cancel",
     "submit": "Delete"
