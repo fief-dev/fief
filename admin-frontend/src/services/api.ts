@@ -72,8 +72,8 @@ export class APIClient {
     return this.client.get(`/users/${id}`);
   }
 
-  public listUserPermissions(id: string): Promise<AxiosResponse<schemas.PaginatedResults<schemas.userPermission.UserPermission>>> {
-    return this.client.get(`/users/${id}/permissions`);
+  public listUserPermissions(id: string, params: schemas.PaginationParameters = {}): Promise<AxiosResponse<schemas.PaginatedResults<schemas.userPermission.UserPermission>>> {
+    return this.client.get(`/users/${id}/permissions`, { params });
   }
 
   public createUserPermission(id: string, data: schemas.userPermission.UserPermissionCreate): Promise<AxiosResponse<void>> {
@@ -84,8 +84,8 @@ export class APIClient {
     return this.client.delete(`/users/${id}/permissions/${permissionId}`);
   }
 
-  public listUserRoles(id: string): Promise<AxiosResponse<schemas.PaginatedResults<schemas.userRole.UserRole>>> {
-    return this.client.get(`/users/${id}/roles`);
+  public listUserRoles(id: string, params: schemas.PaginationParameters = {}): Promise<AxiosResponse<schemas.PaginatedResults<schemas.userRole.UserRole>>> {
+    return this.client.get(`/users/${id}/roles`, { params });
   }
 
   public createUserRole(id: string, data: schemas.userRole.UserRoleCreate): Promise<AxiosResponse<void>> {

@@ -8,7 +8,9 @@
     "UNKNOWN_ERROR": "An unknown error has occured. It's probably an issue on our side. We'll investigate the situation.",
     "USER_FIELD_SLUG_ALREADY_EXISTS": "A field with this slug already exists.",
     "PERMISSION_CREATE_CODENAME_ALREADY_EXISTS": "A permission already exists with this codename. A codename must be unique within your workspace.",
-    "PERMISSION_UPDATE_CODENAME_ALREADY_EXISTS": "A permission already exists with this codename. A codename must be unique within your workspace."
+    "PERMISSION_UPDATE_CODENAME_ALREADY_EXISTS": "A permission already exists with this codename. A codename must be unique within your workspace.",
+    "USER_ROLE_CREATE_ALREADY_ADDED_ROLE": "This role has already been granted to this user.",
+    "USER_PERMISSION_CREATE_ALREADY_ADDED_PERMISSION": "This permission has already been granted to this user."
   },
   "common_errors": {
     "field_required": "This field is required."
@@ -42,6 +44,9 @@
   },
   "permission_combobox": {
     "no_matching_permission": "No permission is matching your query."
+  },
+  "role_combobox": {
+    "no_matching_role": "No role is matching your query."
   },
   "delete": {
     "cancel": "Cancel",

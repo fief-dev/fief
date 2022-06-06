@@ -1,4 +1,5 @@
 import uuid
+from typing import Any, Dict
 from unittest.mock import MagicMock
 
 import httpx
@@ -10,7 +11,7 @@ from fief.errors import APIErrorCode
 from fief.models import Workspace
 from fief.repositories import UserPermissionRepository
 from fief.tasks import on_role_updated
-from tests.data import TestData
+from tests.data import TestData, data_mapping
 
 
 @pytest.mark.asyncio
@@ -21,16 +22,27 @@ class TestListRoles:
 
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
+    @pytest.mark.parametrize(
+        "params,nb_results",
+        [
+            ({}, len(data_mapping["roles"])),
+            ({"query": "manager"}, 1),
+        ],
+    )
     @pytest.mark.authenticated_admin
     async def test_valid(
-        self, test_client_admin: httpx.AsyncClient, test_data: TestData
+        self,
+        params: Dict[str, Any],
+        nb_results: int,
+        test_client_admin: httpx.AsyncClient,
+        test_data: TestData,
     ):
-        response = await test_client_admin.get("/roles/")
+        response = await test_client_admin.get("/roles/", params=params)
 
         assert response.status_code == status.HTTP_200_OK
 
         json = response.json()
-        assert json["count"] == len(test_data["roles"])
+        assert json["count"] == nb_results
 
         for result in json["results"]:
             assert "permissions" in result

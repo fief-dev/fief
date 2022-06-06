@@ -15,6 +15,22 @@
     "tenant": "Tenant"
   },
   "details": {
+    "tabs": {
+      "ACCOUNT": "Account",
+      "ROLES": "Roles",
+      "PERMISSIONS": "Permissions"
+    },
+    "roles": {
+      "add": "Add role",
+      "name": "Name",
+      "no_role": "No role granted yet"
+    },
+    "permissions": {
+      "add": "Add permission",
+      "codename": "Codename",
+      "from_role": "From role",
+      "no_permission": "No permission granted yet"
+    },
     "tenant": "Tenant",
     "id": "ID",
     "created_at": "Created at",
