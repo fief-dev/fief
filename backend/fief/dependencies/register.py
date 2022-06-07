@@ -32,8 +32,10 @@ async def get_user_create(
     register_context: Dict[str, Any] = Depends(get_register_context),
     translations: Translations = Depends(get_translations),
 ) -> UserCreate[UF]:
+    # Ensure we still pass an empty dict to trigger validation even if no fields were passed in form
+    fields = form_data_dict.pop("fields", {})
     try:
-        return user_create_model(**form_data_dict)
+        return user_create_model(**form_data_dict, fields=fields)
     except ValidationError as e:
         raise FormValidationError(
             "register.html",

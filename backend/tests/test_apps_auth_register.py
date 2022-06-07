@@ -1,4 +1,4 @@
-from typing import Dict, Optional
+from typing import Any, Dict, Optional
 from unittest.mock import MagicMock
 
 import httpx
@@ -8,7 +8,7 @@ from fastapi import status
 from fief.crypto.token import get_token_hash
 from fief.db import AsyncSession
 from fief.managers import SessionTokenManager, UserManager
-from fief.models import Workspace
+from fief.models import UserField, UserFieldType, Workspace
 from fief.settings import settings
 from fief.tasks import on_after_register
 from tests.data import TestData
@@ -224,3 +224,50 @@ class TestPostRegister:
             },
             "onboarding_done": False,  # Default value
         }
+
+    @pytest.mark.parametrize(
+        "data,status_code",
+        [
+            ({}, status.HTTP_400_BAD_REQUEST),
+            ({"fields.terms": "off"}, status.HTTP_400_BAD_REQUEST),
+            ({"fields.terms": "on"}, status.HTTP_302_FOUND),
+        ],
+    )
+    async def test_required_boolean_field(
+        self,
+        data: Dict[str, Any],
+        status_code: int,
+        test_client_auth: httpx.AsyncClient,
+        test_data: TestData,
+        workspace_session: AsyncSession,
+    ):
+        field = UserField(
+            name="Accept terms",
+            slug="terms",
+            type=UserFieldType.BOOLEAN,
+            configuration={
+                "choices": None,
+                "default": False,
+                "at_registration": True,
+                "at_update": False,
+                "required": True,
+            },
+        )
+        workspace_session.add(field)
+        await workspace_session.commit()
+
+        login_session = test_data["login_sessions"]["secondary"]
+        cookies = {}
+        cookies[settings.login_session_cookie_name] = login_session.token
+
+        response = await test_client_auth.post(
+            f"/{test_data['tenants']['secondary'].slug}/register",
+            data={
+                "email": "anne@bretagne.duchy",
+                "password": "hermine1",
+                **data,
+            },
+            cookies=cookies,
+        )
+
+        assert response.status_code == status_code
