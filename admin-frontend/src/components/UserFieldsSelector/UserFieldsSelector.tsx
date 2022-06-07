@@ -109,7 +109,7 @@ const UserFieldsSelector: React.FunctionComponent<React.PropsWithChildren<UserFi
     <Popover className="flex">
       <Popover.Button
         ref={setReferenceElement}
-        className="btn bg-white border-slate-200 hover:border-slate-300 text-slate-500 hover:text-slate-600e"
+        className="btn bg-white border-slate-200 hover:border-slate-300 text-slate-500 hover:text-slate-600"
       >
         <ViewListIcon width="16" height="16" />
       </Popover.Button>

@@ -1,98 +1,47 @@
-import { useCallback, useEffect, useState } from 'react';
-import { FormProvider, SubmitHandler, useForm } from 'react-hook-form';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { useAPI, useAPIErrorHandler } from '../../hooks/api';
-import { useUserFieldsDefaultValues } from '../../hooks/user-field';
 import * as schemas from '../../schemas';
-import { cleanUserRequestData } from '../../services/user';
-import ClipboardButton from '../ClipboardButton/ClipboardButton';
-import DateTime from '../DateTime/DateTime';
-import ErrorAlert from '../ErrorAlert/ErrorAlert';
-import LoadingButton from '../LoadingButton/LoadingButton';
-import UserForm from '../UserForm/UserForm';
+import UserDetailsAccount from '../UserDetailsAccount/UserDetailsAccount';
+import UserDetailsPermissions from '../UserDetailsPermissions/UserDetailsPermissions';
+import UserDetailsRoles from '../UserDetailsRoles/UserDetailsRoles';
+
+enum UserDetailsTab {
+  ACCOUNT = 'ACCOUNT',
+  ROLES = 'ROLES',
+  PERMISSIONS = 'PERMISSIONS',
+}
 
 interface UserDetailsProps {
   user: schemas.user.User;
   onUpdated?: (client: schemas.user.User) => void;
 }
 
-const UserDetails: React.FunctionComponent<React.PropsWithChildren<UserDetailsProps>> = ({ user, onUpdated: _onUpdated }) => {
+const UserDetails: React.FunctionComponent<React.PropsWithChildren<UserDetailsProps>> = ({ user, onUpdated }) => {
   const { t } = useTranslation(['users']);
-  const api = useAPI();
-  const userFieldsDefaultValues = useUserFieldsDefaultValues();
-
-  const form = useForm<schemas.user.UserUpdate>({ defaultValues: { ...user, fields: { ...userFieldsDefaultValues, ...user.fields } } });
-  const { handleSubmit, reset, setError } = form;
-
-  useEffect(() => {
-    reset({ ...user, fields: { ...userFieldsDefaultValues, ...user.fields } });
-  }, [reset, user, userFieldsDefaultValues]);
-
-  const [loading, setLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | undefined>();
-  const handleAPIError = useAPIErrorHandler(setErrorMessage, setError);
-
-  const onUpdated = useCallback((user: schemas.user.User) => {
-    if (_onUpdated) {
-      _onUpdated(user);
-    };
-  }, [_onUpdated]);
-
-  const onSubmit: SubmitHandler<schemas.user.UserUpdate> = useCallback(async (data) => {
-    setLoading(true);
-    try {
-      const { data: updatedUser } = await api.updateUser(user.id, cleanUserRequestData<schemas.user.UserUpdate>(data));
-      onUpdated(updatedUser);
-      reset(updatedUser);
-    } catch (err) {
-      handleAPIError(err);
-    } finally {
-      setLoading(false);
-    }
-  }, [user, api, onUpdated, reset, handleAPIError]);
+  const [currentTab, setCurrentTab] = useState<UserDetailsTab>(UserDetailsTab.ACCOUNT);
 
   return (
     <>
       <div className="text-slate-800 font-semibold text-center mb-6">{user.email}</div>
-      <div className="mt-6">
-        <ul>
-          <li className="flex items-center justify-between py-3 border-b border-slate-200">
-            <div className="text-sm whitespace-nowrap">{t('details.tenant')}</div>
-            <div className="text-sm font-medium text-slate-800 ml-2 truncate">{user.tenant.name}</div>
-          </li>
-          <li className="flex items-center justify-between py-3 border-b border-slate-200">
-            <div className="text-sm whitespace-nowrap">{t('details.id')}</div>
-            <div className="text-sm font-medium text-slate-800 ml-2 truncate">{user.id}</div>
-            <ClipboardButton text={user.id} />
-          </li>
-          <li className="flex items-center justify-between py-3 border-b border-slate-200">
-            <div className="text-sm whitespace-nowrap">{t('details.created_at')}</div>
-            <div className="text-sm font-medium text-slate-800 ml-2 truncate"><DateTime datetime={user.created_at} displayTime /></div>
-          </li>
-          <li className="flex items-center justify-between py-3 border-b border-slate-200">
-            <div className="text-sm whitespace-nowrap">{t('details.updated_at')}</div>
-            <div className="text-sm font-medium text-slate-800 ml-2 truncate"><DateTime datetime={user.updated_at} displayTime /></div>
-          </li>
+      <div className="relative mb-8">
+        <div className="absolute bottom-0 w-full h-px bg-slate-200" aria-hidden="true"></div>
+        <ul className="relative text-sm font-medium flex flex-nowrap -mx-4 sm:-mx-6 lg:-mx-8 overflow-x-scroll no-scrollbar">
+          {Object.values(UserDetailsTab).map((tab) =>
+            <li className="mr-6 last:mr-0 first:pl-4 sm:first:pl-6 lg:first:pl-8 last:pr-4 sm:last:pr-6 lg:last:pr-8">
+              <button
+                className={`block pb-3 whitespace-nowrap ${tab === currentTab ? 'text-primary-500 border-primary-500 border-b-2' : 'text-slate-500 hover:text-slate-600'}`}
+                onClick={() => setCurrentTab(tab)}
+              >
+                {t(`details.tabs.${tab}`)}
+              </button>
+            </li>
+          )}
         </ul>
       </div>
-      <div className="mt-6">
-        <FormProvider {...form}>
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <div className="space-y-4">
-              {errorMessage && <ErrorAlert message={t(`common:api_errors.${errorMessage}`)} />}
-              <UserForm update={true} />
-              <LoadingButton
-                loading={loading}
-                type="submit"
-                className="btn w-full border-slate-200 hover:border-slate-300"
-              >
-                {t('details.submit')}
-              </LoadingButton>
-            </div>
-          </form>
-        </FormProvider>
-      </div>
+      {currentTab === UserDetailsTab.ACCOUNT && <UserDetailsAccount user={user} onUpdated={onUpdated} />}
+      {currentTab === UserDetailsTab.ROLES && <UserDetailsRoles user={user} />}
+      {currentTab === UserDetailsTab.PERMISSIONS && <UserDetailsPermissions user={user} />}
     </>
   );
 };

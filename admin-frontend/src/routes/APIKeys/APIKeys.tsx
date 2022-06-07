@@ -68,6 +68,7 @@ const APIKeys: React.FunctionComponent<React.PropsWithChildren<unknown>> = () =>
       },
       {
         id: 'actions',
+        disableSortBy: true,
         accessor: 'id',
         Header: t('list.actions') as string,
         Cell: ({ row: { original } }) => (

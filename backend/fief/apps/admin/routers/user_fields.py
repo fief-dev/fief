@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 
 from fief import schemas
 from fief.dependencies.admin_authentication import is_authenticated_admin
@@ -9,10 +9,10 @@ from fief.dependencies.user_field import (
     get_validated_user_field_create,
     get_validated_user_field_update,
 )
-from fief.dependencies.workspace_managers import get_user_field_manager
+from fief.dependencies.workspace_repositories import get_user_field_repository
 from fief.errors import APIErrorCode
-from fief.managers import UserFieldManager
 from fief.models import UserField
+from fief.repositories import UserFieldRepository
 from fief.schemas.generics import PaginatedResults
 
 router = APIRouter(dependencies=[Depends(is_authenticated_admin)])
@@ -48,9 +48,9 @@ async def create_user_field(
     user_field_create: schemas.user_field.UserFieldCreate = Depends(
         get_validated_user_field_create
     ),
-    manager: UserFieldManager = Depends(get_user_field_manager),
+    repository: UserFieldRepository = Depends(get_user_field_repository),
 ) -> schemas.user_field.UserField:
-    existing_user_field = await manager.get_by_slug(user_field_create.slug)
+    existing_user_field = await repository.get_by_slug(user_field_create.slug)
     if existing_user_field is not None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -58,7 +58,7 @@ async def create_user_field(
         )
 
     user_field = UserField(**user_field_create.dict())
-    user_field = await manager.create(user_field)
+    user_field = await repository.create(user_field)
 
     return schemas.user_field.UserField.from_orm(user_field)
 
@@ -71,11 +71,11 @@ async def update_user_field(
         get_validated_user_field_update
     ),
     user_field: UserField = Depends(get_user_field_by_id_or_404),
-    manager: UserFieldManager = Depends(get_user_field_manager),
+    repository: UserFieldRepository = Depends(get_user_field_repository),
 ) -> schemas.user_field.UserField:
     updated_slug = user_field_update.slug
     if updated_slug is not None and updated_slug != user_field.slug:
-        existing_user_field = await manager.get_by_slug(updated_slug)
+        existing_user_field = await repository.get_by_slug(updated_slug)
         if existing_user_field is not None:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -86,16 +86,19 @@ async def update_user_field(
     for field, value in user_field_update_dict.items():
         setattr(user_field, field, value)
 
-    await manager.update(user_field)
+    await repository.update(user_field)
 
     return schemas.user_field.UserField.from_orm(user_field)
 
 
 @router.delete(
-    "/{id:uuid}", name="user_fields:delete", status_code=status.HTTP_204_NO_CONTENT
+    "/{id:uuid}",
+    name="user_fields:delete",
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
 )
 async def delete_user_field(
     user_field: UserField = Depends(get_user_field_by_id_or_404),
-    manager: UserFieldManager = Depends(get_user_field_manager),
+    repository: UserFieldRepository = Depends(get_user_field_repository),
 ):
-    await manager.delete(user_field)
+    await repository.delete(user_field)

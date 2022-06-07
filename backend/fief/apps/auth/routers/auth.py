@@ -30,12 +30,12 @@ from fief.dependencies.locale import get_gettext, get_translations
 from fief.dependencies.session_token import get_session_token
 from fief.dependencies.tenant import get_current_tenant
 from fief.dependencies.users import UserManager, get_user_manager
-from fief.dependencies.workspace_managers import get_session_token_manager
+from fief.dependencies.workspace_repositories import get_session_token_repository
 from fief.exceptions import LoginException, LogoutException
 from fief.locale import Translations
-from fief.managers.session_token import SessionTokenManager
 from fief.models import Client, LoginSession, Tenant, Workspace
 from fief.models.session_token import SessionToken
+from fief.repositories.session_token import SessionTokenRepository
 from fief.schemas.auth import LoginError, LogoutError
 from fief.services.authentication_flow import AuthenticationFlow
 from fief.settings import settings
@@ -228,7 +228,9 @@ async def post_consent(
 async def logout(
     redirect_uri: Optional[AnyUrl] = Query(None),
     session_token: Optional[SessionToken] = Depends(get_session_token),
-    sesstion_token_manager: SessionTokenManager = Depends(get_session_token_manager),
+    sesstion_token_repository: SessionTokenRepository = Depends(
+        get_session_token_repository
+    ),
     tenant: Tenant = Depends(get_current_tenant),
     _=Depends(get_gettext),
 ):
@@ -239,7 +241,7 @@ async def logout(
         )
 
     if session_token is not None:
-        await sesstion_token_manager.delete(session_token)
+        await sesstion_token_repository.delete(session_token)
 
     response = RedirectResponse(redirect_uri, status_code=status.HTTP_302_FOUND)
 

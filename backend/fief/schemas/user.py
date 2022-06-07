@@ -2,10 +2,10 @@ from datetime import date, datetime
 from typing import Any, Dict, Generic, Optional, TypeVar, Union
 
 from fastapi_users import schemas
-from pydantic import UUID4, BaseModel, Field, StrictBool, StrictInt, StrictStr
+from pydantic import UUID4, Field, StrictBool, StrictInt, StrictStr
 from pydantic.generics import GenericModel
 
-from fief.schemas.generics import Address, CreatedUpdatedAt, Timezone
+from fief.schemas.generics import Address, BaseModel, CreatedUpdatedAt, Timezone
 from fief.schemas.tenant import TenantEmbedded
 
 

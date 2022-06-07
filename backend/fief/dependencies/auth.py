@@ -7,10 +7,10 @@ from fief.dependencies.authentication_flow import get_authentication_flow
 from fief.dependencies.locale import get_gettext
 from fief.dependencies.session_token import get_session_token
 from fief.dependencies.tenant import get_current_tenant
-from fief.dependencies.workspace_managers import (
-    get_client_manager,
-    get_grant_manager,
-    get_login_session_manager,
+from fief.dependencies.workspace_repositories import (
+    get_client_repository,
+    get_grant_repository,
+    get_login_session_repository,
 )
 from fief.exceptions import (
     AuthorizeException,
@@ -18,8 +18,8 @@ from fief.exceptions import (
     ConsentException,
     LoginException,
 )
-from fief.managers import ClientManager, GrantManager, LoginSessionManager
 from fief.models import Client, LoginSession, SessionToken, Tenant
+from fief.repositories import ClientRepository, GrantRepository, LoginSessionRepository
 from fief.schemas.auth import (
     AuthorizeError,
     AuthorizeRedirectError,
@@ -37,7 +37,7 @@ from fief.settings import settings
 
 async def get_authorize_client(
     client_id: Optional[str] = Query(None),
-    manager: ClientManager = Depends(get_client_manager),
+    repository: ClientRepository = Depends(get_client_repository),
     _=Depends(get_gettext),
 ) -> Client:
     if client_id is None:
@@ -45,7 +45,7 @@ async def get_authorize_client(
             AuthorizeError.get_invalid_client(_("client_id is missing"))
         )
 
-    client = await manager.get_by_client_id(client_id)
+    client = await repository.get_by_client_id(client_id)
 
     if client is None:
         raise AuthorizeException(AuthorizeError.get_invalid_client(_("Unknown client")))
@@ -268,13 +268,15 @@ async def has_valid_session_token(
 
 async def get_optional_login_session(
     token: Optional[str] = Cookie(None, alias=settings.login_session_cookie_name),
-    login_session_manager: LoginSessionManager = Depends(get_login_session_manager),
+    login_session_repository: LoginSessionRepository = Depends(
+        get_login_session_repository
+    ),
     tenant: Tenant = Depends(get_current_tenant),
 ) -> Optional[LoginSession]:
     if token is None:
         return None
 
-    login_session = await login_session_manager.get_by_token(token)
+    login_session = await login_session_repository.get_by_token(token)
     if login_session is None:
         return None
 
@@ -318,7 +320,7 @@ async def get_consent_action(
 async def get_needs_consent(
     login_session: LoginSession = Depends(get_login_session),
     session_token: Optional[SessionToken] = Depends(get_session_token),
-    grant_manager: GrantManager = Depends(get_grant_manager),
+    grant_repository: GrantRepository = Depends(get_grant_repository),
 ) -> bool:
     if session_token is None:
         return True
@@ -330,7 +332,7 @@ async def get_needs_consent(
 
     client_id = client.id
     user_id = session_token.user_id
-    grant = await grant_manager.get_by_user_and_client(user_id, client_id)
+    grant = await grant_repository.get_by_user_and_client(user_id, client_id)
 
     if grant is None or not set(login_session.scope).issubset(set(grant.scope)):
         return True

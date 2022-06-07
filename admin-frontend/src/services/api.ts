@@ -68,6 +68,34 @@ export class APIClient {
     return this.client.get('/users/', { params });
   }
 
+  public getUser(id: string): Promise<AxiosResponse<schemas.user.User>> {
+    return this.client.get(`/users/${id}`);
+  }
+
+  public listUserPermissions(id: string, params: schemas.PaginationParameters = {}): Promise<AxiosResponse<schemas.PaginatedResults<schemas.userPermission.UserPermission>>> {
+    return this.client.get(`/users/${id}/permissions`, { params });
+  }
+
+  public createUserPermission(id: string, data: schemas.userPermission.UserPermissionCreate): Promise<AxiosResponse<void>> {
+    return this.client.post(`/users/${id}/permissions`, data);
+  }
+
+  public deleteUserPermission(id: string, permissionId: string): Promise<AxiosResponse<void>> {
+    return this.client.delete(`/users/${id}/permissions/${permissionId}`);
+  }
+
+  public listUserRoles(id: string, params: schemas.PaginationParameters = {}): Promise<AxiosResponse<schemas.PaginatedResults<schemas.userRole.UserRole>>> {
+    return this.client.get(`/users/${id}/roles`, { params });
+  }
+
+  public createUserRole(id: string, data: schemas.userRole.UserRoleCreate): Promise<AxiosResponse<void>> {
+    return this.client.post(`/users/${id}/roles`, data);
+  }
+
+  public deleteUserRole(id: string, roleId: string): Promise<AxiosResponse<void>> {
+    return this.client.delete(`/users/${id}/roles/${roleId}`);
+  }
+
   public createUser(data: schemas.user.UserCreateInternal): Promise<AxiosResponse<schemas.user.User>> {
     return this.client.post('/users/', data);
   }
@@ -90,6 +118,38 @@ export class APIClient {
 
   public deleteUserField(id: string): Promise<AxiosResponse<void>> {
     return this.client.delete(`/user-fields/${id}`);
+  }
+
+  public listPermissions(params: schemas.permission.PermissionListParameters = {}): Promise<AxiosResponse<schemas.PaginatedResults<schemas.permission.Permission>>> {
+    return this.client.get('/permissions/', { params });
+  }
+
+  public createPermission(data: schemas.permission.PermissionCreate): Promise<AxiosResponse<schemas.permission.Permission>> {
+    return this.client.post('/permissions/', data);
+  }
+
+  public updatePermission(id: string, data: schemas.permission.PermissionUpdate): Promise<AxiosResponse<schemas.permission.Permission>> {
+    return this.client.patch(`/permissions/${id}`, data);
+  }
+
+  public deletePermission(id: string): Promise<AxiosResponse<void>> {
+    return this.client.delete(`/permissions/${id}`);
+  }
+
+  public listRoles(params: schemas.role.RoleListParameters = {}): Promise<AxiosResponse<schemas.PaginatedResults<schemas.role.Role>>> {
+    return this.client.get('/roles/', { params });
+  }
+
+  public createRole(data: schemas.role.RoleCreate): Promise<AxiosResponse<schemas.role.Role>> {
+    return this.client.post('/roles/', data);
+  }
+
+  public updateRole(id: string, data: schemas.role.RoleUpdate): Promise<AxiosResponse<schemas.role.Role>> {
+    return this.client.patch(`/roles/${id}`, data);
+  }
+
+  public deleteRole(id: string): Promise<AxiosResponse<void>> {
+    return this.client.delete(`/roles/${id}`);
   }
 
   public listAPIKeys(params: schemas.PaginationParameters = {}): Promise<AxiosResponse<schemas.PaginatedResults<schemas.adminAPIKey.AdminAPIKey>>> {

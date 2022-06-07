@@ -6,7 +6,11 @@ from fastapi import status
 
 from fief.crypto.token import get_token_hash
 from fief.db import AsyncSession
-from fief.managers import GrantManager, LoginSessionManager, SessionTokenManager
+from fief.repositories import (
+    GrantRepository,
+    LoginSessionRepository,
+    SessionTokenRepository,
+)
 from fief.services.response_type import DEFAULT_RESPONSE_MODE, HYBRID_RESPONSE_TYPES
 from fief.settings import settings
 from tests.data import TestData, session_token_tokens
@@ -351,8 +355,10 @@ class TestAuthAuthorize:
         assert location.endswith(f"{tenant_params.path_prefix}{redirection}")
 
         login_session_cookie = response.cookies[settings.login_session_cookie_name]
-        login_session_manager = LoginSessionManager(workspace_session)
-        login_session = await login_session_manager.get_by_token(login_session_cookie)
+        login_session_repository = LoginSessionRepository(workspace_session)
+        login_session = await login_session_repository.get_by_token(
+            login_session_cookie
+        )
         assert login_session is not None
 
         if "nonce" in params:
@@ -490,8 +496,8 @@ class TestAuthPostLogin:
         assert redirect_uri.endswith(f"{path_prefix}/consent")
 
         session_cookie = response.cookies[settings.session_cookie_name]
-        session_token_manager = SessionTokenManager(workspace_session)
-        session_token = await session_token_manager.get_by_token(
+        session_token_repository = SessionTokenRepository(workspace_session)
+        session_token = await session_token_repository.get_by_token(
             get_token_hash(session_cookie)
         )
         assert session_token is not None
@@ -527,14 +533,14 @@ class TestAuthPostLogin:
         assert redirect_uri.endswith(f"{path_prefix}/consent")
 
         session_cookie = response.cookies[settings.session_cookie_name]
-        session_token_manager = SessionTokenManager(workspace_session)
-        new_session_token = await session_token_manager.get_by_token(
+        session_token_repository = SessionTokenRepository(workspace_session)
+        new_session_token = await session_token_repository.get_by_token(
             get_token_hash(session_cookie)
         )
         assert new_session_token is not None
         assert new_session_token.id != session_token.id
 
-        old_session_token = await session_token_manager.get_by_id(session_token.id)
+        old_session_token = await session_token_repository.get_by_id(session_token.id)
         assert old_session_token is None
 
 
@@ -630,8 +636,8 @@ class TestAuthGetConsent:
         assert redirect_params["error"] == "consent_required"
         assert redirect_params["state"] == login_session.state
 
-        login_session_manager = LoginSessionManager(workspace_session)
-        used_login_session = await login_session_manager.get_by_token(
+        login_session_repository = LoginSessionRepository(workspace_session)
+        used_login_session = await login_session_repository.get_by_token(
             login_session.token
         )
         assert used_login_session is None
@@ -669,8 +675,8 @@ class TestAuthGetConsent:
         assert set_cookie_header.startswith(f'{settings.login_session_cookie_name}=""')
         assert "Max-Age=0" in set_cookie_header
 
-        login_session_manager = LoginSessionManager(workspace_session)
-        used_login_session = await login_session_manager.get_by_token(
+        login_session_repository = LoginSessionRepository(workspace_session)
+        used_login_session = await login_session_repository.get_by_token(
             login_session.token
         )
         assert used_login_session is None
@@ -725,8 +731,8 @@ class TestAuthGetConsent:
         assert set_cookie_header.startswith(f'{settings.login_session_cookie_name}=""')
         assert "Max-Age=0" in set_cookie_header
 
-        login_session_manager = LoginSessionManager(workspace_session)
-        used_login_session = await login_session_manager.get_by_token(
+        login_session_repository = LoginSessionRepository(workspace_session)
+        used_login_session = await login_session_repository.get_by_token(
             login_session.token
         )
         assert used_login_session is None
@@ -856,14 +862,14 @@ class TestAuthPostConsent:
         assert set_cookie_header.startswith(f'{settings.login_session_cookie_name}=""')
         assert "Max-Age=0" in set_cookie_header
 
-        login_session_manager = LoginSessionManager(workspace_session)
-        used_login_session = await login_session_manager.get_by_token(
+        login_session_repository = LoginSessionRepository(workspace_session)
+        used_login_session = await login_session_repository.get_by_token(
             login_session.token
         )
         assert used_login_session is None
 
-        grant_manager = GrantManager(workspace_session)
-        grant = await grant_manager.get_by_user_and_client(
+        grant_repository = GrantRepository(workspace_session)
+        grant = await grant_repository.get_by_user_and_client(
             session_token.user_id, client.id
         )
         assert grant is not None
@@ -913,8 +919,8 @@ class TestAuthPostConsent:
         assert set_cookie_header.startswith(f'{settings.login_session_cookie_name}=""')
         assert "Max-Age=0" in set_cookie_header
 
-        login_session_manager = LoginSessionManager(workspace_session)
-        used_login_session = await login_session_manager.get_by_token(
+        login_session_repository = LoginSessionRepository(workspace_session)
+        used_login_session = await login_session_repository.get_by_token(
             login_session.token
         )
         assert used_login_session is None
@@ -995,8 +1001,8 @@ class TestAuthLogout:
 
         assert "Set-Cookie" in response.headers
 
-        session_token_manager = SessionTokenManager(workspace_session)
-        deleted_session_token = await session_token_manager.get_by_token(
+        session_token_repository = SessionTokenRepository(workspace_session)
+        deleted_session_token = await session_token_repository.get_by_token(
             session_token_tokens["regular"][1]
         )
         assert deleted_session_token is None

@@ -49,10 +49,26 @@ from fief.dependencies.user_field import (
     get_admin_user_update_model,
     get_user_update_model,
 )
-from fief.dependencies.workspace_managers import get_user_manager as get_user_db_manager
+from fief.dependencies.workspace_repositories import (
+    get_user_permission_repository,
+    get_user_repository,
+    get_user_role_repository,
+)
 from fief.locale import Translations
-from fief.managers import UserManager as UserDBManager
-from fief.models import Tenant, User, UserField, UserFieldValue, Workspace
+from fief.models import (
+    Tenant,
+    User,
+    UserField,
+    UserFieldValue,
+    UserPermission,
+    UserRole,
+    Workspace,
+)
+from fief.repositories import (
+    UserPermissionRepository,
+    UserRepository,
+    UserRoleRepository,
+)
 from fief.schemas.user import UF, UserCreate, UserCreateInternal, UserUpdate
 from fief.settings import settings
 from fief.tasks import SendTask, on_after_forgot_password, on_after_register
@@ -283,22 +299,48 @@ authentication_backend = AuthenticationBackend[User, UUID4](
 async def get_paginated_users(
     pagination: Pagination = Depends(get_pagination),
     ordering: Ordering = Depends(get_ordering),
-    manager: UserDBManager = Depends(get_user_db_manager),
+    repository: UserRepository = Depends(get_user_repository),
 ) -> PaginatedObjects[User]:
     statement = select(User).options(joinedload(User.tenant))
-    return await get_paginated_objects(statement, pagination, ordering, manager)
+    return await get_paginated_objects(statement, pagination, ordering, repository)
 
 
 async def get_user_by_id_or_404(
     id: UUID4,
-    manager: UserDBManager = Depends(get_user_db_manager),
+    repository: UserRepository = Depends(get_user_repository),
 ) -> User:
-    user = await manager.get_by_id(id, (joinedload(User.tenant),))
+    user = await repository.get_by_id(id, (joinedload(User.tenant),))
 
     if user is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
 
     return user
+
+
+async def get_paginated_user_permissions(
+    pagination: Pagination = Depends(get_pagination),
+    ordering: Ordering = Depends(get_ordering),
+    user: User = Depends(get_user_by_id_or_404),
+    user_permission_repository: UserPermissionRepository = Depends(
+        get_user_permission_repository
+    ),
+) -> PaginatedObjects[UserPermission]:
+    statement = user_permission_repository.get_by_user_statement(user.id)
+    return await get_paginated_objects(
+        statement, pagination, ordering, user_permission_repository
+    )
+
+
+async def get_paginated_user_roles(
+    pagination: Pagination = Depends(get_pagination),
+    ordering: Ordering = Depends(get_ordering),
+    user: User = Depends(get_user_by_id_or_404),
+    user_role_repository: UserRoleRepository = Depends(get_user_role_repository),
+) -> PaginatedObjects[UserRole]:
+    statement = user_role_repository.get_by_user_statement(user.id)
+    return await get_paginated_objects(
+        statement, pagination, ordering, user_role_repository
+    )
 
 
 async def get_user_db_from_user(

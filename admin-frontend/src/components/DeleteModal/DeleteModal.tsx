@@ -8,7 +8,7 @@ import LoadingButton from '../LoadingButton/LoadingButton';
 import Modal from '../Modal/Modal';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-type ListMethodKeys<Set> = Set extends `delete${infer _X}` ? Set : never;
+type ListMethodKeys<Set> = Exclude<Set extends `delete${infer _X}` ? Set : never, 'deleteUserPermission' | 'deleteUserRole'>;
 type APIClientDeleteMethods = Pick<APIClient, ListMethodKeys<keyof APIClient>>;
 
 interface DeleteModalProps {

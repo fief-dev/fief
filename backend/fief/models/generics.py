@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime, timezone
-from typing import TYPE_CHECKING, Optional, TypeVar
+from typing import Optional, TypeVar
 
 from pydantic import UUID4
 from sqlalchemy import TIMESTAMP, Column
@@ -55,10 +55,7 @@ class BaseModel:
 
 @declarative_mixin
 class UUIDModel(BaseModel):
-    if TYPE_CHECKING:
-        id: UUID4
-    else:
-        id: UUID4 = Column(GUID, primary_key=True, default=uuid.uuid4)
+    id: UUID4 = Column(GUID, primary_key=True, default=uuid.uuid4)
 
 
 def now_utc():
@@ -84,25 +81,21 @@ class TIMESTAMPAware(TypeDecorator):
 
 @declarative_mixin
 class CreatedUpdatedAt(BaseModel):
-    if TYPE_CHECKING:
-        created_at: datetime
-        updated_at: datetime
-    else:
-        created_at: datetime = Column(
-            TIMESTAMPAware(timezone=True),
-            nullable=False,
-            index=True,
-            default=now_utc,
-            server_default=func.now(),
-        )
-        updated_at: datetime = Column(
-            TIMESTAMPAware(timezone=True),
-            nullable=False,
-            index=True,
-            default=now_utc,
-            server_default=func.now(),
-            onupdate=now_utc,
-        )
+    created_at: datetime = Column(
+        TIMESTAMPAware(timezone=True),
+        nullable=False,
+        index=True,
+        default=now_utc,
+        server_default=func.now(),
+    )
+    updated_at: datetime = Column(
+        TIMESTAMPAware(timezone=True),
+        nullable=False,
+        index=True,
+        default=now_utc,
+        server_default=func.now(),
+        onupdate=now_utc,
+    )
 
 
 M = TypeVar("M", bound=BaseModel)

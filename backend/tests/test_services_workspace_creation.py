@@ -9,13 +9,13 @@ from sqlalchemy import engine, select
 from fief.db import AsyncSession
 from fief.db.types import DatabaseType
 from fief.db.workspace import get_workspace_session
-from fief.managers import (
-    ClientManager,
-    TenantManager,
-    WorkspaceManager,
-    WorkspaceUserManager,
-)
 from fief.models import User, Workspace
+from fief.repositories import (
+    ClientRepository,
+    TenantRepository,
+    WorkspaceRepository,
+    WorkspaceUserRepository,
+)
 from fief.schemas.workspace import WorkspaceCreate
 from fief.services.workspace_creation import WorkspaceCreation
 from fief.services.workspace_db import (
@@ -55,10 +55,12 @@ def workspace_create(
 
 @pytest.fixture
 def workspace_creation(main_session: AsyncSession) -> WorkspaceCreation:
-    workspace_manager = WorkspaceManager(main_session)
-    workspace_user_manager = WorkspaceUserManager(main_session)
+    workspace_repository = WorkspaceRepository(main_session)
+    workspace_user_repository = WorkspaceUserRepository(main_session)
     workspace_db = WorkspaceDatabase()
-    return WorkspaceCreation(workspace_manager, workspace_user_manager, workspace_db)
+    return WorkspaceCreation(
+        workspace_repository, workspace_user_repository, workspace_db
+    )
 
 
 @pytest.fixture(autouse=True)
@@ -95,8 +97,8 @@ class TestWorkspaceCreationCreate:
         with pytest.raises(WorkspaceDatabaseConnectionError):
             await workspace_creation.create(workspace_create)
 
-        workspace_manager = WorkspaceManager(main_session)
-        workspace = await workspace_manager.get_one_or_none(
+        workspace_repository = WorkspaceRepository(main_session)
+        workspace = await workspace_repository.get_one_or_none(
             select(Workspace).where(Workspace.name == workspace_create.name)
         )
         assert workspace is None
@@ -110,15 +112,15 @@ class TestWorkspaceCreationCreate:
         assert workspace.alembic_revision is not None
 
         async with get_workspace_session(workspace) as session:
-            tenant_manager = TenantManager(session)
-            tenants = await tenant_manager.all()
+            tenant_repository = TenantRepository(session)
+            tenants = await tenant_repository.all()
 
             assert len(tenants) == 1
             tenant = tenants[0]
             assert tenant.default
 
-            client_manager = ClientManager(session)
-            clients = await client_manager.all()
+            client_repository = ClientRepository(session)
+            clients = await client_repository.all()
 
             assert len(clients) == 1
             client = clients[0]
@@ -136,8 +138,8 @@ class TestWorkspaceCreationCreate:
             workspace_create, workspace_admin_user.id
         )
 
-        workspace_user_manager = WorkspaceUserManager(main_session)
-        workspace_user = await workspace_user_manager.get_by_workspace_and_user(
+        workspace_user_repository = WorkspaceUserRepository(main_session)
+        workspace_user = await workspace_user_repository.get_by_workspace_and_user(
             workspace.id, workspace_admin_user.id
         )
         assert workspace_user is not None
@@ -154,8 +156,8 @@ class TestWorkspaceCreationCreate:
             workspace_create, workspace_admin_user.id
         )
 
-        client_manager = ClientManager(workspace_session)
-        client = await client_manager.get_by_id(
+        client_repository = ClientRepository(workspace_session)
+        client = await client_repository.get_by_id(
             test_data["clients"]["default_tenant"].id
         )
         assert client is not None
@@ -177,8 +179,8 @@ class TestWorkspaceCreationCreate:
         assert workspace.domain == "foobar.fief.dev"
 
         async with get_workspace_session(workspace) as session:
-            client_manager = ClientManager(session)
-            clients = await client_manager.all()
+            client_repository = ClientRepository(session)
+            clients = await client_repository.all()
             client = clients[0]
 
             assert client.encrypt_jwk == "ENCRYPTION_KEY"

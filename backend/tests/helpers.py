@@ -8,8 +8,17 @@ from jwcrypto import jwk, jwt
 from fief.crypto.id_token import get_validation_hash
 from fief.crypto.token import get_token_hash
 from fief.db import AsyncSession
-from fief.managers import AuthorizationCodeManager
-from fief.models import AuthorizationCode, LoginSession, SessionToken
+from fief.models import AuthorizationCode, LoginSession, SessionToken, User
+from fief.repositories import AuthorizationCodeRepository
+
+
+async def access_token_assertions(*, access_token: str, jwk: jwk.JWK, user: User):
+    access_token_jwt = jwt.JWT(jwt=access_token, algs=["RS256"], key=jwk)
+    access_token_claims = json.loads(access_token_jwt.claims)
+
+    assert access_token_claims["sub"] == str(user.id)
+    assert "scope" in access_token_claims
+    assert "permissions" in access_token_claims
 
 
 async def id_token_assertions(
@@ -63,11 +72,11 @@ async def authorization_code_assertions(
     assert "code" in params
     assert params["state"] == login_session.state
 
-    authorization_code_manager = AuthorizationCodeManager(session)
+    authorization_code_repository = AuthorizationCodeRepository(session)
     code = params["code"]
     code_hash = get_token_hash(code)
 
-    authorization_code = await authorization_code_manager.get_by_code(code_hash)
+    authorization_code = await authorization_code_repository.get_by_code(code_hash)
     assert authorization_code is not None
     assert authorization_code.nonce == login_session.nonce
     assert authorization_code.code_challenge == login_session.code_challenge
@@ -86,6 +95,12 @@ async def authorization_code_assertions(
         assert "token_type" in params
         assert params["token_type"] == "bearer"
         assert "refresh_token" not in params
+
+        user = session_token.user
+        tenant = user.tenant
+        await access_token_assertions(
+            access_token=params["access_token"], jwk=tenant.get_sign_jwk(), user=user
+        )
 
     if login_session.response_type in ["code id_token", "code id_token token"]:
         assert "id_token" in params

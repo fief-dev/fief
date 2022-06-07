@@ -15,13 +15,17 @@ from fief.models import (
     Grant,
     LoginSession,
     M,
+    Permission,
     RefreshToken,
+    Role,
     SessionToken,
     Tenant,
     User,
     UserField,
     UserFieldType,
     UserFieldValue,
+    UserPermission,
+    UserRole,
 )
 from fief.settings import settings
 
@@ -44,6 +48,10 @@ class TestData(TypedDict):
     refresh_tokens: ModelMapping[RefreshToken]
     session_tokens: ModelMapping[SessionToken]
     grants: ModelMapping[Grant]
+    permissions: ModelMapping[Permission]
+    roles: ModelMapping[Role]
+    user_permissions: ModelMapping[UserPermission]
+    user_roles: ModelMapping[UserRole]
 
 
 tenants: ModelMapping[Tenant] = {
@@ -534,6 +542,62 @@ grants: ModelMapping[Grant] = {
     ),
 }
 
+permissions: ModelMapping[Permission] = {
+    "castles:create": Permission(
+        name="Create Castles",
+        codename="castles:create",
+    ),
+    "castles:read": Permission(
+        name="Read Castles",
+        codename="castles:read",
+    ),
+    "castles:update": Permission(
+        name="Update Castles",
+        codename="castles:update",
+    ),
+    "castles:delete": Permission(
+        name="Delete Castles",
+        codename="castles:delete",
+    ),
+}
+
+roles: ModelMapping[Role] = {
+    "castles_visitor": Role(
+        name="Castles Visitor",
+        granted_by_default=True,
+        permissions=[permissions["castles:read"]],
+    ),
+    "castles_manager": Role(
+        name="Castles Manager",
+        granted_by_default=False,
+        permissions=[
+            permissions["castles:read"],
+            permissions["castles:create"],
+            permissions["castles:update"],
+            permissions["castles:delete"],
+        ],
+    ),
+}
+
+user_permissions: ModelMapping[UserPermission] = {
+    "default_castles_visitor_from_role": UserPermission(
+        user=users["regular"],
+        permission=permissions["castles:read"],
+        from_role=roles["castles_visitor"],
+    ),
+    "default_castles_delete_direct": UserPermission(
+        user=users["regular"],
+        permission=permissions["castles:delete"],
+    ),
+}
+
+user_roles: ModelMapping[UserRole] = {
+    "default_castles_visitor": UserRole(
+        user=users["regular"],
+        role=roles["castles_visitor"],
+    ),
+}
+
 data_mapping: TestData = {
     "tenants": tenants,
     "clients": clients,
@@ -545,6 +609,10 @@ data_mapping: TestData = {
     "refresh_tokens": refresh_tokens,
     "session_tokens": session_tokens,
     "grants": grants,
+    "permissions": permissions,
+    "roles": roles,
+    "user_permissions": user_permissions,
+    "user_roles": user_roles,
 }
 
 __all__ = [

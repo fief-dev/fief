@@ -1,6 +1,8 @@
 from typing import List, Optional
 
-from pydantic import AnyUrl, BaseModel
+from pydantic import AnyUrl
+
+from fief.schemas.generics import BaseModel
 
 
 class OAuth2AuthorizationServerMetadata(BaseModel):

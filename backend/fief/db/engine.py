@@ -1,13 +1,8 @@
-from typing import TYPE_CHECKING
-
 from sqlalchemy import engine, event
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
 from fief.settings import settings
-
-if TYPE_CHECKING:
-    from fief.models import Workspace
 
 
 def create_engine(database_url: engine.URL) -> AsyncEngine:
@@ -27,6 +22,10 @@ def create_engine(database_url: engine.URL) -> AsyncEngine:
             # disable pysqlite's emitting of the BEGIN statement entirely.
             # also stops it from emitting COMMIT before any DDL.
             dbapi_connection.isolation_level = None
+
+            # Enable SQLite foreign key support, which is not enabled by default
+            # See: https://www.sqlite.org/foreignkeys.html#fk_enable
+            dbapi_connection.execute("pragma foreign_keys=ON")
 
         @event.listens_for(engine.sync_engine, "begin")
         def do_begin(conn):

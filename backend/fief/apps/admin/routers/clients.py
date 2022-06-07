@@ -7,10 +7,13 @@ from fief.crypto.jwk import generate_jwk
 from fief.dependencies.admin_authentication import is_authenticated_admin
 from fief.dependencies.client import get_client_by_id_or_404, get_paginated_clients
 from fief.dependencies.pagination import PaginatedObjects
-from fief.dependencies.workspace_managers import get_client_manager, get_tenant_manager
+from fief.dependencies.workspace_repositories import (
+    get_client_repository,
+    get_tenant_repository,
+)
 from fief.errors import APIErrorCode
-from fief.managers import ClientManager, TenantManager
 from fief.models import Client
+from fief.repositories import ClientRepository, TenantRepository
 from fief.schemas.generics import PaginatedResults
 
 router = APIRouter(dependencies=[Depends(is_authenticated_admin)])
@@ -37,10 +40,10 @@ async def list_clients(
 )
 async def create_client(
     client_create: schemas.client.ClientCreate,
-    manager: ClientManager = Depends(get_client_manager),
-    tenant_manager: TenantManager = Depends(get_tenant_manager),
+    repository: ClientRepository = Depends(get_client_repository),
+    tenant_repository: TenantRepository = Depends(get_tenant_repository),
 ) -> schemas.client.Client:
-    tenant = await tenant_manager.get_by_id(client_create.tenant_id)
+    tenant = await tenant_repository.get_by_id(client_create.tenant_id)
     if tenant is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -48,7 +51,7 @@ async def create_client(
         )
 
     client = Client(**client_create.dict())
-    client = await manager.create(client)
+    client = await repository.create(client)
 
     return schemas.client.Client.from_orm(client)
 
@@ -57,13 +60,13 @@ async def create_client(
 async def update_client(
     client_update: schemas.client.ClientUpdate,
     client: Client = Depends(get_client_by_id_or_404),
-    manager: ClientManager = Depends(get_client_manager),
+    repository: ClientRepository = Depends(get_client_repository),
 ) -> schemas.client.Client:
     client_update_dict = client_update.dict(exclude_unset=True)
     for field, value in client_update_dict.items():
         setattr(client, field, value)
 
-    await manager.update(client)
+    await repository.update(client)
 
     return schemas.client.Client.from_orm(client)
 
@@ -75,10 +78,10 @@ async def update_client(
 )
 async def create_encryption_key(
     client: Client = Depends(get_client_by_id_or_404),
-    manager: ClientManager = Depends(get_client_manager),
+    repository: ClientRepository = Depends(get_client_repository),
 ):
     key = generate_jwk(secrets.token_urlsafe(), "enc")
     client.encrypt_jwk = key.export_public()
-    await manager.update(client)
+    await repository.update(client)
 
     return key.export(as_dict=True)

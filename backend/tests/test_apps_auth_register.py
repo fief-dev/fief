@@ -7,8 +7,8 @@ from fastapi import status
 
 from fief.crypto.token import get_token_hash
 from fief.db import AsyncSession
-from fief.managers import SessionTokenManager, UserManager
 from fief.models import UserField, UserFieldType, Workspace
+from fief.repositories import SessionTokenRepository, UserRepository
 from fief.settings import settings
 from fief.tasks import on_after_register
 from tests.data import TestData
@@ -151,8 +151,8 @@ class TestPostRegister:
         assert redirect_uri.endswith("/consent")
 
         session_cookie = response.cookies[settings.session_cookie_name]
-        session_token_manager = SessionTokenManager(workspace_session)
-        session_token = await session_token_manager.get_by_token(
+        session_token_repository = SessionTokenRepository(workspace_session)
+        session_token = await session_token_repository.get_by_token(
             get_token_hash(session_cookie)
         )
         assert session_token is not None
@@ -203,14 +203,14 @@ class TestPostRegister:
         assert response.status_code == status.HTTP_302_FOUND
 
         session_cookie = response.cookies[settings.session_cookie_name]
-        session_token_manager = SessionTokenManager(workspace_session)
-        session_token = await session_token_manager.get_by_token(
+        session_token_repository = SessionTokenRepository(workspace_session)
+        session_token = await session_token_repository.get_by_token(
             get_token_hash(session_cookie)
         )
         assert session_token is not None
 
-        user_manager = UserManager(workspace_session)
-        user = await user_manager.get_by_id(session_token.user_id)
+        user_repository = UserRepository(workspace_session)
+        user = await user_repository.get_by_id(session_token.user_id)
         assert user is not None
         assert user.fields == {
             "given_name": "Anne",

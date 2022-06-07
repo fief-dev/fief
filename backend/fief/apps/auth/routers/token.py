@@ -6,15 +6,19 @@ from fief.crypto.access_token import generate_access_token
 from fief.crypto.id_token import generate_id_token
 from fief.crypto.token import generate_token
 from fief.dependencies.current_workspace import get_current_workspace
+from fief.dependencies.permission import (
+    UserPermissionsGetter,
+    get_user_permissions_getter,
+)
 from fief.dependencies.tenant import get_current_tenant
 from fief.dependencies.token import (
     GrantRequest,
     get_user_from_grant_request,
     validate_grant_request,
 )
-from fief.dependencies.workspace_managers import get_refresh_token_manager
-from fief.managers import RefreshTokenManager
+from fief.dependencies.workspace_repositories import get_refresh_token_repository
 from fief.models import RefreshToken, Tenant, User, Workspace
+from fief.repositories import RefreshTokenRepository
 from fief.schemas.auth import TokenResponse
 from fief.settings import settings
 
@@ -26,7 +30,10 @@ async def token(
     response: Response,
     grant_request: GrantRequest = Depends(validate_grant_request),
     user: User = Depends(get_user_from_grant_request),
-    refresh_token_manager: RefreshTokenManager = Depends(get_refresh_token_manager),
+    get_user_permissions: UserPermissionsGetter = Depends(get_user_permissions_getter),
+    refresh_token_repository: RefreshTokenRepository = Depends(
+        get_refresh_token_repository
+    ),
     workspace: Workspace = Depends(get_current_workspace),
     tenant: Tenant = Depends(get_current_tenant),
 ):
@@ -35,6 +42,7 @@ async def token(
     nonce = grant_request["nonce"]
     c_hash = grant_request["c_hash"]
     client = grant_request["client"]
+    permissions = await get_user_permissions(user)
 
     tenant_host = tenant.get_host(workspace.domain)
     access_token = generate_access_token(
@@ -43,6 +51,7 @@ async def token(
         client,
         user,
         scope,
+        permissions,
         settings.access_id_token_lifetime_seconds,
     )
     id_token = generate_id_token(
@@ -76,7 +85,7 @@ async def token(
             client_id=client.id,
             authenticated_at=authenticated_at,
         )
-        refresh_token = await refresh_token_manager.create(refresh_token)
+        refresh_token = await refresh_token_repository.create(refresh_token)
         token_response.refresh_token = token
 
     response.headers["Cache-Control"] = "no-store"

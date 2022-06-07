@@ -366,12 +366,18 @@ def access_token(
             if client.tenant_id == user_tenant.id
         )
 
+        user_permissions = [
+            permission.permission.codename
+            for permission in test_data["user_permissions"].values()
+        ]
+
         return generate_access_token(
             user_tenant.get_sign_jwk(),
             user_tenant.get_host(workspace.domain),
             client,
             user,
             ["openid"],
+            user_permissions,
             3600,
         )
     return None

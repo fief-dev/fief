@@ -6,10 +6,12 @@ import { ArrowLeftIcon } from '@heroicons/react/solid';
 import { ReactComponent as ClientsIcon } from '../../images/icons/clients.svg';
 import { ReactComponent as DashboardIcon } from '../../images/icons/dashboard.svg';
 import { ReactComponent as KeyIcon } from '../../images/icons/key.svg';
+import { ReactComponent as LockIcon } from '../../images/icons/lock.svg';
 import { ReactComponent as TagIcon } from '../../images/icons/tag.svg';
 import { ReactComponent as TenantsIcon } from '../../images/icons/tenants.svg';
 import { ReactComponent as UsersIcon } from '../../images/icons/users.svg';
 import { ReactComponent as FiefLogo } from '../../images/logos/fief-logo-red.svg';
+import SidebarItemGroup from '../SidebarItemGroup/SidebarItemGroup';
 
 interface SidebarProps {
   open: boolean;
@@ -115,6 +117,15 @@ const Sidebar: React.FunctionComponent<React.PropsWithChildren<SidebarProps>> = 
                   </div>
                 </NavLink>
               </li>
+              <SidebarItemGroup
+                title={t('sidebar.rbac')}
+                icon={<LockIcon className="className: 'shrink-0 h-6 w-6" />}
+                items={[
+                  { title: t('sidebar.permissions'), href: '/permissions'},
+                  { title: t('sidebar.roles'), href: '/roles'},
+                ]}
+                pathname={pathname}
+              />
               <li className={`px-3 py-2 rounded-sm mb-0.5 last:mb-0 ${pathname === '/api-keys' && 'bg-slate-900'}`}>
                 <NavLink end to="/api-keys" className={`block text-slate-200 hover:text-white truncate transition duration-150 ${pathname === '/api-keys' && 'hover:text-slate-200'}`}>
                   <div className="flex items-center">
@@ -127,7 +138,7 @@ const Sidebar: React.FunctionComponent<React.PropsWithChildren<SidebarProps>> = 
           </div>
         </div>
       </div>
-    </div>
+    </div >
   );
 };
 

@@ -4,13 +4,13 @@ from typing import List, Optional
 from pydantic import UUID4
 
 from fief.db.workspace import get_workspace_session
-from fief.managers import (
-    ClientManager,
-    TenantManager,
-    WorkspaceManager,
-    WorkspaceUserManager,
-)
 from fief.models import Client, Tenant, Workspace, WorkspaceUser
+from fief.repositories import (
+    ClientRepository,
+    TenantRepository,
+    WorkspaceRepository,
+    WorkspaceUserRepository,
+)
 from fief.schemas.workspace import WorkspaceCreate
 from fief.services.main_workspace import get_main_fief_client, get_main_fief_workspace
 from fief.services.workspace_db import (
@@ -24,12 +24,12 @@ LOCALHOST_HOST_PATTERN = re.compile(r"([^\.]+\.)?localhost(\d+)?", flags=re.IGNO
 class WorkspaceCreation:
     def __init__(
         self,
-        workspace_manager: WorkspaceManager,
-        workspace_user_manager: WorkspaceUserManager,
+        workspace_repository: WorkspaceRepository,
+        workspace_user_repository: WorkspaceUserRepository,
         workspace_db: WorkspaceDatabase,
     ) -> None:
-        self.workspace_manager = workspace_manager
-        self.workspace_user_manager = workspace_user_manager
+        self.workspace_repository = workspace_repository
+        self.workspace_user_repository = workspace_user_repository
         self.workspace_db = workspace_db
 
     async def create(
@@ -46,14 +46,14 @@ class WorkspaceCreation:
 
         if default_domain is None:
             # Create workspace on available subdomain
-            domain = await self.workspace_manager.get_available_subdomain(
+            domain = await self.workspace_repository.get_available_subdomain(
                 workspace.name
             )
             workspace.domain = domain
         else:
             workspace.domain = default_domain
 
-        workspace = await self.workspace_manager.create(workspace)
+        workspace = await self.workspace_repository.create(workspace)
 
         # Apply the database schema
         try:
@@ -61,21 +61,23 @@ class WorkspaceCreation:
                 workspace.get_database_url(False), workspace.get_schema_name()
             )
         except WorkspaceDatabaseConnectionError:
-            await self.workspace_manager.delete(workspace)
+            await self.workspace_repository.delete(workspace)
             raise
 
         workspace.alembic_revision = alembic_revision
-        await self.workspace_manager.update(workspace)
+        await self.workspace_repository.update(workspace)
 
         # Link the user to this workspace
         if user_id is not None:
             workspace_user = WorkspaceUser(workspace_id=workspace.id, user_id=user_id)
-            await self.workspace_user_manager.create(workspace_user)
+            await self.workspace_user_repository.create(workspace_user)
 
         # Create a default tenant and client
         async with get_workspace_session(workspace) as session:
             tenant_name = workspace.name
-            tenant_slug = await TenantManager(session).get_available_slug(tenant_name)
+            tenant_slug = await TenantRepository(session).get_available_slug(
+                tenant_name
+            )
             tenant = Tenant(name=workspace.name, slug=tenant_slug, default=True)
 
             session.add(tenant)
@@ -109,11 +111,11 @@ class WorkspaceCreation:
         main_workspace = await get_main_fief_workspace()
 
         async with get_workspace_session(main_workspace) as session:
-            client_manager = ClientManager(session)
+            client_repository = ClientRepository(session)
             fief_client = await get_main_fief_client()
 
             localhost_domain = LOCALHOST_HOST_PATTERN.match(workspace.domain)
             redirect_uri = f"{'http' if localhost_domain else 'https'}://{workspace.domain}/admin/api/auth/callback"
             fief_client.redirect_uris = fief_client.redirect_uris + [redirect_uri]
 
-            await client_manager.update(fief_client)
+            await client_repository.update(fief_client)

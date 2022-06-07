@@ -1,6 +1,6 @@
-from pydantic import UUID4, BaseModel, SecretStr
+from pydantic import UUID4, SecretStr
 
-from fief.schemas.generics import CreatedUpdatedAt, UUIDSchema
+from fief.schemas.generics import BaseModel, CreatedUpdatedAt, UUIDSchema
 
 
 class AdminAPIKeyCreate(BaseModel):

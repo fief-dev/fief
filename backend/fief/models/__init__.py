@@ -6,12 +6,16 @@ from fief.models.client import Client, ClientType
 from fief.models.generics import M_UUID, M
 from fief.models.grant import Grant
 from fief.models.login_session import LoginSession
+from fief.models.permission import Permission
 from fief.models.refresh_token import RefreshToken
+from fief.models.role import Role, RolePermission
 from fief.models.session_token import SessionToken
 from fief.models.tenant import Tenant
 from fief.models.user import User
 from fief.models.user_field import UserField, UserFieldType
 from fief.models.user_field_value import UserFieldValue
+from fief.models.user_permission import UserPermission
+from fief.models.user_role import UserRole
 from fief.models.workspace import Workspace
 from fief.models.workspace_user import WorkspaceUser
 
@@ -27,7 +31,10 @@ __all__ = [
     "Grant",
     "LoginSession",
     "MainBase",
+    "Permission",
     "RefreshToken",
+    "Role",
+    "RolePermission",
     "SessionToken",
     "M",
     "M_UUID",
@@ -36,4 +43,6 @@ __all__ = [
     "UserField",
     "UserFieldType",
     "UserFieldValue",
+    "UserPermission",
+    "UserRole",
 ]

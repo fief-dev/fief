@@ -14,7 +14,7 @@ export const useAPI = (): APIClient => {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-type ListMethodKeys<Set> = Set extends `list${infer _X}` ? Set : never;
+type ListMethodKeys<Set> = Exclude<Set extends `list${infer _X}` ? Set : never, 'listUserPermissions' | 'listUserRoles'>;
 type APIClientListMethods = Pick<APIClient, ListMethodKeys<keyof APIClient>>;
 
 type Awaited<T> = T extends PromiseLike<infer U> ? U : T;
