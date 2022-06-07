@@ -1,19 +1,10 @@
 name: "Build admin frontend"
 description: "Build the React admin frontend"
 
-inputs:
-  github_token:
-    description: "GitHub token"
-    required: true
-
 runs:
   using: "composite"
 
   steps:
-    - uses: actions/checkout@v2
-      with:
-        token: ${{ inputs.github_token }}
-        submodules: recursive
     - name: Use Node.js
       uses: actions/setup-node@v3
       with:

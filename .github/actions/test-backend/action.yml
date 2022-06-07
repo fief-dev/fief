@@ -2,9 +2,6 @@ name: "Test backend"
 description: "Run the tests for the Python backend"
 
 inputs:
-  github_token:
-    description: "GitHub token"
-    required: true
   database_type:
     description: "DB type"
     required: true
@@ -28,10 +25,6 @@ runs:
   using: "composite"
 
   steps:
-    - uses: actions/checkout@v2
-      with:
-        token: ${{ inputs.github_token }}
-        submodules: recursive
     - name: Set up Python 3.10
       uses: actions/setup-python@v2
       with:
@@ -43,14 +36,6 @@ runs:
         python -m pip install --upgrade pip
         pip install flit
         flit install --deps develop
-    - name: Lint with isort, black and tryceratops
-      shell: bash
-      working-directory: backend
-      run: |
-        isort --check .
-        black --check .
-        mypy fief/
-        tryceratops fief/
     - name: Test with pytest
       shell: bash
       working-directory: backend
