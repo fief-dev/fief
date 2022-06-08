@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     from fief.models.user_permission import UserPermission
 
 RolePermission = Table(
-    "roles_permissions",
+    get_prefixed_tablename("roles_permissions"),
     WorkspaceBase.metadata,
     Column(
         "role_id",
