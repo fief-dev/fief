@@ -42,4 +42,4 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 
 ## License
 
-Fief is [fair-code](http://faircode.io) distributed under [**MIT with Commons Clause**](https://github.com/fief-dev/fief/blob/main/LICENSE) license.
+Fief is [fair-code](http://faircode.io) distributed under [**Elastic License 2.0 (ELv2)**](https://github.com/fief-dev/fief/blob/main/LICENSE.md).
