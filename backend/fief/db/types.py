@@ -1,6 +1,6 @@
 from enum import Enum
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict, Optional, Type, Union
 
 from sqlalchemy import engine
 
@@ -10,6 +10,37 @@ class DatabaseType(str, Enum):
     MYSQL = "MYSQL"
     SQLITE = "SQLITE"
 
+
+class PostreSQLSSLMode(str, Enum):
+    DISABLE = "disable"
+    ALLOW = "allow"
+    PREFER = "prefer"
+    REQUIRE = "require"
+    VERIFY_CA = "verify-ca"
+    VERIFY_FULL = "verify-full"
+
+
+class MySQLSSLMode(str, Enum):
+    DISABLED = "DISABLED"
+    PREFERRED = "PREFERRED"
+    REQUIRED = "REQUIRED"
+    VERIFY_CA = "VERIFY_CA"
+    VERIFY_IDENTITY = "VERIFY_IDENTITY"
+
+
+SSLMode = Union[PostreSQLSSLMode, MySQLSSLMode]
+
+SSL_MODES: Dict[DatabaseType, Type[SSLMode]] = {
+    DatabaseType.POSTGRESQL: PostreSQLSSLMode,
+    DatabaseType.MYSQL: MySQLSSLMode,
+}
+
+SSL_MODE_PARAMETERS: Dict[str, str] = {
+    "postgresql": "sslmode",
+    "postgresql+asyncpg": "ssl",
+    "mysql+aiomysql": "ssl-mode",
+    "mysql+pymysql": "ssl-mode",
+}
 
 SYNC_DRIVERS: Dict[DatabaseType, str] = {
     DatabaseType.POSTGRESQL: "postgresql",
@@ -40,14 +71,23 @@ def create_database_url(
     database: Optional[str] = None,
     path: Optional[Path] = None,
     schema: Optional[str] = None,
+    ssl_mode: Optional[str] = None,
 ) -> engine.URL:
+    drivername = get_driver(type, asyncio=asyncio)
+    query: Dict[str, str] = {}
+
+    if ssl_mode is not None:
+        ssl_mode_parameter = SSL_MODE_PARAMETERS[drivername]
+        query[ssl_mode_parameter] = ssl_mode
+
     url = engine.URL.create(
-        drivername=get_driver(type, asyncio=asyncio),
+        drivername=drivername,
         username=username,
         password=password,
         host=host,
         port=port,
         database=database,
+        query=query,
     )
 
     dialect_name = url.get_dialect().name

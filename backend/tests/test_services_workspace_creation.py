@@ -7,7 +7,7 @@ from pytest_mock import MockerFixture
 from sqlalchemy import engine, select
 
 from fief.db import AsyncSession
-from fief.db.types import DatabaseType
+from fief.db.types import DatabaseType, PostreSQLSSLMode
 from fief.db.workspace import get_workspace_session
 from fief.models import User, Workspace
 from fief.repositories import (
@@ -50,6 +50,7 @@ def workspace_create(
         database_username=url.username,
         database_password=url.password,
         database_name=url.database,
+        database_ssl_mode=PostreSQLSSLMode.PREFER,
     )
 
 

@@ -4,6 +4,7 @@ import httpx
 import pytest
 from fastapi import status
 
+from fief.errors import APIErrorCode
 from fief.models import User, Workspace
 from fief.services.workspace_db import WorkspaceDatabaseConnectionError
 
@@ -52,6 +53,40 @@ class TestCheckConnection:
 
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
+    @pytest.mark.parametrize(
+        "database_type,ssl_mode",
+        [
+            ("POSTGRESQL", "INVALID"),
+            ("MYSQL", "INVALID"),
+            ("POSTGRESQL", "DISABLED"),
+            ("MYSQL", "allow"),
+        ],
+    )
+    @pytest.mark.authenticated_admin(mode="session")
+    async def test_db_invalid_ssl_mode(
+        self, database_type: str, ssl_mode: str, test_client_admin: httpx.AsyncClient
+    ):
+        response = await test_client_admin.post(
+            "/workspaces/check-connection",
+            json={
+                "database_type": database_type,
+                "database_host": "db.bretagne.duchy",
+                "database_port": 5432,
+                "database_username": "anne",
+                "database_password": "hermine",
+                "database_name": "fief",
+                "database_ssl_mode": ssl_mode,
+            },
+        )
+
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+        json = response.json()
+        assert json["detail"][0]["loc"] == ["body", "database_ssl_mode"]
+        assert (
+            json["detail"][0]["msg"] == APIErrorCode.WORKSPACE_CREATE_INVALID_SSL_MODE
+        )
+
     @pytest.mark.authenticated_admin(mode="session")
     async def test_db_connection_error(
         self, test_client_admin: httpx.AsyncClient, workspace_db_mock: MagicMock
@@ -67,6 +102,7 @@ class TestCheckConnection:
                 "database_username": "anne",
                 "database_password": "hermine",
                 "database_name": "fief",
+                "database_ssl_mode": "prefer",
             },
         )
 
@@ -90,6 +126,7 @@ class TestCheckConnection:
                 "database_username": "anne",
                 "database_password": "hermine",
                 "database_name": "fief",
+                "database_ssl_mode": "prefer",
             },
         )
 

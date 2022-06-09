@@ -55,6 +55,7 @@ async def check_connection(
         host=workspace_check_connection.database_host,
         port=workspace_check_connection.database_port,
         database=workspace_check_connection.database_name,
+        ssl_mode=workspace_check_connection.database_ssl_mode,
     )
     valid, message = workspace_db.check_connection(url)
 

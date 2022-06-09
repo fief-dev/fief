@@ -3,7 +3,7 @@ from typing import Optional
 from pydantic import BaseModel, root_validator, validator
 
 from fief.crypto.encryption import decrypt
-from fief.db.types import DatabaseType
+from fief.db.types import SSL_MODES, DatabaseType
 from fief.errors import APIErrorCode
 from fief.schemas.generics import UUIDSchema
 from fief.settings import settings
@@ -17,23 +17,43 @@ def validate_all_database_settings(cls, values):
         values.get("database_username"),
         values.get("database_password"),
         values.get("database_name"),
+        values.get("database_ssl_mode"),
     ]
 
     if database_type is None and not any(database_settings):
         return values
 
     if database_type is None and any(database_settings):
-        raise ValueError(APIErrorCode.WORKSPACE_CREATE_MISSING_DATABASE_SETTINGS)
+        raise ValueError(APIErrorCode.WORKSPACE_CREATE_MISSING_DATABASE_SETTINGS.value)
 
     database_name = values.get("database_name")
     if database_type == DatabaseType.SQLITE:
         if database_name is None:
-            raise ValueError(APIErrorCode.WORKSPACE_CREATE_MISSING_DATABASE_SETTINGS)
+            raise ValueError(
+                APIErrorCode.WORKSPACE_CREATE_MISSING_DATABASE_SETTINGS.value
+            )
     else:
         if not all(database_settings):
-            raise ValueError(APIErrorCode.WORKSPACE_CREATE_MISSING_DATABASE_SETTINGS)
+            raise ValueError(
+                APIErrorCode.WORKSPACE_CREATE_MISSING_DATABASE_SETTINGS.value
+            )
 
     return values
+
+
+def validate_ssl_mode(ssl_mode, values):
+    type = values.get("database_type")
+
+    if type is not None and ssl_mode is not None:
+        ssl_mode_type = SSL_MODES[type]
+        try:
+            ssl_mode_type(ssl_mode)
+        except ValueError as e:
+            raise ValueError(
+                APIErrorCode.WORKSPACE_CREATE_INVALID_SSL_MODE.value
+            ) from e
+
+    return ssl_mode
 
 
 class WorkspaceCheckConnection(BaseModel):
@@ -43,9 +63,13 @@ class WorkspaceCheckConnection(BaseModel):
     database_username: str
     database_password: str
     database_name: str
+    database_ssl_mode: str
 
     _validate_all_database_settings = root_validator(allow_reuse=True)(
         validate_all_database_settings
+    )
+    _validate_ssl_mode = validator("database_ssl_mode", allow_reuse=True)(
+        validate_ssl_mode
     )
 
 
@@ -57,9 +81,13 @@ class WorkspaceCreate(BaseModel):
     database_username: Optional[str]
     database_password: Optional[str]
     database_name: Optional[str]
+    database_ssl_mode: Optional[str]
 
     _validate_all_database_settings = root_validator(allow_reuse=True)(
         validate_all_database_settings
+    )
+    _validate_ssl_mode = validator("database_ssl_mode", allow_reuse=True)(
+        validate_ssl_mode
     )
 
 
@@ -75,12 +103,14 @@ class Workspace(BaseWorkspace):
     database_username: Optional[str]
     database_password: Optional[str]
     database_name: Optional[str]
+    database_ssl_mode: Optional[str]
 
     @validator(
         "database_host",
         "database_username",
         "database_password",
         "database_name",
+        "database_ssl_mode",
         pre=True,
     )
     def decrypt_database_setting(cls, value: Optional[str]) -> Optional[str]:

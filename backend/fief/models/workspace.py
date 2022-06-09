@@ -25,6 +25,7 @@ class Workspace(UUIDModel, CreatedUpdatedAt, MainBase):
     database_username: Optional[str] = Column(Text, nullable=True)
     database_password: Optional[str] = Column(Text, nullable=True)
     database_name: Optional[str] = Column(Text, nullable=True)
+    database_ssl_mode: Optional[str] = Column(Text, nullable=True)
 
     alembic_revision: Optional[str] = Column(
         String(length=255), nullable=True, index=True
@@ -56,6 +57,7 @@ class Workspace(UUIDModel, CreatedUpdatedAt, MainBase):
                 database=self._decrypt_database_setting("database_name"),
                 path=settings.database_location,
                 schema=self.get_schema_name(),
+                ssl_mode=self._decrypt_database_setting("database_ssl_mode"),
             )
 
         return url
@@ -95,3 +97,4 @@ event.listen(Workspace.database_port, "set", encrypt_database_setting, retval=Tr
 event.listen(Workspace.database_username, "set", encrypt_database_setting, retval=True)
 event.listen(Workspace.database_password, "set", encrypt_database_setting, retval=True)
 event.listen(Workspace.database_name, "set", encrypt_database_setting, retval=True)
+event.listen(Workspace.database_ssl_mode, "set", encrypt_database_setting, retval=True)
