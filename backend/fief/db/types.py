@@ -76,9 +76,10 @@ def create_database_url(
     drivername = get_driver(type, asyncio=asyncio)
     query: Dict[str, str] = {}
 
-    if ssl_mode is not None:
-        ssl_mode_parameter = SSL_MODE_PARAMETERS[drivername]
-        query[ssl_mode_parameter] = ssl_mode
+    if ssl_mode:
+        ssl_mode_parameter = SSL_MODE_PARAMETERS.get(drivername)
+        if ssl_mode_parameter is not None:
+            query[ssl_mode_parameter] = ssl_mode
 
     url = engine.URL.create(
         drivername=drivername,
