@@ -11,19 +11,18 @@ from fief.settings import settings
 
 def validate_all_database_settings(cls, values):
     database_type = values.get("database_type")
-    database_settings = [
+    required_database_settings = [
         values.get("database_host"),
         values.get("database_port"),
         values.get("database_username"),
         values.get("database_password"),
         values.get("database_name"),
-        values.get("database_ssl_mode"),
     ]
 
-    if database_type is None and not any(database_settings):
+    if database_type is None and not any(required_database_settings):
         return values
 
-    if database_type is None and any(database_settings):
+    if database_type is None and any(required_database_settings):
         raise ValueError(APIErrorCode.WORKSPACE_CREATE_MISSING_DATABASE_SETTINGS.value)
 
     database_name = values.get("database_name")
@@ -33,7 +32,7 @@ def validate_all_database_settings(cls, values):
                 APIErrorCode.WORKSPACE_CREATE_MISSING_DATABASE_SETTINGS.value
             )
     else:
-        if not all(database_settings):
+        if not all(required_database_settings):
             raise ValueError(
                 APIErrorCode.WORKSPACE_CREATE_MISSING_DATABASE_SETTINGS.value
             )
@@ -63,7 +62,7 @@ class WorkspaceCheckConnection(BaseModel):
     database_username: str
     database_password: str
     database_name: str
-    database_ssl_mode: str
+    database_ssl_mode: Optional[str]
 
     _validate_all_database_settings = root_validator(allow_reuse=True)(
         validate_all_database_settings

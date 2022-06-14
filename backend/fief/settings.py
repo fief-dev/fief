@@ -50,6 +50,7 @@ class Settings(BaseSettings):
     database_username: Optional[str] = None
     database_password: Optional[str] = None
     database_name: Optional[str] = "fief.db"
+    database_ssl_mode: Optional[str] = None
     database_location: DirectoryPath = Path.cwd()
     database_pool_recycle_seconds: int = 600
 
@@ -137,6 +138,7 @@ class Settings(BaseSettings):
             database=self.database_name,
             path=settings.database_location,
             schema=schema,
+            ssl_mode=settings.database_ssl_mode,
         )
 
     def get_email_provider(self) -> EmailProvider:
