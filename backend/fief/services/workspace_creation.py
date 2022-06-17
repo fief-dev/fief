@@ -58,7 +58,8 @@ class WorkspaceCreation:
         # Apply the database schema
         try:
             alembic_revision = self.workspace_db.migrate(
-                workspace.get_database_url(False), workspace.get_schema_name()
+                workspace.get_database_connection_parameters(False),
+                workspace.get_schema_name(),
             )
         except WorkspaceDatabaseConnectionError:
             await self.workspace_repository.delete(workspace)

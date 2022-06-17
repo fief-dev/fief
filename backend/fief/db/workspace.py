@@ -3,10 +3,11 @@ from typing import TYPE_CHECKING, AsyncGenerator, Dict, Optional
 
 import asyncpg.exceptions
 import pymysql.err
-from sqlalchemy import engine, exc
+from sqlalchemy import exc
 from sqlalchemy.ext.asyncio import AsyncConnection, AsyncEngine, AsyncSession
 
 from fief.db.engine import create_engine
+from fief.db.types import DatabaseConnectionParameters
 
 if TYPE_CHECKING:
     from fief.models import Workspace
@@ -16,12 +17,15 @@ class WorkspaceEngineManager:
     def __init__(self) -> None:
         self.engines: Dict[str, AsyncEngine] = {}
 
-    def get_engine(self, database_url: engine.URL) -> AsyncEngine:
+    def get_engine(
+        self, database_connection_parameters: DatabaseConnectionParameters
+    ) -> AsyncEngine:
+        database_url, _ = database_connection_parameters
         key = str(database_url)
         try:
             return self.engines[key]
         except KeyError:
-            engine = create_engine(database_url)
+            engine = create_engine(database_connection_parameters)
             self.engines[key] = engine
             return engine
 
@@ -61,7 +65,9 @@ async def get_connection(
 async def get_workspace_session(
     workspace: "Workspace",
 ) -> AsyncGenerator[AsyncSession, None]:
-    engine = workspace_engine_manager.get_engine(workspace.get_database_url())
+    engine = workspace_engine_manager.get_engine(
+        workspace.get_database_connection_parameters()
+    )
     async with get_connection(engine, workspace.get_schema_name()) as connection:
         async with AsyncSession(bind=connection, expire_on_commit=False) as session:
             yield session

@@ -5,7 +5,7 @@ import httpx
 from fastapi import FastAPI
 from sqlalchemy import engine
 
-from fief.db.types import DatabaseType
+from fief.db.types import DatabaseConnectionParameters, DatabaseType
 from fief.models import Client, LoginSession, SessionToken, Tenant, User
 
 
@@ -22,4 +22,6 @@ class TenantParams:
 
 TestClientGeneratorType = Callable[[FastAPI], AsyncContextManager[httpx.AsyncClient]]
 
-GetTestDatabase = Callable[..., AsyncContextManager[Tuple[engine.URL, DatabaseType]]]
+GetTestDatabase = Callable[
+    ..., AsyncContextManager[Tuple[DatabaseConnectionParameters, DatabaseType]]
+]

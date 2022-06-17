@@ -2,12 +2,17 @@ from sqlalchemy import engine, event
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
+from fief.db.types import DatabaseConnectionParameters
 from fief.settings import settings
 
 
-def create_engine(database_url: engine.URL) -> AsyncEngine:
+def create_engine(
+    database_connection_parameters: DatabaseConnectionParameters,
+) -> AsyncEngine:
+    database_url, connect_args = database_connection_parameters
     engine = create_async_engine(
         database_url,
+        connect_args=connect_args,
         echo=settings.log_level == "DEBUG",
         pool_recycle=settings.database_pool_recycle_seconds,
     )

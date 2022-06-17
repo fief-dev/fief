@@ -40,7 +40,7 @@ def send_task(task: dramatiq.Actor, *args, **kwargs):
 
 
 def get_main_session_task() -> AsyncContextManager[AsyncSession]:
-    main_engine = create_engine(settings.get_database_url())
+    main_engine = create_engine(settings.get_database_connection_parameters())
     return create_async_session_maker(main_engine)()
 
 
@@ -48,7 +48,7 @@ def get_main_session_task() -> AsyncContextManager[AsyncSession]:
 async def get_workspace_session_task(
     workspace: Workspace,
 ) -> AsyncGenerator[AsyncSession, None]:
-    engine = create_engine(workspace.get_database_url())
+    engine = create_engine(workspace.get_database_connection_parameters())
     async with get_connection(engine, workspace.get_schema_name()) as connection:
         async with AsyncSession(bind=connection, expire_on_commit=False) as session:
             yield session

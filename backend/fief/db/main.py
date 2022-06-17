@@ -3,7 +3,7 @@ from typing import AsyncGenerator
 from fief.db.engine import AsyncSession, create_async_session_maker, create_engine
 from fief.settings import settings
 
-main_engine = create_engine(settings.get_database_url())
+main_engine = create_engine(settings.get_database_connection_parameters())
 main_async_session_maker = create_async_session_maker(main_engine)
 
 

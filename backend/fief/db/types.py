@@ -1,6 +1,7 @@
+import ssl
 from enum import Enum
 from pathlib import Path
-from typing import Dict, Optional, Type, Union
+from typing import Dict, Optional, Tuple, Type, Union
 
 from sqlalchemy import engine
 
@@ -35,13 +36,6 @@ SSL_MODES: Dict[DatabaseType, Type[SSLMode]] = {
     DatabaseType.MYSQL: MySQLSSLMode,
 }
 
-SSL_MODE_PARAMETERS: Dict[str, str] = {
-    "postgresql": "sslmode",
-    "postgresql+asyncpg": "ssl",
-    "mysql+aiomysql": "ssl-mode",
-    "mysql+pymysql": "ssl-mode",
-}
-
 SYNC_DRIVERS: Dict[DatabaseType, str] = {
     DatabaseType.POSTGRESQL: "postgresql",
     DatabaseType.MYSQL: "mysql+pymysql",
@@ -60,7 +54,41 @@ def get_driver(type: DatabaseType, *, asyncio: bool) -> str:
     return drivers[type]
 
 
-def create_database_url(
+def get_ssl_mode_parameters(
+    drivername: str, ssl_mode: str, query: Dict[str, str], connect_args: Dict
+) -> Tuple[Dict[str, str], Dict]:
+    if ssl_mode in [PostreSQLSSLMode.DISABLE, MySQLSSLMode.DISABLED]:
+        return query, connect_args
+
+    # Build a SSL context
+    context = ssl.create_default_context()
+
+    # Basic mode: no hostname check, no certificate check
+    context.check_hostname = False
+    context.verify_mode = ssl.CERT_NONE
+
+    # Verify CA mode, check the certificate
+    if ssl_mode in [PostreSQLSSLMode.VERIFY_CA, MySQLSSLMode.VERIFY_CA]:
+        context.verify_mode = ssl.CERT_REQUIRED
+
+    # Verify full mode, check the certificate and hostname
+    if ssl_mode in [PostreSQLSSLMode.VERIFY_FULL, MySQLSSLMode.VERIFY_IDENTITY]:
+        context.check_hostname = True
+
+    # PyMySQL does not support SSL context, it uses LibPQ directly so we just pass allowed query parameters
+    if drivername == "postgresql":
+        query["sslmode"] = ssl_mode
+        query["sslrootcert"] = ssl.get_default_verify_paths().cafile
+    elif drivername in ["postgresql+asyncpg", "mysql+aiomysql", "mysql+pymysql"]:
+        connect_args["ssl"] = context
+
+    return query, connect_args
+
+
+DatabaseConnectionParameters = Tuple[engine.URL, Dict]
+
+
+def create_database_connection_parameters(
     type: DatabaseType,
     *,
     asyncio: bool,
@@ -72,14 +100,15 @@ def create_database_url(
     path: Optional[Path] = None,
     schema: Optional[str] = None,
     ssl_mode: Optional[str] = None,
-) -> engine.URL:
+) -> DatabaseConnectionParameters:
     drivername = get_driver(type, asyncio=asyncio)
     query: Dict[str, str] = {}
+    connect_args: Dict = {}
 
     if ssl_mode:
-        ssl_mode_parameter = SSL_MODE_PARAMETERS.get(drivername)
-        if ssl_mode_parameter is not None:
-            query[ssl_mode_parameter] = ssl_mode
+        query, connect_args = get_ssl_mode_parameters(
+            drivername, ssl_mode, query, connect_args
+        )
 
     url = engine.URL.create(
         drivername=drivername,
@@ -98,4 +127,4 @@ def create_database_url(
         assert path is not None
         url = url.set(database=str(path / name))
 
-    return url
+    return url, connect_args

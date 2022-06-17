@@ -5,9 +5,10 @@ from alembic.config import Config
 from alembic.environment import EnvironmentContext
 from alembic.script import ScriptDirectory
 from sqlalchemy import create_engine, exc, inspect
-from sqlalchemy.engine import URL, Engine
+from sqlalchemy.engine import Engine
 from sqlalchemy.schema import CreateSchema
 
+from fief.db.types import DatabaseConnectionParameters
 from fief.paths import ALEMBIC_CONFIG_FILE
 
 
@@ -21,9 +22,13 @@ class WorkspaceDatabaseConnectionError(WorkspaceDatabaseError):
 
 
 class WorkspaceDatabase:
-    def migrate(self, database_url: URL, schema_name: str) -> str:
+    def migrate(
+        self,
+        database_connection_parameters: DatabaseConnectionParameters,
+        schema_name: str,
+    ) -> str:
         try:
-            engine = self.get_engine(database_url, schema_name)
+            engine = self.get_engine(database_connection_parameters, schema_name)
             with engine.begin() as connection:
                 config = self._get_alembic_base_config()
                 config.attributes["configure_logger"] = False
@@ -34,11 +39,14 @@ class WorkspaceDatabase:
 
         return self.get_latest_revision()
 
-    def get_engine(self, database_url: URL, schema_name: str) -> Engine:
-        self._ensure_schema(database_url, schema_name)
+    def get_engine(
+        self,
+        database_connection_parameters: DatabaseConnectionParameters,
+        schema_name: str,
+    ) -> Engine:
+        self._ensure_schema(database_connection_parameters, schema_name)
 
-        connect_args = {}
-
+        database_url, connect_args = database_connection_parameters
         dialect_name = database_url.get_dialect().name
         if dialect_name == "postgresql":
             connect_args["options"] = f"-csearch_path={schema_name}"
@@ -47,9 +55,12 @@ class WorkspaceDatabase:
 
         return create_engine(database_url, connect_args=connect_args)
 
-    def check_connection(self, database_url: URL) -> Tuple[bool, Optional[str]]:
+    def check_connection(
+        self, database_connection_parameters: DatabaseConnectionParameters
+    ) -> Tuple[bool, Optional[str]]:
+        database_url, connect_args = database_connection_parameters
         try:
-            engine = create_engine(database_url)
+            engine = create_engine(database_url, connect_args=connect_args)
             with engine.begin():
                 return True, None
         except exc.OperationalError as e:
@@ -64,8 +75,15 @@ class WorkspaceDatabase:
     def _get_alembic_base_config(self) -> Config:
         return Config(ALEMBIC_CONFIG_FILE, ini_section="workspace")
 
-    def _ensure_schema(self, database_url: URL, schema_name: str):
-        engine = create_engine(database_url, connect_args={"connect_timeout": 5})
+    def _ensure_schema(
+        self,
+        database_connection_parameters: DatabaseConnectionParameters,
+        schema_name: str,
+    ):
+        database_url, connect_args = database_connection_parameters
+        engine = create_engine(
+            database_url, connect_args={**connect_args, "connect_timeout": 5}
+        )
 
         dialect_name = database_url.get_dialect().name
         if dialect_name == "sqlite":

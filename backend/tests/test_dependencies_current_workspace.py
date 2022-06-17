@@ -3,10 +3,10 @@ from typing import AsyncGenerator, Tuple
 import httpx
 import pytest
 from fastapi import Depends, FastAPI, status
-from sqlalchemy import engine, select
+from sqlalchemy import select
 
 from fief.db import AsyncSession
-from fief.db.types import DatabaseType
+from fief.db.types import DatabaseConnectionParameters, DatabaseType
 from fief.dependencies.current_workspace import (
     get_current_workspace,
     get_current_workspace_session,
@@ -63,10 +63,10 @@ async def unreachable_external_db_workspace(
 @pytest.fixture(scope="module")
 @pytest.mark.asyncio
 async def outdated_migration_workspace(
-    main_test_database: Tuple[engine.URL, DatabaseType],
+    main_test_database: Tuple[DatabaseConnectionParameters, DatabaseType],
     main_session: AsyncSession,
 ) -> AsyncGenerator[Workspace, None]:
-    url, database_type = main_test_database
+    (url, _), database_type = main_test_database
     workspace = Workspace(
         name="Duché de Savoie",
         domain="savoie.localhost:8000",
