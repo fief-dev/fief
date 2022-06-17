@@ -78,7 +78,7 @@ def get_ssl_mode_parameters(
     # PyMySQL does not support SSL context, it uses LibPQ directly so we just pass allowed query parameters
     if drivername == "postgresql":
         query["sslmode"] = ssl_mode
-        query["sslrootcert"] = ssl.get_default_verify_paths().cafile
+        query["sslrootcert"] = ssl.get_default_verify_paths().openssl_cafile
     elif drivername in ["postgresql+asyncpg", "mysql+aiomysql", "mysql+pymysql"]:
         connect_args["ssl"] = context
 
@@ -109,6 +109,8 @@ def create_database_connection_parameters(
         query, connect_args = get_ssl_mode_parameters(
             drivername, ssl_mode, query, connect_args
         )
+
+    print("YO YO YO", query, connect_args)
 
     url = engine.URL.create(
         drivername=drivername,
