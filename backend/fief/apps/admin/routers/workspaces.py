@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from fief.db.types import create_database_url
+from fief.db.types import create_database_connection_parameters
 from fief.dependencies.admin_session import get_admin_session_token
 from fief.dependencies.pagination import PaginatedObjects
 from fief.dependencies.workspace import get_paginated_workspaces
@@ -47,7 +47,7 @@ async def check_connection(
     workspace_check_connection: WorkspaceCheckConnection,
     workspace_db: WorkspaceDatabase = Depends(get_workspace_db),
 ):
-    url = create_database_url(
+    database_connection_parameters = create_database_connection_parameters(
         workspace_check_connection.database_type,
         asyncio=False,
         username=workspace_check_connection.database_username,
@@ -55,8 +55,9 @@ async def check_connection(
         host=workspace_check_connection.database_host,
         port=workspace_check_connection.database_port,
         database=workspace_check_connection.database_name,
+        ssl_mode=workspace_check_connection.database_ssl_mode,
     )
-    valid, message = workspace_db.check_connection(url)
+    valid, message = workspace_db.check_connection(database_connection_parameters)
 
     if not valid:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=message)

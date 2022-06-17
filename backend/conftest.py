@@ -9,7 +9,6 @@ import asgi_lifespan
 import httpx
 import pytest
 from fastapi import FastAPI
-from sqlalchemy import engine
 from sqlalchemy_utils import create_database, drop_database
 
 from fief.apps import admin_app, auth_app
@@ -19,7 +18,7 @@ from fief.csrf import check_csrf
 from fief.db import AsyncConnection, AsyncEngine, AsyncSession
 from fief.db.engine import create_engine
 from fief.db.main import get_main_async_session
-from fief.db.types import DatabaseType, get_driver
+from fief.db.types import DatabaseConnectionParameters, DatabaseType, get_driver
 from fief.db.workspace import get_connection
 from fief.dependencies.current_workspace import get_current_workspace_session
 from fief.dependencies.fief import FiefAsyncRelativeEndpoints, get_fief
@@ -57,11 +56,12 @@ def get_test_database() -> GetTestDatabase:
     @contextlib.asynccontextmanager
     async def _get_test_database(
         *, name: str = "fief-test"
-    ) -> AsyncGenerator[Tuple[engine.URL, DatabaseType], None]:
-        url = settings.get_database_url(False).set(database=name)
+    ) -> AsyncGenerator[Tuple[DatabaseConnectionParameters, DatabaseType], None]:
+        url, connect_args = settings.get_database_connection_parameters(False)
+        url = url.set(database=name)
         assert url.database == name
         create_database(url)
-        yield (url, settings.database_type)
+        yield ((url, connect_args), settings.database_type)
         drop_database(url)
 
     return _get_test_database
@@ -70,18 +70,19 @@ def get_test_database() -> GetTestDatabase:
 @pytest.fixture(scope="session")
 async def main_test_database(
     get_test_database: GetTestDatabase,
-) -> AsyncGenerator[Tuple[engine.URL, DatabaseType], None]:
-    async with get_test_database() as (url, database_type):
+) -> AsyncGenerator[Tuple[DatabaseConnectionParameters, DatabaseType], None]:
+    async with get_test_database() as (database_connection_parameters, database_type):
+        url, connect_args = database_connection_parameters
         url = url.set(drivername=get_driver(database_type, asyncio=True))
-        yield url, database_type
+        yield (url, connect_args), database_type
 
 
 @pytest.fixture(scope="session")
 async def main_engine(
-    main_test_database: Tuple[engine.URL, DatabaseType],
+    main_test_database: Tuple[DatabaseConnectionParameters, DatabaseType],
 ) -> AsyncGenerator[AsyncEngine, None]:
-    url, _ = main_test_database
-    engine = create_engine(url)
+    database_connection_parameters, _ = main_test_database
+    engine = create_engine(database_connection_parameters)
     yield engine
     await engine.dispose()
 
@@ -121,11 +122,11 @@ def main_session_manager(main_session: AsyncSession):
 @pytest.fixture(scope="session", autouse=True)
 @pytest.mark.asyncio
 async def workspace(
-    main_test_database: Tuple[engine.URL, DatabaseType],
+    main_test_database: Tuple[DatabaseConnectionParameters, DatabaseType],
     main_session,
     create_main_db,
 ) -> AsyncGenerator[Workspace, None]:
-    url, database_type = main_test_database
+    (url, _), database_type = main_test_database
     workspace = Workspace(
         name="Duché de Bretagne",
         domain="bretagne.localhost:8000",
@@ -141,14 +142,16 @@ async def workspace(
     await main_session.commit()
 
     workspace_db = WorkspaceDatabase()
-    workspace_db.migrate(workspace.get_database_url(False), workspace.get_schema_name())
+    workspace_db.migrate(
+        workspace.get_database_connection_parameters(False), workspace.get_schema_name()
+    )
 
     yield workspace
 
 
 @pytest.fixture(scope="session")
 async def workspace_engine(workspace: Workspace) -> AsyncGenerator[AsyncEngine, None]:
-    engine = create_engine(workspace.get_database_url())
+    engine = create_engine(workspace.get_database_connection_parameters())
     yield engine
     await engine.dispose()
 

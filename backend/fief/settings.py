@@ -11,10 +11,13 @@ from pydantic import (
     root_validator,
     validator,
 )
-from sqlalchemy import engine
 
 from fief.crypto.encryption import is_valid_key
-from fief.db.types import DatabaseType, create_database_url
+from fief.db.types import (
+    DatabaseConnectionParameters,
+    DatabaseType,
+    create_database_connection_parameters,
+)
 from fief.services.email import EMAIL_PROVIDERS, AvailableEmailProvider, EmailProvider
 
 
@@ -50,6 +53,7 @@ class Settings(BaseSettings):
     database_username: Optional[str] = None
     database_password: Optional[str] = None
     database_name: Optional[str] = "fief.db"
+    database_ssl_mode: Optional[str] = None
     database_location: DirectoryPath = Path.cwd()
     database_pool_recycle_seconds: int = 600
 
@@ -119,15 +123,15 @@ class Settings(BaseSettings):
             return None
         return value
 
-    def get_database_url(
+    def get_database_connection_parameters(
         self, asyncio: bool = True, schema: Optional[str] = None
-    ) -> engine.URL:
+    ) -> DatabaseConnectionParameters:
         """
-        Returns a proper database URL for async or not-async context.
+        Returns a proper database URL and connection arguments for async or not-async context.
 
         Some tools like Alembic still require a sync connection.
         """
-        return create_database_url(
+        return create_database_connection_parameters(
             self.database_type,
             asyncio=asyncio,
             username=self.database_username,
@@ -137,6 +141,7 @@ class Settings(BaseSettings):
             database=self.database_name,
             path=settings.database_location,
             schema=schema,
+            ssl_mode=settings.database_ssl_mode,
         )
 
     def get_email_provider(self) -> EmailProvider:

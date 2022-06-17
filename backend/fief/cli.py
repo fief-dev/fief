@@ -69,7 +69,8 @@ def migrate_workspaces():
 
     settings = get_settings()
 
-    engine = create_engine(settings.get_database_url(False))
+    url, connect_args = settings.get_database_connection_parameters(False)
+    engine = create_engine(url, connect_args=connect_args)
     Session = sessionmaker(engine)
     with Session() as session:
         workspace_db = WorkspaceDatabase()
@@ -79,7 +80,8 @@ def migrate_workspaces():
             typer.secho(f"Migrating {workspace.name}... ", bold=True, nl=False)
             try:
                 alembic_revision = workspace_db.migrate(
-                    workspace.get_database_url(False), workspace.get_schema_name()
+                    workspace.get_database_connection_parameters(False),
+                    workspace.get_schema_name(),
                 )
                 workspace.alembic_revision = alembic_revision
                 session.add(workspace)
@@ -235,7 +237,8 @@ def migrate_main():
     """Apply database migrations to the main database."""
     settings = get_settings()
 
-    engine = create_engine(settings.get_database_url(False))
+    url, connect_args = settings.get_database_connection_parameters(False)
+    engine = create_engine(url, connect_args=connect_args)
     with engine.begin() as connection:
         alembic_config = Config(ALEMBIC_CONFIG_FILE, ini_section="main")
         alembic_config.attributes["connection"] = connection

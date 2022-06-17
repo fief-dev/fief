@@ -52,16 +52,19 @@ jobs:
             database_port: 5432
             database_username: fief
             database_password: fiefpassword
+            database_ssl_mode: disable
           - database_type: MYSQL
             database_host: localhost
             database_port: 3306
             database_username: root
             database_password: fiefpassword
+            database_ssl_mode: DISABLED
           - database_type: SQLITE
             database_host: null
             database_port: null
             database_username: null
             database_password: null
+            database_ssl_mode: null
 
     steps:
       - uses: actions/checkout@v3

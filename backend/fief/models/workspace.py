@@ -1,10 +1,14 @@
 from typing import TYPE_CHECKING, List, Optional, Union
 
-from sqlalchemy import Column, Enum, String, Text, engine, event
+from sqlalchemy import Column, Enum, String, Text, event
 from sqlalchemy.orm import relationship
 
 from fief.crypto.encryption import decrypt, encrypt
-from fief.db.types import DatabaseType, create_database_url
+from fief.db.types import (
+    DatabaseConnectionParameters,
+    DatabaseType,
+    create_database_connection_parameters,
+)
 from fief.models.base import MainBase
 from fief.models.generics import CreatedUpdatedAt, UUIDModel
 from fief.settings import settings
@@ -25,6 +29,7 @@ class Workspace(UUIDModel, CreatedUpdatedAt, MainBase):
     database_username: Optional[str] = Column(Text, nullable=True)
     database_password: Optional[str] = Column(Text, nullable=True)
     database_name: Optional[str] = Column(Text, nullable=True)
+    database_ssl_mode: Optional[str] = Column(Text, nullable=True)
 
     alembic_revision: Optional[str] = Column(
         String(length=255), nullable=True, index=True
@@ -37,16 +42,20 @@ class Workspace(UUIDModel, CreatedUpdatedAt, MainBase):
     def __repr__(self) -> str:
         return f"Workspace(id={self.id}, name={self.name}, domain={self.domain})"
 
-    def get_database_url(self, asyncio=True) -> engine.URL:
+    def get_database_connection_parameters(
+        self, asyncio=True
+    ) -> DatabaseConnectionParameters:
         """
-        Return the database URL for this workspace.
+        Return the database URL and connection arguments for this workspace.
 
         If it's not specified on the model, the instance database URL is returned.
         """
         if self.database_type is None:
-            url = settings.get_database_url(asyncio, schema=self.get_schema_name())
+            url = settings.get_database_connection_parameters(
+                asyncio, schema=self.get_schema_name()
+            )
         else:
-            url = create_database_url(
+            url = create_database_connection_parameters(
                 self.database_type,
                 asyncio=asyncio,
                 username=self._decrypt_database_setting("database_username"),
@@ -56,6 +65,7 @@ class Workspace(UUIDModel, CreatedUpdatedAt, MainBase):
                 database=self._decrypt_database_setting("database_name"),
                 path=settings.database_location,
                 schema=self.get_schema_name(),
+                ssl_mode=self._decrypt_database_setting("database_ssl_mode"),
             )
 
         return url
@@ -95,3 +105,4 @@ event.listen(Workspace.database_port, "set", encrypt_database_setting, retval=Tr
 event.listen(Workspace.database_username, "set", encrypt_database_setting, retval=True)
 event.listen(Workspace.database_password, "set", encrypt_database_setting, retval=True)
 event.listen(Workspace.database_name, "set", encrypt_database_setting, retval=True)
+event.listen(Workspace.database_ssl_mode, "set", encrypt_database_setting, retval=True)

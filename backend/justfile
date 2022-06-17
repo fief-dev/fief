@@ -34,6 +34,12 @@ start-db:
 stop-db:
   docker rm -f fief-dev-db
 
+start-mysql-db:
+  docker run --rm -d --name fief-dev-mysql-db -p 3306:3306 -e MARIADB_USER=fief -e MARIADB_PASSWORD=fiefpassword -e MARIADB_DATABASE=fief -e MARIADB_ROOT_PASSWORD=fiefpassword mariadb:latest
+
+stop-mysql-db:
+  docker rm -f fief-dev-mysql-db
+
 create-redis:
   docker run -d -p 6379:6379 --name fief-dev-redis redis:alpine
 

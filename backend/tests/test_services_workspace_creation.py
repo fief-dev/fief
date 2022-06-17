@@ -7,7 +7,7 @@ from pytest_mock import MockerFixture
 from sqlalchemy import engine, select
 
 from fief.db import AsyncSession
-from fief.db.types import DatabaseType
+from fief.db.types import DatabaseConnectionParameters, DatabaseType
 from fief.db.workspace import get_workspace_session
 from fief.models import User, Workspace
 from fief.repositories import (
@@ -29,19 +29,19 @@ from tests.types import GetTestDatabase
 @pytest.fixture(scope="module")
 async def test_database_url(
     get_test_database: GetTestDatabase,
-) -> AsyncGenerator[Tuple[engine.URL, DatabaseType], None]:
+) -> AsyncGenerator[Tuple[DatabaseConnectionParameters, DatabaseType], None]:
     async with get_test_database(name="fief-test-workspace-creation") as (
-        url,
+        database_connection_parameters,
         database_type,
     ):
-        yield url, database_type
+        yield database_connection_parameters, database_type
 
 
 @pytest.fixture
 def workspace_create(
-    test_database_url: Tuple[engine.URL, DatabaseType]
+    test_database_url: Tuple[DatabaseConnectionParameters, DatabaseType]
 ) -> WorkspaceCreate:
-    url, database_type = test_database_url
+    (url, _), database_type = test_database_url
     return WorkspaceCreate(
         name="Burgundy",
         database_type=database_type,
@@ -50,6 +50,7 @@ def workspace_create(
         database_username=url.username,
         database_password=url.password,
         database_name=url.database,
+        database_ssl_mode=None,
     )
 
 
