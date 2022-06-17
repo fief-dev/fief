@@ -110,8 +110,6 @@ def create_database_connection_parameters(
             drivername, ssl_mode, query, connect_args
         )
 
-    print("YO YO YO", query, connect_args)
-
     url = engine.URL.create(
         drivername=drivername,
         username=username,
