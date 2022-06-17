@@ -8,8 +8,8 @@ from fief.apps.auth.routers.reset import router as reset_router
 from fief.apps.auth.routers.token import router as token_router
 from fief.apps.auth.routers.user import router as user_router
 from fief.apps.auth.routers.well_known import router as well_known_router
-from fief.cors import CORSMiddlewarePath
-from fief.csrf import CSRFCookieSetterMiddleware
+from fief.middlewares.cors import CORSMiddlewarePath
+from fief.middlewares.csrf import CSRFCookieSetterMiddleware
 from fief.paths import STATIC_DIRECTORY
 
 

@@ -6,7 +6,6 @@ from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 from pydantic import AnyUrl
 
 from fief.apps.auth.templates import templates
-from fief.csrf import check_csrf
 from fief.dependencies.auth import (
     check_unsupported_request_parameter,
     get_authorize_client,
@@ -33,6 +32,7 @@ from fief.dependencies.users import UserManager, get_user_manager
 from fief.dependencies.workspace_repositories import get_session_token_repository
 from fief.exceptions import LoginException, LogoutException
 from fief.locale import Translations
+from fief.middlewares.csrf import check_csrf
 from fief.models import Client, LoginSession, Tenant, Workspace
 from fief.models.session_token import SessionToken
 from fief.repositories.session_token import SessionTokenRepository

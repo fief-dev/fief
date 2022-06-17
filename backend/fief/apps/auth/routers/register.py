@@ -5,7 +5,6 @@ from fastapi.responses import RedirectResponse
 from fastapi_users.exceptions import InvalidPasswordException, UserAlreadyExists
 
 from fief.apps.auth.templates import templates
-from fief.csrf import check_csrf
 from fief.dependencies.auth import get_login_session
 from fief.dependencies.authentication_flow import get_authentication_flow
 from fief.dependencies.form import get_form_data_dict
@@ -15,6 +14,7 @@ from fief.dependencies.tenant import get_current_tenant
 from fief.dependencies.user_field import get_user_create_internal_model, get_user_fields
 from fief.dependencies.users import UserManager, get_user_manager
 from fief.exceptions import RegisterException
+from fief.middlewares.csrf import check_csrf
 from fief.models import Tenant, UserField
 from fief.schemas.register import RegisterError
 from fief.schemas.user import UF, UserCreate, UserCreateInternal

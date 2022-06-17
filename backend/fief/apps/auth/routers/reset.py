@@ -10,7 +10,6 @@ from fastapi_users.exceptions import (
 )
 
 from fief.apps.auth.templates import templates
-from fief.csrf import check_csrf
 from fief.dependencies.auth import get_optional_login_session
 from fief.dependencies.locale import Translations, get_gettext, get_translations
 from fief.dependencies.reset import (
@@ -20,6 +19,7 @@ from fief.dependencies.reset import (
 from fief.dependencies.tenant import get_current_tenant
 from fief.dependencies.users import UserManager, get_user_manager
 from fief.exceptions import ResetPasswordException
+from fief.middlewares.csrf import check_csrf
 from fief.models import LoginSession, Tenant
 from fief.schemas.reset import (
     ForgotPasswordRequest,
