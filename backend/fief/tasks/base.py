@@ -9,6 +9,7 @@ from dramatiq.brokers.redis import RedisBroker
 from pydantic import UUID4
 from sqlalchemy import select
 
+from fief.logger import logger
 from fief.db import AsyncSession
 from fief.db.engine import AsyncSession, create_async_session_maker, create_engine
 from fief.db.workspace import get_connection
@@ -36,6 +37,7 @@ SendTask = Callable[..., None]
 
 
 def send_task(task: dramatiq.Actor, *args, **kwargs):
+    logger.debug("Send task", task=task.actor_name)
     task.send(*args, **kwargs)
 
 
@@ -91,7 +93,11 @@ class TaskBase:
             # Thus, we create one here and set it for future works.
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
-        return loop.run_until_complete(self.run(*args, **kwargs))
+
+        logger.debug("Start task", task=self.__name__)
+        result = loop.run_until_complete(self.run(*args, **kwargs))
+        logger.debug("Done task", task=self.__name__)
+        return result
 
     async def _get_workspace(self, workspace_id: UUID4) -> Workspace:
         async with self.get_main_session() as session:
