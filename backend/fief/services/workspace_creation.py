@@ -18,7 +18,7 @@ from fief.services.workspace_db import (
     WorkspaceDatabaseConnectionError,
 )
 
-LOCALHOST_HOST_PATTERN = re.compile(r"([^\.]+\.)?localhost(\d+)?", flags=re.IGNORECASE)
+LOCALHOST_HOST_PATTERN = re.compile(r"([^\.]+\.)?localhost(\d+)?|127\.0\.0\.1", flags=re.IGNORECASE)
 
 
 class WorkspaceCreation:

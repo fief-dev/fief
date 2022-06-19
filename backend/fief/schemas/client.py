@@ -8,7 +8,7 @@ from fief.models.client import ClientType
 from fief.schemas.generics import BaseModel, CreatedUpdatedAt, UUIDSchema
 from fief.schemas.tenant import TenantEmbedded
 
-LOCALHOST_HOST_PATTERN = re.compile(r"([^\.]+\.)?localhost(\d+)?", flags=re.IGNORECASE)
+LOCALHOST_HOST_PATTERN = re.compile(r"([^\.]+\.)?localhost(\d+)?|127\.0\.0\.1", flags=re.IGNORECASE)
 
 
 def validate_redirect_uri(url: AnyUrl) -> AnyUrl:
