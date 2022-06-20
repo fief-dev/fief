@@ -33,6 +33,7 @@ class GrantRequest(TypedDict):
     nonce: Optional[str]
     c_hash: Optional[str]
     client: Client
+    grant_type: str
 
 
 async def get_grant_type(grant_type: Optional[str] = Form(None)) -> str:
@@ -155,6 +156,7 @@ async def validate_grant_request(
             "nonce": authorization_code.nonce,
             "c_hash": authorization_code.c_hash,
             "client": client,
+            "grant_type": grant_type,
         }
 
         await authorization_code_repository.delete(authorization_code)
@@ -183,6 +185,7 @@ async def validate_grant_request(
             "nonce": None,
             "c_hash": None,
             "client": client,
+            "grant_type": grant_type,
         }
 
         await refresh_token_repository.delete(refresh_token)

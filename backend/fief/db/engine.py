@@ -13,7 +13,7 @@ def create_engine(
     engine = create_async_engine(
         database_url,
         connect_args=connect_args,
-        echo=settings.log_level == "DEBUG",
+        echo=False,
         pool_recycle=settings.database_pool_recycle_seconds,
     )
     dialect_name = engine.dialect.name

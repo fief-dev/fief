@@ -14,7 +14,6 @@ from sqlalchemy_utils import create_database, drop_database
 from fief.apps import admin_app, auth_app
 from fief.crypto.access_token import generate_access_token
 from fief.crypto.token import generate_token
-from fief.csrf import check_csrf
 from fief.db import AsyncConnection, AsyncEngine, AsyncSession
 from fief.db.engine import create_engine
 from fief.db.main import get_main_async_session
@@ -25,6 +24,7 @@ from fief.dependencies.fief import FiefAsyncRelativeEndpoints, get_fief
 from fief.dependencies.tasks import get_send_task
 from fief.dependencies.workspace_creation import get_workspace_creation
 from fief.dependencies.workspace_db import get_workspace_db
+from fief.middlewares.csrf import check_csrf
 from fief.models import (
     AdminAPIKey,
     AdminSessionToken,

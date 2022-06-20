@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, Type, Union, cast
+from typing import Any, Dict, List, Optional, Type, Union, cast
 
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.exceptions import RequestValidationError
@@ -31,6 +31,7 @@ from fief.dependencies.current_workspace import (
     get_current_workspace_session,
 )
 from fief.dependencies.locale import get_translations
+from fief.dependencies.logger import AuditLogger, get_audit_logger
 from fief.dependencies.pagination import (
     Ordering,
     PaginatedObjects,
@@ -56,6 +57,7 @@ from fief.dependencies.workspace_repositories import (
 )
 from fief.locale import Translations
 from fief.models import (
+    AuditLogMessage,
     Tenant,
     User,
     UserField,
@@ -86,12 +88,14 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, UUID4]):
         tenant: Tenant,
         translations: Translations,
         send_task: SendTask,
+        audit_logger: AuditLogger,
     ):
         super().__init__(user_db, password_helper)
         self.workspace = workspace
         self.tenant = tenant
         self.translations = translations
         self.send_task = send_task
+        self.audit_logger = audit_logger
 
     async def validate_password(  # type: ignore
         self, password: str, user: Union[UserCreate, User]
@@ -166,14 +170,26 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, UUID4]):
 
             user = await self.user_db.update(user, {})
 
+        self.audit_logger(AuditLogMessage.USER_UPDATED, subject_user_id=user.id)
+
         return user
 
     async def on_after_register(self, user: User, request: Optional[Request] = None):
+        self.audit_logger(AuditLogMessage.USER_REGISTERED, subject_user_id=user.id)
         self.send_task(on_after_register, str(user.id), str(self.workspace.id))
+
+    async def on_after_update(
+        self, user: User, update_dict: Dict[str, Any], request: Optional[Request] = None
+    ):
+        self.audit_logger(AuditLogMessage.USER_UPDATED, subject_user_id=user.id)
 
     async def on_after_forgot_password(
         self, user: User, token: str, request: Optional[Request] = None
     ):
+        self.audit_logger(
+            AuditLogMessage.USER_FORGOT_PASSWORD_REQUESTED, subject_user_id=user.id
+        )
+
         reset_url = furl(self.tenant.url_for(cast(Request, request), "reset:reset.get"))
         reset_url.add(query_params={"token": token})
         self.send_task(
@@ -182,6 +198,11 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, UUID4]):
             str(self.workspace.id),
             reset_url.url,
         )
+
+    async def on_after_reset_password(
+        self, user: User, request: Optional[Request] = None
+    ) -> None:
+        self.audit_logger(AuditLogMessage.USER_PASSWORD_RESET, subject_user_id=user.id)
 
     async def on_after_request_verify(
         self, user: User, token: str, request: Optional[Request] = None
@@ -245,9 +266,16 @@ async def get_user_manager(
     workspace: Workspace = Depends(get_current_workspace),
     translations: Translations = Depends(get_translations),
     send_task: SendTask = Depends(get_send_task),
+    audit_logger: AuditLogger = Depends(get_audit_logger),
 ):
     return UserManager(
-        user_db, password_helper, workspace, tenant, translations, send_task
+        user_db,
+        password_helper,
+        workspace,
+        tenant,
+        translations,
+        send_task,
+        audit_logger,
     )
 
 
@@ -266,9 +294,16 @@ async def get_user_manager_from_create_user_internal(
     workspace: Workspace = Depends(get_current_workspace),
     translations: Translations = Depends(get_translations),
     send_task: SendTask = Depends(get_send_task),
+    audit_logger: AuditLogger = Depends(get_audit_logger),
 ):
     return UserManager(
-        user_db, password_helper, workspace, tenant, translations, send_task
+        user_db,
+        password_helper,
+        workspace,
+        tenant,
+        translations,
+        send_task,
+        audit_logger,
     )
 
 
@@ -356,9 +391,16 @@ async def get_user_manager_from_user(
     workspace: Workspace = Depends(get_current_workspace),
     translations: Translations = Depends(get_translations),
     send_task: SendTask = Depends(get_send_task),
+    audit_logger: AuditLogger = Depends(get_audit_logger),
 ):
     return UserManager(
-        user_db, password_helper, workspace, user.tenant, translations, send_task
+        user_db,
+        password_helper,
+        workspace,
+        user.tenant,
+        translations,
+        send_task,
+        audit_logger,
     )
 
 

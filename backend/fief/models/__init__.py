@@ -1,5 +1,6 @@
 from fief.models.admin_api_key import AdminAPIKey
 from fief.models.admin_session_token import AdminSessionToken
+from fief.models.audit_log import AuditLog, AuditLogMessage
 from fief.models.authorization_code import AuthorizationCode
 from fief.models.base import MainBase, WorkspaceBase
 from fief.models.client import Client, ClientType
@@ -29,6 +30,8 @@ __all__ = [
     "Client",
     "ClientType",
     "Grant",
+    "AuditLog",
+    "AuditLogMessage",
     "LoginSession",
     "MainBase",
     "Permission",
