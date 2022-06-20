@@ -7,7 +7,7 @@ import { useFieldRequiredErrorMessage } from '../../hooks/errors';
 import * as schemas from '../../schemas';
 import FormErrorMessage from '../FormErrorMessage/FormErrorMessage';
 
-const LOCALHOST_DOMAIN_PATTERN = new RegExp(/([^.]+\.)?localhost(\d+)?/i);
+const LOCALHOST_DOMAIN_PATTERN = new RegExp(/([^.]+\.)?localhost|127\.0\.0\.1(\d+)?/i);
 
 interface RedirectURISInputProps {
 }
