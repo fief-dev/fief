@@ -1,5 +1,6 @@
 from fief.db.main import main_async_session_maker
 from fief.db.workspace import get_workspace_session
+from fief.dependencies.logger import get_audit_logger
 from fief.dependencies.users import get_user_db, get_user_manager
 from fief.locale import get_preferred_translations
 from fief.models import Client, User, Workspace, WorkspaceUser
@@ -110,12 +111,14 @@ async def create_main_fief_user(email: str, password: str) -> User:
                 raise MainWorkspaceDoesNotHaveDefaultTenant()
 
             user_db = await get_user_db(session, tenant)
+            audit_logger = await get_audit_logger(workspace)
             user_manager = await get_user_manager(
                 user_db,
                 tenant,
                 workspace,
                 get_preferred_translations(["en"]),
                 send_task,
+                audit_logger,
             )
             user = await user_manager.create(
                 UserCreateInternal(email=email, password=password, tenant_id=tenant.id)
