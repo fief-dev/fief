@@ -42,8 +42,8 @@ class DatabaseAuditLogSink:
         async with get_workspace_session(workspace) as session:
             extra.pop("workspace_id")
             extra.pop("audit")
-            author_user_id = extra.pop("author_user_id")
-            subject_user_id = extra.pop("subject_user_id")
+            author_user_id = extra.pop("author_user_id", None)
+            subject_user_id = extra.pop("subject_user_id", None)
             log = AuditLog(
                 timestamp=record["time"].astimezone(timezone.utc),
                 level=record["level"].name,
