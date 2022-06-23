@@ -13,14 +13,21 @@ from tests.types import TenantParams
 @pytest.mark.asyncio
 @pytest.mark.workspace_host
 class TestWellKnownOpenIDConfiguration:
+    @pytest.mark.parametrize("x_forwarded_host", [None, "proxy.bretagne.duchy"])
     async def test_return_configuration(
         self,
+        x_forwarded_host: Optional[str],
         workspace: Workspace,
         tenant_params: TenantParams,
         test_client_auth: httpx.AsyncClient,
     ):
+        headers = {}
+        if x_forwarded_host is not None:
+            headers["X-Forwarded-Host"] = x_forwarded_host
+
         response = await test_client_auth.get(
-            f"{tenant_params.path_prefix}/.well-known/openid-configuration"
+            f"{tenant_params.path_prefix}/.well-known/openid-configuration",
+            headers=headers,
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -37,6 +44,12 @@ class TestWellKnownOpenIDConfiguration:
             "client_secret_post",
         ]
         assert json["code_challenge_methods_supported"] == ["plain", "S256"]
+
+        endpoint: str = json["authorization_endpoint"]
+        if x_forwarded_host is not None:
+            assert endpoint.startswith(f"http://{x_forwarded_host}")
+        else:
+            assert endpoint.startswith(f"http://{workspace.domain}")
 
 
 @pytest.mark.asyncio

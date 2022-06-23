@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Request
 from fastapi.param_functions import Depends
 from jwcrypto import jwk
+from starlette.routing import Router
 
 from fief.dependencies.current_workspace import get_current_workspace
 from fief.dependencies.tenant import get_current_tenant
@@ -23,7 +24,14 @@ async def get_openid_configuration(
         url_for_params["tenant_slug"] = tenant.slug
 
     def _url_for(name: str) -> str:
-        return request.url_for(name, **url_for_params)
+        router: Router = request.scope["router"]
+        url_path = router.url_path_for(name, **url_for_params)
+
+        x_forwarded_host = request.headers.get("X-Forwarded-Host", None)
+        host = x_forwarded_host if x_forwarded_host else request.base_url.netloc
+        base_url = request.base_url.replace(netloc=host)
+
+        return url_path.make_absolute_url(base_url)
 
     configuration = OpenIDProviderMetadata(
         issuer=tenant.get_host(workspace.domain),
