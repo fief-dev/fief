@@ -1,3 +1,4 @@
+from asyncio import AbstractEventLoop
 import contextlib
 import logging
 import sys
@@ -101,7 +102,7 @@ for uvicorn_logger_name in ["uvicorn.access"]:
     uvicorn_logger.handlers = [InterceptHandler()]
 
 
-def init_audit_logger():
+def init_audit_logger(loop: Optional[AbstractEventLoop] = None):
     """
     Initialize the audit logger.
 
@@ -111,6 +112,7 @@ def init_audit_logger():
         DatabaseAuditLogSink(),
         level=LOG_LEVEL,
         enqueue=True,
+        loop=loop,
         filter=lambda r: r["extra"].get("audit") is True,
     )
 

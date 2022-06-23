@@ -94,7 +94,7 @@ class TaskBase:
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
 
-        init_audit_logger()
+        init_audit_logger(loop)
         logger.debug("Start task", task=self.__name__)
         result = loop.run_until_complete(self.run(*args, **kwargs))
         logger.debug("Done task", task=self.__name__)
