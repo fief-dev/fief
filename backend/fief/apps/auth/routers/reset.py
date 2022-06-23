@@ -124,7 +124,7 @@ async def post_reset_password(
         ) from e
 
     if login_session is not None:
-        redirection = tenant.url_for(request, "auth:login.get")
+        redirection = tenant.url_path_for(request, "auth:login.get")
         return RedirectResponse(url=redirection, status_code=status.HTTP_302_FOUND)
 
     return templates.LocaleTemplateResponse(

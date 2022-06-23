@@ -82,7 +82,7 @@ async def post_register(
         ) from e
 
     response = RedirectResponse(
-        tenant.url_for(request, "auth:consent.get"),
+        tenant.url_path_for(request, "auth:consent.get"),
         status_code=status.HTTP_302_FOUND,
     )
     response = await authentication_flow.create_session_token(response, created_user.id)

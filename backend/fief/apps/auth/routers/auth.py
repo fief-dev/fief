@@ -68,11 +68,11 @@ async def authorize(
     tenant = client.tenant
 
     if has_valid_session_token and prompt != "login":
-        redirection = tenant.url_for(request, "auth:consent.get")
+        redirection = tenant.url_path_for(request, "auth:consent.get")
     elif screen == "register":
-        redirection = tenant.url_for(request, "register:get")
+        redirection = tenant.url_path_for(request, "register:get")
     else:
-        redirection = tenant.url_for(request, "auth:login.get")
+        redirection = tenant.url_path_for(request, "auth:login.get")
 
     response = RedirectResponse(url=redirection, status_code=status.HTTP_302_FOUND)
     response = await authentication_flow.create_login_session(
@@ -128,7 +128,7 @@ async def post_login(
     #     )
 
     response = RedirectResponse(
-        tenant.url_for(request, "auth:consent.get"),
+        tenant.url_path_for(request, "auth:consent.get"),
         status_code=status.HTTP_302_FOUND,
     )
     response = await authentication_flow.rotate_session_token(
@@ -152,7 +152,8 @@ async def get_consent(
 ):
     if session_token is None:
         return RedirectResponse(
-            tenant.url_for(request, "auth:login.get"), status_code=status.HTTP_302_FOUND
+            tenant.url_path_for(request, "auth:login.get"),
+            status_code=status.HTTP_302_FOUND,
         )
 
     if not needs_consent and prompt != "consent":
@@ -194,7 +195,8 @@ async def post_consent(
 ):
     if session_token is None:
         return RedirectResponse(
-            tenant.url_for(request, "auth:login.get"), status_code=status.HTTP_302_FOUND
+            tenant.url_path_for(request, "auth:login.get"),
+            status_code=status.HTTP_302_FOUND,
         )
 
     if action == "allow":

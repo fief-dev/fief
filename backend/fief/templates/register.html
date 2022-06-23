@@ -7,7 +7,7 @@
 {% block title %}{{ _('Sign up') }}{% endblock %}
 
 {% block auth_form %}
-  <form method="POST" action="{{ tenant.url_for(request, 'register:post') }}" novalidate>
+  <form method="POST" action="{{ tenant.url_path_for(request, 'register:post') }}" novalidate>
     <div class="space-y-4">
       <div>
         {{
@@ -51,7 +51,7 @@
     {% block csrf %}{{ super() }}{% endblock %}
     <div class="flex items-center justify-between mt-6">
       <div class="mr-1">
-        <a class="text-sm underline hover:no-underline" href="{{ tenant.url_for(request, 'auth:login.get') }}">{{ _('I already have an account') }}</a>
+        <a class="text-sm underline hover:no-underline" href="{{ tenant.url_path_for(request, 'auth:login.get') }}">{{ _('I already have an account') }}</a>
       </div>
       <button type="submit" class="btn bg-primary hover:bg-primary-hover text-white ml-3">{{ _('Sign up') }}</button>
     </div>

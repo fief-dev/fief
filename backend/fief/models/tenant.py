@@ -3,6 +3,7 @@ from typing import Any
 from fastapi import Request
 from jwcrypto import jwk
 from sqlalchemy import Boolean, Column, String, Text
+from starlette.routing import Router
 
 from fief.crypto.jwk import generate_signature_jwk_string, load_jwk
 from fief.models.base import WorkspaceBase
@@ -33,3 +34,9 @@ class Tenant(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
         if not self.default:
             path_params["tenant_slug"] = self.slug
         return request.url_for(name, **path_params)
+
+    def url_path_for(self, request: Request, name: str, **path_params: Any) -> str:
+        if not self.default:
+            path_params["tenant_slug"] = self.slug
+        router: Router = request.scope["router"]
+        return str(router.url_path_for(name, **path_params))
