@@ -9,130 +9,88 @@ from fastapi_users.exceptions import (
     UserNotExists,
 )
 
-from fief.apps.auth.templates import templates
+from fief.apps.auth.forms.base import FormHelper
+from fief.apps.auth.forms.reset import ForgotPasswordForm, ResetPasswordForm
 from fief.dependencies.auth import get_optional_login_session
-from fief.dependencies.locale import Translations, get_gettext, get_translations
-from fief.dependencies.reset import (
-    get_forgot_password_request,
-    get_reset_password_request,
-)
 from fief.dependencies.tenant import get_current_tenant
 from fief.dependencies.users import UserManager, get_user_manager
-from fief.exceptions import ResetPasswordException
-from fief.middlewares.csrf import check_csrf
+from fief.locale import gettext_lazy as _
 from fief.models import LoginSession, Tenant
-from fief.schemas.reset import (
-    ForgotPasswordRequest,
-    ResetPasswordError,
-    ResetPasswordRequest,
-)
 
-router = APIRouter(dependencies=[Depends(check_csrf), Depends(get_translations)])
+router = APIRouter()
 
 
-@router.get("/forgot", name="reset:forgot.get")
-async def get_forgot_password(
+@router.api_route("/forgot", methods=["GET", "POST"], name="reset:forgot")
+async def forgot_password(
     request: Request,
-    tenant: Tenant = Depends(get_current_tenant),
-    translations: Translations = Depends(get_translations),
-):
-    return templates.LocaleTemplateResponse(
-        "forgot_password.html",
-        {"request": request, "tenant": tenant},
-        translations=translations,
-    )
-
-
-@router.post("/forgot", name="reset:forgot.post")
-async def post_forgot_password(
-    request: Request,
-    forgot_password_request: ForgotPasswordRequest = Depends(
-        get_forgot_password_request
-    ),
     user_manager: UserManager = Depends(get_user_manager),
     tenant: Tenant = Depends(get_current_tenant),
-    translations: Translations = Depends(get_translations),
 ):
-    try:
-        user = await user_manager.get_by_email(forgot_password_request.email)
-        await user_manager.forgot_password(user, request)
-    except (UserNotExists, UserInactive):
-        pass
-
-    success = translations.gettext(
-        "Check your inbox! If an account associated with this email address exists in our system, you'll receive a link to reset your password."
-    )
-
-    return templates.LocaleTemplateResponse(
+    form_helper = FormHelper(
+        ForgotPasswordForm,
         "forgot_password.html",
-        {"request": request, "tenant": tenant, "success": success},
-        translations=translations,
+        request=request,
+        context={"tenant": tenant},
     )
+    form = await form_helper.get_form()
 
+    if await form_helper.is_submitted_and_valid():
+        try:
+            user = await user_manager.get_by_email(form.email.data)
+            await user_manager.forgot_password(user, request)
+        except (UserNotExists, UserInactive):
+            pass
 
-@router.get("/reset", name="reset:reset.get")
-async def get_reset_password(
-    request: Request,
-    token: Optional[str] = Query(None),
-    tenant: Tenant = Depends(get_current_tenant),
-    translations: Translations = Depends(get_translations),
-    _=Depends(get_gettext),
-):
-    if token is None:
-        raise ResetPasswordException(
-            ResetPasswordError.get_missing_token(
-                _("The reset password token is missing.")
-            ),
-            tenant=tenant,
-            fatal=True,
+        form_helper.context["success"] = _(
+            "Check your inbox! If an account associated with this email address exists in our system, you'll receive a link to reset your password."
         )
 
-    return templates.LocaleTemplateResponse(
-        "reset_password.html",
-        {"request": request, "tenant": tenant, "token": token},
-        translations=translations,
-    )
+    return await form_helper.get_response()
 
 
-@router.post("/reset", name="reset:reset.post")
-async def post_reset_password(
+@router.api_route("/reset", methods=["GET", "POST"], name="reset:reset")
+async def reset_password(
     request: Request,
-    reset_password_request: ResetPasswordRequest = Depends(get_reset_password_request),
+    token: Optional[str] = Query(None),
     user_manager: UserManager = Depends(get_user_manager),
     login_session: Optional[LoginSession] = Depends(get_optional_login_session),
     tenant: Tenant = Depends(get_current_tenant),
-    translations: Translations = Depends(get_translations),
-    _=Depends(get_gettext),
 ):
-    try:
-        await user_manager.reset_password(
-            reset_password_request.token, reset_password_request.password, request
-        )
-    except (InvalidResetPasswordToken, UserNotExists, UserInactive) as e:
-        raise ResetPasswordException(
-            ResetPasswordError.get_invalid_token(
-                _("The reset password token is invalid or expired.")
-            ),
-            tenant=tenant,
-            fatal=True,
-        ) from e
-    except InvalidPasswordException as e:
-        raise ResetPasswordException(
-            ResetPasswordError.get_invalid_password(e.reason),
-            form_data=await request.form(),
-            tenant=tenant,
-        ) from e
-
-    if login_session is not None:
-        redirection = tenant.url_path_for(request, "auth:login.get")
-        return RedirectResponse(url=redirection, status_code=status.HTTP_302_FOUND)
-
-    return templates.LocaleTemplateResponse(
+    form_helper = FormHelper(
+        ResetPasswordForm,
         "reset_password.html",
-        {
-            "request": request,
-            "tenant": tenant,
-            "success": _("Your password has been changed!"),
-        },
-        translations=translations,
+        request=request,
+        context={"tenant": tenant},
     )
+    form = await form_helper.get_form()
+
+    if request.method == "GET":
+        if token is None:
+            return await form_helper.get_error_response(
+                _("The reset password token is missing."), "missing_token", fatal=True
+            )
+        else:
+            form.token.data = token
+
+    if await form_helper.is_submitted_and_valid():
+        try:
+            await user_manager.reset_password(
+                form.token.data, form.password.data, request
+            )
+        except (InvalidResetPasswordToken, UserNotExists, UserInactive) as e:
+            return await form_helper.get_error_response(
+                _("The reset password token is invalid or expired."),
+                "invalid_token",
+                fatal=True,
+            )
+        except InvalidPasswordException as e:
+            form.password.errors.append(e.reason)
+            return await form_helper.get_error_response(e.reason, "invalid_password")
+        else:
+            if login_session is not None:
+                redirection = tenant.url_path_for(request, "auth:login")
+                return RedirectResponse(
+                    url=redirection, status_code=status.HTTP_302_FOUND
+                )
+
+    return await form_helper.get_response()

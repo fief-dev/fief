@@ -1,49 +1,11 @@
-import gettext
-from typing import Dict, List
+import asgi_babel
+from babel import support
 
-from babel import core
-
-from fief.paths import LOCALE_DIRECTORY
-
-Translations = gettext.NullTranslations
-
-LOCALES = ["en_US", "fr_FR"]
-FALLBACK = "en_US"
-TERRITORY_FALLBACKS = {"en_US": "en", "fr_FR": "fr"}
-SUPPORTED_LOCALES = LOCALES + list(TERRITORY_FALLBACKS.values())
-
-TRANSLATIONS: Dict[str, Translations] = {}
-for locale in LOCALES:
-    translation = gettext.translation(
-        domain="messages",
-        localedir=LOCALE_DIRECTORY,
-        languages=[locale],
-        fallback=True,
-    )
-    TRANSLATIONS[locale] = translation
-    try:
-        TRANSLATIONS[TERRITORY_FALLBACKS[locale]] = translation
-    except KeyError:
-        pass
+Translations = support.Translations
 
 
-def get_preferred_locale(
-    preferred: List[str],
-    *,
-    supported: List[str] = SUPPORTED_LOCALES,
-    fallback: str = FALLBACK
-) -> str:
-    locale = core.negotiate_locale(preferred, supported)
-    if locale is None:
-        return fallback
-    return locale
+def gettext_lazy(string: str, domain: str = None, **variables):
+    return support.LazyProxy(asgi_babel.gettext, string, domain, **variables)
 
 
-def get_preferred_translations(
-    preferred: List[str],
-    *,
-    supported: List[str] = SUPPORTED_LOCALES,
-    fallback: str = FALLBACK
-) -> Translations:
-    locale = get_preferred_locale(preferred, supported=supported, fallback=fallback)
-    return TRANSLATIONS[locale]
+get_translations = asgi_babel.get_translations

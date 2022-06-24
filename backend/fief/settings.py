@@ -64,6 +64,7 @@ class Settings(BaseSettings):
 
     workspace_table_prefix: str = "fief_"
 
+    csrf_check_enabled: bool = True
     csrf_cookie_name: str = "fief_csrftoken"
     csrf_cookie_secure: bool = True
 

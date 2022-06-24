@@ -30,7 +30,6 @@ from fief.dependencies.current_workspace import (
     get_current_workspace,
     get_current_workspace_session,
 )
-from fief.dependencies.locale import get_translations
 from fief.dependencies.logger import AuditLogger, get_audit_logger
 from fief.dependencies.pagination import (
     Ordering,
@@ -55,7 +54,7 @@ from fief.dependencies.workspace_repositories import (
     get_user_repository,
     get_user_role_repository,
 )
-from fief.locale import Translations
+from fief.locale import gettext_lazy as _
 from fief.models import (
     AuditLogMessage,
     Tenant,
@@ -86,14 +85,12 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, UUID4]):
         password_helper: PasswordHelperProtocol,
         workspace: Workspace,
         tenant: Tenant,
-        translations: Translations,
         send_task: SendTask,
         audit_logger: AuditLogger,
     ):
         super().__init__(user_db, password_helper)
         self.workspace = workspace
         self.tenant = tenant
-        self.translations = translations
         self.send_task = send_task
         self.audit_logger = audit_logger
 
@@ -102,9 +99,7 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, UUID4]):
     ) -> None:
         if len(password) < 8:
             raise InvalidPasswordException(
-                reason=self.translations.gettext(
-                    "The password should be at least 8 characters."
-                )
+                reason=_("The password should be at least 8 characters.")
             )
 
     async def create_with_fields(
@@ -189,8 +184,9 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, UUID4]):
         self.audit_logger(
             AuditLogMessage.USER_FORGOT_PASSWORD_REQUESTED, subject_user_id=user.id
         )
+        print(token)
 
-        reset_url = furl(self.tenant.url_for(cast(Request, request), "reset:reset.get"))
+        reset_url = furl(self.tenant.url_for(cast(Request, request), "reset:reset"))
         reset_url.add(query_params={"token": token})
         self.send_task(
             on_after_forgot_password,
@@ -264,18 +260,11 @@ async def get_user_manager(
     user_db: SQLAlchemyUserDatabase[User, UUID4] = Depends(get_user_db),
     tenant: Tenant = Depends(get_current_tenant),
     workspace: Workspace = Depends(get_current_workspace),
-    translations: Translations = Depends(get_translations),
     send_task: SendTask = Depends(get_send_task),
     audit_logger: AuditLogger = Depends(get_audit_logger),
 ):
     return UserManager(
-        user_db,
-        password_helper,
-        workspace,
-        tenant,
-        translations,
-        send_task,
-        audit_logger,
+        user_db, password_helper, workspace, tenant, send_task, audit_logger
     )
 
 
@@ -292,18 +281,11 @@ async def get_user_manager_from_create_user_internal(
     ),
     tenant: Tenant = Depends(get_tenant_from_create_user_internal),
     workspace: Workspace = Depends(get_current_workspace),
-    translations: Translations = Depends(get_translations),
     send_task: SendTask = Depends(get_send_task),
     audit_logger: AuditLogger = Depends(get_audit_logger),
 ):
     return UserManager(
-        user_db,
-        password_helper,
-        workspace,
-        tenant,
-        translations,
-        send_task,
-        audit_logger,
+        user_db, password_helper, workspace, tenant, send_task, audit_logger
     )
 
 
@@ -389,18 +371,11 @@ async def get_user_manager_from_user(
     user: User = Depends(get_user_by_id_or_404),
     user_db: SQLAlchemyUserDatabase[User, UUID4] = Depends(get_user_db_from_user),
     workspace: Workspace = Depends(get_current_workspace),
-    translations: Translations = Depends(get_translations),
     send_task: SendTask = Depends(get_send_task),
     audit_logger: AuditLogger = Depends(get_audit_logger),
 ):
     return UserManager(
-        user_db,
-        password_helper,
-        workspace,
-        user.tenant,
-        translations,
-        send_task,
-        audit_logger,
+        user_db, password_helper, workspace, user.tenant, send_task, audit_logger
     )
 
 

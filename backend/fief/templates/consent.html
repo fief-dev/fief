@@ -1,3 +1,5 @@
+{% import 'macros/forms.html' as forms %}
+
 {% extends "auth_layout.html" %}
 
 {% block head_title %}{{ _('Consent') }}{% endblock %}
@@ -5,7 +7,7 @@
 {% block title %}{{ _('%(name)s wants to access your account', name=client.name) }}{% endblock %}
 
 {% block auth_form %}
-  <form method="POST" action="{{ tenant.url_path_for(request, 'auth:consent.post') }}">
+  <form method="POST" action="{{ tenant.url_path_for(request, 'auth:consent') }}">
     <div class="space-y-4">
       <div className="text-sm">{{ _('This will allow %(name)s to:', name=client.name) }}</div>
       {% for scope in scopes %}
@@ -16,10 +18,10 @@
         </div>
       {% endfor %}
     </div>
-    {% block csrf %}{{ super() }}{% endblock %}
     <div class="flex items-center justify-between mt-6">
-      <button type="submit" class="btn border-slate-200 hover:border-slate-300 text-slate-600" name="action" value="deny">{{ _('Deny') }}</button>
-      <button type="submit" class="btn bg-primary hover:bg-primary-hover text-white" name="action" value="allow">{{ _('Allow') }}</button>
+      {{ form.deny(class="btn border-slate-200 hover:border-slate-300 text-slate-600") }}
+      {{ form.allow(class="btn bg-primary hover:bg-primary-hover text-white") }}
+      {{ forms.form_csrf_token(form) }}
     </div>
   </form>
 {% endblock %}

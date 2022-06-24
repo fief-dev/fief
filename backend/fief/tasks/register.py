@@ -40,7 +40,7 @@ class OnAfterRegisterTask(TaskBase):
                 )
 
         # Send welcome email
-        translations = user.get_preferred_translations()
+        translations = user.get_translations()
         title = translations.gettext("Welcome to %(tenant)s!") % {"tenant": tenant.name}
         context = {"tenant": tenant, "title": title}
         html = self._render_email_template("welcome.html", translations, context)

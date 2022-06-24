@@ -1,13 +1,11 @@
-from typing import Any
+from typing import Any, Mapping, Optional
 
 from fastapi.templating import Jinja2Templates
 from jinja2 import pass_context
-from pycountry import countries
-from pytz import common_timezones
-from starlette.background import BackgroundTasks
+from starlette.background import BackgroundTask
 from starlette.routing import Router
 
-from fief.locale import Translations
+from fief.locale import get_translations
 from fief.paths import TEMPLATES_DIRECTORY
 
 
@@ -22,22 +20,19 @@ class LocaleJinja2Templates(Jinja2Templates):
             return str(router.url_path_for(name, **path_params))
 
         env.globals["url_path_for"] = url_path_for
-        env.globals["countries"] = sorted(countries, key=lambda c: c.name)
-        env.globals["timezones"] = sorted(common_timezones)
 
         return env
 
-    def LocaleTemplateResponse(
+    def TemplateResponse(
         self,
         name: str,
         context: dict,
-        translations: Translations,
         status_code: int = 200,
-        headers: dict = None,
-        media_type: str = None,
-        background: BackgroundTasks = None,
+        headers: Optional[Mapping[str, str]] = None,
+        media_type: Optional[str] = None,
+        background: Optional[BackgroundTask] = None,
     ):
-        self.env.install_gettext_translations(translations, newstyle=True)  # type: ignore
+        self.env.install_gettext_translations(get_translations(), newstyle=True)  # type: ignore
         return super().TemplateResponse(
             name, context, status_code, headers, media_type, background
         )

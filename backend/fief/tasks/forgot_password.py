@@ -13,7 +13,7 @@ class OnAfterForgotPasswordTask(TaskBase):
         user = await self._get_user(uuid.UUID(user_id), workspace)
         tenant = await self._get_tenant(user.tenant_id, workspace)
 
-        translations = user.get_preferred_translations()
+        translations = user.get_translations()
         title = translations.gettext("Reset your %(tenant)s's password") % {
             "tenant": tenant.name
         }

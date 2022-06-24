@@ -456,7 +456,7 @@ class TestAuthPostLogin:
         response = await test_client_auth.post(
             f"{path_prefix}/login",
             data={
-                "username": "anne@bretagne.duchy",
+                "email": "anne@bretagne.duchy",
                 "password": "foo",
             },
             cookies=cookies,
@@ -484,7 +484,7 @@ class TestAuthPostLogin:
         response = await test_client_auth.post(
             f"{path_prefix}/login",
             data={
-                "username": "anne@bretagne.duchy",
+                "email": "anne@bretagne.duchy",
                 "password": "hermine",
             },
             cookies=cookies,
@@ -521,7 +521,7 @@ class TestAuthPostLogin:
         response = await test_client_auth.post(
             f"{path_prefix}/login",
             data={
-                "username": "anne@bretagne.duchy",
+                "email": "anne@bretagne.duchy",
                 "password": "hermine",
             },
             cookies=cookies,
@@ -755,7 +755,7 @@ class TestAuthPostConsent:
         response = await test_client_auth.post(
             f"{tenant_params.path_prefix}/consent",
             cookies=cookies,
-            data={"action": "allow"},
+            data={"allow": "allow"},
         )
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
@@ -781,39 +781,13 @@ class TestAuthPostConsent:
             cookies[settings.session_cookie_name] = cookie
 
         response = await test_client_auth.post(
-            f"{path_prefix}/consent", cookies=cookies, data={"action": "allow"}
+            f"{path_prefix}/consent", cookies=cookies, data={"allow": "allow"}
         )
 
         assert response.status_code == status.HTTP_302_FOUND
 
         redirect_uri = response.headers["Location"]
         assert redirect_uri.endswith(f"{path_prefix}/login")
-
-    @pytest.mark.parametrize("data", [{}, {"action": "INVALID_ACTION"}])
-    async def test_invalid_data(
-        self,
-        data: Dict[str, str],
-        test_client_auth: httpx.AsyncClient,
-        test_data: TestData,
-    ):
-        login_session = test_data["login_sessions"]["default"]
-        client = login_session.client
-        tenant = client.tenant
-        path_prefix = tenant.slug if not tenant.default else ""
-        session_token_token = session_token_tokens["regular"][0]
-
-        cookies = {}
-        cookies[settings.login_session_cookie_name] = login_session.token
-        cookies[settings.session_cookie_name] = session_token_token
-
-        response = await test_client_auth.post(
-            f"{path_prefix}/consent", cookies=cookies, data=data
-        )
-
-        assert response.status_code == status.HTTP_400_BAD_REQUEST
-
-        headers = response.headers
-        assert headers["X-Fief-Error"] == "invalid_action"
 
     @pytest.mark.parametrize(
         "login_session_alias",
@@ -845,7 +819,7 @@ class TestAuthPostConsent:
         cookies[settings.session_cookie_name] = session_token_token
 
         response = await test_client_auth.post(
-            f"{path_prefix}/consent", cookies=cookies, data={"action": "allow"}
+            f"{path_prefix}/consent", cookies=cookies, data={"allow": "allow"}
         )
 
         assert response.status_code == status.HTTP_302_FOUND
@@ -902,7 +876,7 @@ class TestAuthPostConsent:
         cookies[settings.session_cookie_name] = session_token_token
 
         response = await test_client_auth.post(
-            f"{path_prefix}/consent", cookies=cookies, data={"action": "deny"}
+            f"{path_prefix}/consent", cookies=cookies, data={"deny": "deny"}
         )
 
         assert response.status_code == status.HTTP_302_FOUND

@@ -2,7 +2,6 @@ from fief.db.main import main_async_session_maker
 from fief.db.workspace import get_workspace_session
 from fief.dependencies.logger import get_audit_logger
 from fief.dependencies.users import get_user_db, get_user_manager
-from fief.locale import get_preferred_translations
 from fief.models import Client, User, Workspace, WorkspaceUser
 from fief.repositories import (
     ClientRepository,
@@ -116,7 +115,6 @@ async def create_main_fief_user(email: str, password: str) -> User:
                 user_db,
                 tenant,
                 workspace,
-                get_preferred_translations(["en"]),
                 send_task,
                 audit_logger,
             )

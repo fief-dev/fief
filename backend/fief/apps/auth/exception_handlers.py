@@ -7,12 +7,8 @@ from fief.apps.auth.templates import templates
 from fief.exceptions import (
     AuthorizeException,
     AuthorizeRedirectException,
-    ConsentException,
-    FormValidationError,
     LoginException,
     LogoutException,
-    RegisterException,
-    ResetPasswordException,
     TokenRequestException,
 )
 from fief.services.authentication_flow import AuthenticationFlow
@@ -20,44 +16,8 @@ from fief.services.authentication_flow import AuthenticationFlow
 exception_handlers: Dict[Type[Exception], Callable] = {}
 
 
-async def form_validation_error_handler(request: Request, exc: FormValidationError):
-    return templates.LocaleTemplateResponse(
-        exc.template,
-        {
-            "request": request,
-            "form_errors": exc.form_errors(),
-            "fatal_error": False,
-            **exc.context,
-        },
-        translations=request.scope["translations"],
-        status_code=status.HTTP_400_BAD_REQUEST,
-    )
-
-
-exception_handlers[FormValidationError] = form_validation_error_handler
-
-
-async def register_exception_handler(request: Request, exc: RegisterException):
-    return templates.LocaleTemplateResponse(
-        "register.html",
-        {
-            "request": request,
-            "error": exc.error.error_description,
-            "form_data": exc.form_data,
-            "fatal_error": exc.fatal,
-            **exc.context,
-        },
-        translations=request.scope["translations"],
-        status_code=status.HTTP_400_BAD_REQUEST,
-        headers={"X-Fief-Error": exc.error.error},
-    )
-
-
-exception_handlers[RegisterException] = register_exception_handler
-
-
 async def authorize_exception_handler(request: Request, exc: AuthorizeException):
-    return templates.LocaleTemplateResponse(
+    return templates.TemplateResponse(
         "authorize.html",
         {
             "request": request,
@@ -65,7 +25,6 @@ async def authorize_exception_handler(request: Request, exc: AuthorizeException)
             "tenant": exc.tenant,
             "fatal_error": True,
         },
-        translations=request.scope["translations"],
         status_code=status.HTTP_400_BAD_REQUEST,
         headers={"X-Fief-Error": exc.error.error},
     )
@@ -91,7 +50,7 @@ exception_handlers[AuthorizeRedirectException] = authorize_redirect_exception_ha
 
 
 async def login_exception_handler(request: Request, exc: LoginException):
-    return templates.LocaleTemplateResponse(
+    return templates.TemplateResponse(
         "login.html",
         {
             "request": request,
@@ -99,33 +58,12 @@ async def login_exception_handler(request: Request, exc: LoginException):
             "tenant": exc.tenant,
             "fatal_error": exc.fatal,
         },
-        translations=request.scope["translations"],
         status_code=status.HTTP_400_BAD_REQUEST,
         headers={"X-Fief-Error": exc.error.error},
     )
 
 
 exception_handlers[LoginException] = login_exception_handler
-
-
-async def consent_exception_handler(request: Request, exc: ConsentException):
-    return templates.LocaleTemplateResponse(
-        "consent.html",
-        {
-            "request": request,
-            "error": exc.error.error_description,
-            "client": exc.client,
-            "scopes": exc.scope,
-            "tenant": exc.tenant,
-            "fatal_error": exc.fatal,
-        },
-        translations=request.scope["translations"],
-        status_code=status.HTTP_400_BAD_REQUEST,
-        headers={"X-Fief-Error": exc.error.error},
-    )
-
-
-exception_handlers[ConsentException] = consent_exception_handler
 
 
 async def token_request_exception_handler(request: Request, exc: TokenRequestException):
@@ -138,29 +76,8 @@ async def token_request_exception_handler(request: Request, exc: TokenRequestExc
 exception_handlers[TokenRequestException] = token_request_exception_handler
 
 
-async def reset_password_exception_handler(
-    request: Request, exc: ResetPasswordException
-):
-    return templates.LocaleTemplateResponse(
-        "reset_password.html",
-        {
-            "request": request,
-            "error": exc.error.error_description,
-            "form_data": exc.form_data,
-            "tenant": exc.tenant,
-            "fatal_error": exc.fatal,
-        },
-        translations=request.scope["translations"],
-        status_code=status.HTTP_400_BAD_REQUEST,
-        headers={"X-Fief-Error": exc.error.error},
-    )
-
-
-exception_handlers[ResetPasswordException] = reset_password_exception_handler
-
-
 async def logout_exception_handler(request: Request, exc: LogoutException):
-    return templates.LocaleTemplateResponse(
+    return templates.TemplateResponse(
         "logout.html",
         {
             "request": request,
@@ -168,7 +85,6 @@ async def logout_exception_handler(request: Request, exc: LogoutException):
             "tenant": exc.tenant,
             "fatal_error": True,
         },
-        translations=request.scope["translations"],
         status_code=status.HTTP_400_BAD_REQUEST,
         headers={"X-Fief-Error": exc.error.error},
     )

@@ -24,7 +24,6 @@ from fief.dependencies.fief import FiefAsyncRelativeEndpoints, get_fief
 from fief.dependencies.tasks import get_send_task
 from fief.dependencies.workspace_creation import get_workspace_creation
 from fief.dependencies.workspace_db import get_workspace_db
-from fief.middlewares.csrf import check_csrf
 from fief.models import (
     AdminAPIKey,
     AdminSessionToken,
@@ -456,7 +455,6 @@ async def test_client_auth_generator(
         app.dependency_overrides[
             get_workspace_creation
         ] = lambda: workspace_creation_mock
-        app.dependency_overrides[check_csrf] = lambda: None
         app.dependency_overrides[get_send_task] = lambda: send_task_mock
 
         headers = {}

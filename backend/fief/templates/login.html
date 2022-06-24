@@ -1,4 +1,4 @@
-{% import 'macros/form_inputs.html' as form_inputs %}
+{% import 'macros/forms.html' as forms %}
 
 {% extends "auth_layout.html" %}
 
@@ -7,27 +7,15 @@
 {% block title %}{{ _('Welcome back!') }}{% endblock %}
 
 {% block auth_form %}
-  <form method="POST" action="{{ tenant.url_path_for(request, 'auth:login.post') }}">
+  <form method="POST" action="{{ tenant.url_path_for(request, 'auth:login') }}">
     <div class="space-y-4">
-      <div>
-        {{ form_inputs.form_input_label(_('Email address'), 'input-email', True) }}
-        <input id="input-email" class="form-input w-full" type="email" name="username" required />
-        {% if form_errors is defined and form_errors.email %}
-        <div id="errors-email" class="text-xs mt-1 text-red-500">{{form_errors.email}}</div>
-        {% endif %}
-      </div>
-      <div>
-        {{ form_inputs.form_input_label(_('Password'), 'input-password', True) }}
-        <input id="input-password" class="form-input w-full" type="password" name="password" required />
-        {% if form_errors is defined and form_errors.password %}
-          <div id="errors-password" class="text-xs mt-1 text-red-500">{{form_errors.password}}</div>
-        {% endif %}
-      </div>
+      {{ forms.form_field(form.email) }}
+      {{ forms.form_field(form.password) }}
+      {{ forms.form_csrf_token(form) }}
     </div>
-    {% block csrf %}{{ super() }}{% endblock %}
     <div class="flex items-center justify-between mt-6">
       <div class="mr-1">
-        <a class="text-sm underline hover:no-underline" href="{{ tenant.url_path_for(request, 'reset:forgot.get') }}">{{ _('I forgot my password') }}</a>
+        <a class="text-sm underline hover:no-underline" href="{{ tenant.url_path_for(request, 'reset:forgot') }}">{{ _('I forgot my password') }}</a>
       </div>
       <button type="submit" class="btn bg-primary hover:bg-primary-hover text-white ml-3">{{ _('Sign in') }}</button>
     </div>
@@ -35,7 +23,7 @@
   <div class="pt-5 mt-6 border-t border-gray-200">
     <div class="text-sm">
       {{ _("Don't have an account?") }}
-      <a href="{{ tenant.url_path_for(request, 'register:get') }}" class="font-medium text-primary-500 hover:text-primary-600">{{ _('Sign up') }}</a>
+      <a href="{{ tenant.url_path_for(request, 'register:register') }}" class="font-medium text-primary-500 hover:text-primary-600">{{ _('Sign up') }}</a>
     </div>
   </div>
 {% endblock %}

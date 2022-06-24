@@ -229,7 +229,7 @@ class TestPostRegister:
         "data,status_code",
         [
             ({}, status.HTTP_400_BAD_REQUEST),
-            ({"fields.terms": "off"}, status.HTTP_400_BAD_REQUEST),
+            ({"fields.terms": ""}, status.HTTP_400_BAD_REQUEST),
             ({"fields.terms": "on"}, status.HTTP_302_FOUND),
         ],
     )

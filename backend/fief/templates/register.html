@@ -1,4 +1,4 @@
-{% import 'macros/form_inputs.html' as form_inputs %}
+{% import 'macros/forms.html' as forms %}
 
 {% extends "auth_layout.html" %}
 
@@ -7,51 +7,18 @@
 {% block title %}{{ _('Sign up') }}{% endblock %}
 
 {% block auth_form %}
-  <form method="POST" action="{{ tenant.url_path_for(request, 'register:post') }}" novalidate>
+  <form method="POST" action="{{ tenant.url_path_for(request, 'register:register') }}" novalidate>
     <div class="space-y-4">
-      <div>
-        {{
-          form_inputs.text_input(
-            _('Email address'),
-            'email',
-            True,
-            'email',
-            form_data.get('email') if form_data is defined else None,
-            form_errors.email if form_errors is defined else None,
-          )
-        }}
-      </div>
-      <div>
-        {{
-          form_inputs.text_input(
-            _('Password'),
-            'password',
-            True,
-            'password',
-            form_data.get('password') if form_data is defined else None,
-            form_errors.password if form_errors is defined else None,
-          )
-        }}
-      </div>
-      {% for field in registration_user_fields %}
-        {% set fields_data = form_data.get("fields") if form_data is defined else None %}
-        {% set fields_errors = form_errors.get("fields") if form_errors is defined else None %}
-        <div>
-          {{
-            form_inputs.user_field_input(
-              field,
-              "fields",
-              fields_data.get(field.slug) if fields_data else None,
-              fields_errors.get(field.slug) if fields_errors else None,
-            )
-          }}
-        </div>
+      {{ forms.form_field(form.email) }}
+      {{ forms.form_field(form.password) }}
+      {% for field in form.fields %}
+        {{ forms.form_field(field) }}
       {% endfor %}
+      {{ forms.form_csrf_token(form) }}
     </div>
-    {% block csrf %}{{ super() }}{% endblock %}
     <div class="flex items-center justify-between mt-6">
       <div class="mr-1">
-        <a class="text-sm underline hover:no-underline" href="{{ tenant.url_path_for(request, 'auth:login.get') }}">{{ _('I already have an account') }}</a>
+        <a class="text-sm underline hover:no-underline" href="{{ tenant.url_path_for(request, 'auth:login') }}">{{ _('I already have an account') }}</a>
       </div>
       <button type="submit" class="btn bg-primary hover:bg-primary-hover text-white ml-3">{{ _('Sign up') }}</button>
     </div>

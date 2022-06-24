@@ -6,7 +6,6 @@ import pytest
 from fastapi import status
 from fastapi_users.jwt import generate_jwt
 
-from fief.db import AsyncSession
 from fief.dependencies.users import UserManager
 from fief.models import Workspace
 from fief.settings import settings

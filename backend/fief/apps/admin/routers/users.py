@@ -92,7 +92,7 @@ async def create_user(
         return JSONResponse(
             content={
                 "detail": APIErrorCode.USER_CREATE_INVALID_PASSWORD,
-                "reason": e.reason,
+                "reason": str(e.reason),
             },
             status_code=status.HTTP_400_BAD_REQUEST,
         )
@@ -128,7 +128,7 @@ async def update_user(
         return JSONResponse(
             content={
                 "detail": APIErrorCode.USER_UPDATE_INVALID_PASSWORD,
-                "reason": e.reason,
+                "reason": str(e.reason),
             },
             status_code=status.HTTP_400_BAD_REQUEST,
         )

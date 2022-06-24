@@ -49,6 +49,10 @@ ignore_missing_imports = true
 module = "sentry_dramatiq.*"
 ignore_missing_imports = true
 
+[[tool.mypy.overrides]]
+module = "wtforms.*"
+ignore_missing_imports = true
+
 [tool.isort]
 profile = "black"
 
