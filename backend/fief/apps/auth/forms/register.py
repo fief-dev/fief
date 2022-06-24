@@ -1,4 +1,4 @@
-from email.policy import default
+import functools
 from typing import List, Mapping, Optional, Type, TypeVar
 
 import phonenumbers
@@ -40,13 +40,13 @@ class PhoneNumberField(TelField):
             self.data = None
             return
 
-        return self._validate_phone_number(value)
+        self.data = self._validate_phone_number(value)
 
     def process_formdata(self, valuelist):
         if not valuelist:
             return
 
-        return self._validate_phone_number(valuelist[0])
+        self.data = self._validate_phone_number(valuelist[0])
 
     def _validate_phone_number(self, value: str) -> str:
         try:
@@ -66,6 +66,10 @@ class CountryField(SelectField):
 
 
 class AddressForm(Form):
+    def __init__(self, *args, required: bool = True, **kwargs):
+        self.required = required
+        super().__init__(*args, **kwargs)
+
     line1 = StringField(_("Address line 1"), validators=[validators.InputRequired()])
     line2 = StringField(
         _("Address line 2"),
@@ -80,7 +84,7 @@ class AddressForm(Form):
     country = CountryField(_("Country", validators=[validators.InputRequired()]))
 
     def validate(self, extra_validators=None):
-        if self.data is None:
+        if self.data is None and not self.required:
             return True
         return super().validate(extra_validators)
 
@@ -93,8 +97,9 @@ class AddressForm(Form):
 
 
 class AddressFormField(FormField):
-    def __init__(self, *args, **kwargs):
-        super().__init__(AddressForm, separator=".", *args, **kwargs)
+    def __init__(self, *args, required: bool = True, **kwargs):
+        form_class = functools.partial(AddressForm, required=required)
+        super().__init__(form_class, separator=".", *args, **kwargs)
 
 
 class TimezoneField(SelectField):
@@ -126,9 +131,10 @@ USER_FIELD_FORM_FIELD_MAP: Mapping[UserFieldType, Field] = {
 }
 
 
-def get_form_field(user_field: UserField) -> Field:
+def _get_form_field(user_field: UserField) -> Field:
     field_validators = []
-    if user_field.get_required():
+    required = user_field.get_required()
+    if required:
         field_validators.append(validators.InputRequired())
     else:
         field_validators.append(validators.Optional())
@@ -144,7 +150,7 @@ def get_form_field(user_field: UserField) -> Field:
     elif user_field.type == UserFieldType.PHONE_NUMBER:
         field_kwargs.update({"render_kw": {"placeholder": "+42102030405"}})
     elif user_field.type == UserFieldType.ADDRESS:
-        field_kwargs.update()
+        field_kwargs.update({"required": required})
         field_kwargs.pop("validators")
 
     return USER_FIELD_FORM_FIELD_MAP[user_field.type](**field_kwargs)
@@ -157,7 +163,7 @@ async def get_register_form_class(
         pass
 
     for field in registration_user_fields:
-        setattr(RegisterFormFields, field.slug, get_form_field(field))
+        setattr(RegisterFormFields, field.slug, _get_form_field(field))
 
     class RegisterForm(RegisterFormBase):
         fields = FormField(RegisterFormFields, separator=".")
