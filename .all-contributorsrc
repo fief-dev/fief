@@ -52,6 +52,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "danilopolani",
+      "name": "Danilo Polani",
+      "avatar_url": "https://avatars.githubusercontent.com/u/6277291?v=4",
+      "profile": "https://theraloss.com",
+      "contributions": [
+        "translation"
+      ]
     }
   ],
   "contributorsPerLine": 7,
