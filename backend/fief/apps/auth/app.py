@@ -1,3 +1,4 @@
+import wtforms.i18n
 from asgi_babel import BabelMiddleware
 from fastapi import APIRouter, FastAPI
 from fastapi.staticfiles import StaticFiles
@@ -39,7 +40,14 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["Authorization", "X-Requested-With"],
 )
-app.add_middleware(BabelMiddleware, locales_dirs=[LOCALE_DIRECTORY])
+
+app.add_middleware(
+    BabelMiddleware,
+    locales_dirs=[
+        LOCALE_DIRECTORY,
+        wtforms.i18n.messages_path(),
+    ],
+)
 app.include_router(default_tenant_router)
 app.include_router(tenant_router)
 app.mount("/static", StaticFiles(directory=STATIC_DIRECTORY), name="auth:static")

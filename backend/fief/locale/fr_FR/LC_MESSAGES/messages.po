@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  Fief\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2022-06-23 17:43+0200\n"
+"POT-Creation-Date: 2022-06-27 10:06+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr\n"
@@ -14,72 +14,80 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.10.3\n"
 
-#: fief/exceptions.py:21 fief/exceptions.py:22
-msgid "This field is required."
-msgstr "Ce champ est requis."
-
-#: fief/exceptions.py:23
-msgid "This email address is invalid."
-msgstr "Cette adresse e-mail est invalide."
-
-#: fief/exceptions.py:24
-msgid "This date is invalid."
-msgstr "Cette date est invalide."
-
-#: fief/exceptions.py:25
-msgid "This date and time is invalid."
-msgstr "Cette date et heure est invalide."
-
-#: fief/exceptions.py:26
-msgid "This phone number is invalid."
-msgstr "Ce numéro de téléphone est invalide."
-
-#: fief/exceptions.py:27
-msgid "The country code is missing."
-msgstr "Le pays est manquant."
-
-#: fief/exceptions.py:28
-msgid "This country code is invalid."
-msgstr "Le pays est invalide."
-
-#: fief/exceptions.py:29
-msgid "This timezone is invalid."
-msgstr "Ce fuseau horaire est invalide."
-
-#: fief/exceptions.py:30
-msgid "This must be checked."
-msgstr "Cette case doit être cochée."
-
-#: fief/exceptions.py:31 fief/exceptions.py:32 fief/exceptions.py:33
-msgid "This value is invalid."
-msgstr "Cette valeur est invalide."
-
-#: fief/exceptions.py:57
-msgid "type"
-msgstr "type"
-
-#: fief/apps/auth/forms/reset.py:7 fief/templates/login.html:13
-#: fief/templates/register.html:15
+#: fief/apps/auth/forms/auth.py:10 fief/apps/auth/forms/register.py:113
+#: fief/apps/auth/forms/reset.py:9
 msgid "Email address"
 msgstr "Adresse e-mail"
 
-#: fief/apps/auth/routers/auth.py:121
+#: fief/apps/auth/forms/auth.py:12 fief/apps/auth/forms/register.py:115
+msgid "Password"
+msgstr "Mot de passe"
+
+#: fief/apps/auth/forms/auth.py:24
+msgid "Allow"
+msgstr "Autoriser"
+
+#: fief/apps/auth/forms/auth.py:25
+msgid "Deny"
+msgstr "Refuser"
+
+#: fief/apps/auth/forms/base.py:41
+msgid "CSRF failed."
+msgstr ""
+
+#: fief/apps/auth/forms/register.py:55
+msgid "The country code is missing."
+msgstr "Le pays est manquant."
+
+#: fief/apps/auth/forms/register.py:57
+msgid "This phone number is invalid."
+msgstr "Ce numéro de téléphone est invalide."
+
+#: fief/apps/auth/forms/register.py:73
+msgid "Address line 1"
+msgstr "Adresse ligne 1"
+
+#: fief/apps/auth/forms/register.py:75
+msgid "Address line 2"
+msgstr "Adresse ligne 2"
+
+#: fief/apps/auth/forms/register.py:79
+msgid "Postal code"
+msgstr "Code postal"
+
+#: fief/apps/auth/forms/register.py:80
+msgid "City"
+msgstr "Ville"
+
+#: fief/apps/auth/forms/register.py:82
+msgid "State"
+msgstr "État"
+
+#: fief/apps/auth/forms/register.py:84
+msgid "Country"
+msgstr "Pays"
+
+#: fief/apps/auth/forms/reset.py:14
+msgid "New password"
+msgstr "Nouveau mot de passe"
+
+#: fief/apps/auth/routers/auth.py:115
 msgid "Invalid email or password"
 msgstr "L'e-mail ou le mot de passe est invalide"
 
-#: fief/apps/auth/routers/auth.py:220
+#: fief/apps/auth/routers/auth.py:196
 msgid "The user denied access to their data."
 msgstr "L'utilisateur a refusé l'accès à ses données."
 
-#: fief/apps/auth/routers/auth.py:241 fief/dependencies/auth.py:63
+#: fief/apps/auth/routers/auth.py:219 fief/dependencies/auth.py:55
 msgid "redirect_uri is missing"
 msgstr "redirect_uri manquant"
 
-#: fief/apps/auth/routers/register.py:72
+#: fief/apps/auth/routers/register.py:59
 msgid "A user with the same email address already exists."
 msgstr "Un utilisateur avec la même adresse e-mail existe déjà."
 
-#: fief/apps/auth/routers/reset.py:52
+#: fief/apps/auth/routers/reset.py:44
 msgid ""
 "Check your inbox! If an account associated with this email address exists"
 " in our system, you'll receive a link to reset your password."
@@ -88,83 +96,75 @@ msgstr ""
 "e-mail existe dans notre système, vous allez recevoir un lien pour "
 "réinitialiser votre mot de passe."
 
-#: fief/apps/auth/routers/reset.py:99
+#: fief/apps/auth/routers/reset.py:70
 msgid "The reset password token is missing."
 msgstr "Le jeton de réinitialisation de mot de passe est manquant."
 
-#: fief/apps/auth/routers/reset.py:129
+#: fief/apps/auth/routers/reset.py:82
 msgid "The reset password token is invalid or expired."
 msgstr "Le jeton de réinitialisation de mot de passe est invalide ou a expiré."
 
-#: fief/apps/auth/routers/reset.py:150
-msgid "Your password has been changed!"
-msgstr "Votre mot de passe a été modifié !"
-
-#: fief/dependencies/auth.py:45
+#: fief/dependencies/auth.py:38
 msgid "client_id is missing"
 msgstr "client_id manquant"
 
-#: fief/dependencies/auth.py:51
+#: fief/dependencies/auth.py:44
 msgid "Unknown client"
 msgstr "Client inconnu"
 
-#: fief/dependencies/auth.py:69
+#: fief/dependencies/auth.py:61
 msgid "redirect_uri is not authorized for this client"
 msgstr "Cette redirect_uri n'est pas autorisée pour ce client"
 
-#: fief/dependencies/auth.py:88
+#: fief/dependencies/auth.py:79
 msgid "response_type is missing"
 msgstr "response_type manquant"
 
-#: fief/dependencies/auth.py:96
+#: fief/dependencies/auth.py:87
 msgid "response_type is invalid"
 msgstr "response_type est invalide"
 
-#: fief/dependencies/auth.py:121
+#: fief/dependencies/auth.py:111
 msgid "request parameter is not supported"
 msgstr "Le paramètre request n'est pas supporté"
 
-#: fief/dependencies/auth.py:140
+#: fief/dependencies/auth.py:129
 msgid "nonce parameter is required for this response_type"
 msgstr "Le paramètre nonce est requis pour cette response_type"
 
-#: fief/dependencies/auth.py:159
+#: fief/dependencies/auth.py:147
 msgid "scope is missing"
 msgstr "scope manquant"
 
-#: fief/dependencies/auth.py:170
+#: fief/dependencies/auth.py:158
 msgid "scope should contain \"openid\""
 msgstr "scope doit contenir \"openid\""
 
-#: fief/dependencies/auth.py:191
+#: fief/dependencies/auth.py:178
 msgid "prompt should either be \"none\", \"login\" or \"register\""
 msgstr "prompt doit être \"none\", \"login\" ou \"register\""
 
-#: fief/dependencies/auth.py:200
+#: fief/dependencies/auth.py:187
 msgid "User is not logged in"
 msgstr "L'utilisateur n'est pas connecté"
 
-#: fief/dependencies/auth.py:219
+#: fief/dependencies/auth.py:205
 msgid "screen should either be \"login\" or \"register\""
 msgstr "screen doit être \"login\" ou \"register\""
 
-#: fief/dependencies/auth.py:243
+#: fief/dependencies/auth.py:228
 msgid "Unsupported code_challenge_method"
 msgstr "Méthode de code_challenge non supportée"
 
-#: fief/dependencies/auth.py:295
+#: fief/dependencies/auth.py:279
 msgid "Invalid login session"
 msgstr "Session invalide"
 
-#: fief/dependencies/auth.py:310
-msgid "action should either be \"allow\" or \"deny\""
-msgstr "action doit être \"allow\" ou \"deny\""
-
-#: fief/dependencies/auth.py:355
+#: fief/dependencies/auth.py:319
 msgid "User consent is required for this scope"
 msgstr "Le consentement de l'utilisateur est requis pour ce scope"
 
-#: fief/dependencies/users.py:105
+#: fief/dependencies/users.py:102
 msgid "The password should be at least 8 characters."
 msgstr "Le mot de passe doit avoir au moins 8 caractères."
 
@@ -211,7 +211,7 @@ msgstr "Réinitialiser votre mot de passe %(tenant)s"
 msgid "Welcome to %(tenant)s!"
 msgstr "Bienvenue sur %(tenant)s !"
 
-#: fief/templates/auth_layout.html:49
+#: fief/templates/auth_layout.html:46
 msgid "Powered and secured by"
 msgstr "Propulsé et sécurisé par"
 
@@ -219,41 +219,33 @@ msgstr "Propulsé et sécurisé par"
 msgid "Authorize"
 msgstr "Autoriser"
 
-#: fief/templates/consent.html:3
+#: fief/templates/consent.html:5
 msgid "Consent"
 msgstr "Consentement"
 
-#: fief/templates/consent.html:5
+#: fief/templates/consent.html:7
 #, python-format
 msgid "%(name)s wants to access your account"
 msgstr "%(name)s veut accéder à votre compte"
 
-#: fief/templates/consent.html:10
+#: fief/templates/consent.html:12
 #, python-format
 msgid "This will allow %(name)s to:"
 msgstr "Cela permettra à %(name)s de :"
-
-#: fief/templates/consent.html:21
-msgid "Deny"
-msgstr "Refuser"
-
-#: fief/templates/consent.html:22
-msgid "Allow"
-msgstr "Autoriser"
 
 #: fief/templates/forgot_password.html:5 fief/templates/forgot_password.html:7
 msgid "Forgot password"
 msgstr "Mot de passe oublié"
 
-#: fief/templates/forgot_password.html:19
+#: fief/templates/forgot_password.html:17
 msgid "I remember my password"
 msgstr "Je me souviens de mon mot de passe"
 
-#: fief/templates/forgot_password.html:21
+#: fief/templates/forgot_password.html:19
 msgid "Send me a reset link"
 msgstr "Envoyer un lien de réinitialisation"
 
-#: fief/templates/login.html:5 fief/templates/login.html:32
+#: fief/templates/login.html:5 fief/templates/login.html:20
 msgid "Sign in"
 msgstr "Connexion"
 
@@ -261,20 +253,16 @@ msgstr "Connexion"
 msgid "Welcome back!"
 msgstr "Ravi de vous revoir !"
 
-#: fief/templates/login.html:20 fief/templates/register.html:27
-msgid "Password"
-msgstr "Mot de passe"
-
-#: fief/templates/login.html:30
+#: fief/templates/login.html:18
 msgid "I forgot my password"
 msgstr "J'ai oublié mon mot de passe"
 
-#: fief/templates/login.html:37
+#: fief/templates/login.html:25
 msgid "Don't have an account?"
 msgstr "Pas encore de compte ?"
 
-#: fief/templates/login.html:38 fief/templates/register.html:5
-#: fief/templates/register.html:7 fief/templates/register.html:56
+#: fief/templates/login.html:26 fief/templates/register.html:5
+#: fief/templates/register.html:7 fief/templates/register.html:23
 msgid "Sign up"
 msgstr "S'inscrire"
 
@@ -282,7 +270,7 @@ msgstr "S'inscrire"
 msgid "Sign out"
 msgstr "Déconnexion"
 
-#: fief/templates/register.html:54
+#: fief/templates/register.html:21
 msgid "I already have an account"
 msgstr "J'ai déjà un compte"
 
@@ -290,37 +278,9 @@ msgstr "J'ai déjà un compte"
 msgid "Reset password"
 msgstr "Réinitialisation du mot de passe"
 
-#: fief/templates/reset_password.html:13
-msgid "New password"
-msgstr "Nouveau mot de passe"
-
-#: fief/templates/reset_password.html:24
+#: fief/templates/reset_password.html:18
 msgid "Reset my password"
 msgstr "Réinitialiser mon mot de passe"
-
-#: fief/templates/macros/form_inputs.html:74
-msgid "Address line 1"
-msgstr "Adresse ligne 1"
-
-#: fief/templates/macros/form_inputs.html:79
-msgid "Address line 2"
-msgstr "Adresse ligne 2"
-
-#: fief/templates/macros/form_inputs.html:85
-msgid "Postal code"
-msgstr "Code postal"
-
-#: fief/templates/macros/form_inputs.html:90
-msgid "City"
-msgstr "Ville"
-
-#: fief/templates/macros/form_inputs.html:96
-msgid "State"
-msgstr "État"
-
-#: fief/templates/macros/form_inputs.html:101
-msgid "Country"
-msgstr "Pays"
 
 #~ msgid "Powered by"
 #~ msgstr "Propulsé et sécurisé par"
@@ -333,4 +293,37 @@ msgstr "Pays"
 
 #~ msgid "Register"
 #~ msgstr "Inscription"
+
+#~ msgid "This field is required."
+#~ msgstr "Ce champ est requis."
+
+#~ msgid "This email address is invalid."
+#~ msgstr "Cette adresse e-mail est invalide."
+
+#~ msgid "This date is invalid."
+#~ msgstr "Cette date est invalide."
+
+#~ msgid "This date and time is invalid."
+#~ msgstr "Cette date et heure est invalide."
+
+#~ msgid "This country code is invalid."
+#~ msgstr "Le pays est invalide."
+
+#~ msgid "This timezone is invalid."
+#~ msgstr "Ce fuseau horaire est invalide."
+
+#~ msgid "This must be checked."
+#~ msgstr "Cette case doit être cochée."
+
+#~ msgid "This value is invalid."
+#~ msgstr "Cette valeur est invalide."
+
+#~ msgid "type"
+#~ msgstr "type"
+
+#~ msgid "Your password has been changed!"
+#~ msgstr "Votre mot de passe a été modifié !"
+
+#~ msgid "action should either be \"allow\" or \"deny\""
+#~ msgstr "action doit être \"allow\" ou \"deny\""
 

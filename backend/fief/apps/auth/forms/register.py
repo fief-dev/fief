@@ -65,7 +65,7 @@ class CountryField(SelectField):
         super().__init__(*args, choices=choices, **kwargs)
 
 
-class AddressForm(Form):
+class AddressForm(BaseForm):
     def __init__(self, *args, required: bool = True, **kwargs):
         self.required = required
         super().__init__(*args, **kwargs)

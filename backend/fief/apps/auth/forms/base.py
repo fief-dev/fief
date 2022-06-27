@@ -1,5 +1,4 @@
 import secrets
-from email import message
 from typing import Generic, Optional, Type, TypeVar
 
 from fastapi import Request, status
@@ -8,6 +7,7 @@ from wtforms import Field, Form, validators
 from wtforms.csrf.core import CSRF
 
 from fief.apps.auth.templates import templates
+from fief.locale import get_translations
 from fief.middlewares.csrf import CSRF_ATTRIBUTE_NAME
 from fief.settings import settings
 
@@ -56,6 +56,9 @@ class BaseForm(Form):
         csrf = settings.csrf_check_enabled
         csrf_class = CSRFCookie
         csrf_cookie_name = settings.csrf_cookie_name
+
+        def get_translations(self, form):
+            return get_translations(domain="wtforms")
 
 
 F = TypeVar("F", bound=BaseForm)
