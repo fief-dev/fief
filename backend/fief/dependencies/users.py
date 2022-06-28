@@ -184,7 +184,6 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, UUID4]):
         self.audit_logger(
             AuditLogMessage.USER_FORGOT_PASSWORD_REQUESTED, subject_user_id=user.id
         )
-        print(token)
 
         reset_url = furl(self.tenant.url_for(cast(Request, request), "reset:reset"))
         reset_url.add(query_params={"token": token})

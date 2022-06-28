@@ -73,5 +73,4 @@ async def register(
 
             return response
 
-    print(form.errors)
     return await form_helper.get_response()
