@@ -39,10 +39,12 @@ class TestPostForgotPassword:
         self,
         data: Dict[str, str],
         tenant_params: TenantParams,
-        test_client_auth: httpx.AsyncClient,
+        test_client_auth_csrf: httpx.AsyncClient,
+        csrf_token: str,
     ):
-        response = await test_client_auth.post(
-            f"{tenant_params.path_prefix}/forgot", data=data
+        response = await test_client_auth_csrf.post(
+            f"{tenant_params.path_prefix}/forgot",
+            data={**data, "csrf_token": csrf_token},
         )
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
@@ -50,12 +52,13 @@ class TestPostForgotPassword:
     async def test_not_existing_user(
         self,
         tenant_params: TenantParams,
-        test_client_auth: httpx.AsyncClient,
+        test_client_auth_csrf: httpx.AsyncClient,
+        csrf_token: str,
         send_task_mock: MagicMock,
     ):
-        response = await test_client_auth.post(
+        response = await test_client_auth_csrf.post(
             f"{tenant_params.path_prefix}/forgot",
-            data={"email": "louis@bretagne.duchy"},
+            data={"email": "louis@bretagne.duchy", "csrf_token": csrf_token},
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -64,15 +67,16 @@ class TestPostForgotPassword:
 
     async def test_existing_user(
         self,
-        test_client_auth: httpx.AsyncClient,
+        test_client_auth_csrf: httpx.AsyncClient,
+        csrf_token: str,
         test_data: TestData,
         workspace: Workspace,
         send_task_mock: MagicMock,
     ):
         user = test_data["users"]["regular"]
 
-        response = await test_client_auth.post(
-            "/forgot", data={"email": "anne@bretagne.duchy"}
+        response = await test_client_auth_csrf.post(
+            "/forgot", data={"email": "anne@bretagne.duchy", "csrf_token": csrf_token}
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -127,16 +131,21 @@ class TestPostResetPassword:
         self,
         data: Dict[str, str],
         tenant_params: TenantParams,
-        test_client_auth: httpx.AsyncClient,
+        test_client_auth_csrf: httpx.AsyncClient,
+        csrf_token: str,
     ):
-        response = await test_client_auth.post(
-            f"{tenant_params.path_prefix}/reset", data=data
+        response = await test_client_auth_csrf.post(
+            f"{tenant_params.path_prefix}/reset",
+            data={**data, "csrf_token": csrf_token},
         )
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 
     async def test_invalid_password(
-        self, test_client_auth: httpx.AsyncClient, test_data: TestData
+        self,
+        test_client_auth_csrf: httpx.AsyncClient,
+        csrf_token: str,
+        test_data: TestData,
     ):
         user = test_data["users"]["regular"]
         token_data = {
@@ -145,8 +154,8 @@ class TestPostResetPassword:
         }
         token = generate_jwt(token_data, UserManager.reset_password_token_secret, 3600)
 
-        response = await test_client_auth.post(
-            "/reset", data={"password": "h", "token": token}
+        response = await test_client_auth_csrf.post(
+            "/reset", data={"password": "h", "token": token, "csrf_token": csrf_token}
         )
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
@@ -155,7 +164,10 @@ class TestPostResetPassword:
         assert headers["X-Fief-Error"] == "invalid_password"
 
     async def test_valid(
-        self, test_client_auth: httpx.AsyncClient, test_data: TestData
+        self,
+        test_client_auth_csrf: httpx.AsyncClient,
+        csrf_token: str,
+        test_data: TestData,
     ):
         user = test_data["users"]["regular"]
         token_data = {
@@ -164,14 +176,18 @@ class TestPostResetPassword:
         }
         token = generate_jwt(token_data, UserManager.reset_password_token_secret, 3600)
 
-        response = await test_client_auth.post(
-            "/reset", data={"password": "hermine1", "token": token}
+        response = await test_client_auth_csrf.post(
+            "/reset",
+            data={"password": "hermine1", "token": token, "csrf_token": csrf_token},
         )
 
         assert response.status_code == status.HTTP_200_OK
 
     async def test_valid_with_login_session(
-        self, test_client_auth: httpx.AsyncClient, test_data: TestData
+        self,
+        test_client_auth_csrf: httpx.AsyncClient,
+        csrf_token: str,
+        test_data: TestData,
     ):
         user = test_data["users"]["regular"]
         token_data = {
@@ -183,8 +199,10 @@ class TestPostResetPassword:
         cookies = {}
         cookies[settings.login_session_cookie_name] = login_session.token
 
-        response = await test_client_auth.post(
-            "/reset", data={"password": "hermine1", "token": token}, cookies=cookies
+        response = await test_client_auth_csrf.post(
+            "/reset",
+            data={"password": "hermine1", "token": token, "csrf_token": csrf_token},
+            cookies=cookies,
         )
 
         assert response.status_code == status.HTTP_302_FOUND

@@ -22,7 +22,7 @@ from wtforms import (
 )
 from wtforms.utils import unset_value
 
-from fief.apps.auth.forms.base import BaseForm
+from fief.apps.auth.forms.base import BaseForm, CSRFBaseForm
 from fief.dependencies.user_field import get_registration_user_fields
 from fief.locale import gettext_lazy as _
 from fief.models import UserField, UserFieldType
@@ -108,7 +108,7 @@ class TimezoneField(SelectField):
         super().__init__(*args, choices=choices, **kwargs)
 
 
-class RegisterFormBase(BaseForm):
+class RegisterFormBase(CSRFBaseForm):
     email = EmailField(
         _("Email address"), validators=[validators.InputRequired(), validators.Email()]
     )

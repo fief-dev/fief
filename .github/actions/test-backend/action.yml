@@ -59,6 +59,5 @@ runs:
         ALLOW_ORIGIN_REGEX: http://localhost:3000
         FIEF_CLIENT_ID: FIEF_CLIENT_ID
         FIEF_CLIENT_SECRET: FIEF_CLIENT_SECRET
-        CSRF_CHECK_ENABLED: "false"
       run: |
         pytest --cov=fief/ --cov-report=term-missing

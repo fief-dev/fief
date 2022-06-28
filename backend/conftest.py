@@ -1,6 +1,7 @@
 import asyncio
 import contextlib
 import json
+import secrets
 import uuid
 from typing import Any, AsyncGenerator, Dict, Optional, Tuple
 from unittest.mock import MagicMock
@@ -478,3 +479,16 @@ async def test_client_auth(
 ) -> AsyncGenerator[httpx.AsyncClient, None]:
     async with test_client_auth_generator(auth_app) as test_client:
         yield test_client
+
+
+@pytest.fixture
+def csrf_token() -> str:
+    return secrets.token_urlsafe()
+
+
+@pytest.fixture
+async def test_client_auth_csrf(
+    test_client_auth: httpx.AsyncClient, csrf_token: str
+) -> AsyncGenerator[httpx.AsyncClient, None]:
+    test_client_auth.cookies.set(settings.csrf_cookie_name, csrf_token)
+    yield test_client_auth

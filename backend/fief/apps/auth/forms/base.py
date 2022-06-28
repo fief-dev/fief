@@ -53,12 +53,15 @@ class CSRFCookie(CSRF):
 
 class BaseForm(Form):
     class Meta:
+        def get_translations(self, form):
+            return get_translations(domain="wtforms")
+
+
+class CSRFBaseForm(BaseForm):
+    class Meta:
         csrf = settings.csrf_check_enabled
         csrf_class = CSRFCookie
         csrf_cookie_name = settings.csrf_cookie_name
-
-        def get_translations(self, form):
-            return get_translations(domain="wtforms")
 
 
 F = TypeVar("F", bound=BaseForm)

@@ -167,7 +167,8 @@ class TestGetRegisterFormClass:
                     "password": "hermine",
                     "fields.first_name": "Anne",
                 }
-            )
+            ),
+            meta={"csrf": False},
         )
 
         assert form.validate() is True
@@ -192,7 +193,8 @@ class TestGetRegisterFormClass:
         assert issubclass(form_class, RegisterFormBase)
 
         form = form_class(
-            FormData({"email": "anne@bretagne.duchy", "password": "hermine"})
+            FormData({"email": "anne@bretagne.duchy", "password": "hermine"}),
+            meta={"csrf": False},
         )
 
         assert form.validate() is False
@@ -224,7 +226,8 @@ class TestGetRegisterFormClass:
                     "password": "hermine",
                     "fields.first_name": "",
                 }
-            )
+            ),
+            meta={"csrf": False},
         )
 
         assert form.validate() is False
@@ -250,7 +253,8 @@ class TestGetRegisterFormClass:
         assert issubclass(form_class, RegisterFormBase)
 
         form = form_class(
-            FormData({"email": "anne@bretagne.duchy", "password": "hermine"})
+            FormData({"email": "anne@bretagne.duchy", "password": "hermine"}),
+            meta={"csrf": False},
         )
 
         assert form.validate() is True
@@ -281,7 +285,8 @@ class TestGetRegisterFormClass:
                     "password": "hermine",
                     "fields.newsletter": "on",
                 }
-            )
+            ),
+            meta={"csrf": False},
         )
 
         assert form.validate() is True
@@ -309,7 +314,7 @@ class TestGetRegisterFormClass:
         data = {"email": "anne@bretagne.duchy", "password": "hermine"}
         if value is not None:
             data["fields.consent"] = value
-        form = form_class(FormData(data))
+        form = form_class(FormData(data), meta={"csrf": False})
 
         assert form.validate() is False
         assert len(form.errors) == 1
@@ -340,7 +345,8 @@ class TestGetRegisterFormClass:
                     "password": "hermine",
                     "fields.consent": "on",
                 }
-            )
+            ),
+            meta={"csrf": False},
         )
 
         assert form.validate() is True
@@ -371,7 +377,8 @@ class TestGetRegisterFormClass:
                     "password": "hermine",
                     "fields.choice": "d",
                 }
-            )
+            ),
+            meta={"csrf": False},
         )
 
         assert form.validate() is False
@@ -403,7 +410,8 @@ class TestGetRegisterFormClass:
                     "password": "hermine",
                     "fields.choice": "a",
                 }
-            )
+            ),
+            meta={"csrf": False},
         )
 
         assert form.validate() is True
@@ -434,7 +442,8 @@ class TestGetRegisterFormClass:
                     "password": "hermine",
                     "fields.phone_number": "+33102030405",
                 }
-            )
+            ),
+            meta={"csrf": False},
         )
 
         assert form.validate() is True
@@ -459,7 +468,8 @@ class TestGetRegisterFormClass:
         assert issubclass(form_class, RegisterFormBase)
 
         form = form_class(
-            FormData({"email": "anne@bretagne.duchy", "password": "hermine"})
+            FormData({"email": "anne@bretagne.duchy", "password": "hermine"}),
+            meta={"csrf": False},
         )
 
         assert form.validate() is True

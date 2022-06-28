@@ -64,15 +64,20 @@ class TestPostRegister:
         self,
         cookie: Optional[str],
         tenant_params: TenantParams,
-        test_client_auth: httpx.AsyncClient,
+        test_client_auth_csrf: httpx.AsyncClient,
+        csrf_token: str,
     ):
         cookies = {}
         if cookie is not None:
             cookies[settings.login_session_cookie_name] = cookie
 
-        response = await test_client_auth.post(
+        response = await test_client_auth_csrf.post(
             f"{tenant_params.path_prefix}/register",
-            data={"email": "anne@bretagne.duchy", "password": "hermine1"},
+            data={
+                "email": "anne@bretagne.duchy",
+                "password": "hermine1",
+                "csrf_token": csrf_token,
+            },
             cookies=cookies,
         )
 
@@ -97,28 +102,38 @@ class TestPostRegister:
         self,
         data: Dict[str, str],
         tenant_params: TenantParams,
-        test_client_auth: httpx.AsyncClient,
+        test_client_auth_csrf: httpx.AsyncClient,
+        csrf_token: str,
     ):
         login_session = tenant_params.login_session
         cookies = {}
         cookies[settings.login_session_cookie_name] = login_session.token
 
-        response = await test_client_auth.post(
-            f"{tenant_params.path_prefix}/register", data=data, cookies=cookies
+        response = await test_client_auth_csrf.post(
+            f"{tenant_params.path_prefix}/register",
+            data={**data, "csrf_token": csrf_token},
+            cookies=cookies,
         )
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 
     async def test_existing_user(
-        self, test_client_auth: httpx.AsyncClient, test_data: TestData
+        self,
+        test_client_auth_csrf: httpx.AsyncClient,
+        csrf_token: str,
+        test_data: TestData,
     ):
         login_session = test_data["login_sessions"]["default"]
         cookies = {}
         cookies[settings.login_session_cookie_name] = login_session.token
 
-        response = await test_client_auth.post(
+        response = await test_client_auth_csrf.post(
             "/register",
-            data={"email": "anne@bretagne.duchy", "password": "hermine1"},
+            data={
+                "email": "anne@bretagne.duchy",
+                "password": "hermine1",
+                "csrf_token": csrf_token,
+            },
             cookies=cookies,
         )
 
@@ -129,7 +144,8 @@ class TestPostRegister:
 
     async def test_new_user(
         self,
-        test_client_auth: httpx.AsyncClient,
+        test_client_auth_csrf: httpx.AsyncClient,
+        csrf_token: str,
         test_data: TestData,
         workspace: Workspace,
         workspace_session: AsyncSession,
@@ -139,9 +155,13 @@ class TestPostRegister:
         cookies = {}
         cookies[settings.login_session_cookie_name] = login_session.token
 
-        response = await test_client_auth.post(
+        response = await test_client_auth_csrf.post(
             "/register",
-            data={"email": "louis@bretagne.duchy", "password": "hermine1"},
+            data={
+                "email": "louis@bretagne.duchy",
+                "password": "hermine1",
+                "csrf_token": csrf_token,
+            },
             cookies=cookies,
         )
 
@@ -162,15 +182,22 @@ class TestPostRegister:
         )
 
     async def test_no_email_conflict_on_another_tenant(
-        self, test_client_auth: httpx.AsyncClient, test_data: TestData
+        self,
+        test_client_auth_csrf: httpx.AsyncClient,
+        csrf_token: str,
+        test_data: TestData,
     ):
         login_session = test_data["login_sessions"]["secondary"]
         cookies = {}
         cookies[settings.login_session_cookie_name] = login_session.token
 
-        response = await test_client_auth.post(
+        response = await test_client_auth_csrf.post(
             f"/{test_data['tenants']['secondary'].slug}/register",
-            data={"email": "anne@bretagne.duchy", "password": "hermine1"},
+            data={
+                "email": "anne@bretagne.duchy",
+                "password": "hermine1",
+                "csrf_token": csrf_token,
+            },
             cookies=cookies,
         )
 
@@ -178,7 +205,8 @@ class TestPostRegister:
 
     async def test_registration_fields_set(
         self,
-        test_client_auth: httpx.AsyncClient,
+        test_client_auth_csrf: httpx.AsyncClient,
+        csrf_token: str,
         test_data: TestData,
         workspace_session: AsyncSession,
     ):
@@ -186,7 +214,7 @@ class TestPostRegister:
         cookies = {}
         cookies[settings.login_session_cookie_name] = login_session.token
 
-        response = await test_client_auth.post(
+        response = await test_client_auth_csrf.post(
             f"/{test_data['tenants']['secondary'].slug}/register",
             data={
                 "email": "anne@bretagne.duchy",
@@ -196,6 +224,7 @@ class TestPostRegister:
                 "fields.address.postal_code": "44000",
                 "fields.address.city": "Nantes",
                 "fields.address.country": "FR",
+                "csrf_token": csrf_token,
             },
             cookies=cookies,
         )
@@ -237,7 +266,8 @@ class TestPostRegister:
         self,
         data: Dict[str, Any],
         status_code: int,
-        test_client_auth: httpx.AsyncClient,
+        test_client_auth_csrf: httpx.AsyncClient,
+        csrf_token: str,
         test_data: TestData,
         workspace_session: AsyncSession,
     ):
@@ -260,11 +290,12 @@ class TestPostRegister:
         cookies = {}
         cookies[settings.login_session_cookie_name] = login_session.token
 
-        response = await test_client_auth.post(
+        response = await test_client_auth_csrf.post(
             f"/{test_data['tenants']['secondary'].slug}/register",
             data={
                 "email": "anne@bretagne.duchy",
                 "password": "hermine1",
+                "csrf_token": csrf_token,
                 **data,
             },
             cookies=cookies,

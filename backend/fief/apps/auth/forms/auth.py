@@ -1,11 +1,11 @@
 from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 from wtforms import EmailField, PasswordField, SubmitField, validators
 
-from fief.apps.auth.forms.base import BaseForm
+from fief.apps.auth.forms.base import CSRFBaseForm
 from fief.locale import gettext_lazy as _
 
 
-class LoginForm(BaseForm):
+class LoginForm(CSRFBaseForm):
     email = EmailField(
         _("Email address"), validators=[validators.InputRequired(), validators.Email()]
     )
@@ -20,6 +20,6 @@ class LoginForm(BaseForm):
         )
 
 
-class ConsentForm(BaseForm):
+class ConsentForm(CSRFBaseForm):
     allow = SubmitField(_("Allow"))
     deny = SubmitField(_("Deny"))

@@ -427,13 +427,13 @@ class TestAuthPostLogin:
         self,
         cookie: Optional[str],
         tenant_params: TenantParams,
-        test_client_auth: httpx.AsyncClient,
+        test_client_auth_csrf: httpx.AsyncClient,
     ):
         cookies = {}
         if cookie is not None:
             cookies[settings.login_session_cookie_name] = cookie
 
-        response = await test_client_auth.post(
+        response = await test_client_auth_csrf.post(
             f"{tenant_params.path_prefix}/login", cookies=cookies
         )
 
@@ -443,7 +443,10 @@ class TestAuthPostLogin:
         assert headers["X-Fief-Error"] == "invalid_session"
 
     async def test_bad_credentials(
-        self, test_client_auth: httpx.AsyncClient, test_data: TestData
+        self,
+        test_client_auth_csrf: httpx.AsyncClient,
+        csrf_token: str,
+        test_data: TestData,
     ):
         login_session = test_data["login_sessions"]["default"]
         client = login_session.client
@@ -453,11 +456,12 @@ class TestAuthPostLogin:
         cookies = {}
         cookies[settings.login_session_cookie_name] = login_session.token
 
-        response = await test_client_auth.post(
+        response = await test_client_auth_csrf.post(
             f"{path_prefix}/login",
             data={
                 "email": "anne@bretagne.duchy",
                 "password": "foo",
+                "csrf_token": csrf_token,
             },
             cookies=cookies,
         )
@@ -469,7 +473,8 @@ class TestAuthPostLogin:
 
     async def test_valid(
         self,
-        test_client_auth: httpx.AsyncClient,
+        test_client_auth_csrf: httpx.AsyncClient,
+        csrf_token: str,
         test_data: TestData,
         workspace_session: AsyncSession,
     ):
@@ -481,11 +486,12 @@ class TestAuthPostLogin:
         cookies = {}
         cookies[settings.login_session_cookie_name] = login_session.token
 
-        response = await test_client_auth.post(
+        response = await test_client_auth_csrf.post(
             f"{path_prefix}/login",
             data={
                 "email": "anne@bretagne.duchy",
                 "password": "hermine",
+                "csrf_token": csrf_token,
             },
             cookies=cookies,
         )
@@ -504,7 +510,8 @@ class TestAuthPostLogin:
 
     async def test_valid_with_session(
         self,
-        test_client_auth: httpx.AsyncClient,
+        test_client_auth_csrf: httpx.AsyncClient,
+        csrf_token: str,
         test_data: TestData,
         workspace_session: AsyncSession,
     ):
@@ -518,11 +525,12 @@ class TestAuthPostLogin:
         cookies[settings.login_session_cookie_name] = login_session.token
         cookies[settings.session_cookie_name] = session_token_tokens["regular"][0]
 
-        response = await test_client_auth.post(
+        response = await test_client_auth_csrf.post(
             f"{path_prefix}/login",
             data={
                 "email": "anne@bretagne.duchy",
                 "password": "hermine",
+                "csrf_token": csrf_token,
             },
             cookies=cookies,
         )
@@ -746,16 +754,17 @@ class TestAuthPostConsent:
         self,
         cookie: Optional[str],
         tenant_params: TenantParams,
-        test_client_auth: httpx.AsyncClient,
+        test_client_auth_csrf: httpx.AsyncClient,
+        csrf_token: str,
     ):
         cookies = {}
         if cookie is not None:
             cookies[settings.login_session_cookie_name] = cookie
 
-        response = await test_client_auth.post(
+        response = await test_client_auth_csrf.post(
             f"{tenant_params.path_prefix}/consent",
             cookies=cookies,
-            data={"allow": "allow"},
+            data={"allow": "allow", "csrf_token": csrf_token},
         )
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
@@ -767,7 +776,8 @@ class TestAuthPostConsent:
     async def test_invalid_session_token(
         self,
         cookie: Optional[str],
-        test_client_auth: httpx.AsyncClient,
+        test_client_auth_csrf: httpx.AsyncClient,
+        csrf_token: str,
         test_data: TestData,
     ):
         login_session = test_data["login_sessions"]["default"]
@@ -780,8 +790,10 @@ class TestAuthPostConsent:
         if cookie is not None:
             cookies[settings.session_cookie_name] = cookie
 
-        response = await test_client_auth.post(
-            f"{path_prefix}/consent", cookies=cookies, data={"allow": "allow"}
+        response = await test_client_auth_csrf.post(
+            f"{path_prefix}/consent",
+            cookies=cookies,
+            data={"allow": "allow", "csrf_token": csrf_token},
         )
 
         assert response.status_code == status.HTTP_302_FOUND
@@ -803,7 +815,8 @@ class TestAuthPostConsent:
     async def test_allow(
         self,
         login_session_alias: str,
-        test_client_auth: httpx.AsyncClient,
+        test_client_auth_csrf: httpx.AsyncClient,
+        csrf_token: str,
         test_data: TestData,
         workspace_session: AsyncSession,
     ):
@@ -818,8 +831,10 @@ class TestAuthPostConsent:
         cookies[settings.login_session_cookie_name] = login_session.token
         cookies[settings.session_cookie_name] = session_token_token
 
-        response = await test_client_auth.post(
-            f"{path_prefix}/consent", cookies=cookies, data={"allow": "allow"}
+        response = await test_client_auth_csrf.post(
+            f"{path_prefix}/consent",
+            cookies=cookies,
+            data={"allow": "allow", "csrf_token": csrf_token},
         )
 
         assert response.status_code == status.HTTP_302_FOUND
@@ -861,7 +876,8 @@ class TestAuthPostConsent:
     async def test_deny(
         self,
         login_session_alias: str,
-        test_client_auth: httpx.AsyncClient,
+        test_client_auth_csrf: httpx.AsyncClient,
+        csrf_token: str,
         test_data: TestData,
         workspace_session: AsyncSession,
     ):
@@ -875,8 +891,10 @@ class TestAuthPostConsent:
         cookies[settings.login_session_cookie_name] = login_session.token
         cookies[settings.session_cookie_name] = session_token_token
 
-        response = await test_client_auth.post(
-            f"{path_prefix}/consent", cookies=cookies, data={"deny": "deny"}
+        response = await test_client_auth_csrf.post(
+            f"{path_prefix}/consent",
+            cookies=cookies,
+            data={"deny": "deny", "csrf_token": csrf_token},
         )
 
         assert response.status_code == status.HTTP_302_FOUND
