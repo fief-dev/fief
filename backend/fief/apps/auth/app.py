@@ -1,5 +1,3 @@
-import wtforms.i18n
-from asgi_babel import BabelMiddleware
 from fastapi import APIRouter, FastAPI
 from fastapi.staticfiles import StaticFiles
 
@@ -10,9 +8,10 @@ from fief.apps.auth.routers.reset import router as reset_router
 from fief.apps.auth.routers.token import router as token_router
 from fief.apps.auth.routers.user import router as user_router
 from fief.apps.auth.routers.well_known import router as well_known_router
+from fief.locale import BabelMiddleware, get_babel_middleware_kwargs
 from fief.middlewares.cors import CORSMiddlewarePath
 from fief.middlewares.csrf import CSRFCookieSetterMiddleware
-from fief.paths import LOCALE_DIRECTORY, STATIC_DIRECTORY
+from fief.paths import STATIC_DIRECTORY
 
 
 def include_routers(router: APIRouter) -> APIRouter:
@@ -41,13 +40,7 @@ app.add_middleware(
     allow_headers=["Authorization", "X-Requested-With"],
 )
 
-app.add_middleware(
-    BabelMiddleware,
-    locales_dirs=[
-        LOCALE_DIRECTORY,
-        wtforms.i18n.messages_path(),
-    ],
-)
+app.add_middleware(BabelMiddleware, **get_babel_middleware_kwargs())
 app.include_router(default_tenant_router)
 app.include_router(tenant_router)
 app.mount("/static", StaticFiles(directory=STATIC_DIRECTORY), name="auth:static")

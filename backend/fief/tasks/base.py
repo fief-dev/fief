@@ -12,7 +12,7 @@ from sqlalchemy import select
 from fief.db import AsyncSession
 from fief.db.engine import AsyncSession, create_async_session_maker, create_engine
 from fief.db.workspace import get_connection
-from fief.locale import Translations
+from fief.locale import BabelMiddleware, Translations, get_babel_middleware_kwargs
 from fief.logger import init_audit_logger, logger
 from fief.models import Tenant, User, Workspace
 from fief.paths import EMAIL_TEMPLATES_DIRECTORY
@@ -95,6 +95,7 @@ class TaskBase:
             asyncio.set_event_loop(loop)
 
         init_audit_logger(loop)
+        BabelMiddleware(app=None, **get_babel_middleware_kwargs())
         logger.debug("Start task", task=self.__name__)
         result = loop.run_until_complete(self.run(*args, **kwargs))
         logger.debug("Done task", task=self.__name__)

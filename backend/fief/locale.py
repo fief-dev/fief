@@ -1,7 +1,18 @@
+from typing import Any, Mapping
+
 import asgi_babel
+import wtforms.i18n
 from babel import Locale, support
 
+from fief.paths import LOCALE_DIRECTORY
+
 Translations = support.Translations
+
+BabelMiddleware = asgi_babel.BabelMiddleware
+
+
+def get_babel_middleware_kwargs() -> Mapping[str, Any]:
+    return dict(locales_dirs=[LOCALE_DIRECTORY, wtforms.i18n.messages_path()])
 
 
 def gettext_lazy(string: str, domain: str = None, **variables):
