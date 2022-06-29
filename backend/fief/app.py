@@ -12,6 +12,7 @@ from fief.settings import settings
 sentry_sdk.init(
     dsn=settings.sentry_dsn_server,
     environment=settings.environment.value,
+    traces_sample_rate=0.5,
     release=__version__,
     integrations=[RedisIntegration()],
 )
