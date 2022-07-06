@@ -24,12 +24,18 @@ def upgrade():
     op.execute("DELETE FROM fief_authorization_codes")
     op.execute("DELETE FROM fief_login_sessions")
 
+    connection = op.get_bind()
+
+    server_default = None
+    if connection.dialect.name == "sqlite":
+        server_default = "0"
+
     op.add_column(
         "fief_authorization_codes",
         sa.Column(
             "expires_at",
             fief.models.generics.TIMESTAMPAware(timezone=True),
-            default=datetime.now(timezone.utc),
+            server_default=server_default,
             nullable=False,
         ),
     )
@@ -44,7 +50,7 @@ def upgrade():
         sa.Column(
             "expires_at",
             fief.models.generics.TIMESTAMPAware(timezone=True),
-            default=datetime.now(timezone.utc),
+            server_default=server_default,
             nullable=False,
         ),
     )
