@@ -14,6 +14,11 @@ lint:
 test $UNIT_TESTS="1": start-db
   pytest --cov fief/ --cov-report=term-missing
 
+add-translation language:
+  mkdir -p fief/locale/{{language}}/LC_MESSAGES
+  touch fief/locale/{{language}}/LC_MESSAGES/messages.po
+  just update-translations
+
 update-translations:
   pybabel extract --mapping babel.cfg --output-file=fief/locale/messages.pot .
   pybabel update --domain=messages --input-file=fief/locale/messages.pot --output-dir=fief/locale
