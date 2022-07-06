@@ -27,6 +27,7 @@ def upgrade():
         sa.Column(
             "expires_at",
             fief.models.generics.TIMESTAMPAware(timezone=True),
+            server_default=sa.func.now(),
             nullable=False,
         ),
     )
@@ -41,6 +42,7 @@ def upgrade():
         sa.Column(
             "expires_at",
             fief.models.generics.TIMESTAMPAware(timezone=True),
+            server_default=sa.func.now(),
             nullable=False,
         ),
     )
