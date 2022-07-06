@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import datetime
 from typing import List, Optional, Tuple, TypeVar
 
 from fastapi import Response, status
@@ -98,11 +98,8 @@ class AuthenticationFlow:
         self, response: ResponseType, user_id: UUID4
     ) -> ResponseType:
         token, token_hash = generate_token()
-        expires_at = datetime.now(timezone.utc) + timedelta(
-            seconds=settings.session_lifetime_seconds
-        )
         await self.session_token_repository.create(
-            SessionToken(token=token_hash, expires_at=expires_at, user_id=user_id)
+            SessionToken(token=token_hash, user_id=user_id)
         )
         response.set_cookie(
             settings.session_cookie_name,

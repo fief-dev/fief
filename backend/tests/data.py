@@ -454,7 +454,7 @@ authorization_codes: ModelMapping[AuthorizationCode] = {
         authenticated_at=now,
     ),
     "expired": AuthorizationCode(
-        created_at=datetime.now(timezone.utc)
+        expires_at=datetime.now(timezone.utc)
         - timedelta(seconds=settings.authorization_code_lifetime_seconds),
         code=authorization_code_codes["expired"][1],
         c_hash=get_validation_hash(authorization_code_codes["expired"][0]),
@@ -499,7 +499,6 @@ refresh_token_tokens: Mapping[str, Tuple[str, str]] = {
 refresh_tokens: ModelMapping[RefreshToken] = {
     "default_regular": RefreshToken(
         token=refresh_token_tokens["default_regular"][1],
-        expires_at=datetime.now(timezone.utc) + timedelta(seconds=3600),
         user=users["regular"],
         client=clients["default_tenant"],
         scope=["openid", "offline_access"],
@@ -507,7 +506,6 @@ refresh_tokens: ModelMapping[RefreshToken] = {
     ),
     "default_public_regular": RefreshToken(
         token=refresh_token_tokens["default_public_regular"][1],
-        expires_at=datetime.now(timezone.utc) + timedelta(seconds=3600),
         user=users["regular"],
         client=clients["public_default_tenant"],
         scope=["openid", "offline_access"],
@@ -524,12 +522,10 @@ session_token_tokens: Mapping[str, Tuple[str, str]] = {
 session_tokens: ModelMapping[SessionToken] = {
     "regular": SessionToken(
         token=session_token_tokens["regular"][1],
-        expires_at=datetime.now(timezone.utc) + timedelta(seconds=3600),
         user=users["regular"],
     ),
     "regular_secondary": SessionToken(
         token=session_token_tokens["regular_secondary"][1],
-        expires_at=datetime.now(timezone.utc) + timedelta(seconds=3600),
         user=users["regular_secondary"],
     ),
 }

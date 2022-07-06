@@ -1,4 +1,5 @@
 import asyncio
+from datetime import datetime, timezone
 from typing import (
     Any,
     Generic,
@@ -13,13 +14,13 @@ from typing import (
 )
 
 from pydantic import UUID4
-from sqlalchemy import func, select
+from sqlalchemy import delete, func, select
 from sqlalchemy.engine import Result
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import InstrumentedAttribute, RelationshipProperty
 from sqlalchemy.sql import Executable, Select
 
-from fief.models.generics import M_UUID, M
+from fief.models.generics import M_EXPIRES_AT, M_UUID, M
 
 
 class BaseRepositoryProtocol(Protocol[M]):
@@ -62,6 +63,13 @@ class UUIDRepositoryProtocol(BaseRepositoryProtocol, Protocol[M_UUID]):
     model: Type[M_UUID]
 
     async def get_by_id(self, id: UUID4) -> Optional[M_UUID]:
+        ...  # pragma: no cover
+
+
+class ExpiresAtRepositoryProtocol(BaseRepositoryProtocol, Protocol[M_EXPIRES_AT]):
+    model: Type[M_EXPIRES_AT]
+
+    async def delete_expired(self) -> None:
         ...  # pragma: no cover
 
 
@@ -177,6 +185,14 @@ class UUIDRepositoryMixin(Generic[M_UUID]):
             statement = statement.options(*options)
 
         return await self.get_one_or_none(statement)
+
+
+class ExpiresAtMixin(Generic[M_EXPIRES_AT]):
+    async def delete_expired(self: ExpiresAtRepositoryProtocol[M_EXPIRES_AT]):
+        statement = delete(self.model).where(
+            self.model.expires_at < datetime.now(timezone.utc)
+        )
+        await self.session.execute(statement)
 
 
 REPOSITORY = TypeVar("REPOSITORY", bound=BaseRepository)

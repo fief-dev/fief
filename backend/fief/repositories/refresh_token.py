@@ -4,11 +4,13 @@ from typing import Optional
 from sqlalchemy import select
 
 from fief.models import RefreshToken
-from fief.repositories.base import BaseRepository, UUIDRepositoryMixin
+from fief.repositories.base import BaseRepository, ExpiresAtMixin, UUIDRepositoryMixin
 
 
 class RefreshTokenRepository(
-    BaseRepository[RefreshToken], UUIDRepositoryMixin[RefreshToken]
+    BaseRepository[RefreshToken],
+    UUIDRepositoryMixin[RefreshToken],
+    ExpiresAtMixin[RefreshToken],
 ):
     model = RefreshToken
 

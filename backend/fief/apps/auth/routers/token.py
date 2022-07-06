@@ -1,5 +1,3 @@
-from datetime import datetime, timedelta, timezone
-
 from fastapi import APIRouter, Depends, Response
 
 from fief.crypto.access_token import generate_access_token
@@ -75,13 +73,9 @@ async def token(
     )
 
     if "offline_access" in scope:
-        expires_at = datetime.now(timezone.utc) + timedelta(
-            seconds=settings.refresh_token_lifetime_seconds
-        )
         token, token_hash = generate_token()
         refresh_token = RefreshToken(
             token=token_hash,
-            expires_at=expires_at,
             scope=scope,
             user_id=user.id,
             client_id=client.id,

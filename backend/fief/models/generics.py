@@ -1,10 +1,12 @@
+import functools
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Optional, TypeVar
 
 from pydantic import UUID4
 from sqlalchemy import TIMESTAMP, Column
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import declarative_mixin
 from sqlalchemy.sql import func
 from sqlalchemy.types import CHAR, TypeDecorator
@@ -98,5 +100,24 @@ class CreatedUpdatedAt(BaseModel):
     )
 
 
+def _get_default_expires_at(timedelta_seconds: int) -> datetime:
+    return datetime.now(timezone.utc) + timedelta(seconds=timedelta_seconds)
+
+
+@declarative_mixin
+class ExpiresAt(BaseModel):
+    @declared_attr
+    def expires_at(cls) -> Column[TIMESTAMPAware]:
+        return Column(
+            TIMESTAMPAware(timezone=True),
+            nullable=False,
+            index=True,
+            default=functools.partial(
+                _get_default_expires_at, timedelta_seconds=cls.__lifetime_seconds__
+            ),
+        )
+
+
 M = TypeVar("M", bound=BaseModel)
 M_UUID = TypeVar("M_UUID", bound=UUIDModel)
+M_EXPIRES_AT = TypeVar("M_EXPIRES_AT", bound=ExpiresAt)

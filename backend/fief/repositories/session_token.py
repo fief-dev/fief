@@ -4,11 +4,13 @@ from typing import Optional
 from sqlalchemy import select
 
 from fief.models import SessionToken
-from fief.repositories.base import BaseRepository, UUIDRepositoryMixin
+from fief.repositories.base import BaseRepository, ExpiresAtMixin, UUIDRepositoryMixin
 
 
 class SessionTokenRepository(
-    BaseRepository[SessionToken], UUIDRepositoryMixin[SessionToken]
+    BaseRepository[SessionToken],
+    UUIDRepositoryMixin[SessionToken],
+    ExpiresAtMixin[SessionToken],
 ):
     model = SessionToken
 
