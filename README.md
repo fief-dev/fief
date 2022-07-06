@@ -14,7 +14,7 @@
 ## Contributing
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-6-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-7-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 All contributions to improve the project are welcome! In particular, bug and documentation fixes are really appreciated.
@@ -34,6 +34,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="https://github.com/paolodina"><img src="https://avatars.githubusercontent.com/u/1157401?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Paolo Dina</b></sub></a><br /><a href="https://github.com/fief-dev/fief/issues?q=author%3Apaolodina" title="Bug reports">🐛</a></td>
     <td align="center"><a href="https://github.com/duber000"><img src="https://avatars.githubusercontent.com/u/12467861?v=4?s=100" width="100px;" alt=""/><br /><sub><b>duber000</b></sub></a><br /><a href="https://github.com/fief-dev/fief/commits?author=duber000" title="Code">💻</a></td>
     <td align="center"><a href="https://theraloss.com"><img src="https://avatars.githubusercontent.com/u/6277291?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Danilo Polani</b></sub></a><br /><a href="#translation-danilopolani" title="Translation">🌍</a></td>
+    <td align="center"><a href="https://github.com/ChuckMoe"><img src="https://avatars.githubusercontent.com/u/25569291?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Moritz</b></sub></a><br /><a href="#translation-ChuckMoe" title="Translation">🌍</a></td>
   </tr>
 </table>
 
