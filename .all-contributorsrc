@@ -61,6 +61,15 @@
       "contributions": [
         "translation"
       ]
+    },
+    {
+      "login": "ChuckMoe",
+      "name": "Moritz",
+      "avatar_url": "https://avatars.githubusercontent.com/u/25569291?v=4",
+      "profile": "https://github.com/ChuckMoe",
+      "contributions": [
+        "translation"
+      ]
     }
   ],
   "contributorsPerLine": 7,
