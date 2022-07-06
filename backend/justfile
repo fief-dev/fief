@@ -68,7 +68,7 @@ start-server-watch app="fief.app:app":
   watchexec -r --exts po,py,html -- just start-server {{app}}
 
 start-worker: start-db start-redis
-  dramatiq fief.worker -p 1 -t 1
+  dramatiq fief.worker -p 1 -t 1 -f fief.scheduler:schedule
 
 bumpversion version:
   bumpversion {{version}}

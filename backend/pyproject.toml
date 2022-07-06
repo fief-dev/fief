@@ -53,6 +53,10 @@ ignore_missing_imports = true
 module = "wtforms.*"
 ignore_missing_imports = true
 
+[[tool.mypy.overrides]]
+module = "apscheduler.*"
+ignore_missing_imports = true
+
 [tool.isort]
 profile = "black"
 
@@ -88,6 +92,7 @@ dependencies = [
     "aiomysql ==0.1.1",
     "aiosqlite ==0.17.0",
     "alembic ==1.8.0",
+    "apscheduler ==3.9.1",
     "argon2_cffi ==21.3.0",
     "asgi-babel==0.7.0",
     "asyncpg ==0.25.0",

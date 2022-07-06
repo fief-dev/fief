@@ -273,7 +273,7 @@ def run_worker(ctx: typer.Context):
     Just forwards the options to the Dramatiq CLI.
     """
     parser = dramatiq_cli.make_argument_parser()
-    args = parser.parse_args(ctx.args + ["fief.worker"])
+    args = parser.parse_args(ctx.args + ["fief.worker", "-ffief.scheduler:schedule"])
     dramatiq_cli.main(args)
 
 
