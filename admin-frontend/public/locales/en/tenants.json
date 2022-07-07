@@ -3,6 +3,15 @@
     "title": "Tenants",
     "name": "Name",
     "base_url": "Base URL",
-    "default": "Default"
+    "default": "Default",
+    "create": "Create Tenant"
+  },
+  "base": {
+    "name": "Name"
+  },
+  "create": {
+    "title": "Create Tenant",
+    "cancel": "Cancel",
+    "submit": "Create"
   }
 }

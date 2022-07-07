@@ -1,8 +1,10 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Column } from 'react-table';
-import ClipboardButton from '../../components/ClipboardButton/ClipboardButton';
+import { PlusIcon } from '@heroicons/react/solid';
 
+import ClipboardButton from '../../components/ClipboardButton/ClipboardButton';
+import CreateTenantModal from '../../components/CreateTenantModal/CreateTenantModal';
 import DataTable from '../../components/DataTable/DataTable';
 import Layout from '../../components/Layout/Layout';
 import { usePaginationAPI } from '../../hooks/api';
@@ -19,6 +21,7 @@ const Tenants: React.FunctionComponent<React.PropsWithChildren<unknown>> = () =>
     onPageChange,
     sorting,
     onSortingChange,
+    refresh,
   } = usePaginationAPI<'listTenants'>({ method: 'listTenants', limit: 10 });
 
   const columns = useMemo<Column<schemas.tenant.Tenant>[]>(() => {
@@ -44,15 +47,21 @@ const Tenants: React.FunctionComponent<React.PropsWithChildren<unknown>> = () =>
           const baseURL = original.default ? FIEF_INSTANCE : `${FIEF_INSTANCE}/${value}`;
 
           return (
-          <span className="flex">
-            <span>{baseURL}</span>
-            <ClipboardButton text={baseURL} />
-          </span>
+            <span className="flex">
+              <span>{baseURL}</span>
+              <ClipboardButton text={baseURL} />
+            </span>
           );
-      }
+        }
       },
     ];
   }, [t]);
+
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const onCreated = useCallback((client: schemas.tenant.Tenant) => {
+    setShowCreateModal(false);
+    refresh();
+  }, [refresh]);
 
   return (
     <Layout>
@@ -60,6 +69,16 @@ const Tenants: React.FunctionComponent<React.PropsWithChildren<unknown>> = () =>
 
         <div className="mb-4 sm:mb-0">
           <h1 className="text-2xl md:text-3xl text-slate-800 font-bold">{t('tenants:list.title')}</h1>
+        </div>
+
+        <div className="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
+          <button
+            className="btn bg-primary-500 hover:bg-primary-600 text-white"
+            onClick={() => setShowCreateModal(true)}
+          >
+            <PlusIcon width="16" height="16" />
+            <span className="hidden xs:block ml-2">{t('tenants:list.create')}</span>
+          </button>
         </div>
 
       </div>
@@ -75,6 +94,12 @@ const Tenants: React.FunctionComponent<React.PropsWithChildren<unknown>> = () =>
         page={page}
         maxPage={maxPage}
         onPageChange={onPageChange}
+      />
+
+      <CreateTenantModal
+        open={showCreateModal}
+        onCreated={onCreated}
+        onClose={() => setShowCreateModal(false)}
       />
     </Layout>
   );

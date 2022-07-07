@@ -1,4 +1,8 @@
-from fief.schemas.generics import CreatedUpdatedAt, UUIDSchema
+from fief.schemas.generics import BaseModel, CreatedUpdatedAt, UUIDSchema
+
+
+class TenantCreate(BaseModel):
+    name: str
 
 
 class BaseTenant(UUIDSchema, CreatedUpdatedAt):

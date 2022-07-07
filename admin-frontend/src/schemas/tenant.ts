@@ -1,5 +1,9 @@
 import { CreatedUpdatedAt, PaginationParameters, UUIDSchema } from './generics';
 
+export interface TenantCreate {
+  name: string;
+}
+
 interface BaseTenant extends UUIDSchema, CreatedUpdatedAt {
   name: string;
   default: boolean;

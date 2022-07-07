@@ -48,6 +48,10 @@ export class APIClient {
     return this.client.get('/tenants/', { params });
   }
 
+  public createTenant(data: schemas.tenant.TenantCreate): Promise<AxiosResponse<schemas.tenant.Tenant>> {
+    return this.client.post('/tenants/', data);
+  }
+
   public listClients(params: schemas.PaginationParameters = {}): Promise<AxiosResponse<schemas.PaginatedResults<schemas.client.Client>>> {
     return this.client.get('/clients/', { params });
   }
