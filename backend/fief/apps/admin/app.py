@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fief.apps.admin.routers.api_keys import router as api_keys_router
 from fief.apps.admin.routers.auth import router as auth_router
 from fief.apps.admin.routers.clients import router as clients_router
+from fief.apps.admin.routers.oauth_providers import router as oauth_providers_router
 from fief.apps.admin.routers.permissions import router as permissions_router
 from fief.apps.admin.routers.roles import router as roles_router
 from fief.apps.admin.routers.tenants import router as tenants_router
@@ -25,6 +26,7 @@ app.add_middleware(
 app.include_router(api_keys_router, prefix="/api-keys", include_in_schema=False)
 app.include_router(auth_router, prefix="/auth", include_in_schema=False)
 app.include_router(clients_router, prefix="/clients")
+app.include_router(oauth_providers_router, prefix="/oauth-providers")
 app.include_router(permissions_router, prefix="/permissions")
 app.include_router(roles_router, prefix="/roles")
 app.include_router(tenants_router, prefix="/tenants")

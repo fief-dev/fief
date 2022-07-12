@@ -15,6 +15,7 @@ from fief.models import (
     Grant,
     LoginSession,
     M,
+    OAuthProvider,
     Permission,
     RefreshToken,
     Role,
@@ -27,6 +28,7 @@ from fief.models import (
     UserPermission,
     UserRole,
 )
+from fief.services.oauth_provider import AvailableOAuthProvider
 from fief.settings import settings
 
 ModelMapping = Mapping[str, M]
@@ -40,6 +42,7 @@ class TestData(TypedDict):
 
     tenants: ModelMapping[Tenant]
     clients: ModelMapping[Client]
+    oauth_providers: ModelMapping[OAuthProvider]
     user_fields: ModelMapping[UserField]
     users: ModelMapping[User]
     user_field_values: ModelMapping[UserFieldValue]
@@ -102,6 +105,21 @@ clients: ModelMapping[Client] = {
         name="Secondary",
         tenant=tenants["secondary"],
         redirect_uris=["https://nantes.city/callback"],
+    ),
+}
+
+oauth_providers: ModelMapping[OAuthProvider] = {
+    "google": OAuthProvider(
+        provider=AvailableOAuthProvider.GOOGLE,
+        client_id="GOOGLE_CLIENT_ID",
+        client_secret="GOOGLE_CLIENT_SECRET",
+    ),
+    "custom": OAuthProvider(
+        provider=AvailableOAuthProvider.CUSTOM,
+        client_id="CUSTOM_CLIENT_ID",
+        client_secret="CUSTOM_CLIENT_SECRET",
+        authorize_endpoint="http://rome.city/authorize",
+        access_token_endpoint="http://rome.city/token",
     ),
 }
 
@@ -597,6 +615,7 @@ user_roles: ModelMapping[UserRole] = {
 data_mapping: TestData = {
     "tenants": tenants,
     "clients": clients,
+    "oauth_providers": oauth_providers,
     "user_fields": user_fields,
     "users": users,
     "user_field_values": user_field_values,
