@@ -19,7 +19,7 @@
 
 All contributions to improve the project are welcome! In particular, bug and documentation fixes are really appreciated.
 
-For new features and larger improvements, we kindly ask you to [**open a discussion first**](https://github.com/fief-dev/fief/discussions/new?category=ideas) about your idea, what motivates it and how you plan to implement it **before you start working**. It'll avoid frustration on both sides if we decide not to integrate your code in the project.
+For new features and larger improvements, we kindly ask you to [**open a discussion first**](https://github.com/orgs/fief-dev/discussions/new?category=ideas) about your idea, what motivates it and how you plan to implement it **before you start working**. It'll avoid frustration on both sides if we decide not to integrate your code in the project.
 
 Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
 

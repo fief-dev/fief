@@ -20,7 +20,7 @@ const Dashboard: React.FunctionComponent<React.PropsWithChildren<unknown>> = () 
           </a>
           <a
             className="btn bg-white border-slate-200 hover:border-slate-300 text-slate-600 ml-2"
-            href="https://github.com/fief-dev/fief/discussions"
+            href="https://github.com/orgs/fief-dev/discussions"
             target="_blank"
             rel="noopener noreferrer"
           >
