@@ -13,6 +13,9 @@ class EmailProvider(Protocol):
     ):
         ...
 
+    def format_address(self, email: str, name: Optional[str] = None):
+        return email if name is None else f"{name} <{email}>"
+
 
 class EmailError(Exception):
     def __init__(self, message: str):

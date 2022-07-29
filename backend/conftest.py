@@ -2,9 +2,10 @@ import asyncio
 import contextlib
 import json
 import secrets
+import smtplib
 import uuid
 from typing import Any, AsyncGenerator, Dict, Optional, Tuple
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import asgi_lifespan
 import httpx
@@ -228,6 +229,12 @@ async def fief_client_mock() -> MagicMock:
 @pytest.fixture
 async def send_task_mock() -> MagicMock:
     return MagicMock(spec=send_task)
+
+
+@pytest.fixture
+def smtplib_mock() -> MagicMock:
+    with patch("smtplib.SMTP", autospec=True) as mock:
+        yield mock
 
 
 @pytest.fixture
