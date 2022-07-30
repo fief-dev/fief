@@ -89,7 +89,8 @@ async def create_main_fief_workspace() -> Workspace:
             default_redirect_uris=[
                 f"http://{settings.fief_domain}/admin/api/auth/callback",
                 f"https://{settings.fief_domain}/admin/api/auth/callback",
-                "http://localhost:8000/docs/oauth2-redirect",
+                # "http://localhost:8500/docs/oauth2-redirect",
+                f"{settings.oauth2_redirect}",
             ],
         )
 

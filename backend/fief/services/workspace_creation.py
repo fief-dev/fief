@@ -3,6 +3,7 @@ from typing import List, Optional
 
 from pydantic import UUID4
 
+from fief.settings import settings
 from fief.db.workspace import get_workspace_session
 from fief.models import Client, Tenant, Workspace, WorkspaceUser
 from fief.repositories import (
@@ -91,7 +92,7 @@ class WorkspaceCreation:
                 tenant=tenant,
                 redirect_uris=default_redirect_uris
                 if default_redirect_uris is not None
-                else ["http://localhost:8000/docs/oauth2-redirect"],
+                else [f"{settings.oauth2_redirect}"],
             )
 
             if default_client_id is not None:

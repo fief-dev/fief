@@ -12,10 +12,10 @@ from fief.crypto.jwk import load_jwk
 from fief.models.base import WorkspaceBase
 from fief.models.generics import GUID, CreatedUpdatedAt, UUIDModel
 from fief.models.tenant import Tenant
-
+from fief.settings import settings
 
 def get_default_redirect_uris() -> List[str]:
-    return ["http://localhost:8000/docs/oauth2-redirect"]
+    return [f"{settings.oauth2_redirect}"]
 
 
 class ClientType(str, enum.Enum):

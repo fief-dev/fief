@@ -41,6 +41,8 @@ class Settings(BaseSettings):
     allow_origin_regex: str = "http://.*localhost:[0-9]+"
     port: int = 8000
 
+    oauth2_redirect="http://localhost:8500/docs/oauth2-redirect"
+
     secret: SecretStr
     encryption_key: bytes
 

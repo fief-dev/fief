@@ -44,7 +44,7 @@ async def create_tenant(
         name=f"{tenant.name}'s client",
         first_party=True,
         tenant=tenant,
-        redirect_uris=["http://localhost:8000/docs/oauth2-redirect"],
+        redirect_uris=[f"{settings.oauth2_redirect}"],
     )
     await client_repository.create(client)
 
