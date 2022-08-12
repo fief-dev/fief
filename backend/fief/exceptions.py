@@ -9,6 +9,7 @@ from fief.schemas.auth import (
     LogoutError,
     TokenError,
 )
+from fief.schemas.oauth import OAuthError
 
 
 class AuthorizeException(Exception):
@@ -36,6 +37,15 @@ class AuthorizeRedirectException(Exception):
 class LoginException(Exception):
     def __init__(
         self, error: LoginError, tenant: Optional[Tenant] = None, *, fatal: bool = False
+    ) -> None:
+        self.error = error
+        self.tenant = tenant
+        self.fatal = fatal
+
+
+class OAuthException(Exception):
+    def __init__(
+        self, error: OAuthError, tenant: Optional[Tenant] = None, *, fatal: bool = False
     ) -> None:
         self.error = error
         self.tenant = tenant

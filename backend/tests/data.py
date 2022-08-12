@@ -15,7 +15,9 @@ from fief.models import (
     Grant,
     LoginSession,
     M,
+    OAuthAccount,
     OAuthProvider,
+    OAuthSession,
     Permission,
     RefreshToken,
     Role,
@@ -47,9 +49,11 @@ class TestData(TypedDict):
     users: ModelMapping[User]
     user_field_values: ModelMapping[UserFieldValue]
     login_sessions: ModelMapping[LoginSession]
+    oauth_sessions: ModelMapping[OAuthSession]
     authorization_codes: ModelMapping[AuthorizationCode]
     refresh_tokens: ModelMapping[RefreshToken]
     session_tokens: ModelMapping[SessionToken]
+    oauth_accounts: ModelMapping[OAuthAccount]
     grants: ModelMapping[Grant]
     permissions: ModelMapping[Permission]
     roles: ModelMapping[Role]
@@ -241,6 +245,13 @@ users: ModelMapping[User] = {
         hashed_password=hashed_password,
         tenant=tenants["default"],
     ),
+    "inactive": User(
+        id=uuid.uuid4(),
+        email="marguerite@bretagne.duchy",
+        hashed_password=hashed_password,
+        is_active=False,
+        tenant=tenants["default"],
+    ),
 }
 
 user_field_values: ModelMapping[UserFieldValue] = {
@@ -403,6 +414,14 @@ login_sessions: ModelMapping[LoginSession] = {
     ),
 }
 
+oauth_sessions: ModelMapping[OAuthSession] = {
+    "default_google": OAuthSession(
+        redirect_uri="http://api.fief.dev/oauth/callback",
+        oauth_provider=oauth_providers["google"],
+        login_session=login_sessions["default"],
+    ),
+}
+
 authorization_code_codes: Mapping[str, Tuple[str, str]] = {
     "default_regular": generate_token(),
     "default_regular_code_challenge_plain": generate_token(),
@@ -508,7 +527,6 @@ authorization_codes: ModelMapping[AuthorizationCode] = {
     ),
 }
 
-
 refresh_token_tokens: Mapping[str, Tuple[str, str]] = {
     "default_regular": generate_token(),
     "default_public_regular": generate_token(),
@@ -531,7 +549,6 @@ refresh_tokens: ModelMapping[RefreshToken] = {
     ),
 }
 
-
 session_token_tokens: Mapping[str, Tuple[str, str]] = {
     "regular": generate_token(),
     "regular_secondary": generate_token(),
@@ -545,6 +562,27 @@ session_tokens: ModelMapping[SessionToken] = {
     "regular_secondary": SessionToken(
         token=session_token_tokens["regular_secondary"][1],
         user=users["regular_secondary"],
+    ),
+}
+
+oauth_accounts: ModelMapping[OAuthAccount] = {
+    "regular_google": OAuthAccount(
+        access_token="REGULAR_GOOGLE_ACCESS_TOKEN",
+        expires_at=datetime.now(timezone.utc) + timedelta(seconds=3600),
+        refresh_token="REGULAR_GOOGLE_REFRESH_TOKEN",
+        account_id="REGULAR_GOOGLE_ACCOUNT_ID",
+        account_email="anne@bretagne.duchy",
+        oauth_provider=oauth_providers["google"],
+        user=users["regular"],
+    ),
+    "inactive_google": OAuthAccount(
+        access_token="INACTIVE_GOOGLE_ACCESS_TOKEN",
+        expires_at=datetime.now(timezone.utc) + timedelta(seconds=3600),
+        refresh_token="INACTIVE_GOOGLE_REFRESH_TOKEN",
+        account_id="INACTIVE_GOOGLE_ACCOUNT_ID",
+        account_email="marguerite@bretagne.duchy",
+        oauth_provider=oauth_providers["google"],
+        user=users["inactive"],
     ),
 }
 
@@ -620,9 +658,11 @@ data_mapping: TestData = {
     "users": users,
     "user_field_values": user_field_values,
     "login_sessions": login_sessions,
+    "oauth_sessions": oauth_sessions,
     "authorization_codes": authorization_codes,
     "refresh_tokens": refresh_tokens,
     "session_tokens": session_tokens,
+    "oauth_accounts": oauth_accounts,
     "grants": grants,
     "permissions": permissions,
     "roles": roles,

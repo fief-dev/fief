@@ -73,6 +73,8 @@ class Settings(BaseSettings):
     login_session_cookie_secure: bool = True
     login_session_lifetime_seconds: int = 600
 
+    oauth_session_lifetime_seconds: int = 600
+
     session_cookie_name: str = "fief_session"
     session_cookie_domain: str = ""
     session_cookie_secure: bool = True

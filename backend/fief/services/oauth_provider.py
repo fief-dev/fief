@@ -1,10 +1,14 @@
 from enum import Enum
-from typing import Dict, Type
+from typing import TYPE_CHECKING, Any, Dict, Tuple, Type
 
 from httpx_oauth.clients.facebook import FacebookOAuth2
 from httpx_oauth.clients.github import GitHubOAuth2
 from httpx_oauth.clients.google import GoogleOAuth2
+from httpx_oauth.errors import GetIdEmailError
 from httpx_oauth.oauth2 import BaseOAuth2, OAuth2
+
+if TYPE_CHECKING:
+    from fief.models import OAuthProvider
 
 
 class AvailableOAuthProvider(str, Enum):
@@ -20,3 +24,40 @@ OAUTH_PROVIDERS: Dict[AvailableOAuthProvider, Type[BaseOAuth2]] = {
     AvailableOAuthProvider.GOOGLE: GoogleOAuth2,
     AvailableOAuthProvider.CUSTOM: OAuth2,
 }
+
+
+def get_oauth_provider_service(oauth_provider: "OAuthProvider") -> BaseOAuth2:
+    provider = oauth_provider.provider
+    oauth_provider_class = OAUTH_PROVIDERS[provider]
+    oauth_provider_class_kwargs: Dict[str, Any] = {
+        "client_id": oauth_provider.client_id,
+        "client_secret": oauth_provider.client_secret,
+    }
+    if provider == AvailableOAuthProvider.CUSTOM:
+        oauth_provider_class_kwargs[
+            "authorize_endpoint"
+        ] = oauth_provider.authorize_endpoint
+        oauth_provider_class_kwargs[
+            "access_token_endpoint"
+        ] = oauth_provider.access_token_endpoint
+        oauth_provider_class_kwargs[
+            "refresh_token_endpoint"
+        ] = oauth_provider.refresh_token_endpoint
+        oauth_provider_class_kwargs[
+            "revoke_token_endpoint"
+        ] = oauth_provider.revoke_token_endpoint
+    return oauth_provider_class(**oauth_provider_class_kwargs)
+
+
+async def get_oauth_id_email(
+    oauth_provider: "OAuthProvider", access_token: str
+) -> Tuple[str, str]:
+    oauth_provider_service = get_oauth_provider_service(oauth_provider)
+
+    try:
+        return await oauth_provider_service.get_id_email(access_token)
+    except (NotImplementedError, GetIdEmailError) as e:
+        raise
+
+
+__all__ = ["OAUTH_PROVIDERS", "AvailableOAuthProvider", "BaseOAuth2"]

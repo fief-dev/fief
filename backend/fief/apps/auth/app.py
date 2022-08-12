@@ -3,6 +3,7 @@ from fastapi.staticfiles import StaticFiles
 
 from fief.apps.auth.exception_handlers import exception_handlers
 from fief.apps.auth.routers.auth import router as auth_router
+from fief.apps.auth.routers.oauth import router as oauth_router
 from fief.apps.auth.routers.register import router as register_router
 from fief.apps.auth.routers.reset import router as reset_router
 from fief.apps.auth.routers.token import router as token_router
@@ -16,6 +17,7 @@ from fief.paths import STATIC_DIRECTORY
 
 def include_routers(router: APIRouter) -> APIRouter:
     router.include_router(auth_router, include_in_schema=False)
+    router.include_router(oauth_router, include_in_schema=False)
     router.include_router(register_router, include_in_schema=False)
     router.include_router(reset_router, include_in_schema=False)
     router.include_router(token_router, prefix="/api")
