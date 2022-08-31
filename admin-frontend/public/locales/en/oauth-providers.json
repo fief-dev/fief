@@ -1,0 +1,29 @@
+{
+  "available_oauth_provider": {
+    "FACEBOOK": "Facebook",
+    "GITHUB": "GitHub",
+    "GOOGLE": "Google",
+    "CUSTOM": "Custom"
+  },
+  "base": {
+    "provider": "Provider",
+    "name": "Name",
+    "client_id": "Client ID",
+    "client_secret": "Client Secret",
+    "authorize_endpoint": "Authorize endpoint",
+    "access_token_endpoint": "Access token endpoint",
+    "refresh_token_endpoint": "Refresh token endpoint",
+    "revoke_token_endpoint": "Revoke token endpoint"
+  },
+  "create": {
+    "title": "Create OAuth Provider",
+    "cancel": "Cancel",
+    "submit": "Create"
+  },
+  "list": {
+    "title": "OAuth Providers",
+    "create": "Create OAuth Provider",
+    "provider": "Provider",
+    "name": "Name"
+  }
+}

@@ -1,5 +1,6 @@
 import * as adminAPIKey from './admin-api-key';
 import * as client from './client';
+import * as oauthProvider from './oauth-provider';
 import * as permission from './permission';
 import * as role from './role';
 import * as tenant from './tenant';
@@ -12,6 +13,7 @@ import * as workspace from './workspace';
 export {
   adminAPIKey,
   client,
+  oauthProvider,
   permission,
   role,
   tenant,
