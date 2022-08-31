@@ -302,3 +302,41 @@ class TestPostRegister:
         )
 
         assert response.status_code == status_code
+
+    async def test_registration_fields_empty_string(
+        self,
+        test_client_auth_csrf: httpx.AsyncClient,
+        csrf_token: str,
+        test_data: TestData,
+        workspace_session: AsyncSession,
+    ):
+        login_session = test_data["login_sessions"]["secondary"]
+        cookies = {}
+        cookies[settings.login_session_cookie_name] = login_session.token
+
+        response = await test_client_auth_csrf.post(
+            f"/{test_data['tenants']['secondary'].slug}/register",
+            data={
+                "email": "anne@bretagne.duchy",
+                "password": "hermine1",
+                "fields.given_name": "",
+                "csrf_token": csrf_token,
+            },
+            cookies=cookies,
+        )
+
+        assert response.status_code == status.HTTP_302_FOUND
+
+        session_cookie = response.cookies[settings.session_cookie_name]
+        session_token_repository = SessionTokenRepository(workspace_session)
+        session_token = await session_token_repository.get_by_token(
+            get_token_hash(session_cookie)
+        )
+        assert session_token is not None
+
+        user_repository = UserRepository(workspace_session)
+        user = await user_repository.get_by_id(session_token.user_id)
+        assert user is not None
+        assert user.fields == {
+            "onboarding_done": False,  # Default value
+        }

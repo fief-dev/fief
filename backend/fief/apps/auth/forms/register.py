@@ -11,7 +11,6 @@ from wtforms import (
     DateTimeLocalField,
     EmailField,
     Field,
-    Form,
     FormField,
     IntegerField,
     PasswordField,
@@ -145,6 +144,8 @@ def _get_form_field(user_field: UserField) -> Field:
         "default": user_field.configuration.get("default"),
     }
 
+    if user_field.type == UserFieldType.STRING:
+        field_kwargs.update({"filters": [empty_string_to_none]})
     if user_field.type == UserFieldType.CHOICE:
         field_kwargs.update({"choices": user_field.configuration.get("choices")})
     elif user_field.type == UserFieldType.PHONE_NUMBER:
