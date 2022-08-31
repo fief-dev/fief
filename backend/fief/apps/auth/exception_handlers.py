@@ -66,6 +66,7 @@ async def login_exception_handler(
             "form": form,
             "request": request,
             "error": exc.error.error_description,
+            "oauth_providers": exc.oauth_providers,
             "tenant": exc.tenant,
             "fatal_error": exc.fatal,
         },

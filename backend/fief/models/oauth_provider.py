@@ -1,6 +1,6 @@
-from typing import Optional
+from typing import List, Optional
 
-from sqlalchemy import Column, String, Text
+from sqlalchemy import JSON, Column, String, Text
 from sqlalchemy.ext.hybrid import hybrid_property
 
 from fief.crypto.encryption import decrypt, encrypt
@@ -16,6 +16,7 @@ class OAuthProvider(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
     provider: AvailableOAuthProvider = Column(String(length=255), nullable=False)
     _client_id: str = Column("client_id", Text, nullable=False)
     _client_secret: str = Column("client_secret", Text, nullable=False)
+    scopes: List[str] = Column(JSON, nullable=False, default=list)
     name: Optional[str] = Column(String(length=255), nullable=True)
     authorize_endpoint: Optional[str] = Column(Text, nullable=True)
     access_token_endpoint: Optional[str] = Column(Text, nullable=True)

@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 from pydantic import HttpUrl, SecretStr, root_validator
 
@@ -21,6 +21,7 @@ class OAuthProviderCreate(BaseModel):
     provider: AvailableOAuthProvider
     client_id: str
     client_secret: str
+    scopes: List[str]
     name: Optional[str] = None
     authorize_endpoint: Optional[HttpUrl] = None
     access_token_endpoint: Optional[HttpUrl] = None
@@ -35,6 +36,7 @@ class OAuthProviderCreate(BaseModel):
 class OAuthProviderUpdate(BaseModel):
     client_id: Optional[str]
     client_secret: Optional[str]
+    scopes: Optional[List[str]]
     name: Optional[str]
     authorize_endpoint: Optional[HttpUrl]
     access_token_endpoint: Optional[HttpUrl]
@@ -54,6 +56,7 @@ class BaseOAuthProvider(UUIDSchema, CreatedUpdatedAt):
     provider: AvailableOAuthProvider
     client_id: SecretStr
     client_secret: SecretStr
+    scopes: List[str]
     name: Optional[str] = None
     authorize_endpoint: Optional[HttpUrl] = None
     access_token_endpoint: Optional[HttpUrl] = None

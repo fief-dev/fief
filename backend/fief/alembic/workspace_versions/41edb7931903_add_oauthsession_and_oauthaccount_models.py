@@ -38,7 +38,7 @@ def upgrade():
         sa.Column(
             "expires_at",
             fief.models.generics.TIMESTAMPAware(timezone=True),
-            nullable=False,
+            nullable=True,
         ),
         sa.Column("refresh_token", sa.Text(), nullable=True),
         sa.Column("account_id", sa.String(length=1024), nullable=False),

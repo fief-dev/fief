@@ -8,6 +8,7 @@ import DataTable from '../../components/DataTable/DataTable';
 import Layout from '../../components/Layout/Layout';
 import { usePaginationAPI } from '../../hooks/api';
 import * as schemas from '../../schemas';
+import OAuthProviderDetails from '../../components/OAuthProviderDetails/OAuthProviderDetails';
 
 const OAuthProviders: React.FunctionComponent<React.PropsWithChildren<unknown>> = () => {
   const { t } = useTranslation(['oauth-providers']);
@@ -37,8 +38,8 @@ const OAuthProviders: React.FunctionComponent<React.PropsWithChildren<unknown>> 
       {
         Header: t('oauth-providers:list.provider') as string,
         accessor: 'provider',
-        Cell: ({ cell: { value: provider } }) => (
-          <>{t(`available_oauth_provider.${provider}`)}</>
+        Cell: ({ cell: { value }, row: { original } }) => (
+          <span className="font-medium text-slate-800 hover:text-slate-900 cursor-pointer" onClick={() => onOAuthProviderSelected(original)}>{t(`available_oauth_provider.${value}`)}</span>
         ),
       },
       {
@@ -46,7 +47,7 @@ const OAuthProviders: React.FunctionComponent<React.PropsWithChildren<unknown>> 
         accessor: 'name',
       },
     ];
-  }, [t]);
+  }, [t, onOAuthProviderSelected]);
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const onCreated = useCallback((oauthProvider: schemas.oauthProvider.OAuthProvider) => {
@@ -60,8 +61,13 @@ const OAuthProviders: React.FunctionComponent<React.PropsWithChildren<unknown>> 
     setSelected(oauthProvider);
   }, [refresh]);
 
+  const onDeleted = useCallback(() => {
+    refresh();
+    setSelected(undefined);
+  }, [refresh]);
+
   return (
-    <Layout>
+    <Layout sidebar={selected ? <OAuthProviderDetails oauthProvider={selected} onUpdated={onUpdated} onDeleted={onDeleted} /> : undefined}>
       <div className="sm:flex sm:justify-between sm:items-center mb-8">
 
         <div className="mb-4 sm:mb-0">

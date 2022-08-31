@@ -7,7 +7,14 @@ export enum AvailableOAuthProvider {
   CUSTOM = 'CUSTOM',
 }
 
-export interface OAuthProviderCreate {
+export interface ScopesForm {
+  scopes: {
+    id: string;
+    value: string
+  }[];
+}
+
+export interface OAuthProviderCreateBase {
   provider: AvailableOAuthProvider;
   client_id: string;
   client_secret: string;
@@ -18,7 +25,14 @@ export interface OAuthProviderCreate {
   revoke_token_endpoint: string | null;
 }
 
-export interface OAuthProviderUpdate {
+export interface OAuthProviderCreateForm extends OAuthProviderCreateBase, ScopesForm {
+}
+
+export interface OAuthProviderCreate extends OAuthProviderCreateBase {
+  scopes: string[];
+}
+
+export interface OAuthProviderUpdateBase {
   client_id?: string;
   client_secret?: string;
   name?: string | null;
@@ -28,10 +42,18 @@ export interface OAuthProviderUpdate {
   revoke_token_endpoint?: string | null;
 }
 
+export interface OAuthProviderUpdateForm extends OAuthProviderUpdateBase, Partial<ScopesForm> {
+}
+
+export interface OAuthProviderUpdate extends OAuthProviderUpdateBase {
+  scopes?: string[];
+}
+
 interface BaseOAUTHProvider extends UUIDSchema, CreatedUpdatedAt {
   provider: AvailableOAuthProvider;
   client_id: string;
   client_secret: string;
+  scopes: string[];
   name: string | null;
   authorize_endpoint: string | null;
   access_token_endpoint: string | null;

@@ -101,6 +101,7 @@ class TestOAuthAuthorize:
 
         state = query_params["state"][0]
         redirect_uri = query_params["redirect_uri"][0]
+        scope = query_params["scope"][0]
 
         repository = OAuthSessionRepository(workspace_session)
         oauth_session = await repository.get_by_token(state)
@@ -108,6 +109,8 @@ class TestOAuthAuthorize:
         assert oauth_session is not None
         assert oauth_session.oauth_provider_id == oauth_provider.id
         assert oauth_session.login_session_id == login_session.id
+
+        assert scope == " ".join(oauth_provider.scopes)
 
         assert oauth_session.redirect_uri == redirect_uri
         assert redirect_uri.endswith("/oauth/callback")

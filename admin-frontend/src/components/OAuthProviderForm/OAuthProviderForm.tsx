@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useFieldRequiredErrorMessage } from '../../hooks/errors';
 import * as schemas from '../../schemas';
 import FormErrorMessage from '../FormErrorMessage/FormErrorMessage';
+import ScopesInput from '../ScopesInput/ScopesInput';
 
 interface OAuthProviderFormProps {
   update: boolean;
@@ -52,7 +53,7 @@ const OAuthProviderForm: React.FunctionComponent<React.PropsWithChildren<OAuthPr
           id="client_id"
           className="form-input w-full"
           type="text"
-          {...register('client_id', { required: fieldRequiredErrorMessage })}
+          {...register('client_id', { required: update ? false  : fieldRequiredErrorMessage })}
         />
         <FormErrorMessage errors={errors} name="client_id" />
       </div>
@@ -62,9 +63,14 @@ const OAuthProviderForm: React.FunctionComponent<React.PropsWithChildren<OAuthPr
           id="client_secret"
           className="form-input w-full"
           type="text"
-          {...register('client_secret', { required: fieldRequiredErrorMessage })}
+          {...register('client_secret', { required: update ? false  : fieldRequiredErrorMessage })}
         />
         <FormErrorMessage errors={errors} name="client_secret" />
+      </div>
+      <div>
+        <label className="block text-sm font-medium mb-1">{t('base.scopes')}</label>
+        <ScopesInput />
+        <FormErrorMessage errors={errors} name="scopes" />
       </div>
       {
         provider === schemas.oauthProvider.AvailableOAuthProvider.CUSTOM &&

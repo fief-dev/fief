@@ -20,7 +20,9 @@ class OAuthAccount(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
     __table_args__ = (UniqueConstraint("oauth_provider_id", "user_id"),)
 
     _access_token: str = Column("access_token", Text, nullable=False)
-    expires_at: datetime = Column(TIMESTAMPAware(timezone=True), nullable=False)
+    expires_at: Optional[datetime] = Column(
+        TIMESTAMPAware(timezone=True), nullable=True
+    )
     _refresh_token: Optional[str] = Column("refresh_token", Text, nullable=True)
     account_id: str = Column(String(length=1024), index=True, nullable=False)
     account_email: str = Column(String(length=1024), nullable=False)

@@ -1,5 +1,6 @@
+import base64
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Dict, Tuple, Type
+from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple, Type
 
 from httpx_oauth.clients.facebook import FacebookOAuth2
 from httpx_oauth.clients.github import GitHubOAuth2
@@ -24,6 +25,19 @@ OAUTH_PROVIDERS: Dict[AvailableOAuthProvider, Type[BaseOAuth2]] = {
     AvailableOAuthProvider.GOOGLE: GoogleOAuth2,
     AvailableOAuthProvider.CUSTOM: OAuth2,
 }
+
+
+def get_oauth_provider_branding(
+    oauth_provider: "OAuthProvider",
+) -> Tuple[str, Optional[str]]:
+    provider_class = OAUTH_PROVIDERS[oauth_provider.provider]
+    display_name: str = getattr(
+        provider_class, "display_name", oauth_provider.name or ""
+    )
+    logo_svg: Optional[str] = getattr(provider_class, "logo_svg", None)
+    if logo_svg:
+        logo_svg = base64.b64encode(logo_svg.encode("utf-8")).decode("utf-8")
+    return display_name, logo_svg
 
 
 def get_oauth_provider_service(oauth_provider: "OAuthProvider") -> BaseOAuth2:

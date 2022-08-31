@@ -1,7 +1,7 @@
-from typing import Optional
+from typing import List, Optional
 
 from fief.locale import gettext_lazy as _
-from fief.models import Tenant
+from fief.models import OAuthProvider, Tenant
 from fief.schemas.auth import (
     AuthorizeError,
     AuthorizeRedirectError,
@@ -36,18 +36,30 @@ class AuthorizeRedirectException(Exception):
 
 class LoginException(Exception):
     def __init__(
-        self, error: LoginError, tenant: Optional[Tenant] = None, *, fatal: bool = False
+        self,
+        error: LoginError,
+        oauth_providers: Optional[List[OAuthProvider]] = None,
+        tenant: Optional[Tenant] = None,
+        *,
+        fatal: bool = False
     ) -> None:
         self.error = error
+        self.oauth_providers = oauth_providers
         self.tenant = tenant
         self.fatal = fatal
 
 
 class OAuthException(Exception):
     def __init__(
-        self, error: OAuthError, tenant: Optional[Tenant] = None, *, fatal: bool = False
+        self,
+        error: OAuthError,
+        oauth_providers: Optional[List[OAuthProvider]] = None,
+        tenant: Optional[Tenant] = None,
+        *,
+        fatal: bool = False
     ) -> None:
         self.error = error
+        self.oauth_providers = oauth_providers
         self.tenant = tenant
         self.fatal = fatal
 

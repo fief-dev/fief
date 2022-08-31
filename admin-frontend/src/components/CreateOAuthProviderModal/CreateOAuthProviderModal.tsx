@@ -19,8 +19,9 @@ const CreateOAuthProviderModal: React.FunctionComponent<React.PropsWithChildren<
   const { t } = useTranslation(['oauth-providers']);
   const api = useAPI();
 
-  const form = useForm<schemas.oauthProvider.OAuthProviderCreate>({
+  const form = useForm<schemas.oauthProvider.OAuthProviderCreateForm>({
     defaultValues: {
+      scopes: [{ id: '', value: '' }],
       authorize_endpoint: null,
       access_token_endpoint: null,
       refresh_token_endpoint: null,
@@ -33,10 +34,13 @@ const CreateOAuthProviderModal: React.FunctionComponent<React.PropsWithChildren<
   const [errorMessage, setErrorMessage] = useState<string | undefined>();
   const handleAPIError = useAPIErrorHandler(setErrorMessage, setError);
 
-  const onSubmit: SubmitHandler<schemas.oauthProvider.OAuthProviderCreate> = useCallback(async (data) => {
+  const onSubmit: SubmitHandler<schemas.oauthProvider.OAuthProviderCreateForm> = useCallback(async (data) => {
     setLoading(true);
     try {
-      const { data: oauthProvider } = await api.createOAuthProvider(data);
+      const { data: oauthProvider } = await api.createOAuthProvider({
+        ...data,
+        scopes: data.scopes.map(({ value }) => value),
+      });
       if (onCreated) {
         onCreated(oauthProvider);
         reset();

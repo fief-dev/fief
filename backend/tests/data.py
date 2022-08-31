@@ -115,11 +115,13 @@ clients: ModelMapping[Client] = {
 oauth_providers: ModelMapping[OAuthProvider] = {
     "google": OAuthProvider(
         provider=AvailableOAuthProvider.GOOGLE,
+        scopes=["profile", "email"],
         client_id="GOOGLE_CLIENT_ID",
         client_secret="GOOGLE_CLIENT_SECRET",
     ),
     "custom": OAuthProvider(
         provider=AvailableOAuthProvider.CUSTOM,
+        scopes=["openid"],
         client_id="CUSTOM_CLIENT_ID",
         client_secret="CUSTOM_CLIENT_SECRET",
         authorize_endpoint="http://rome.city/authorize",

@@ -10,6 +10,7 @@
     "name": "Name",
     "client_id": "Client ID",
     "client_secret": "Client Secret",
+    "scopes": "Scopes",
     "authorize_endpoint": "Authorize endpoint",
     "access_token_endpoint": "Access token endpoint",
     "refresh_token_endpoint": "Refresh token endpoint",
@@ -20,10 +21,16 @@
     "cancel": "Cancel",
     "submit": "Create"
   },
+  "scopes": {
+    "add": "Add"
+  },
   "list": {
     "title": "OAuth Providers",
     "create": "Create OAuth Provider",
     "provider": "Provider",
     "name": "Name"
+  },
+  "details": {
+    "submit": "Update"
   }
 }

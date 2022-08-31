@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from typing import Optional
+from typing import List, Optional
 
 from fastapi import APIRouter, Depends, Query, Request, status
 from fastapi.responses import RedirectResponse
@@ -9,6 +9,7 @@ from httpx_oauth.oauth2 import GetAccessTokenError
 from fief.dependencies.auth import get_login_session
 from fief.dependencies.authentication_flow import get_authentication_flow
 from fief.dependencies.oauth import get_oauth_provider
+from fief.dependencies.oauth_provider import get_oauth_providers
 from fief.dependencies.session_token import get_session_token
 from fief.dependencies.tenant import get_current_tenant
 from fief.dependencies.users import UserManager, get_user_manager
@@ -56,7 +57,7 @@ async def authorize(
 
     oauth_provider_service = get_oauth_provider_service(oauth_provider)
     authorize_url = await oauth_provider_service.get_authorization_url(
-        redirect_uri, state=state
+        redirect_uri, state=state, scope=oauth_provider.scopes
     )
 
     return RedirectResponse(authorize_url, status_code=status.HTTP_302_FOUND)
@@ -70,6 +71,7 @@ async def callback(
     state: Optional[str] = Query(None),
     error: Optional[str] = Query(None),
     login_session: LoginSession = Depends(get_login_session),
+    oauth_providers: Optional[List[OAuthProvider]] = Depends(get_oauth_providers),
     oauth_session_repository: OAuthSessionRepository = Depends(
         get_oauth_session_repository
     ),
@@ -82,11 +84,17 @@ async def callback(
     tenant: Tenant = Depends(get_current_tenant),
 ):
     if error is not None:
-        raise OAuthException(OAuthError.get_oauth_error(error), tenant=tenant)
+        raise OAuthException(
+            OAuthError.get_oauth_error(error),
+            oauth_providers=oauth_providers,
+            tenant=tenant,
+        )
 
     if code is None:
         raise OAuthException(
-            OAuthError.get_missing_code(_("Missing authorization code.")), tenant=tenant
+            OAuthError.get_missing_code(_("Missing authorization code.")),
+            oauth_providers=oauth_providers,
+            tenant=tenant,
         )
 
     oauth_session = (
@@ -96,7 +104,9 @@ async def callback(
     )
     if oauth_session is None or login_session.id != oauth_session.login_session_id:
         raise OAuthException(
-            OAuthError.get_invalid_session(_("Invalid OAuth session.")), tenant=tenant
+            OAuthError.get_invalid_session(_("Invalid OAuth session.")),
+            oauth_providers=oauth_providers,
+            tenant=tenant,
         )
 
     oauth_provider = oauth_session.oauth_provider
@@ -111,18 +121,20 @@ async def callback(
             OAuthError.get_access_token_error(
                 _("An error occurred while getting the access token.")
             ),
+            oauth_providers=oauth_providers,
             tenant=tenant,
         ) from e
 
     access_token = access_token_dict["access_token"]
     refresh_token = access_token_dict.get("refresh_token")
-    expires_at = datetime.fromtimestamp(
-        access_token_dict["expires_at"], tz=timezone.utc
-    )
+    try:
+        expires_at = datetime.fromtimestamp(
+            access_token_dict["expires_at"], tz=timezone.utc
+        )
+    except KeyError:
+        expires_at = None
 
-    account_id, account_email = await get_oauth_id_email(
-        oauth_provider, access_token_dict
-    )
+    account_id, account_email = await get_oauth_id_email(oauth_provider, access_token)
     oauth_account = await oauth_account_repository.get_by_provider_and_account_id(
         oauth_provider.id, account_id
     )
@@ -133,6 +145,7 @@ async def callback(
         if not user.is_active:
             raise OAuthException(
                 OAuthError.get_inactive_user(_("Your account is inactive.")),
+                oauth_providers=oauth_providers,
                 tenant=tenant,
             )
 
@@ -156,6 +169,7 @@ async def callback(
                         "A user with the same email address already exists. You can try to login using your email address and password."
                     )
                 ),
+                oauth_providers=oauth_providers,
                 tenant=tenant,
             ) from e
 

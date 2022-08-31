@@ -42,9 +42,9 @@ class TestCreateOAuthProvider:
     @pytest.mark.parametrize(
         "payload",
         [
-            {},
-            {"authorize_endpoint": "http://rome.city/authorize"},
-            {"access_token_endpoint": "http://rome.city/token"},
+            {"scopes": ["openid"]},
+            {"authorize_endpoint": "http://rome.city/authorize", "scopes": ["openid"]},
+            {"access_token_endpoint": "http://rome.city/token", "scopes": ["openid"]},
         ],
     )
     @pytest.mark.authenticated_admin
@@ -69,11 +69,12 @@ class TestCreateOAuthProvider:
     @pytest.mark.parametrize(
         "payload",
         [
-            {"provider": "GOOGLE"},
+            {"provider": "GOOGLE", "scopes": ["openid"]},
             {
                 "provider": "CUSTOM",
                 "authorize_endpoint": "http://rome.city/authorize",
                 "access_token_endpoint": "http://rome.city/token",
+                "scopes": ["openid"],
             },
         ],
     )
