@@ -11,12 +11,12 @@ msgstr ""
 msgid "Welcome back!"
 msgstr "Welcome back!"
 
-#: fief/apps/auth/forms/auth.py:10 fief/apps/auth/forms/register.py:113
+#: fief/apps/auth/forms/auth.py:10 fief/apps/auth/forms/register.py:112
 #: fief/apps/auth/forms/reset.py:9
 msgid "Email address"
 msgstr "Email address"
 
-#: fief/apps/auth/forms/auth.py:12 fief/apps/auth/forms/register.py:115
+#: fief/apps/auth/forms/auth.py:12 fief/apps/auth/forms/register.py:114
 msgid "Password"
 msgstr "Password"
 
@@ -201,11 +201,11 @@ msgstr "Welcome to %(tenant)s! We're thrilled to have you on board."
 msgid "Unsupported code_challenge_method"
 msgstr "Unsupported code_challenge_method"
 
-#: fief/apps/auth/forms/register.py:57
+#: fief/apps/auth/forms/register.py:56
 msgid "This phone number is invalid."
 msgstr "This phone number is invalid."
 
-#: fief/apps/auth/forms/register.py:55
+#: fief/apps/auth/forms/register.py:54
 msgid "The country code is missing."
 msgstr "The country code is missing."
 
@@ -229,27 +229,27 @@ msgstr "Don't have an account?"
 msgid "Sign out"
 msgstr "Sign out"
 
-#: fief/apps/auth/forms/register.py:73
+#: fief/apps/auth/forms/register.py:72
 msgid "Address line 1"
 msgstr "Address line 1"
 
-#: fief/apps/auth/forms/register.py:75
+#: fief/apps/auth/forms/register.py:74
 msgid "Address line 2"
 msgstr "Address line 2"
 
-#: fief/apps/auth/forms/register.py:79
+#: fief/apps/auth/forms/register.py:78
 msgid "Postal code"
 msgstr "Postal code"
 
-#: fief/apps/auth/forms/register.py:80
+#: fief/apps/auth/forms/register.py:79
 msgid "City"
 msgstr "City"
 
-#: fief/apps/auth/forms/register.py:82
+#: fief/apps/auth/forms/register.py:81
 msgid "State"
 msgstr "State"
 
-#: fief/apps/auth/forms/register.py:84
+#: fief/apps/auth/forms/register.py:83
 msgid "Country"
 msgstr "Country"
 

@@ -14,12 +14,12 @@
 ## Contributing
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-7-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-8-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 All contributions to improve the project are welcome! In particular, bug and documentation fixes are really appreciated.
 
-For new features and larger improvements, we kindly ask you to [**open a discussion first**](https://github.com/fief-dev/fief/discussions/new?category=ideas) about your idea, what motivates it and how you plan to implement it **before you start working**. It'll avoid frustration on both sides if we decide not to integrate your code in the project.
+For new features and larger improvements, we kindly ask you to [**open a discussion first**](https://github.com/orgs/fief-dev/discussions/new?category=ideas) about your idea, what motivates it and how you plan to implement it **before you start working**. It'll avoid frustration on both sides if we decide not to integrate your code in the project.
 
 Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
 
@@ -35,6 +35,9 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="https://github.com/duber000"><img src="https://avatars.githubusercontent.com/u/12467861?v=4?s=100" width="100px;" alt=""/><br /><sub><b>duber000</b></sub></a><br /><a href="https://github.com/fief-dev/fief/commits?author=duber000" title="Code">💻</a></td>
     <td align="center"><a href="https://theraloss.com"><img src="https://avatars.githubusercontent.com/u/6277291?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Danilo Polani</b></sub></a><br /><a href="#translation-danilopolani" title="Translation">🌍</a></td>
     <td align="center"><a href="https://github.com/ChuckMoe"><img src="https://avatars.githubusercontent.com/u/25569291?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Moritz</b></sub></a><br /><a href="#translation-ChuckMoe" title="Translation">🌍</a></td>
+  </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/plpsanchez"><img src="https://avatars.githubusercontent.com/u/45295173?v=4?s=100" width="100px;" alt=""/><br /><sub><b>plpsanchez</b></sub></a><br /><a href="#translation-plpsanchez" title="Translation">🌍</a></td>
   </tr>
 </table>
 

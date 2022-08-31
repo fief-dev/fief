@@ -5,264 +5,257 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: POEditor.com\n"
 "Project-Id-Version: Fief\n"
-"Language: de\n"
+"Language: pt\n"
 
 #: fief/templates/login.html:7
 msgid "Welcome back!"
-msgstr "Willkommen zurück!"
+msgstr "Bem vindo de volta!"
 
 #: fief/apps/auth/forms/auth.py:10 fief/apps/auth/forms/register.py:112
 #: fief/apps/auth/forms/reset.py:9
 msgid "Email address"
-msgstr "E-Mail Adresse"
+msgstr "Endereço de email"
 
 #: fief/apps/auth/forms/auth.py:12 fief/apps/auth/forms/register.py:114
 msgid "Password"
-msgstr "Passwort"
+msgstr "Senha"
 
 #: fief/templates/login.html:5 fief/templates/login.html:20
 msgid "Sign in"
-msgstr "Einloggen"
+msgstr "Iniciar sessão"
 
 #: fief/apps/auth/routers/auth.py:115
 msgid "Invalid email or password"
-msgstr "Ungültige E-Mail oder Passwort"
+msgstr "Senha ou Email inválidos"
 
 #: fief/apps/auth/routers/register.py:59
 msgid "A user with the same email address already exists."
-msgstr "Ein Benutzer mit derselben E-Mail Adresse existiert bereits."
+msgstr "Já existe usuário com o mesmo email"
 
 #: fief/dependencies/auth.py:79
 msgid "response_type is missing"
-msgstr "response_type fehlt"
+msgstr "falta o respose_type"
 
 #: fief/dependencies/auth.py:38
 msgid "client_id is missing"
-msgstr "client_id fehlt"
+msgstr "falta o client_id"
 
 #: fief/dependencies/auth.py:44
 msgid "Unknown client"
-msgstr "Unbekannter Client"
+msgstr "Cliente desconhecido"
 
 #: fief/apps/auth/routers/auth.py:219 fief/dependencies/auth.py:55
 msgid "redirect_uri is missing"
-msgstr "redirect_uri fehlt"
+msgstr "falta o redirect_uri"
 
 #: fief/dependencies/auth.py:147
 msgid "scope is missing"
-msgstr "scope fehlt"
+msgstr "Falta o escopo"
 
 #: fief/dependencies/auth.py:158
 msgid "scope should contain \"openid\""
-msgstr "scope sollte \"openid\" enthalten"
+msgstr "O escopo deve conter o \"openid\""
 
 #: fief/dependencies/auth.py:205
-#, fuzzy
 msgid "screen should either be \"login\" or \"register\""
-msgstr "screen sollte entweder \"login\" oder \"register\" sein"
+msgstr "O ecrã (a tela) deve ser \"login\" ou \"register\""
 
 #: fief/dependencies/auth.py:279
 msgid "Invalid login session"
-msgstr "Ungültige Login Sitzung"
+msgstr "Sessão de login inválida"
 
 #: fief/dependencies/users.py:102
 msgid "The password should be at least 8 characters."
-msgstr "Das Passwort sollte mindestens 8 Zeichen lang sein."
+msgstr "A senha deve conter pelo menos 8 caracteres."
 
 #: fief/templates/authorize.html:3 fief/templates/authorize.html:5
 msgid "Authorize"
-msgstr "Autorisieren"
+msgstr "Autorizar"
 
 #: fief/templates/register.html:21
 msgid "I already have an account"
-msgstr "Ich habe bereits einen Account"
+msgstr "Eu já tenho uma conta"
 
 #: fief/templates/login.html:26 fief/templates/register.html:5
 #: fief/templates/register.html:7 fief/templates/register.html:23
 msgid "Sign up"
-msgstr "Registrieren"
+msgstr "Inscrever-se"
 
 #: fief/apps/auth/routers/auth.py:196
 msgid "The user denied access to their data."
-msgstr "Der Benutzer hat den Zugriff auf dessen Daten verweigert."
+msgstr "O usuário negou acesso a seus dados."
 
 #: fief/dependencies/auth.py:178
-#, fuzzy
 msgid "prompt should either be \"none\", \"login\" or \"register\""
-msgstr "prompt sollte entweder \"none\", \"login\" oder \"register\" sein"
+msgstr "prompt deve ser \"none\", \"login\" ou \"register\""
 
 #: fief/dependencies/auth.py:187
 msgid "User is not logged in"
-msgstr "Benutzer ist nicht eingeloggt"
+msgstr "O usuário não está logado"
 
 #: fief/dependencies/auth.py:319
 msgid "User consent is required for this scope"
-msgstr "Für diesen Scope ist die Benutzerzustimmung nötig"
+msgstr "O este escopo requer o consentimento do usuário"
 
 #: fief/templates/consent.html:5
 msgid "Consent"
-msgstr "Zustimmen"
+msgstr "Consentir"
 
 #: fief/templates/consent.html:7
 msgid "%(name)s wants to access your account"
-msgstr "%(name)s fordert Zugriff auf deinen Account an"
+msgstr "%(name)s deseja acessar sua conta"
 
 #: fief/templates/consent.html:12
 msgid "This will allow %(name)s to:"
-msgstr "Dies wird %(name)s erlauben zu:"
+msgstr "Isto permitirá que %(name)s :"
 
 #: fief/apps/auth/forms/auth.py:25
 msgid "Deny"
-msgstr "Verweigern"
+msgstr "Negar"
 
 #: fief/apps/auth/forms/auth.py:24
 msgid "Allow"
-msgstr "Erlauben"
+msgstr "Permitir"
 
 #: fief/apps/auth/routers/reset.py:44
 msgid "Check your inbox! If an account associated with this email address exists in our system, you'll receive a link to reset your password."
-msgstr "Überprüfe deinen Posteingang! Falls ein mit dieser E-Mail Adresse verknüpfter Account existiert, erhälst du einen Link zum zurücksetzen deines Passworts."
+msgstr "Verifique sua caixa de mensagens! Se existir um endereço com este email, você receberá um enlace (link) para redefinir sua senha."
 
 #: fief/apps/auth/routers/reset.py:70
 msgid "The reset password token is missing."
-msgstr "Das Token zur Passwort-Wiederherstellung fehlt."
+msgstr "Falta o token para redefinir a senha. "
 
 #: fief/apps/auth/routers/reset.py:82
 msgid "The reset password token is invalid or expired."
-msgstr "Das Token zur Passwort-Wiederherstellung ist entweder ungültig oder abgelaufen."
+msgstr "O token para redefinir a senha é inválido ou está vencido."
 
 #: fief/emails/base.html:496
 msgid "&copy; %(year)d %(tenant)s. All rights reserved."
-msgstr "&copy; %(year)d %(tenant)s. Alle Rechte vorbehalten."
+msgstr "&copy; %(year)d %(tenant)s. Todos os direitos reservados."
 
 #: fief/emails/forgot_password.html:6
-#, fuzzy
 msgid "You recently requested to reset your password for your %(tenant)s account. Use the button below to reset it."
-msgstr "Du hast vor kurzem ein neues Passwort für deinen %(tenant)s Account angefordert. Nutzen den folgenden Button um es zurückzusetzen."
+msgstr "Recentemente você solicitou a troca da senha de sua conta %(tenant)s. Use o botão abaixo para redefini-la."
 
 #: fief/emails/forgot_password.html:6
-#, fuzzy
 msgid "This password reset is only valid for the next hour."
-msgstr "Diese Passwort-Wiederherstellung ist nur für die nächste Stunde gültig."
+msgstr "Esta redefinição de senha só será válida durante a próxima hora."
 
 #: fief/emails/forgot_password.html:15
 msgid "Reset your password"
-msgstr "Setze dein Passwort zurück"
+msgstr "Redefinir sua senha"
 
-#. Are the two "s" in "(tenant)s's" correct?
 #: fief/tasks/forgot_password.py:17
 msgid "Reset your %(tenant)s's password"
-msgstr "Setze dein %(tenant)s's Passwort zurück"
+msgstr "Redefinir sua senha para %(tenant)s\n"
+""
 
 #: fief/tasks/register.py:44
 msgid "Welcome to %(tenant)s!"
-msgstr "Willkommen bei %(tenant)s!"
+msgstr "Bem vindo a %(tenant)s!\n"
+""
 
 #: fief/templates/forgot_password.html:5 fief/templates/forgot_password.html:7
 msgid "Forgot password"
-msgstr "Passwort vergessen"
+msgstr "Esqueci a senha"
 
 #: fief/templates/forgot_password.html:17
-#, fuzzy
 msgid "I remember my password"
-msgstr "Ich weiß mein Passwort"
+msgstr "Lembro minha senha"
 
 #: fief/templates/forgot_password.html:19
 msgid "Send me a reset link"
-msgstr "Sende mir einen Wiederherstellungs-Link"
+msgstr "Envie-me um enlace para redefinição"
 
-#. If this is only for a link to the 'forgot passwort' page, I would use "Passwort vergessen?" because it is simply shorter and already used in different places. It is not a valid translation though.
 #: fief/templates/login.html:18
-#, fuzzy
 msgid "I forgot my password"
-msgstr "Passwort vergessen?"
+msgstr "Esqueci minha senha"
 
 #: fief/templates/reset_password.html:5 fief/templates/reset_password.html:7
 msgid "Reset password"
-msgstr "Passwort wiederherstellen"
+msgstr "Redefinir Senha"
 
 #: fief/apps/auth/forms/reset.py:14
 msgid "New password"
-msgstr "Neues Passwort"
+msgstr "Nova senha"
 
 #: fief/templates/reset_password.html:18
 msgid "Reset my password"
-msgstr "Setze mein Passwort zurück"
+msgstr "Redefinir minha senha"
 
 #: fief/dependencies/auth.py:61
 msgid "redirect_uri is not authorized for this client"
-msgstr "redirect_url ist für diesen Client nicht authorisiert"
+msgstr "redirect_uri não autorizado para este cliente"
 
 #: fief/dependencies/auth.py:111
 msgid "request parameter is not supported"
-msgstr "Request Parameter wird nicht unterstützt"
+msgstr "parâmetro do request não é suportado"
 
 #: fief/emails/forgot_password.html:3
 msgid "Use this link to reset your password. This link is only valid for 1 hour."
-msgstr "Benutze diesen Link um dein Passwort zurückzusetzen. Dieser Link ist nur für 1 Stunde gültig."
+msgstr "Use este link para redefinir sua senha. Este link é válido por apenas 1 hora."
 
 #: fief/emails/welcome.html:3 fief/emails/welcome.html:6
 msgid "Welcome to %(tenant)s! We're thrilled to have you on board."
-msgstr "Willkommen bei %(tenant)s! Wir freuen uns dich an Bord zu haben."
+msgstr "Bem vindo a %(tenant)s! Estamos entusiasmados por tê-lo a bordo."
 
 #: fief/dependencies/auth.py:228
 msgid "Unsupported code_challenge_method"
-msgstr "Nicht untersützte code_challenge_method"
+msgstr "code_challenge_method não suportado"
 
 #: fief/apps/auth/forms/register.py:56
 msgid "This phone number is invalid."
-msgstr "Diese Telefonnummer ist ungültig."
+msgstr "Este número de telefone não é válido."
 
 #: fief/apps/auth/forms/register.py:54
 msgid "The country code is missing."
-msgstr "Der Ländercode fehlt."
+msgstr "Falta o código do país."
 
 #: fief/dependencies/auth.py:87
 msgid "response_type is invalid"
-msgstr "response_type ist ungültig"
+msgstr "response_type inválido"
 
 #: fief/dependencies/auth.py:129
 msgid "nonce parameter is required for this response_type"
-msgstr "Für diesen response_type wird der Parameter nonce benötigt"
+msgstr "este response_type requer um nonce parameter "
 
 #: fief/templates/auth_layout.html:46
 msgid "Powered and secured by"
-msgstr "Betrieben und geschützt von"
+msgstr "Capacitado e garantido por"
 
 #: fief/templates/login.html:25
-#, fuzzy
 msgid "Don't have an account?"
-msgstr "Noch kein Account?"
+msgstr "Não tem uma conta?"
 
 #: fief/templates/logout.html:3 fief/templates/logout.html:5
 msgid "Sign out"
-msgstr "Ausloggen"
+msgstr "Sair"
 
 #: fief/apps/auth/forms/register.py:72
 msgid "Address line 1"
-msgstr "Adresszeile 1"
+msgstr "Primeira linha do endereço"
 
 #: fief/apps/auth/forms/register.py:74
 msgid "Address line 2"
-msgstr "Adresszeile 2"
+msgstr "Segunda linha do endereço"
 
 #: fief/apps/auth/forms/register.py:78
 msgid "Postal code"
-msgstr "Postleitzahl"
+msgstr "Código Postal"
 
 #: fief/apps/auth/forms/register.py:79
 msgid "City"
-msgstr "Stadt"
+msgstr "Cidade"
 
 #: fief/apps/auth/forms/register.py:81
 msgid "State"
-msgstr "Bundesland"
+msgstr "Estado ou Província"
 
 #: fief/apps/auth/forms/register.py:83
 msgid "Country"
-msgstr "Land"
+msgstr "País"
 
 #: fief/apps/auth/forms/base.py:41
 msgid "CSRF failed."
-msgstr "CSRF fehlgeschlagen."
+msgstr "CSRF falhou."
 
