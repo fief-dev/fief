@@ -74,7 +74,10 @@ def migrate_workspaces():
     Session = sessionmaker(engine)
     with Session() as session:
         workspace_db = WorkspaceDatabase()
-        workspaces = select(Workspace)
+        latest_revision = workspace_db.get_latest_revision()
+        workspaces = select(Workspace).where(
+            Workspace.alembic_revision != latest_revision
+        )
         for [workspace] in session.execute(workspaces):
             assert isinstance(workspace, Workspace)
             typer.secho(f"Migrating {workspace.name}... ", bold=True, nl=False)
