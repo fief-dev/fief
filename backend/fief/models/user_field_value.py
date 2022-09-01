@@ -28,10 +28,14 @@ class UserFieldValue(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
     value_datetime = Column(TIMESTAMPAware(timezone=True), nullable=True)
     value_json = Column(JSON, nullable=True)
 
-    user_id: UUID4 = Column(GUID, ForeignKey(User.id, ondelete="CASCADE"), nullable=False)  # type: ignore
+    user_id: UUID4 = Column(
+        GUID, ForeignKey(User.id, ondelete="CASCADE"), nullable=False
+    )
     user: User = relationship("User", back_populates="user_field_values")
 
-    user_field_id: UUID4 = Column(GUID, ForeignKey(UserField.id, ondelete="CASCADE"), nullable=False)  # type: ignore
+    user_field_id: UUID4 = Column(
+        GUID, ForeignKey(UserField.id, ondelete="CASCADE"), nullable=False
+    )
     user_field: UserField = relationship(
         "UserField", back_populates="user_field_values", lazy="selectin"
     )

@@ -33,7 +33,9 @@ class User(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
         is_superuser: bool = Column(Boolean, default=False, nullable=False)
         is_verified: bool = Column(Boolean, default=False, nullable=False)
 
-    tenant_id: UUID4 = Column(GUID, ForeignKey(Tenant.id, ondelete="CASCADE"), nullable=False)  # type: ignore
+    tenant_id: UUID4 = Column(
+        GUID, ForeignKey(Tenant.id, ondelete="CASCADE"), nullable=False
+    )
     tenant: Tenant = relationship("Tenant")
 
     user_field_values: List["UserFieldValue"] = relationship(

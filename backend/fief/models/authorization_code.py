@@ -37,10 +37,14 @@ class AuthorizationCode(UUIDModel, CreatedUpdatedAt, ExpiresAt, WorkspaceBase):
     code_challenge: Optional[str] = Column(String(length=255), nullable=True)
     code_challenge_method: Optional[str] = Column(String(length=255), nullable=True)
 
-    user_id: UUID4 = Column(GUID, ForeignKey(User.id, ondelete="CASCADE"), nullable=False)  # type: ignore
+    user_id: UUID4 = Column(
+        GUID, ForeignKey(User.id, ondelete="CASCADE"), nullable=False
+    )
     user: User = relationship("User")
 
-    client_id: UUID4 = Column(GUID, ForeignKey(Client.id, ondelete="CASCADE"), nullable=False)  # type: ignore
+    client_id: UUID4 = Column(
+        GUID, ForeignKey(Client.id, ondelete="CASCADE"), nullable=False
+    )
     client: Client = relationship("Client", lazy="joined")
 
     def get_code_challenge_tuple(self) -> Optional[Tuple[str, str]]:

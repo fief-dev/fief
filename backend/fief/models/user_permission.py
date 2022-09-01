@@ -16,8 +16,12 @@ class UserPermission(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
     __tablename__ = "user_permissions"
     __table_args__ = (UniqueConstraint("user_id", "permission_id", "from_role_id"),)
 
-    user_id: UUID4 = Column(GUID, ForeignKey(User.id, ondelete="CASCADE"), nullable=False)  # type: ignore
-    permission_id: UUID4 = Column(GUID, ForeignKey(Permission.id, ondelete="CASCADE"), nullable=False)  # type: ignore
+    user_id: UUID4 = Column(
+        GUID, ForeignKey(User.id, ondelete="CASCADE"), nullable=False
+    )
+    permission_id: UUID4 = Column(
+        GUID, ForeignKey(Permission.id, ondelete="CASCADE"), nullable=False
+    )
     from_role_id: Optional[UUID4] = Column(
         GUID, ForeignKey(Role.id, ondelete="CASCADE"), nullable=True  # type: ignore
     )

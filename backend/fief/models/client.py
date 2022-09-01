@@ -46,7 +46,9 @@ class Client(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
     )
     encrypt_jwk: str = Column(Text, nullable=True)
 
-    tenant_id: UUID4 = Column(GUID, ForeignKey(Tenant.id, ondelete="CASCADE"), nullable=False)  # type: ignore
+    tenant_id: UUID4 = Column(
+        GUID, ForeignKey(Tenant.id, ondelete="CASCADE"), nullable=False
+    )
     tenant: Tenant = relationship("Tenant", lazy="joined")
 
     def __repr__(self) -> str:
