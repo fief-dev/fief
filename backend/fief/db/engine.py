@@ -15,6 +15,7 @@ def create_engine(
         connect_args=connect_args,
         echo=False,
         pool_recycle=settings.database_pool_recycle_seconds,
+        pool_pre_ping=settings.database_pool_pre_pring,
     )
     dialect_name = engine.dialect.name
 
