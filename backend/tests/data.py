@@ -119,13 +119,12 @@ oauth_providers: ModelMapping[OAuthProvider] = {
         client_id="GOOGLE_CLIENT_ID",
         client_secret="GOOGLE_CLIENT_SECRET",
     ),
-    "custom": OAuthProvider(
-        provider=AvailableOAuthProvider.CUSTOM,
+    "openid": OAuthProvider(
+        provider=AvailableOAuthProvider.OPENID,
         scopes=["openid"],
-        client_id="CUSTOM_CLIENT_ID",
-        client_secret="CUSTOM_CLIENT_SECRET",
-        authorize_endpoint="http://rome.city/authorize",
-        access_token_endpoint="http://rome.city/token",
+        client_id="OPENID_CLIENT_ID",
+        client_secret="OPENID_CLIENT_SECRET",
+        openid_configuration_endpoint="http://rome.city/.well-known/openid-configuration",
     ),
 }
 

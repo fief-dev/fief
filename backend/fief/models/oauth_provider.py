@@ -18,10 +18,7 @@ class OAuthProvider(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
     _client_secret: str = Column("client_secret", Text, nullable=False)
     scopes: List[str] = Column(JSON, nullable=False, default=list)
     name: Optional[str] = Column(String(length=255), nullable=True)
-    authorize_endpoint: Optional[str] = Column(Text, nullable=True)
-    access_token_endpoint: Optional[str] = Column(Text, nullable=True)
-    refresh_token_endpoint: Optional[str] = Column(Text, nullable=True)
-    revoke_token_endpoint: Optional[str] = Column(Text, nullable=True)
+    openid_configuration_endpoint: Optional[str] = Column(Text, nullable=True)
 
     def __init__(self, *args, **kwargs) -> None:
         client_id = kwargs.pop("client_id", None)

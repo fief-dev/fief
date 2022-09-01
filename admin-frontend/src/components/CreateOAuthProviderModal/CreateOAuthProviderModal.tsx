@@ -22,10 +22,7 @@ const CreateOAuthProviderModal: React.FunctionComponent<React.PropsWithChildren<
   const form = useForm<schemas.oauthProvider.OAuthProviderCreateForm>({
     defaultValues: {
       scopes: [{ id: '', value: '' }],
-      authorize_endpoint: null,
-      access_token_endpoint: null,
-      refresh_token_endpoint: null,
-      revoke_token_endpoint: null,
+      openid_configuration_endpoint: null,
     },
   });
   const { handleSubmit, reset, setError } = form;

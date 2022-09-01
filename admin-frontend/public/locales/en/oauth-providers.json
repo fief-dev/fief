@@ -3,7 +3,7 @@
     "FACEBOOK": "Facebook",
     "GITHUB": "GitHub",
     "GOOGLE": "Google",
-    "CUSTOM": "Custom"
+    "OPENID": "OpenID Connect"
   },
   "base": {
     "provider": "Provider",
@@ -11,10 +11,7 @@
     "client_id": "Client ID",
     "client_secret": "Client Secret",
     "scopes": "Scopes",
-    "authorize_endpoint": "Authorize endpoint",
-    "access_token_endpoint": "Access token endpoint",
-    "refresh_token_endpoint": "Refresh token endpoint",
-    "revoke_token_endpoint": "Revoke token endpoint"
+    "openid_configuration_endpoint": "OpenID configuration endpoint"
   },
   "create": {
     "title": "Create OAuth Provider",

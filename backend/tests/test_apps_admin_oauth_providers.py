@@ -39,41 +39,35 @@ class TestCreateOAuthProvider:
 
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
-    @pytest.mark.parametrize(
-        "payload",
-        [
-            {"scopes": ["openid"]},
-            {"authorize_endpoint": "http://rome.city/authorize", "scopes": ["openid"]},
-            {"access_token_endpoint": "http://rome.city/token", "scopes": ["openid"]},
-        ],
-    )
     @pytest.mark.authenticated_admin
-    async def test_missing_endpoint_for_custom(
-        self, payload: Dict[str, str], test_client_admin: httpx.AsyncClient
+    async def test_missing_configuration_endpoint_for_openid(
+        self, test_client_admin: httpx.AsyncClient
     ):
         response = await test_client_admin.post(
             "/oauth-providers/",
             json={
-                "provider": "CUSTOM",
+                "provider": "OPENID",
                 "client_id": "CLIENT_ID",
                 "client_secret": "CLIENT_SECRET",
-                **payload,
+                "scopes": ["openid"],
             },
         )
 
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
         json = response.json()
-        assert json["detail"][0]["msg"] == APIErrorCode.OAUTH_PROVIDER_MISSING_ENDPOINT
+        assert (
+            json["detail"][0]["msg"]
+            == APIErrorCode.OAUTH_PROVIDER_MISSING_OPENID_CONFIGURATION_ENDPOINT
+        )
 
     @pytest.mark.parametrize(
         "payload",
         [
             {"provider": "GOOGLE", "scopes": ["openid"]},
             {
-                "provider": "CUSTOM",
-                "authorize_endpoint": "http://rome.city/authorize",
-                "access_token_endpoint": "http://rome.city/token",
+                "provider": "OPENID",
+                "openid_configuration_endpoint": "http://rome.city/.well-known/openid-configuration",
                 "scopes": ["openid"],
             },
         ],
@@ -133,30 +127,26 @@ class TestUpdateOAuthProvider:
 
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
-    @pytest.mark.parametrize(
-        "payload",
-        [
-            {"authorize_endpoint": None},
-            {"access_token_endpoint": None},
-        ],
-    )
     @pytest.mark.authenticated_admin
-    async def test_missing_endpoint_for_custom(
+    async def test_missing_configuration_endpoint_for_openid(
         self,
-        payload: Dict[str, str],
         test_client_admin: httpx.AsyncClient,
         test_data: TestData,
     ):
-        oauth_provider = test_data["oauth_providers"]["custom"]
+        oauth_provider = test_data["oauth_providers"]["openid"]
 
         response = await test_client_admin.patch(
-            f"/oauth-providers/{oauth_provider.id}", json=payload
+            f"/oauth-providers/{oauth_provider.id}",
+            json={"openid_configuration_endpoint": None},
         )
 
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
         json = response.json()
-        assert json["detail"][0]["msg"] == APIErrorCode.OAUTH_PROVIDER_MISSING_ENDPOINT
+        assert (
+            json["detail"][0]["msg"]
+            == APIErrorCode.OAUTH_PROVIDER_MISSING_OPENID_CONFIGURATION_ENDPOINT
+        )
 
     @pytest.mark.authenticated_admin
     async def test_cant_update_provider(
@@ -178,16 +168,21 @@ class TestUpdateOAuthProvider:
         test_client_admin: httpx.AsyncClient,
         test_data: TestData,
     ):
-        oauth_provider = test_data["oauth_providers"]["custom"]
+        oauth_provider = test_data["oauth_providers"]["openid"]
         response = await test_client_admin.patch(
             f"/oauth-providers/{oauth_provider.id}",
-            json={"authorize_endpoint": "http://rome.city/v2/authorize"},
+            json={
+                "openid_configuration_endpoint": "http://rome.city/v2/.well-known/openid-configuration"
+            },
         )
 
         assert response.status_code == status.HTTP_200_OK
 
         json = response.json()
-        assert json["authorize_endpoint"] == "http://rome.city/v2/authorize"
+        assert (
+            json["openid_configuration_endpoint"]
+            == "http://rome.city/v2/.well-known/openid-configuration"
+        )
 
 
 @pytest.mark.asyncio

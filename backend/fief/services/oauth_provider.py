@@ -5,8 +5,9 @@ from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple, Type
 from httpx_oauth.clients.facebook import FacebookOAuth2
 from httpx_oauth.clients.github import GitHubOAuth2
 from httpx_oauth.clients.google import GoogleOAuth2
+from httpx_oauth.clients.openid import OpenID
 from httpx_oauth.errors import GetIdEmailError
-from httpx_oauth.oauth2 import BaseOAuth2, OAuth2
+from httpx_oauth.oauth2 import BaseOAuth2
 
 if TYPE_CHECKING:
     from fief.models import OAuthProvider
@@ -16,14 +17,14 @@ class AvailableOAuthProvider(str, Enum):
     FACEBOOK = "FACEBOOK"
     GITHUB = "GITHUB"
     GOOGLE = "GOOGLE"
-    CUSTOM = "CUSTOM"
+    OPENID = "OPENID"
 
 
 OAUTH_PROVIDERS: Dict[AvailableOAuthProvider, Type[BaseOAuth2]] = {
     AvailableOAuthProvider.FACEBOOK: FacebookOAuth2,
     AvailableOAuthProvider.GITHUB: GitHubOAuth2,
     AvailableOAuthProvider.GOOGLE: GoogleOAuth2,
-    AvailableOAuthProvider.CUSTOM: OAuth2,
+    AvailableOAuthProvider.OPENID: OpenID,
 }
 
 
@@ -47,25 +48,16 @@ def get_oauth_provider_service(oauth_provider: "OAuthProvider") -> BaseOAuth2:
         "client_id": oauth_provider.client_id,
         "client_secret": oauth_provider.client_secret,
     }
-    if provider == AvailableOAuthProvider.CUSTOM:
+    if provider == AvailableOAuthProvider.OPENID:
         oauth_provider_class_kwargs[
-            "authorize_endpoint"
-        ] = oauth_provider.authorize_endpoint
-        oauth_provider_class_kwargs[
-            "access_token_endpoint"
-        ] = oauth_provider.access_token_endpoint
-        oauth_provider_class_kwargs[
-            "refresh_token_endpoint"
-        ] = oauth_provider.refresh_token_endpoint
-        oauth_provider_class_kwargs[
-            "revoke_token_endpoint"
-        ] = oauth_provider.revoke_token_endpoint
+            "openid_configuration_endpoint"
+        ] = oauth_provider.openid_configuration_endpoint
     return oauth_provider_class(**oauth_provider_class_kwargs)
 
 
 async def get_oauth_id_email(
     oauth_provider: "OAuthProvider", access_token: str
-) -> Tuple[str, str]:
+) -> Tuple[str, Optional[str]]:
     oauth_provider_service = get_oauth_provider_service(oauth_provider)
 
     try:

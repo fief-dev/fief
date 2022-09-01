@@ -7,13 +7,14 @@ from fief.schemas.generics import BaseModel, CreatedUpdatedAt, UUIDSchema
 from fief.services.oauth_provider import AvailableOAuthProvider
 
 
-def validate_custom_provider(cls, values: Dict[str, Any]):
+def validate_openid_provider(cls, values: Dict[str, Any]):
     provider: AvailableOAuthProvider = values["provider"]
-    if provider == AvailableOAuthProvider.CUSTOM:
-        authorize_endpoint = values.get("authorize_endpoint")
-        access_token_endpoint = values.get("access_token_endpoint")
-        if authorize_endpoint is None or access_token_endpoint is None:
-            raise ValueError(APIErrorCode.OAUTH_PROVIDER_MISSING_ENDPOINT.value)
+    if provider == AvailableOAuthProvider.OPENID:
+        openid_configuration_endpoint = values.get("openid_configuration_endpoint")
+        if openid_configuration_endpoint is None:
+            raise ValueError(
+                APIErrorCode.OAUTH_PROVIDER_MISSING_OPENID_CONFIGURATION_ENDPOINT.value
+            )
     return values
 
 
@@ -23,13 +24,10 @@ class OAuthProviderCreate(BaseModel):
     client_secret: str
     scopes: List[str]
     name: Optional[str] = None
-    authorize_endpoint: Optional[HttpUrl] = None
-    access_token_endpoint: Optional[HttpUrl] = None
-    refresh_token_endpoint: Optional[HttpUrl] = None
-    revoke_token_endpoint: Optional[HttpUrl] = None
+    openid_configuration_endpoint: Optional[HttpUrl] = None
 
-    _validate_custom_provider = root_validator(allow_reuse=True)(
-        validate_custom_provider
+    _validate_openid_provider = root_validator(allow_reuse=True)(
+        validate_openid_provider
     )
 
 
@@ -38,17 +36,14 @@ class OAuthProviderUpdate(BaseModel):
     client_secret: Optional[str]
     scopes: Optional[List[str]]
     name: Optional[str]
-    authorize_endpoint: Optional[HttpUrl]
-    access_token_endpoint: Optional[HttpUrl]
-    refresh_token_endpoint: Optional[HttpUrl]
-    revoke_token_endpoint: Optional[HttpUrl]
+    openid_configuration_endpoint: Optional[HttpUrl]
 
 
 class OAuthProviderUpdateProvider(OAuthProviderUpdate):
     provider: AvailableOAuthProvider
 
-    _validate_custom_provider = root_validator(allow_reuse=True)(
-        validate_custom_provider
+    _validate_openid_provider = root_validator(allow_reuse=True)(
+        validate_openid_provider
     )
 
 
@@ -58,10 +53,7 @@ class BaseOAuthProvider(UUIDSchema, CreatedUpdatedAt):
     client_secret: SecretStr
     scopes: List[str]
     name: Optional[str] = None
-    authorize_endpoint: Optional[HttpUrl] = None
-    access_token_endpoint: Optional[HttpUrl] = None
-    refresh_token_endpoint: Optional[HttpUrl] = None
-    revoke_token_endpoint: Optional[HttpUrl] = None
+    openid_configuration_endpoint: Optional[HttpUrl] = None
 
 
 class OAuthProvider(BaseOAuthProvider):

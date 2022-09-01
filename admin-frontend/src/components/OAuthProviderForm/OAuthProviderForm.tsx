@@ -73,47 +73,17 @@ const OAuthProviderForm: React.FunctionComponent<React.PropsWithChildren<OAuthPr
         <FormErrorMessage errors={errors} name="scopes" />
       </div>
       {
-        provider === schemas.oauthProvider.AvailableOAuthProvider.CUSTOM &&
+        provider === schemas.oauthProvider.AvailableOAuthProvider.OPENID &&
         <>
           <div>
-            <label className="block text-sm font-medium mb-1" htmlFor="authorize_endpoint">{t('base.authorize_endpoint')}</label>
+            <label className="block text-sm font-medium mb-1" htmlFor="openid_configuration_endpoint">{t('base.openid_configuration_endpoint')}</label>
             <input
-              id="authorize_endpoint"
+              id="openid_configuration_endpoint"
               className="form-input w-full"
               type="text"
-              {...register('authorize_endpoint', { required: fieldRequiredErrorMessage })}
+              {...register('openid_configuration_endpoint', { required: fieldRequiredErrorMessage })}
             />
-            <FormErrorMessage errors={errors} name="authorize_endpoint" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1" htmlFor="access_token_endpoint">{t('base.access_token_endpoint')}</label>
-            <input
-              id="access_token_endpoint"
-              className="form-input w-full"
-              type="text"
-              {...register('access_token_endpoint', { required: fieldRequiredErrorMessage })}
-            />
-            <FormErrorMessage errors={errors} name="access_token_endpoint" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1" htmlFor="access_token_endpoint">{t('base.refresh_token_endpoint')}</label>
-            <input
-              id="refresh_token_endpoint"
-              className="form-input w-full"
-              type="text"
-              {...register('refresh_token_endpoint')}
-            />
-            <FormErrorMessage errors={errors} name="refresh_token_endpoint" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1" htmlFor="access_token_endpoint">{t('base.revoke_token_endpoint')}</label>
-            <input
-              id="revoke_token_endpoint"
-              className="form-input w-full"
-              type="text"
-              {...register('revoke_token_endpoint')}
-            />
-            <FormErrorMessage errors={errors} name="revoke_token_endpoint" />
+            <FormErrorMessage errors={errors} name="openid_configuration_endpoint" />
           </div>
         </>
       }
