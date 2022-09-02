@@ -4,6 +4,7 @@ export enum AvailableOAuthProvider {
   FACEBOOK = 'FACEBOOK',
   GITHUB = 'GITHUB',
   GOOGLE = 'GOOGLE',
+  REDDIT = 'REDDIT',
   OPENID = 'OPENID',
 }
 

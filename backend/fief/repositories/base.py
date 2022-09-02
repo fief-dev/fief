@@ -200,7 +200,7 @@ class ExpiresAtMixin(Generic[M_EXPIRES_AT]):
         statement = delete(self.model).where(
             self.model.expires_at < datetime.now(timezone.utc)
         )
-        await self.session.execute(statement)
+        await self._execute_statement(statement)
 
 
 REPOSITORY = TypeVar("REPOSITORY", bound=BaseRepository)

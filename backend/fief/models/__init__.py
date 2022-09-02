@@ -12,6 +12,7 @@ from fief.models.oauth_provider import OAuthProvider
 from fief.models.oauth_session import OAuthSession
 from fief.models.permission import Permission
 from fief.models.refresh_token import RefreshToken
+from fief.models.registration_session import RegistrationSession
 from fief.models.role import Role, RolePermission
 from fief.models.session_token import SessionToken
 from fief.models.tenant import Tenant
@@ -42,6 +43,7 @@ __all__ = [
     "OAuthSession",
     "Permission",
     "RefreshToken",
+    "RegistrationSession",
     "Role",
     "RolePermission",
     "SessionToken",

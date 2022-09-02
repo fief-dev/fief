@@ -15,8 +15,8 @@ from fief.db import AsyncSession
 from fief.repositories import (
     OAuthAccountRepository,
     OAuthSessionRepository,
+    RegistrationSessionRepository,
     SessionTokenRepository,
-    UserRepository,
 )
 from fief.settings import settings
 from tests.data import TestData
@@ -344,56 +344,9 @@ class TestOAuthCallback:
         assert updated_oauth_account is not None
         assert updated_oauth_account.access_token == "ACCESS_TOKEN"
         assert updated_oauth_account.refresh_token == "REFRESH_TOKEN"
+        assert updated_oauth_account.expires_at is not None
+        assert oauth_account.expires_at is not None
         assert updated_oauth_account.expires_at > oauth_account.expires_at
-
-    async def test_new_account_email_already_exists(
-        self,
-        mocker: MockerFixture,
-        test_client_auth: httpx.AsyncClient,
-        test_data: TestData,
-    ):
-        login_session = test_data["login_sessions"]["default"]
-        client = login_session.client
-        tenant = client.tenant
-        path_prefix = tenant.slug if not tenant.default else ""
-
-        oauth_session = test_data["oauth_sessions"]["default_google"]
-
-        cookies = {}
-        cookies[settings.login_session_cookie_name] = login_session.token
-
-        oauth_provider_service_mock = MagicMock(spec=BaseOAuth2)
-        oauth_provider_service_mock.get_access_token.side_effect = AsyncMock(
-            return_value={
-                "access_token": "ACCESS_TOKEN",
-                "expires_in": 3600,
-                "expires_at": int(datetime.now(timezone.utc).timestamp() + 3600),
-                "refresh_token": "REFRESH_TOKEN",
-            }
-        )
-        mocker.patch(
-            "fief.apps.auth.routers.oauth.get_oauth_provider_service"
-        ).return_value = oauth_provider_service_mock
-        mocker.patch(
-            "fief.apps.auth.routers.oauth.get_oauth_id_email"
-        ).side_effect = AsyncMock(
-            return_value=("NEW_ACCOUNT", test_data["users"]["regular"].email)
-        )
-
-        response = await test_client_auth.get(
-            f"{path_prefix}/oauth/callback",
-            params={
-                "code": "CODE",
-                "redirect_uri": oauth_session.redirect_uri,
-                "state": oauth_session.token,
-            },
-            cookies=cookies,
-        )
-
-        assert response.status_code == status.HTTP_400_BAD_REQUEST
-
-        headers = response.headers
-        assert headers["X-Fief-Error"] == "user_already_exists"
 
     async def test_new_account(
         self,
@@ -441,14 +394,7 @@ class TestOAuthCallback:
         assert response.status_code == status.HTTP_302_FOUND
 
         redirect_uri = response.headers["Location"]
-        assert redirect_uri.endswith(f"{path_prefix}/consent")
-
-        session_cookie = response.cookies[settings.session_cookie_name]
-        session_token_repository = SessionTokenRepository(workspace_session)
-        session_token = await session_token_repository.get_by_token(
-            get_token_hash(session_cookie)
-        )
-        assert session_token is not None
+        assert redirect_uri.endswith(f"{path_prefix}/finalize")
 
         oauth_account_repository = OAuthAccountRepository(workspace_session)
         oauth_account = await oauth_account_repository.get_by_provider_and_account_id(
@@ -457,8 +403,16 @@ class TestOAuthCallback:
         assert oauth_account is not None
         assert oauth_account.access_token == "ACCESS_TOKEN"
         assert oauth_account.refresh_token == "REFRESH_TOKEN"
+        assert oauth_account.user is None
 
-        user_repository = UserRepository(workspace_session)
-        user = await user_repository.get_by_id(session_token.user_id)
-        assert user is not None
-        assert user.email == "louis@bretagne.duchy"
+        registration_session_cookie = response.cookies[
+            settings.registration_session_cookie_name
+        ]
+        registration_session_repository = RegistrationSessionRepository(
+            workspace_session
+        )
+        registration_session = await registration_session_repository.get_by_token(
+            registration_session_cookie
+        )
+        assert registration_session is not None
+        assert registration_session.oauth_account_id == oauth_account.id

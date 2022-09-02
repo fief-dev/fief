@@ -107,15 +107,28 @@ class TimezoneField(SelectField):
         super().__init__(*args, choices=choices, **kwargs)
 
 
-class RegisterFormBase(CSRFBaseForm):
+class EmailFieldForm(BaseForm):
     email = EmailField(
         _("Email address"), validators=[validators.InputRequired(), validators.Email()]
     )
+
+
+class PasswordFieldForm(BaseForm):
     password = PasswordField(_("Password"), validators=[validators.InputRequired()])
+
+
+class RegisterFormBase(CSRFBaseForm, EmailFieldForm, PasswordFieldForm):
     fields: FormField
 
 
 RF = TypeVar("RF", bound=RegisterFormBase)
+
+
+class FinalizeRegisterFormBase(CSRFBaseForm, EmailFieldForm):
+    fields: FormField
+
+
+FRF = TypeVar("FRF", bound=FinalizeRegisterFormBase)
 
 USER_FIELD_FORM_FIELD_MAP: Mapping[UserFieldType, Field] = {
     UserFieldType.STRING: StringField,
@@ -170,3 +183,18 @@ async def get_register_form_class(
         fields = FormField(RegisterFormFields, separator=".")
 
     return RegisterForm
+
+
+async def get_finalize_register_form_class(
+    registration_user_fields: List[UserField] = Depends(get_registration_user_fields),
+) -> Type[FRF]:
+    class RegisterFormFields(BaseForm):
+        pass
+
+    for field in registration_user_fields:
+        setattr(RegisterFormFields, field.slug, _get_form_field(field))
+
+    class FinalizeRegisterForm(FinalizeRegisterFormBase):
+        fields = FormField(RegisterFormFields, separator=".")
+
+    return FinalizeRegisterForm

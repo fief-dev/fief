@@ -8,6 +8,7 @@ from fief.repositories import (
     LoginSessionRepository,
     OAuthSessionRepository,
     RefreshTokenRepository,
+    RegistrationSessionRepository,
     SessionTokenRepository,
     WorkspaceRepository,
 )
@@ -19,6 +20,7 @@ repository_classes: List[Type[ExpiresAtMixin]] = [
     LoginSessionRepository,
     OAuthSessionRepository,
     RefreshTokenRepository,
+    RegistrationSessionRepository,
     SessionTokenRepository,
 ]
 

@@ -20,6 +20,7 @@ from fief.models import (
     OAuthSession,
     Permission,
     RefreshToken,
+    RegistrationSession,
     Role,
     SessionToken,
     Tenant,
@@ -49,6 +50,7 @@ class TestData(TypedDict):
     users: ModelMapping[User]
     user_field_values: ModelMapping[UserFieldValue]
     login_sessions: ModelMapping[LoginSession]
+    registration_sessions: ModelMapping[RegistrationSession]
     oauth_sessions: ModelMapping[OAuthSession]
     authorization_codes: ModelMapping[AuthorizationCode]
     refresh_tokens: ModelMapping[RefreshToken]
@@ -415,6 +417,23 @@ login_sessions: ModelMapping[LoginSession] = {
     ),
 }
 
+registration_sessions: ModelMapping[RegistrationSession] = {
+    "default_done": RegistrationSession(
+        user=users["regular"],
+        tenant=tenants["default"],
+    ),
+    "secondary_done": RegistrationSession(
+        user=users["regular_secondary"],
+        tenant=tenants["secondary"],
+    ),
+    "default_pending": RegistrationSession(
+        tenant=tenants["default"],
+    ),
+    "secondary_pending": RegistrationSession(
+        tenant=tenants["secondary"],
+    ),
+}
+
 oauth_sessions: ModelMapping[OAuthSession] = {
     "default_google": OAuthSession(
         redirect_uri="http://api.fief.dev/oauth/callback",
@@ -575,6 +594,7 @@ oauth_accounts: ModelMapping[OAuthAccount] = {
         account_email="anne@bretagne.duchy",
         oauth_provider=oauth_providers["google"],
         user=users["regular"],
+        tenant=tenants["default"],
     ),
     "inactive_google": OAuthAccount(
         access_token="INACTIVE_GOOGLE_ACCESS_TOKEN",
@@ -584,6 +604,7 @@ oauth_accounts: ModelMapping[OAuthAccount] = {
         account_email="marguerite@bretagne.duchy",
         oauth_provider=oauth_providers["google"],
         user=users["inactive"],
+        tenant=tenants["default"],
     ),
 }
 
@@ -659,6 +680,7 @@ data_mapping: TestData = {
     "users": users,
     "user_field_values": user_field_values,
     "login_sessions": login_sessions,
+    "registration_sessions": registration_sessions,
     "oauth_sessions": oauth_sessions,
     "authorization_codes": authorization_codes,
     "refresh_tokens": refresh_tokens,

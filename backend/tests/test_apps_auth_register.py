@@ -8,7 +8,11 @@ from fastapi import status
 from fief.crypto.token import get_token_hash
 from fief.db import AsyncSession
 from fief.models import UserField, UserFieldType, Workspace
-from fief.repositories import SessionTokenRepository, UserRepository
+from fief.repositories import (
+    RegistrationSessionRepository,
+    SessionTokenRepository,
+    UserRepository,
+)
 from fief.settings import settings
 from fief.tasks import on_after_register
 from tests.data import TestData
@@ -39,7 +43,10 @@ class TestGetRegister:
         assert headers["X-Fief-Error"] == "invalid_session"
 
     async def test_valid(
-        self, test_client_auth: httpx.AsyncClient, test_data: TestData
+        self,
+        test_client_auth: httpx.AsyncClient,
+        test_data: TestData,
+        workspace_session: AsyncSession,
     ):
         login_session = test_data["login_sessions"]["default"]
         client = login_session.client
@@ -54,6 +61,18 @@ class TestGetRegister:
         )
 
         assert response.status_code == status.HTTP_200_OK
+
+        registration_session_cookie = response.cookies[
+            settings.registration_session_cookie_name
+        ]
+        registration_session_repository = RegistrationSessionRepository(
+            workspace_session
+        )
+        registration_session = await registration_session_repository.get_by_token(
+            registration_session_cookie
+        )
+        assert registration_session is not None
+        assert registration_session.tenant_id == tenant.id
 
 
 @pytest.mark.asyncio
@@ -86,6 +105,32 @@ class TestPostRegister:
         headers = response.headers
         assert headers["X-Fief-Error"] == "invalid_session"
 
+    @pytest.mark.parametrize("cookie", [None, "INVALID_REGISTRATION_SESSION"])
+    async def test_invalid_registration_session(
+        self,
+        cookie: Optional[str],
+        tenant_params: TenantParams,
+        test_client_auth_csrf: httpx.AsyncClient,
+        csrf_token: str,
+    ):
+        login_session = tenant_params.login_session
+        cookies = {}
+        cookies[settings.login_session_cookie_name] = login_session.token
+        if cookie is not None:
+            cookies[settings.registration_session_cookie_name] = cookie
+
+        response = await test_client_auth_csrf.post(
+            f"{tenant_params.path_prefix}/register",
+            data={
+                "email": "anne@bretagne.duchy",
+                "password": "hermine1",
+                "csrf_token": csrf_token,
+            },
+            cookies=cookies,
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+
     @pytest.mark.parametrize(
         "data",
         [
@@ -106,8 +151,10 @@ class TestPostRegister:
         csrf_token: str,
     ):
         login_session = tenant_params.login_session
+        registration_session = tenant_params.registration_session_pending
         cookies = {}
         cookies[settings.login_session_cookie_name] = login_session.token
+        cookies[settings.registration_session_cookie_name] = registration_session.token
 
         response = await test_client_auth_csrf.post(
             f"{tenant_params.path_prefix}/register",
@@ -124,8 +171,10 @@ class TestPostRegister:
         test_data: TestData,
     ):
         login_session = test_data["login_sessions"]["default"]
+        registration_session = test_data["registration_sessions"]["default_pending"]
         cookies = {}
         cookies[settings.login_session_cookie_name] = login_session.token
+        cookies[settings.registration_session_cookie_name] = registration_session.token
 
         response = await test_client_auth_csrf.post(
             "/register",
@@ -152,8 +201,10 @@ class TestPostRegister:
         send_task_mock: MagicMock,
     ):
         login_session = test_data["login_sessions"]["default"]
+        registration_session = test_data["registration_sessions"]["default_pending"]
         cookies = {}
         cookies[settings.login_session_cookie_name] = login_session.token
+        cookies[settings.registration_session_cookie_name] = registration_session.token
 
         response = await test_client_auth_csrf.post(
             "/register",
@@ -168,17 +219,21 @@ class TestPostRegister:
         assert response.status_code == status.HTTP_302_FOUND
 
         redirect_uri = response.headers["Location"]
-        assert redirect_uri.endswith("/consent")
+        assert redirect_uri.endswith("/finalize")
 
-        session_cookie = response.cookies[settings.session_cookie_name]
-        session_token_repository = SessionTokenRepository(workspace_session)
-        session_token = await session_token_repository.get_by_token(
-            get_token_hash(session_cookie)
+        registration_session_repository = RegistrationSessionRepository(
+            workspace_session
         )
-        assert session_token is not None
+        updated_registration_session = await registration_session_repository.get_by_id(
+            registration_session.id
+        )
+        assert updated_registration_session is not None
+        assert updated_registration_session.user_id is not None
 
         send_task_mock.assert_called_once_with(
-            on_after_register, str(session_token.user_id), str(workspace.id)
+            on_after_register,
+            str(updated_registration_session.user_id),
+            str(workspace.id),
         )
 
     async def test_no_email_conflict_on_another_tenant(
@@ -188,8 +243,10 @@ class TestPostRegister:
         test_data: TestData,
     ):
         login_session = test_data["login_sessions"]["secondary"]
+        registration_session = test_data["registration_sessions"]["secondary_pending"]
         cookies = {}
         cookies[settings.login_session_cookie_name] = login_session.token
+        cookies[settings.registration_session_cookie_name] = registration_session.token
 
         response = await test_client_auth_csrf.post(
             f"/{test_data['tenants']['secondary'].slug}/register",
@@ -211,8 +268,10 @@ class TestPostRegister:
         workspace_session: AsyncSession,
     ):
         login_session = test_data["login_sessions"]["secondary"]
+        registration_session = test_data["registration_sessions"]["secondary_pending"]
         cookies = {}
         cookies[settings.login_session_cookie_name] = login_session.token
+        cookies[settings.registration_session_cookie_name] = registration_session.token
 
         response = await test_client_auth_csrf.post(
             f"/{test_data['tenants']['secondary'].slug}/register",
@@ -231,15 +290,17 @@ class TestPostRegister:
 
         assert response.status_code == status.HTTP_302_FOUND
 
-        session_cookie = response.cookies[settings.session_cookie_name]
-        session_token_repository = SessionTokenRepository(workspace_session)
-        session_token = await session_token_repository.get_by_token(
-            get_token_hash(session_cookie)
+        registration_session_repository = RegistrationSessionRepository(
+            workspace_session
         )
-        assert session_token is not None
+        updated_registration_session = await registration_session_repository.get_by_id(
+            registration_session.id
+        )
+        assert updated_registration_session is not None
+        assert updated_registration_session.user_id is not None
 
         user_repository = UserRepository(workspace_session)
-        user = await user_repository.get_by_id(session_token.user_id)
+        user = await user_repository.get_by_id(updated_registration_session.user_id)
         assert user is not None
         assert user.fields == {
             "given_name": "Anne",
@@ -287,8 +348,10 @@ class TestPostRegister:
         await workspace_session.commit()
 
         login_session = test_data["login_sessions"]["secondary"]
+        registration_session = test_data["registration_sessions"]["secondary_pending"]
         cookies = {}
         cookies[settings.login_session_cookie_name] = login_session.token
+        cookies[settings.registration_session_cookie_name] = registration_session.token
 
         response = await test_client_auth_csrf.post(
             f"/{test_data['tenants']['secondary'].slug}/register",
@@ -311,8 +374,10 @@ class TestPostRegister:
         workspace_session: AsyncSession,
     ):
         login_session = test_data["login_sessions"]["secondary"]
+        registration_session = test_data["registration_sessions"]["secondary_pending"]
         cookies = {}
         cookies[settings.login_session_cookie_name] = login_session.token
+        cookies[settings.registration_session_cookie_name] = registration_session.token
 
         response = await test_client_auth_csrf.post(
             f"/{test_data['tenants']['secondary'].slug}/register",
@@ -327,16 +392,201 @@ class TestPostRegister:
 
         assert response.status_code == status.HTTP_302_FOUND
 
+        registration_session_repository = RegistrationSessionRepository(
+            workspace_session
+        )
+        updated_registration_session = await registration_session_repository.get_by_id(
+            registration_session.id
+        )
+        assert updated_registration_session is not None
+        assert updated_registration_session.user_id is not None
+
+        user_repository = UserRepository(workspace_session)
+        user = await user_repository.get_by_id(updated_registration_session.user_id)
+        assert user is not None
+        assert user.fields == {
+            "onboarding_done": False,  # Default value
+        }
+
+
+@pytest.mark.asyncio
+@pytest.mark.workspace_host
+class TestGetFinalize:
+    @pytest.mark.parametrize("cookie", [None, "INVALID_LOGIN_SESSION"])
+    async def test_invalid_login_session(
+        self,
+        cookie: Optional[str],
+        tenant_params: TenantParams,
+        test_client_auth: httpx.AsyncClient,
+    ):
+        cookies = {}
+        if cookie is not None:
+            cookies[settings.login_session_cookie_name] = cookie
+
+        response = await test_client_auth.get(
+            f"{tenant_params.path_prefix}/finalize", cookies=cookies
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+        headers = response.headers
+        assert headers["X-Fief-Error"] == "invalid_session"
+
+    @pytest.mark.parametrize("cookie", [None, "INVALID_REGISTRATION_SESSION"])
+    async def test_invalid_registration_session(
+        self,
+        cookie: Optional[str],
+        tenant_params: TenantParams,
+        test_client_auth: httpx.AsyncClient,
+    ):
+        login_session = tenant_params.login_session
+        cookies = {}
+        cookies[settings.login_session_cookie_name] = login_session.token
+        if cookie is not None:
+            cookies[settings.registration_session_cookie_name] = cookie
+
+        response = await test_client_auth.get(
+            f"{tenant_params.path_prefix}/finalize", cookies=cookies
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+        headers = response.headers
+        assert headers["X-Fief-Error"] == "invalid_session"
+
+    async def test_valid_registration_done(
+        self,
+        tenant_params: TenantParams,
+        test_client_auth: httpx.AsyncClient,
+        workspace_session: AsyncSession,
+    ):
+        login_session = tenant_params.login_session
+        registration_session = tenant_params.registration_session_done
+        cookies = {}
+        cookies[settings.login_session_cookie_name] = login_session.token
+        cookies[settings.registration_session_cookie_name] = registration_session.token
+
+        response = await test_client_auth.get(
+            f"{tenant_params.path_prefix}/finalize", cookies=cookies
+        )
+
+        assert response.status_code == status.HTTP_302_FOUND
+
+        redirect_uri = response.headers["Location"]
+        assert redirect_uri.endswith("/consent")
+
         session_cookie = response.cookies[settings.session_cookie_name]
         session_token_repository = SessionTokenRepository(workspace_session)
         session_token = await session_token_repository.get_by_token(
             get_token_hash(session_cookie)
         )
         assert session_token is not None
+        assert session_token.user_id == registration_session.user_id
 
-        user_repository = UserRepository(workspace_session)
-        user = await user_repository.get_by_id(session_token.user_id)
-        assert user is not None
-        assert user.fields == {
-            "onboarding_done": False,  # Default value
-        }
+        registration_session_repository = RegistrationSessionRepository(
+            workspace_session
+        )
+        deleted_registration_session = await registration_session_repository.get_by_id(
+            registration_session.id
+        )
+        assert deleted_registration_session is None
+
+    async def test_valid_registration_pending(
+        self, tenant_params: TenantParams, test_client_auth: httpx.AsyncClient
+    ):
+        login_session = tenant_params.login_session
+        registration_session = tenant_params.registration_session_pending
+        cookies = {}
+        cookies[settings.login_session_cookie_name] = login_session.token
+        cookies[settings.registration_session_cookie_name] = registration_session.token
+
+        response = await test_client_auth.get(
+            f"{tenant_params.path_prefix}/finalize", cookies=cookies
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+
+
+@pytest.mark.asyncio
+@pytest.mark.workspace_host
+class TestPostFinalize:
+    @pytest.mark.parametrize("cookie", [None, "INVALID_LOGIN_SESSION"])
+    async def test_invalid_login_session(
+        self,
+        cookie: Optional[str],
+        tenant_params: TenantParams,
+        test_client_auth_csrf: httpx.AsyncClient,
+        csrf_token: str,
+    ):
+        cookies = {}
+        if cookie is not None:
+            cookies[settings.login_session_cookie_name] = cookie
+
+        response = await test_client_auth_csrf.post(
+            f"{tenant_params.path_prefix}/finalize",
+            data={
+                "email": "anne@bretagne.duchy",
+                "csrf_token": csrf_token,
+            },
+            cookies=cookies,
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+        headers = response.headers
+        assert headers["X-Fief-Error"] == "invalid_session"
+
+    @pytest.mark.parametrize("cookie", [None, "INVALID_REGISTRATION_SESSION"])
+    async def test_invalid_registration_session(
+        self,
+        cookie: Optional[str],
+        tenant_params: TenantParams,
+        test_client_auth_csrf: httpx.AsyncClient,
+        csrf_token: str,
+    ):
+        login_session = tenant_params.login_session
+        cookies = {}
+        cookies[settings.login_session_cookie_name] = login_session.token
+        if cookie is not None:
+            cookies[settings.registration_session_cookie_name] = cookie
+
+        response = await test_client_auth_csrf.post(
+            f"{tenant_params.path_prefix}/finalize",
+            data={
+                "email": "anne@bretagne.duchy",
+                "csrf_token": csrf_token,
+            },
+            cookies=cookies,
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+        headers = response.headers
+        assert headers["X-Fief-Error"] == "invalid_session"
+
+    async def test_existing_user(
+        self,
+        test_client_auth_csrf: httpx.AsyncClient,
+        csrf_token: str,
+        test_data: TestData,
+    ):
+        login_session = test_data["login_sessions"]["default"]
+        registration_session = test_data["registration_sessions"]["default_pending"]
+        cookies = {}
+        cookies[settings.login_session_cookie_name] = login_session.token
+        cookies[settings.registration_session_cookie_name] = registration_session.token
+
+        response = await test_client_auth_csrf.post(
+            "/finalize",
+            data={
+                "email": "anne@bretagne.duchy",
+                "password": "hermine1",
+                "csrf_token": csrf_token,
+            },
+            cookies=cookies,
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+        headers = response.headers
+        assert headers["X-Fief-Error"] == "REGISTER_USER_ALREADY_EXISTS"
