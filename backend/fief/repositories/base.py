@@ -55,7 +55,10 @@ class BaseRepositoryProtocol(Protocol[M]):
     async def delete(self, object: M) -> None:
         ...  # pragma: no cover
 
-    async def _execute_statement(self, statement: Select) -> Result:
+    async def _execute_query(self, statement: Select) -> Result:
+        ...  # pragma: no cover
+
+    async def _execute_statement(self, statement: Executable) -> Result:
         ...  # pragma: no cover
 
 
@@ -85,7 +88,7 @@ class BaseRepository(BaseRepositoryProtocol, Generic[M]):
     ) -> Tuple[List[M], int]:
         paginated_statement = statement.offset(skip).limit(limit)
         [count, results] = await asyncio.gather(
-            self._count(statement), self._execute_statement(paginated_statement)
+            self._count(statement), self._execute_query(paginated_statement)
         )
 
         return [result[0] for result in results.unique().all()], count
@@ -131,14 +134,14 @@ class BaseRepository(BaseRepositoryProtocol, Generic[M]):
         return await self.list(select(self.model))
 
     async def get_one_or_none(self, statement: Select) -> Optional[M]:
-        results = await self._execute_statement(statement)
+        results = await self._execute_query(statement)
         object = results.first()
         if object is None:
             return None
         return object[0]
 
     async def list(self, statement: Select) -> List[M]:
-        results = await self._execute_statement(statement)
+        results = await self._execute_query(statement)
         return [result[0] for result in results.unique().all()]
 
     async def create(self, object: M) -> M:
@@ -166,11 +169,16 @@ class BaseRepository(BaseRepositoryProtocol, Generic[M]):
         count_statement = statement.with_only_columns(
             [func.count()], maintain_column_froms=True  # type: ignore
         ).order_by(None)
-        results = await self._execute_statement(count_statement)
+        results = await self._execute_query(count_statement)
         return results.scalar_one()
 
-    async def _execute_statement(self, statement: Executable) -> Result:
+    async def _execute_query(self, statement: Select) -> Result:
         return await self.session.execute(statement)
+
+    async def _execute_statement(self, statement: Executable) -> Result:
+        result = await self.session.execute(statement)
+        await self.session.commit()
+        return result
 
 
 class UUIDRepositoryMixin(Generic[M_UUID]):
