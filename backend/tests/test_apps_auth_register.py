@@ -7,7 +7,7 @@ from fastapi import status
 
 from fief.crypto.token import get_token_hash
 from fief.db import AsyncSession
-from fief.models import UserField, UserFieldType, Workspace
+from fief.models import RegistrationSessionFlow, UserField, UserFieldType, Workspace
 from fief.repositories import (
     OAuthAccountRepository,
     RegistrationSessionRepository,
@@ -76,6 +76,7 @@ class TestGetRegister:
             registration_session_cookie
         )
         assert registration_session is not None
+        assert registration_session.flow == RegistrationSessionFlow.PASSWORD
         assert registration_session.tenant_id == tenant.id
 
     async def test_valid_registration_session_oauth(
@@ -96,6 +97,9 @@ class TestGetRegister:
 
         html = response.text
         assert 'name="password"' not in html
+
+        assert registration_session.oauth_account is not None
+        assert f'value="{registration_session.email}"' in html
 
 
 @pytest.mark.asyncio
@@ -488,3 +492,39 @@ class TestPostRegister:
         send_task_mock.assert_called_once_with(
             on_after_register, str(session_token.user_id), str(workspace.id)
         )
+
+    async def test_new_user_oauth_override_default_email(
+        self,
+        test_client_auth_csrf: httpx.AsyncClient,
+        csrf_token: str,
+        test_data: TestData,
+        workspace_session: AsyncSession,
+    ):
+        login_session = test_data["login_sessions"]["default"]
+        registration_session = test_data["registration_sessions"]["default_oauth"]
+        cookies = {}
+        cookies[settings.login_session_cookie_name] = login_session.token
+        cookies[settings.registration_session_cookie_name] = registration_session.token
+
+        response = await test_client_auth_csrf.post(
+            "/register",
+            data={
+                "email": "louis+fief@bretagne.duchy",
+                "csrf_token": csrf_token,
+            },
+            cookies=cookies,
+        )
+
+        assert response.status_code == status.HTTP_302_FOUND
+
+        session_cookie = response.cookies[settings.session_cookie_name]
+        session_token_repository = SessionTokenRepository(workspace_session)
+        session_token = await session_token_repository.get_by_token(
+            get_token_hash(session_cookie)
+        )
+        assert session_token is not None
+
+        user_repository = UserRepository(workspace_session)
+        user = await user_repository.get_by_id(session_token.user_id)
+        assert user is not None
+        assert user.email == "louis+fief@bretagne.duchy"

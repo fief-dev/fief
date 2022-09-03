@@ -23,6 +23,7 @@ from fief.models import (
     OAuthAccount,
     OAuthProvider,
     OAuthSession,
+    RegistrationSessionFlow,
     SessionToken,
     Tenant,
 )
@@ -184,7 +185,10 @@ async def callback(
     )
 
     await registration_flow.create_registration_session(
-        response, tenant=tenant, oauth_account=oauth_account
+        response,
+        RegistrationSessionFlow.OAUTH,
+        tenant=tenant,
+        oauth_account=oauth_account,
     )
 
     return response

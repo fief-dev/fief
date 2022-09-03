@@ -12,6 +12,7 @@ from pytest_mock import MockerFixture
 
 from fief.crypto.token import get_token_hash
 from fief.db import AsyncSession
+from fief.models import RegistrationSessionFlow
 from fief.repositories import (
     OAuthAccountRepository,
     OAuthSessionRepository,
@@ -415,4 +416,6 @@ class TestOAuthCallback:
             registration_session_cookie
         )
         assert registration_session is not None
+        assert registration_session.flow == RegistrationSessionFlow.OAUTH
         assert registration_session.oauth_account_id == oauth_account.id
+        assert registration_session.email == oauth_account.account_email

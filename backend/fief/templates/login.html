@@ -20,17 +20,19 @@
       <button type="submit" class="btn bg-primary hover:bg-primary-hover text-white ml-3">{{ _('Sign in') }}</button>
     </div>
   </form>
-  <div class="pt-5 mt-6 border-t border-gray-200 space-y-2">
-    {% for oauth_provider in oauth_providers %}
-      {% set display_name, logo_svg = get_oauth_provider_branding(oauth_provider) %}
-      <a href="{{ tenant.url_path_for(request, 'oauth:authorize') }}?provider={{ oauth_provider.id }}" class="btn bg-white w-full justify-start border border-primary hover:border-primary-hover text-primary-500 hover:text-primary-hover">
-        {% if logo_svg %}
-          <img src="data:image/svg+xml;base64,{{ logo_svg }}" class="w-4 mr-4" />
-        {% endif %}
-        {{ _('Sign in with %(provider)s', provider=display_name) }}
-      </a>
-    {% endfor %}
-  </div>
+  {% if oauth_providers | length > 0 %}
+    <div class="pt-5 mt-6 border-t border-gray-200 space-y-2">
+      {% for oauth_provider in oauth_providers %}
+        {% set display_name, logo_svg = get_oauth_provider_branding(oauth_provider) %}
+        <a href="{{ tenant.url_path_for(request, 'oauth:authorize') }}?provider={{ oauth_provider.id }}" class="btn bg-white w-full justify-start border border-primary hover:border-primary-hover text-primary-500 hover:text-primary-hover">
+          {% if logo_svg %}
+            <img src="data:image/svg+xml;base64,{{ logo_svg }}" class="w-4 mr-4" />
+          {% endif %}
+          {{ _('Sign in with %(provider)s', provider=display_name) }}
+        </a>
+      {% endfor %}
+    </div>
+  {% endif %}
   <div class="pt-5 mt-6 border-t border-gray-200">
     <div class="text-sm">
       {{ _("Don't have an account?") }}

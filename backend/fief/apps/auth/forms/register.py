@@ -25,7 +25,12 @@ from fief.apps.auth.forms.base import BaseForm, CSRFBaseForm
 from fief.dependencies.register import get_optional_registration_session
 from fief.dependencies.user_field import get_registration_user_fields
 from fief.locale import gettext_lazy as _
-from fief.models import RegistrationSession, UserField, UserFieldType
+from fief.models import (
+    RegistrationSession,
+    RegistrationSessionFlow,
+    UserField,
+    UserFieldType,
+)
 
 
 def empty_string_to_none(value: Optional[str]) -> Optional[str]:
@@ -181,7 +186,8 @@ async def get_register_form_class(
         pass
 
     if registration_session is None or (
-        registration_session is not None and registration_session.show_password
+        registration_session is not None
+        and registration_session.flow == RegistrationSessionFlow.PASSWORD
     ):
         return RegisterPasswordForm
 

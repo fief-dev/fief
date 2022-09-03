@@ -1,4 +1,5 @@
 import secrets
+from enum import Enum
 from typing import Optional
 
 from pydantic import UUID4
@@ -14,6 +15,11 @@ from fief.models.user import User
 from fief.settings import settings
 
 
+class RegistrationSessionFlow(str, Enum):
+    PASSWORD = "PASSWORD"
+    OAUTH = "OAUTH"
+
+
 class RegistrationSession(UUIDModel, CreatedUpdatedAt, ExpiresAt, WorkspaceBase):
     __tablename__ = "registration_sessions"
     __lifetime_seconds__ = settings.registration_session_lifetime_seconds
@@ -26,7 +32,11 @@ class RegistrationSession(UUIDModel, CreatedUpdatedAt, ExpiresAt, WorkspaceBase)
         unique=True,
     )
 
-    show_password: bool = Column(Boolean, nullable=False, default=True)
+    flow: RegistrationSessionFlow = Column(
+        String(length=255), default=RegistrationSessionFlow.PASSWORD, nullable=False
+    )
+
+    email: Optional[str] = Column(String(length=320), nullable=True)
 
     oauth_account_id: Optional[UUID4] = Column(
         GUID, ForeignKey(OAuthAccount.id, ondelete="CASCADE"), nullable=True

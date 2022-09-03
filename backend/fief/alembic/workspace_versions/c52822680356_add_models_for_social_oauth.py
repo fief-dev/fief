@@ -1,18 +1,17 @@
 """Add models for social OAuth
 
-Revision ID: 016036c553fa
+Revision ID: c52822680356
 Revises: 2b8bf1c3378e
-Create Date: 2022-09-03 12:01:42.863070
+Create Date: 2022-09-03 16:16:43.555051
 
 """
-from alembic import op
 import sqlalchemy as sa
-
+from alembic import op
 
 import fief
 
 # revision identifiers, used by Alembic.
-revision = "016036c553fa"
+revision = "c52822680356"
 down_revision = "2b8bf1c3378e"
 branch_labels = None
 depends_on = None
@@ -26,13 +25,13 @@ def upgrade():
         sa.Column(
             "created_at",
             fief.models.generics.TIMESTAMPAware(timezone=True),
-            server_default=sa.func.now(),
+            server_default=sa.text("now()"),
             nullable=False,
         ),
         sa.Column(
             "updated_at",
             fief.models.generics.TIMESTAMPAware(timezone=True),
-            server_default=sa.func.now(),
+            server_default=sa.text("now()"),
             nullable=False,
         ),
         sa.Column("provider", sa.String(length=255), nullable=False),
@@ -61,13 +60,13 @@ def upgrade():
         sa.Column(
             "created_at",
             fief.models.generics.TIMESTAMPAware(timezone=True),
-            server_default=sa.func.now(),
+            server_default=sa.text("now()"),
             nullable=False,
         ),
         sa.Column(
             "updated_at",
             fief.models.generics.TIMESTAMPAware(timezone=True),
-            server_default=sa.func.now(),
+            server_default=sa.text("now()"),
             nullable=False,
         ),
         sa.Column("access_token", sa.Text(), nullable=False),
@@ -114,13 +113,13 @@ def upgrade():
         sa.Column(
             "created_at",
             fief.models.generics.TIMESTAMPAware(timezone=True),
-            server_default=sa.func.now(),
+            server_default=sa.text("now()"),
             nullable=False,
         ),
         sa.Column(
             "updated_at",
             fief.models.generics.TIMESTAMPAware(timezone=True),
-            server_default=sa.func.now(),
+            server_default=sa.text("now()"),
             nullable=False,
         ),
         sa.Column("token", sa.String(length=255), nullable=False),
@@ -174,17 +173,18 @@ def upgrade():
         sa.Column(
             "created_at",
             fief.models.generics.TIMESTAMPAware(timezone=True),
-            server_default=sa.func.now(),
+            server_default=sa.text("now()"),
             nullable=False,
         ),
         sa.Column(
             "updated_at",
             fief.models.generics.TIMESTAMPAware(timezone=True),
-            server_default=sa.func.now(),
+            server_default=sa.text("now()"),
             nullable=False,
         ),
         sa.Column("token", sa.String(length=255), nullable=False),
-        sa.Column("show_password", sa.Boolean(), nullable=False),
+        sa.Column("flow", sa.String(length=255), nullable=False),
+        sa.Column("email", sa.String(length=320), nullable=True),
         sa.Column("oauth_account_id", fief.models.generics.GUID(), nullable=True),
         sa.Column("tenant_id", fief.models.generics.GUID(), nullable=False),
         sa.Column(

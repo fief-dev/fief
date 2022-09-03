@@ -21,6 +21,7 @@ from fief.models import (
     Permission,
     RefreshToken,
     RegistrationSession,
+    RegistrationSessionFlow,
     Role,
     SessionToken,
     Tenant,
@@ -451,20 +452,22 @@ login_sessions: ModelMapping[LoginSession] = {
 
 registration_sessions: ModelMapping[RegistrationSession] = {
     "default_password": RegistrationSession(
-        show_password=True,
+        flow=RegistrationSessionFlow.PASSWORD,
         tenant=tenants["default"],
     ),
     "secondary_password": RegistrationSession(
-        show_password=True,
+        flow=RegistrationSessionFlow.PASSWORD,
         tenant=tenants["secondary"],
     ),
     "default_oauth": RegistrationSession(
-        show_password=False,
+        flow=RegistrationSessionFlow.OAUTH,
+        email="louis@bretagne.duchy",
         oauth_account=oauth_accounts["new_user_google"],
         tenant=tenants["default"],
     ),
     "secondary_oauth": RegistrationSession(
-        show_password=False,
+        flow=RegistrationSessionFlow.OAUTH,
+        email="louis@nantes.city",
         oauth_account=oauth_accounts["new_user_google"],
         tenant=tenants["secondary"],
     ),

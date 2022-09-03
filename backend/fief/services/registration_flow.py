@@ -3,7 +3,14 @@ from typing import Any, Dict, List, Optional, Type, TypeVar
 from fastapi import Request, Response
 
 from fief.dependencies.users import UserManager
-from fief.models import OAuthAccount, RegistrationSession, Tenant, User, UserField
+from fief.models import (
+    OAuthAccount,
+    RegistrationSession,
+    RegistrationSessionFlow,
+    Tenant,
+    User,
+    UserField,
+)
 from fief.repositories import OAuthAccountRepository, RegistrationSessionRepository
 from fief.schemas.user import UF, UserCreateInternal
 from fief.settings import settings
@@ -29,12 +36,21 @@ class RegistrationFlow:
     async def create_registration_session(
         self,
         response: ResponseType,
+        flow: RegistrationSessionFlow,
         *,
         tenant: Tenant,
         oauth_account: Optional[OAuthAccount] = None
     ) -> ResponseType:
+        email = None
+        oauth_account_id = None
+        if oauth_account is not None:
+            email = oauth_account.account_email
+            oauth_account_id = oauth_account.id
+
         registration_session = RegistrationSession(
-            oauth_account_id=oauth_account.id if oauth_account is not None else None,
+            flow=flow,
+            email=email,
+            oauth_account_id=oauth_account_id,
             tenant_id=tenant.id,
         )
         registration_session = await self.registration_session_repository.create(

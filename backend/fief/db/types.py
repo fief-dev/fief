@@ -1,5 +1,4 @@
 import ssl
-from asyncio import new_event_loop
 from enum import Enum
 from pathlib import Path
 from typing import Dict, Optional, Tuple, Type, Union
