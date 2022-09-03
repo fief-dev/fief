@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 
 import { useAPI, useAPIErrorHandler } from '../../hooks/api';
 import * as schemas from '../../schemas';
+import DeleteModal from '../DeleteModal/DeleteModal';
 import ErrorAlert from '../ErrorAlert/ErrorAlert';
 import LoadingButton from '../LoadingButton/LoadingButton';
 import OAuthProviderForm from '../OAuthProviderForm/OAuthProviderForm';
@@ -14,7 +15,7 @@ interface OAuthProviderDetailsProps {
   onDeleted?: () => void;
 }
 
-const OAuthProviderDetails: React.FunctionComponent<React.PropsWithChildren<OAuthProviderDetailsProps>> = ({ oauthProvider, onUpdated }) => {
+const OAuthProviderDetails: React.FunctionComponent<React.PropsWithChildren<OAuthProviderDetailsProps>> = ({ oauthProvider, onUpdated, onDeleted: _onDeleted }) => {
   const { t } = useTranslation(['oauth-providers']);
   const api = useAPI();
 
@@ -58,6 +59,14 @@ const OAuthProviderDetails: React.FunctionComponent<React.PropsWithChildren<OAut
     }
   }, [oauthProvider, api, onUpdated, reset, handleAPIError]);
 
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  const onDeleted = useCallback(() => {
+    if (_onDeleted) {
+      _onDeleted();
+    };
+  }, [_onDeleted]);
+
   return (
     <>
       <div className="text-slate-800 font-semibold text-center mb-6">{t(`available_oauth_provider.${oauthProvider.provider}`)}</div>
@@ -78,6 +87,24 @@ const OAuthProviderDetails: React.FunctionComponent<React.PropsWithChildren<OAut
           </form>
         </FormProvider>
       </div>
+      <div className="mt-6">
+        <button
+          type="button"
+          className="btn w-full bg-red-500 hover:bg-red-600 text-white"
+          onClick={() => setShowDeleteModal(true)}
+        >
+          {t('details.delete')}
+        </button>
+      </div>
+      <DeleteModal
+        objectId={oauthProvider.id}
+        method="deleteOAuthProvider"
+        title={t('delete.title', { name: t(`available_oauth_provider.${oauthProvider.provider}`) })}
+        notice={t('delete.notice')}
+        open={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onDeleted={onDeleted}
+      />
     </>
   );
 };

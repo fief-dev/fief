@@ -32,6 +32,11 @@
     "name": "Name"
   },
   "details": {
-    "submit": "Update"
+    "submit": "Update",
+    "delete": "Delete"
+  },
+  "delete": {
+    "title": "Delete the OAuth Provider \"{{name}}\"?",
+    "notice": "If you delete this provider, the associated OAuth accounts will be deleted as well. The associated users won't be deleted, but they will have to sign in with another method."
   }
 }
