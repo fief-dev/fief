@@ -111,7 +111,13 @@ class TestOAuthAuthorize:
         assert oauth_session.oauth_provider_id == oauth_provider.id
         assert oauth_session.login_session_id == login_session.id
 
-        assert scope == " ".join(oauth_provider.scopes)
+        assert set(scope.split(" ")) == set(
+            (
+                "https://www.googleapis.com/auth/userinfo.profile",
+                "https://www.googleapis.com/auth/userinfo.email",
+                "custom_scope",
+            )
+        )
 
         assert oauth_session.redirect_uri == redirect_uri
         assert redirect_uri.endswith("/oauth/callback")
