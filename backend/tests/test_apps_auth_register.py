@@ -79,6 +79,45 @@ class TestGetRegister:
         assert registration_session.flow == RegistrationSessionFlow.PASSWORD
         assert registration_session.tenant_id == tenant.id
 
+    async def test_registration_session_from_another_tenant(
+        self,
+        test_client_auth: httpx.AsyncClient,
+        test_data: TestData,
+        workspace_session: AsyncSession,
+    ):
+        login_session = test_data["login_sessions"]["default"]
+        registration_session = test_data["registration_sessions"]["secondary_password"]
+        client = login_session.client
+        tenant = client.tenant
+        path_prefix = tenant.slug if not tenant.default else ""
+
+        cookies = {}
+        cookies[settings.login_session_cookie_name] = login_session.token
+        cookies[settings.registration_session_cookie_name] = registration_session.token
+
+        response = await test_client_auth.get(
+            f"{path_prefix}/register", cookies=cookies
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+
+        html = response.text
+        assert 'name="password"' in html
+
+        registration_session_cookie = response.cookies[
+            settings.registration_session_cookie_name
+        ]
+        registration_session_repository = RegistrationSessionRepository(
+            workspace_session
+        )
+        new_registration_session = await registration_session_repository.get_by_token(
+            registration_session_cookie
+        )
+        assert new_registration_session is not None
+        assert new_registration_session.id != registration_session.id
+        assert new_registration_session.flow == RegistrationSessionFlow.PASSWORD
+        assert new_registration_session.tenant_id == tenant.id
+
     async def test_valid_registration_session_oauth(
         self, test_client_auth: httpx.AsyncClient, tenant_params: TenantParams
     ):
