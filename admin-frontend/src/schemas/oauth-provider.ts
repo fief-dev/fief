@@ -1,9 +1,12 @@
 import { CreatedUpdatedAt, UUIDSchema } from './generics';
 
 export enum AvailableOAuthProvider {
+  DISCORD = 'DISCORD',
   FACEBOOK = 'FACEBOOK',
   GITHUB = 'GITHUB',
   GOOGLE = 'GOOGLE',
+  LINKEDIN = 'LINKEDIN',
+  MICROSOFT = 'MICROSOFT',
   REDDIT = 'REDDIT',
   OPENID = 'OPENID',
 }

@@ -1,8 +1,12 @@
 {
   "available_oauth_provider": {
+    "DISCORD": "Discord",
     "FACEBOOK": "Facebook",
     "GITHUB": "GitHub",
     "GOOGLE": "Google",
+    "LINKEDIN": "LinkedIn",
+    "MICROSOFT": "Microsoft",
+    "REDDIT": "Reddit",
     "OPENID": "OpenID Connect"
   },
   "base": {

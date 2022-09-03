@@ -40,4 +40,4 @@ async def get_oauth_provider_by_id_or_404(
 async def get_oauth_providers(
     repository: OAuthProviderRepository = Depends(get_oauth_provider_repository),
 ) -> List[OAuthProvider]:
-    return await repository.all()
+    return await repository.all_by_name_and_provider()

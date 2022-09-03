@@ -56,8 +56,9 @@ async def authorize(
     state = oauth_session.token
 
     oauth_provider_service = get_oauth_provider_service(oauth_provider)
+    scopes = set(oauth_provider_service.base_scopes or []) | set(oauth_provider.scopes)
     authorize_url = await oauth_provider_service.get_authorization_url(
-        redirect_uri, state=state, scope=oauth_provider.scopes
+        redirect_uri, state=state, scope=list(scopes)
     )
 
     return RedirectResponse(authorize_url, status_code=status.HTTP_302_FOUND)

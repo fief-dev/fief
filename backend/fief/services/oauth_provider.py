@@ -4,7 +4,10 @@ from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple, Type
 
 from httpx_oauth.clients.facebook import FacebookOAuth2
 from httpx_oauth.clients.github import GitHubOAuth2
+from httpx_oauth.clients.discord import DiscordOAuth2
 from httpx_oauth.clients.google import GoogleOAuth2
+from httpx_oauth.clients.linkedin import LinkedInOAuth2
+from httpx_oauth.clients.microsoft import MicrosoftGraphOAuth2
 from httpx_oauth.clients.openid import OpenID
 from httpx_oauth.clients.reddit import RedditOAuth2
 from httpx_oauth.errors import GetIdEmailError
@@ -15,17 +18,23 @@ if TYPE_CHECKING:
 
 
 class AvailableOAuthProvider(str, Enum):
+    DISCORD = "DISCORD"
     FACEBOOK = "FACEBOOK"
     GITHUB = "GITHUB"
     GOOGLE = "GOOGLE"
+    LINKEDIN = "LINKEDIN"
+    MICROSOFT = "MICROSOFT"
     REDDIT = "REDDIT"
     OPENID = "OPENID"
 
 
 OAUTH_PROVIDERS: Dict[AvailableOAuthProvider, Type[BaseOAuth2]] = {
+    AvailableOAuthProvider.DISCORD: DiscordOAuth2,
     AvailableOAuthProvider.FACEBOOK: FacebookOAuth2,
     AvailableOAuthProvider.GITHUB: GitHubOAuth2,
     AvailableOAuthProvider.GOOGLE: GoogleOAuth2,
+    AvailableOAuthProvider.LINKEDIN: LinkedInOAuth2,
+    AvailableOAuthProvider.MICROSOFT: MicrosoftGraphOAuth2,
     AvailableOAuthProvider.REDDIT: RedditOAuth2,
     AvailableOAuthProvider.OPENID: OpenID,
 }
