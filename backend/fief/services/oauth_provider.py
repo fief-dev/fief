@@ -2,9 +2,9 @@ import base64
 from enum import Enum
 from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple, Type
 
+from httpx_oauth.clients.discord import DiscordOAuth2
 from httpx_oauth.clients.facebook import FacebookOAuth2
 from httpx_oauth.clients.github import GitHubOAuth2
-from httpx_oauth.clients.discord import DiscordOAuth2
 from httpx_oauth.clients.google import GoogleOAuth2
 from httpx_oauth.clients.linkedin import LinkedInOAuth2
 from httpx_oauth.clients.microsoft import MicrosoftGraphOAuth2
