@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  Fief\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2022-09-02 16:13+0200\n"
+"POT-Creation-Date: 2022-09-03 17:52+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: es\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.10.3\n"
 
-#: fief/apps/auth/forms/auth.py:10 fief/apps/auth/forms/register.py:112
+#: fief/apps/auth/forms/auth.py:10 fief/apps/auth/forms/register.py:122
 #: fief/apps/auth/forms/reset.py:9
 msgid "Email address"
 msgstr "Email"
@@ -35,35 +35,35 @@ msgstr "Negar"
 msgid "CSRF failed."
 msgstr "CSRF falló."
 
-#: fief/apps/auth/forms/register.py:54
+#: fief/apps/auth/forms/register.py:60
 msgid "The country code is missing."
 msgstr "Falta el código del país."
 
-#: fief/apps/auth/forms/register.py:56
+#: fief/apps/auth/forms/register.py:62
 msgid "This phone number is invalid."
 msgstr "Este número de teléfono no es válido."
 
-#: fief/apps/auth/forms/register.py:72
+#: fief/apps/auth/forms/register.py:78
 msgid "Address line 1"
 msgstr "Línea de dirección 1"
 
-#: fief/apps/auth/forms/register.py:74
+#: fief/apps/auth/forms/register.py:80
 msgid "Address line 2"
 msgstr "Línea de dirección 2"
 
-#: fief/apps/auth/forms/register.py:78
+#: fief/apps/auth/forms/register.py:84
 msgid "Postal code"
 msgstr "Código postal"
 
-#: fief/apps/auth/forms/register.py:79
+#: fief/apps/auth/forms/register.py:85
 msgid "City"
 msgstr "Ciudad"
 
-#: fief/apps/auth/forms/register.py:81
+#: fief/apps/auth/forms/register.py:87
 msgid "State"
 msgstr "Estado o Provincia"
 
-#: fief/apps/auth/forms/register.py:83
+#: fief/apps/auth/forms/register.py:89
 msgid "Country"
 msgstr "País"
 
@@ -83,32 +83,24 @@ msgstr "El usuario negó el acceso a sus datos."
 msgid "redirect_uri is missing"
 msgstr "error interno: falta  \"redirect_uri\""
 
-#: fief/apps/auth/routers/oauth.py:99
+#: fief/apps/auth/routers/oauth.py:96
 msgid "Missing authorization code."
 msgstr ""
 
-#: fief/apps/auth/routers/oauth.py:111 fief/apps/auth/routers/oauth.py:229
-#: fief/apps/auth/routers/oauth.py:237
+#: fief/apps/auth/routers/oauth.py:108
 #, fuzzy
 msgid "Invalid OAuth session."
 msgstr "Sesión de Ingresso (Login) no válida"
 
-#: fief/apps/auth/routers/oauth.py:126
+#: fief/apps/auth/routers/oauth.py:123
 msgid "An error occurred while getting the access token."
 msgstr ""
 
-#: fief/apps/auth/routers/oauth.py:151
+#: fief/apps/auth/routers/oauth.py:148
 msgid "Your account is inactive."
 msgstr ""
 
-#: fief/apps/auth/routers/oauth.py:251
-#, fuzzy
-msgid ""
-"A user with the same email address already exists. You can try to login "
-"using your email address and password."
-msgstr "Ya existe un usuario con esta misma Email."
-
-#: fief/apps/auth/routers/register.py:62 fief/apps/auth/routers/register.py:111
+#: fief/apps/auth/routers/register.py:76
 msgid "A user with the same email address already exists."
 msgstr "Ya existe un usuario con esta misma Email."
 
@@ -193,11 +185,6 @@ msgstr "Se requiere el consentimiento del usuario para este ámbito"
 msgid "Unknown OAuth provider"
 msgstr ""
 
-#: fief/dependencies/register.py:66
-#, fuzzy
-msgid "Invalid registration session"
-msgstr "Sesión de Ingresso (Login) no válida"
-
 #: fief/dependencies/users.py:102
 msgid "The password should be at least 8 characters."
 msgstr "La contraseña debe tener al menos 8 caracteres."
@@ -267,11 +254,6 @@ msgstr "%(name)s quiere acceder a tu cuenta"
 msgid "This will allow %(name)s to:"
 msgstr "Esto permitirá que %(name)s:"
 
-#: fief/templates/finalize.html:5 fief/templates/finalize.html:7
-#: fief/templates/finalize.html:21
-msgid "Finalize sign up"
-msgstr ""
-
 #: fief/templates/forgot_password.html:5 fief/templates/forgot_password.html:7
 msgid "Forgot password"
 msgstr "Contraseña olvidada"
@@ -296,17 +278,17 @@ msgstr "¡Bienvenido de nuevo!"
 msgid "I forgot my password"
 msgstr "Olvidé mi contraseña"
 
-#: fief/templates/login.html:30
+#: fief/templates/login.html:31
 #, python-format
 msgid "Sign in with %(provider)s"
 msgstr ""
 
-#: fief/templates/login.html:36
+#: fief/templates/login.html:38
 msgid "Don't have an account?"
 msgstr "¿No tienes una cuenta?"
 
-#: fief/templates/login.html:37 fief/templates/register.html:5
-#: fief/templates/register.html:7 fief/templates/register.html:23
+#: fief/templates/login.html:39 fief/templates/register.html:9
+#: fief/templates/register.html:17 fief/templates/register.html:42
 msgid "Sign up"
 msgstr "Inscribirse"
 
@@ -314,9 +296,19 @@ msgstr "Inscribirse"
 msgid "Sign out"
 msgstr "Desconectar"
 
-#: fief/templates/register.html:21
+#: fief/templates/register.html:7 fief/templates/register.html:15
+#: fief/templates/register.html:35
+msgid "Finalize sign up"
+msgstr ""
+
+#: fief/templates/register.html:40
 msgid "I already have an account"
 msgstr "Ya tengo una cuenta"
+
+#: fief/templates/register.html:54
+#, python-format
+msgid "Sign up with %(provider)s"
+msgstr ""
 
 #: fief/templates/reset_password.html:5 fief/templates/reset_password.html:7
 msgid "Reset password"
@@ -325,4 +317,14 @@ msgstr "Cambiar contraseña"
 #: fief/templates/reset_password.html:18
 msgid "Reset my password"
 msgstr "Cambiar mi contraseña"
+
+#~ msgid ""
+#~ "A user with the same email address"
+#~ " already exists. You can try to "
+#~ "login using your email address and "
+#~ "password."
+#~ msgstr "Ya existe un usuario con esta misma Email."
+
+#~ msgid "Invalid registration session"
+#~ msgstr "Sesión de Ingresso (Login) no válida"
 
