@@ -10,7 +10,9 @@
   <form method="POST" action="{{ tenant.url_path_for(request, 'register:register') }}" novalidate>
     <div class="space-y-4">
       {{ forms.form_field(form.email) }}
-      {{ forms.form_field(form.password) }}
+      {% if form.password %}
+        {{ forms.form_field(form.password) }}
+      {% endif %}
       {% for field in form.fields %}
         {{ forms.form_field(field) }}
       {% endfor %}

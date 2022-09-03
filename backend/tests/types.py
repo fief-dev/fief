@@ -23,8 +23,8 @@ class TenantParams:
     client: Client
     user: User
     login_session: LoginSession
-    registration_session_pending: RegistrationSession
-    registration_session_done: RegistrationSession
+    registration_session_password: RegistrationSession
+    registration_session_oauth: RegistrationSession
     session_token: SessionToken
     session_token_token: Tuple[str, str]
 

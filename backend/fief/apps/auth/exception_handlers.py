@@ -12,7 +12,6 @@ from fief.exceptions import (
     LoginException,
     LogoutException,
     OAuthException,
-    RegisterException,
     TokenRequestException,
 )
 from fief.services.authentication_flow import AuthenticationFlow
@@ -78,23 +77,6 @@ async def login_exception_handler(
 
 exception_handlers[LoginException] = login_exception_handler
 exception_handlers[OAuthException] = login_exception_handler
-
-
-async def register_exception_handler(request: Request, exc: RegisterException):
-    return templates.TemplateResponse(
-        "register.html",
-        {
-            "request": request,
-            "error": exc.error.error_description,
-            "tenant": exc.tenant,
-            "fatal_error": exc.fatal,
-        },
-        status_code=status.HTTP_400_BAD_REQUEST,
-        headers={"X-Fief-Error": exc.error.error},
-    )
-
-
-exception_handlers[RegisterException] = register_exception_handler
 
 
 async def token_request_exception_handler(request: Request, exc: TokenRequestException):

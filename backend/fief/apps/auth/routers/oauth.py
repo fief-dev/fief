@@ -179,7 +179,7 @@ async def callback(
     await oauth_session_repository.update(oauth_session)
 
     response = RedirectResponse(
-        tenant.url_path_for(request, "register:finalize"),
+        tenant.url_path_for(request, "register:register"),
         status_code=status.HTTP_302_FOUND,
     )
 

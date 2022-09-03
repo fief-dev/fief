@@ -4,7 +4,7 @@ from fastapi import Request, Response
 
 from fief.dependencies.users import UserManager
 from fief.models import OAuthAccount, RegistrationSession, Tenant, User, UserField
-from fief.repositories import RegistrationSessionRepository, OAuthAccountRepository
+from fief.repositories import OAuthAccountRepository, RegistrationSessionRepository
 from fief.schemas.user import UF, UserCreateInternal
 from fief.settings import settings
 
@@ -77,11 +77,11 @@ class RegistrationFlow:
             safe=True,
             request=request,
         )
-        registration_session.user = user
-        await self.registration_session_repository.update(registration_session)
 
         if registration_session.oauth_account is not None:
             registration_session.oauth_account.user = user
-            await self.oauth_account_repository.update(registration_session.oauth_account)
+            await self.oauth_account_repository.update(
+                registration_session.oauth_account
+            )
 
         return user

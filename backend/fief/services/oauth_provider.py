@@ -5,8 +5,8 @@ from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple, Type
 from httpx_oauth.clients.facebook import FacebookOAuth2
 from httpx_oauth.clients.github import GitHubOAuth2
 from httpx_oauth.clients.google import GoogleOAuth2
-from httpx_oauth.clients.reddit import RedditOAuth2
 from httpx_oauth.clients.openid import OpenID
+from httpx_oauth.clients.reddit import RedditOAuth2
 from httpx_oauth.errors import GetIdEmailError
 from httpx_oauth.oauth2 import BaseOAuth2
 

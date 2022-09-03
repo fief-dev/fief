@@ -394,7 +394,7 @@ class TestOAuthCallback:
         assert response.status_code == status.HTTP_302_FOUND
 
         redirect_uri = response.headers["Location"]
-        assert redirect_uri.endswith(f"{path_prefix}/finalize")
+        assert redirect_uri.endswith(f"{path_prefix}/register")
 
         oauth_account_repository = OAuthAccountRepository(workspace_session)
         oauth_account = await oauth_account_repository.get_by_provider_and_account_id(

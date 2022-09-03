@@ -315,6 +315,38 @@ user_field_values: ModelMapping[UserFieldValue] = {
     ),
 }
 
+oauth_accounts: ModelMapping[OAuthAccount] = {
+    "regular_google": OAuthAccount(
+        access_token="REGULAR_GOOGLE_ACCESS_TOKEN",
+        expires_at=datetime.now(timezone.utc) + timedelta(seconds=3600),
+        refresh_token="REGULAR_GOOGLE_REFRESH_TOKEN",
+        account_id="REGULAR_GOOGLE_ACCOUNT_ID",
+        account_email="anne@bretagne.duchy",
+        oauth_provider=oauth_providers["google"],
+        user=users["regular"],
+        tenant=tenants["default"],
+    ),
+    "inactive_google": OAuthAccount(
+        access_token="INACTIVE_GOOGLE_ACCESS_TOKEN",
+        expires_at=datetime.now(timezone.utc) + timedelta(seconds=3600),
+        refresh_token="INACTIVE_GOOGLE_REFRESH_TOKEN",
+        account_id="INACTIVE_GOOGLE_ACCOUNT_ID",
+        account_email="marguerite@bretagne.duchy",
+        oauth_provider=oauth_providers["google"],
+        user=users["inactive"],
+        tenant=tenants["default"],
+    ),
+    "new_user_google": OAuthAccount(
+        access_token="NEW_USER_GOOGLE_ACCESS_TOKEN",
+        expires_at=datetime.now(timezone.utc) + timedelta(seconds=3600),
+        refresh_token="NEW_USER_GOOGLE_REFRESH_TOKEN",
+        account_id="NEW_USER_GOOGLE_ACCOUNT_ID",
+        account_email="louis@bretagne.duchy",
+        oauth_provider=oauth_providers["google"],
+        tenant=tenants["default"],
+    ),
+}
+
 login_sessions: ModelMapping[LoginSession] = {
     "default": LoginSession(
         response_type="code",
@@ -418,18 +450,22 @@ login_sessions: ModelMapping[LoginSession] = {
 }
 
 registration_sessions: ModelMapping[RegistrationSession] = {
-    "default_done": RegistrationSession(
-        user=users["regular"],
+    "default_password": RegistrationSession(
+        show_password=True,
         tenant=tenants["default"],
     ),
-    "secondary_done": RegistrationSession(
-        user=users["regular_secondary"],
+    "secondary_password": RegistrationSession(
+        show_password=True,
         tenant=tenants["secondary"],
     ),
-    "default_pending": RegistrationSession(
+    "default_oauth": RegistrationSession(
+        show_password=False,
+        oauth_account=oauth_accounts["new_user_google"],
         tenant=tenants["default"],
     ),
-    "secondary_pending": RegistrationSession(
+    "secondary_oauth": RegistrationSession(
+        show_password=False,
+        oauth_account=oauth_accounts["new_user_google"],
         tenant=tenants["secondary"],
     ),
 }
@@ -582,29 +618,6 @@ session_tokens: ModelMapping[SessionToken] = {
     "regular_secondary": SessionToken(
         token=session_token_tokens["regular_secondary"][1],
         user=users["regular_secondary"],
-    ),
-}
-
-oauth_accounts: ModelMapping[OAuthAccount] = {
-    "regular_google": OAuthAccount(
-        access_token="REGULAR_GOOGLE_ACCESS_TOKEN",
-        expires_at=datetime.now(timezone.utc) + timedelta(seconds=3600),
-        refresh_token="REGULAR_GOOGLE_REFRESH_TOKEN",
-        account_id="REGULAR_GOOGLE_ACCOUNT_ID",
-        account_email="anne@bretagne.duchy",
-        oauth_provider=oauth_providers["google"],
-        user=users["regular"],
-        tenant=tenants["default"],
-    ),
-    "inactive_google": OAuthAccount(
-        access_token="INACTIVE_GOOGLE_ACCESS_TOKEN",
-        expires_at=datetime.now(timezone.utc) + timedelta(seconds=3600),
-        refresh_token="INACTIVE_GOOGLE_REFRESH_TOKEN",
-        account_id="INACTIVE_GOOGLE_ACCOUNT_ID",
-        account_email="marguerite@bretagne.duchy",
-        oauth_provider=oauth_providers["google"],
-        user=users["inactive"],
-        tenant=tenants["default"],
     ),
 }
 

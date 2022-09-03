@@ -5,12 +5,13 @@ from fastapi import Cookie, Depends
 from fief.dependencies.tenant import get_current_tenant
 from fief.dependencies.user_field import get_user_create_internal_model, get_user_fields
 from fief.dependencies.users import UserManager, get_user_manager
-from fief.dependencies.workspace_repositories import get_oauth_account_repository, get_registration_session_repository
-from fief.exceptions import RegisterException
+from fief.dependencies.workspace_repositories import (
+    get_oauth_account_repository,
+    get_registration_session_repository,
+)
 from fief.locale import gettext_lazy as _
 from fief.models import RegistrationSession, Tenant, UserField
-from fief.repositories import RegistrationSessionRepository, OAuthAccountRepository
-from fief.schemas.register import RegisterError
+from fief.repositories import OAuthAccountRepository, RegistrationSessionRepository
 from fief.schemas.user import UF, UserCreateInternal
 from fief.services.registration_flow import RegistrationFlow
 from fief.settings import settings
@@ -56,19 +57,5 @@ async def get_optional_registration_session(
 
     if registration_session.tenant_id != tenant.id:
         return None
-
-    return registration_session
-
-
-async def get_registration_session(
-    registration_session: Optional[RegistrationSession] = Depends(
-        get_optional_registration_session
-    ),
-) -> RegistrationSession:
-    if registration_session is None:
-        raise RegisterException(
-            RegisterError.get_invalid_session(_("Invalid registration session")),
-            fatal=True,
-        )
 
     return registration_session

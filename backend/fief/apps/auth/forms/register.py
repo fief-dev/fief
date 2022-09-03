@@ -22,9 +22,10 @@ from wtforms import (
 from wtforms.utils import unset_value
 
 from fief.apps.auth.forms.base import BaseForm, CSRFBaseForm
+from fief.dependencies.register import get_optional_registration_session
 from fief.dependencies.user_field import get_registration_user_fields
 from fief.locale import gettext_lazy as _
-from fief.models import UserField, UserFieldType
+from fief.models import RegistrationSession, UserField, UserFieldType
 
 
 def empty_string_to_none(value: Optional[str]) -> Optional[str]:
@@ -107,28 +108,19 @@ class TimezoneField(SelectField):
         super().__init__(*args, choices=choices, **kwargs)
 
 
-class EmailFieldForm(BaseForm):
-    email = EmailField(
-        _("Email address"), validators=[validators.InputRequired(), validators.Email()]
-    )
-
-
 class PasswordFieldForm(BaseForm):
     password = PasswordField(_("Password"), validators=[validators.InputRequired()])
 
 
-class RegisterFormBase(CSRFBaseForm, EmailFieldForm, PasswordFieldForm):
+class RegisterFormBase(CSRFBaseForm):
+    email = EmailField(
+        _("Email address"), validators=[validators.InputRequired(), validators.Email()]
+    )
     fields: FormField
 
 
 RF = TypeVar("RF", bound=RegisterFormBase)
 
-
-class FinalizeRegisterFormBase(CSRFBaseForm, EmailFieldForm):
-    fields: FormField
-
-
-FRF = TypeVar("FRF", bound=FinalizeRegisterFormBase)
 
 USER_FIELD_FORM_FIELD_MAP: Mapping[UserFieldType, Field] = {
     UserFieldType.STRING: StringField,
@@ -172,6 +164,9 @@ def _get_form_field(user_field: UserField) -> Field:
 
 async def get_register_form_class(
     registration_user_fields: List[UserField] = Depends(get_registration_user_fields),
+    registration_session: Optional[RegistrationSession] = Depends(
+        get_optional_registration_session
+    ),
 ) -> Type[RF]:
     class RegisterFormFields(BaseForm):
         pass
@@ -182,19 +177,12 @@ async def get_register_form_class(
     class RegisterForm(RegisterFormBase):
         fields = FormField(RegisterFormFields, separator=".")
 
-    return RegisterForm
-
-
-async def get_finalize_register_form_class(
-    registration_user_fields: List[UserField] = Depends(get_registration_user_fields),
-) -> Type[FRF]:
-    class RegisterFormFields(BaseForm):
+    class RegisterPasswordForm(RegisterForm, PasswordFieldForm):
         pass
 
-    for field in registration_user_fields:
-        setattr(RegisterFormFields, field.slug, _get_form_field(field))
+    if registration_session is None or (
+        registration_session is not None and registration_session.show_password
+    ):
+        return RegisterPasswordForm
 
-    class FinalizeRegisterForm(FinalizeRegisterFormBase):
-        fields = FormField(RegisterFormFields, separator=".")
-
-    return FinalizeRegisterForm
+    return RegisterForm

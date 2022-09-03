@@ -10,7 +10,6 @@ from fief.schemas.auth import (
     TokenError,
 )
 from fief.schemas.oauth import OAuthError
-from fief.schemas.register import RegisterError
 
 
 class AuthorizeException(Exception):
@@ -46,19 +45,6 @@ class LoginException(Exception):
     ) -> None:
         self.error = error
         self.oauth_providers = oauth_providers
-        self.tenant = tenant
-        self.fatal = fatal
-
-
-class RegisterException(Exception):
-    def __init__(
-        self,
-        error: RegisterError,
-        tenant: Optional[Tenant] = None,
-        *,
-        fatal: bool = False
-    ) -> None:
-        self.error = error
         self.tenant = tenant
         self.fatal = fatal
 

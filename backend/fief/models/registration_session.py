@@ -2,7 +2,7 @@ import secrets
 from typing import Optional
 
 from pydantic import UUID4
-from sqlalchemy import Column, ForeignKey
+from sqlalchemy import Boolean, Column, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.sqltypes import String
 
@@ -26,12 +26,7 @@ class RegistrationSession(UUIDModel, CreatedUpdatedAt, ExpiresAt, WorkspaceBase)
         unique=True,
     )
 
-    email: Optional[str] = Column(String(length=320), nullable=True)
-
-    user_id: Optional[UUID4] = Column(
-        GUID, ForeignKey(User.id, ondelete="CASCADE"), nullable=True
-    )
-    user: Optional[User] = relationship("User", lazy="joined")
+    show_password: bool = Column(Boolean, nullable=False, default=True)
 
     oauth_account_id: Optional[UUID4] = Column(
         GUID, ForeignKey(OAuthAccount.id, ondelete="CASCADE"), nullable=True
