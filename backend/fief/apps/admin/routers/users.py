@@ -15,6 +15,7 @@ from fief.dependencies.user_field import get_user_fields
 from fief.dependencies.users import (
     UserManager,
     get_admin_user_update,
+    get_paginated_user_oauth_accounts,
     get_paginated_user_permissions,
     get_paginated_user_roles,
     get_paginated_users,
@@ -31,7 +32,14 @@ from fief.dependencies.workspace_repositories import (
     get_user_role_repository,
 )
 from fief.errors import APIErrorCode
-from fief.models import User, UserField, UserPermission, UserRole, Workspace
+from fief.models import (
+    OAuthAccount,
+    User,
+    UserField,
+    UserPermission,
+    UserRole,
+    Workspace,
+)
 from fief.repositories import (
     PermissionRepository,
     RoleRepository,
@@ -289,3 +297,23 @@ async def delete_user_role(
     await user_role_repository.delete(user_role)
 
     send_task(tasks.on_user_role_deleted, str(user.id), str(role_id), str(workspace.id))
+
+
+@router.get(
+    "/{id:uuid}/oauth-accounts",
+    name="users:list_oauth_accounts",
+    response_model=PaginatedResults[schemas.oauth_account.OAuthAccount],
+)
+async def list_user_oauth_accounts(
+    paginated_user_oauth_accounts: PaginatedObjects[OAuthAccount] = Depends(
+        get_paginated_user_oauth_accounts
+    ),
+) -> PaginatedResults[schemas.oauth_account.OAuthAccount]:
+    oauth_accounts, count = paginated_user_oauth_accounts
+    return PaginatedResults(
+        count=count,
+        results=[
+            schemas.oauth_account.OAuthAccount.from_orm(oauth_account)
+            for oauth_account in oauth_accounts
+        ],
+    )

@@ -2,6 +2,7 @@ from typing import Optional
 
 from pydantic import UUID4
 from sqlalchemy import select
+from sqlalchemy.sql import Select
 
 from fief.models import OAuthAccount
 from fief.repositories.base import BaseRepository, UUIDRepositoryMixin
@@ -20,3 +21,7 @@ class OAuthAccountRepository(
             OAuthAccount.account_id == account_id,
         )
         return await self.get_one_or_none(statement)
+
+    def get_by_user_statement(self, user: UUID4) -> Select:
+        statement = select(OAuthAccount).where(OAuthAccount.user_id == user)
+        return statement

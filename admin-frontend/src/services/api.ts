@@ -116,6 +116,10 @@ export class APIClient {
     return this.client.delete(`/users/${id}/roles/${roleId}`);
   }
 
+  public listUserOAuthAccounts(id: string, params: schemas.PaginationParameters = {}): Promise<AxiosResponse<schemas.PaginatedResults<schemas.oauthAccount.OAuthAccount>>> {
+    return this.client.get(`/users/${id}/oauth-accounts`, { params });
+  }
+
   public createUser(data: schemas.user.UserCreateInternal): Promise<AxiosResponse<schemas.user.User>> {
     return this.client.post('/users/', data);
   }

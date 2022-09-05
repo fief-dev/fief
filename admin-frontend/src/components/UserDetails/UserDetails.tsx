@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 import * as schemas from '../../schemas';
 import UserDetailsAccount from '../UserDetailsAccount/UserDetailsAccount';
+import UserDetailsOAuthAccounts from '../UserDetailsOAuthAccounts/UserDetailsOAuthAccounts';
 import UserDetailsPermissions from '../UserDetailsPermissions/UserDetailsPermissions';
 import UserDetailsRoles from '../UserDetailsRoles/UserDetailsRoles';
 
@@ -10,6 +11,7 @@ enum UserDetailsTab {
   ACCOUNT = 'ACCOUNT',
   ROLES = 'ROLES',
   PERMISSIONS = 'PERMISSIONS',
+  OAUTH_ACCOUNTS = 'OAUTH_ACCOUNTS',
 }
 
 interface UserDetailsProps {
@@ -42,6 +44,7 @@ const UserDetails: React.FunctionComponent<React.PropsWithChildren<UserDetailsPr
       {currentTab === UserDetailsTab.ACCOUNT && <UserDetailsAccount user={user} onUpdated={onUpdated} />}
       {currentTab === UserDetailsTab.ROLES && <UserDetailsRoles user={user} />}
       {currentTab === UserDetailsTab.PERMISSIONS && <UserDetailsPermissions user={user} />}
+      {currentTab === UserDetailsTab.OAUTH_ACCOUNTS && <UserDetailsOAuthAccounts user={user} />}
     </>
   );
 };
