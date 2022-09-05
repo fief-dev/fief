@@ -7,8 +7,12 @@ from fief.repositories import (
     ClientRepository,
     GrantRepository,
     LoginSessionRepository,
+    OAuthAccountRepository,
+    OAuthProviderRepository,
+    OAuthSessionRepository,
     PermissionRepository,
     RefreshTokenRepository,
+    RegistrationSessionRepository,
     RoleRepository,
     SessionTokenRepository,
     TenantRepository,
@@ -32,6 +36,12 @@ async def get_client_repository(
     return get_repository(ClientRepository, session)
 
 
+async def get_oauth_provider_repository(
+    session: AsyncSession = Depends(get_current_workspace_session),
+) -> OAuthProviderRepository:
+    return get_repository(OAuthProviderRepository, session)
+
+
 async def get_user_field_repository(
     session: AsyncSession = Depends(get_current_workspace_session),
 ) -> UserFieldRepository:
@@ -44,10 +54,28 @@ async def get_user_repository(
     return get_repository(UserRepository, session)
 
 
+async def get_oauth_account_repository(
+    session: AsyncSession = Depends(get_current_workspace_session),
+) -> OAuthAccountRepository:
+    return get_repository(OAuthAccountRepository, session)
+
+
 async def get_login_session_repository(
     session: AsyncSession = Depends(get_current_workspace_session),
 ) -> LoginSessionRepository:
     return get_repository(LoginSessionRepository, session)
+
+
+async def get_registration_session_repository(
+    session: AsyncSession = Depends(get_current_workspace_session),
+) -> RegistrationSessionRepository:
+    return get_repository(RegistrationSessionRepository, session)
+
+
+async def get_oauth_session_repository(
+    session: AsyncSession = Depends(get_current_workspace_session),
+) -> OAuthSessionRepository:
+    return get_repository(OAuthSessionRepository, session)
 
 
 async def get_authorization_code_repository(

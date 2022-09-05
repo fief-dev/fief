@@ -5,8 +5,12 @@ from fief.repositories.base import get_repository
 from fief.repositories.client import ClientRepository
 from fief.repositories.grant import GrantRepository
 from fief.repositories.login_session import LoginSessionRepository
+from fief.repositories.oauth_account import OAuthAccountRepository
+from fief.repositories.oauth_provider import OAuthProviderRepository
+from fief.repositories.oauth_session import OAuthSessionRepository
 from fief.repositories.permission import PermissionRepository
 from fief.repositories.refresh_token import RefreshTokenRepository
+from fief.repositories.registration_session import RegistrationSessionRepository
 from fief.repositories.role import RoleRepository
 from fief.repositories.session_token import SessionTokenRepository
 from fief.repositories.tenant import TenantRepository
@@ -26,8 +30,12 @@ __all__ = [
     "ClientRepository",
     "GrantRepository",
     "LoginSessionRepository",
+    "OAuthAccountRepository",
+    "OAuthProviderRepository",
+    "OAuthSessionRepository",
     "PermissionRepository",
     "RefreshTokenRepository",
+    "RegistrationSessionRepository",
     "RoleRepository",
     "SessionTokenRepository",
     "TenantRepository",

@@ -157,7 +157,7 @@ class TestGetRegisterFormClass:
                 },
             ),
         ]
-        form_class = await get_register_form_class(user_fields)
+        form_class = await get_register_form_class(user_fields, None)
         assert issubclass(form_class, RegisterFormBase)
 
         form = form_class(
@@ -189,7 +189,7 @@ class TestGetRegisterFormClass:
                 },
             ),
         ]
-        form_class = await get_register_form_class(user_fields)
+        form_class = await get_register_form_class(user_fields, None)
         assert issubclass(form_class, RegisterFormBase)
 
         form = form_class(
@@ -216,7 +216,7 @@ class TestGetRegisterFormClass:
                 },
             ),
         ]
-        form_class = await get_register_form_class(user_fields)
+        form_class = await get_register_form_class(user_fields, None)
         assert issubclass(form_class, RegisterFormBase)
 
         form = form_class(
@@ -249,7 +249,7 @@ class TestGetRegisterFormClass:
                 },
             ),
         ]
-        form_class = await get_register_form_class(user_fields)
+        form_class = await get_register_form_class(user_fields, None)
         assert issubclass(form_class, RegisterFormBase)
 
         form = form_class(
@@ -275,7 +275,7 @@ class TestGetRegisterFormClass:
                 },
             ),
         ]
-        form_class = await get_register_form_class(user_fields)
+        form_class = await get_register_form_class(user_fields, None)
         assert issubclass(form_class, RegisterFormBase)
 
         form = form_class(
@@ -308,7 +308,7 @@ class TestGetRegisterFormClass:
                 },
             ),
         ]
-        form_class = await get_register_form_class(user_fields)
+        form_class = await get_register_form_class(user_fields, None)
         assert issubclass(form_class, RegisterFormBase)
 
         data = {"email": "anne@bretagne.duchy", "password": "hermine"}
@@ -335,7 +335,7 @@ class TestGetRegisterFormClass:
                 },
             ),
         ]
-        form_class = await get_register_form_class(user_fields)
+        form_class = await get_register_form_class(user_fields, None)
         assert issubclass(form_class, RegisterFormBase)
 
         form = form_class(
@@ -367,7 +367,7 @@ class TestGetRegisterFormClass:
                 },
             ),
         ]
-        form_class = await get_register_form_class(user_fields)
+        form_class = await get_register_form_class(user_fields, None)
         assert issubclass(form_class, RegisterFormBase)
 
         form = form_class(
@@ -400,7 +400,7 @@ class TestGetRegisterFormClass:
                 },
             ),
         ]
-        form_class = await get_register_form_class(user_fields)
+        form_class = await get_register_form_class(user_fields, None)
         assert issubclass(form_class, RegisterFormBase)
 
         form = form_class(
@@ -432,7 +432,7 @@ class TestGetRegisterFormClass:
                 },
             ),
         ]
-        form_class = await get_register_form_class(user_fields)
+        form_class = await get_register_form_class(user_fields, None)
         assert issubclass(form_class, RegisterFormBase)
 
         form = form_class(
@@ -464,7 +464,7 @@ class TestGetRegisterFormClass:
                 },
             ),
         ]
-        form_class = await get_register_form_class(user_fields)
+        form_class = await get_register_form_class(user_fields, None)
         assert issubclass(form_class, RegisterFormBase)
 
         form = form_class(

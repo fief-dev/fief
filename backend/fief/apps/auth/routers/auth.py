@@ -24,13 +24,14 @@ from fief.dependencies.auth import (
 )
 from fief.dependencies.authentication_flow import get_authentication_flow
 from fief.dependencies.current_workspace import get_current_workspace
+from fief.dependencies.oauth_provider import get_oauth_providers
 from fief.dependencies.session_token import get_session_token
 from fief.dependencies.tenant import get_current_tenant
 from fief.dependencies.users import UserManager, get_user_manager
 from fief.dependencies.workspace_repositories import get_session_token_repository
 from fief.exceptions import LogoutException
 from fief.locale import gettext_lazy as _
-from fief.models import Client, LoginSession, Tenant, Workspace
+from fief.models import Client, LoginSession, OAuthProvider, Tenant, Workspace
 from fief.models.session_token import SessionToken
 from fief.repositories.session_token import SessionTokenRepository
 from fief.schemas.auth import LogoutError
@@ -98,13 +99,14 @@ async def login(
     user_manager: UserManager = Depends(get_user_manager),
     authentication_flow: AuthenticationFlow = Depends(get_authentication_flow),
     session_token: Optional[SessionToken] = Depends(get_session_token),
+    oauth_providers: Optional[List[OAuthProvider]] = Depends(get_oauth_providers),
     tenant: Tenant = Depends(get_current_tenant),
 ):
     form_helper = FormHelper(
         LoginForm,
         "login.html",
         request=request,
-        context={"tenant": tenant},
+        context={"oauth_providers": oauth_providers, "tenant": tenant},
     )
     form = await form_helper.get_form()
 

@@ -10,7 +10,9 @@ from fief.models.workspace import Workspace
 class WorkspaceUser(UUIDModel, CreatedUpdatedAt, MainBase):
     __tablename__ = "workspace_users"
 
-    workspace_id: UUID4 = Column(GUID, ForeignKey(Workspace.id, ondelete="CASCADE"), nullable=False)  # type: ignore
+    workspace_id: UUID4 = Column(
+        GUID, ForeignKey(Workspace.id, ondelete="CASCADE"), nullable=False
+    )
     user_id: UUID4 = Column(GUID, nullable=False)
 
     workspace: Workspace = relationship(

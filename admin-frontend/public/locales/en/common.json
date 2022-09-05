@@ -32,6 +32,7 @@
     "dashboard": "Dashboard",
     "tenants": "Tenants",
     "clients": "Clients",
+    "oauth_providers": "OAuth Providers",
     "users": "Users",
     "user-fields": "User fields",
     "rbac": "Access control",

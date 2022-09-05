@@ -1,7 +1,6 @@
 from typing import Any, Optional
 
-from pydantic import BaseModel
-from pydantic.fields import Field
+from pydantic import BaseModel, Field
 
 
 class AuthorizeError(BaseModel):

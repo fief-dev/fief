@@ -11,7 +11,9 @@ class AdminAPIKey(UUIDModel, CreatedUpdatedAt, MainBase):
 
     name: str = Column(String(length=255), nullable=False)
     token: str = Column(String(length=255), unique=True, nullable=False)
-    workspace_id: UUID4 = Column(GUID, ForeignKey(Workspace.id, ondelete="CASCADE"), nullable=False)  # type: ignore
+    workspace_id: UUID4 = Column(
+        GUID, ForeignKey(Workspace.id, ondelete="CASCADE"), nullable=False
+    )
 
     def __repr__(self) -> str:
         return f"AdminAPIKey(id={self.id})"

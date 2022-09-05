@@ -6,7 +6,9 @@ from fief.logger import logger
 from fief.repositories import (
     AuthorizationCodeRepository,
     LoginSessionRepository,
+    OAuthSessionRepository,
     RefreshTokenRepository,
+    RegistrationSessionRepository,
     SessionTokenRepository,
     WorkspaceRepository,
 )
@@ -16,7 +18,9 @@ from fief.tasks.base import TaskBase
 repository_classes: List[Type[ExpiresAtMixin]] = [
     AuthorizationCodeRepository,
     LoginSessionRepository,
+    OAuthSessionRepository,
     RefreshTokenRepository,
+    RegistrationSessionRepository,
     SessionTokenRepository,
 ]
 

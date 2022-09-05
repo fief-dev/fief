@@ -321,6 +321,8 @@ async def authenticated_admin(
             "client_alias": "default_tenant",
             "user_alias": "regular",
             "login_session_alias": "default",
+            "registration_session_password_alias": "default_password",
+            "registration_session_oauth_alias": "default_oauth",
             "session_token_alias": "regular",
         },
         {
@@ -329,6 +331,8 @@ async def authenticated_admin(
             "client_alias": "secondary_tenant",
             "user_alias": "regular_secondary",
             "login_session_alias": "secondary",
+            "registration_session_password_alias": "secondary_password",
+            "registration_session_oauth_alias": "secondary_oauth",
             "session_token_alias": "regular_secondary",
         },
     ]
@@ -341,6 +345,12 @@ def tenant_params(request, test_data: TestData) -> TenantParams:
         client=test_data["clients"][params["client_alias"]],
         user=test_data["users"][params["user_alias"]],
         login_session=test_data["login_sessions"][params["login_session_alias"]],
+        registration_session_password=test_data["registration_sessions"][
+            params["registration_session_password_alias"]
+        ],
+        registration_session_oauth=test_data["registration_sessions"][
+            params["registration_session_oauth_alias"]
+        ],
         session_token=test_data["session_tokens"][params["session_token_alias"]],
         session_token_token=session_token_tokens[params["session_token_alias"]],
     )

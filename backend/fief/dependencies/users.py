@@ -50,6 +50,7 @@ from fief.dependencies.user_field import (
     get_user_update_model,
 )
 from fief.dependencies.workspace_repositories import (
+    get_oauth_account_repository,
     get_user_permission_repository,
     get_user_repository,
     get_user_role_repository,
@@ -57,6 +58,7 @@ from fief.dependencies.workspace_repositories import (
 from fief.locale import gettext_lazy as _
 from fief.models import (
     AuditLogMessage,
+    OAuthAccount,
     Tenant,
     User,
     UserField,
@@ -66,6 +68,7 @@ from fief.models import (
     Workspace,
 )
 from fief.repositories import (
+    OAuthAccountRepository,
     UserPermissionRepository,
     UserRepository,
     UserRoleRepository,
@@ -356,6 +359,20 @@ async def get_paginated_user_roles(
     statement = user_role_repository.get_by_user_statement(user.id)
     return await get_paginated_objects(
         statement, pagination, ordering, user_role_repository
+    )
+
+
+async def get_paginated_user_oauth_accounts(
+    pagination: Pagination = Depends(get_pagination),
+    ordering: Ordering = Depends(get_ordering),
+    user: User = Depends(get_user_by_id_or_404),
+    oauth_account_repository: OAuthAccountRepository = Depends(
+        get_oauth_account_repository
+    ),
+) -> PaginatedObjects[OAuthAccount]:
+    statement = oauth_account_repository.get_by_user_statement(user.id)
+    return await get_paginated_objects(
+        statement, pagination, ordering, oauth_account_repository
     )
 
 

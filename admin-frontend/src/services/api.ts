@@ -68,6 +68,22 @@ export class APIClient {
     return this.client.post(`/clients/${id}/encryption-key`);
   }
 
+  public listOAuthProviders(params: schemas.PaginationParameters = {}): Promise<AxiosResponse<schemas.PaginatedResults<schemas.oauthProvider.OAuthProvider>>> {
+    return this.client.get('/oauth-providers/', { params });
+  }
+
+  public createOAuthProvider(data: schemas.oauthProvider.OAuthProviderCreate): Promise<AxiosResponse<schemas.oauthProvider.OAuthProvider>> {
+    return this.client.post('/oauth-providers/', data);
+  }
+
+  public updateOAuthProvider(id: string, data: schemas.oauthProvider.OAuthProviderUpdate): Promise<AxiosResponse<schemas.oauthProvider.OAuthProvider>> {
+    return this.client.patch(`/oauth-providers/${id}`, data);
+  }
+
+  public deleteOAuthProvider(id: string): Promise<AxiosResponse<void>> {
+    return this.client.delete(`/oauth-providers/${id}`);
+  }
+
   public listUsers(params: schemas.PaginationParameters = {}): Promise<AxiosResponse<schemas.PaginatedResults<schemas.user.User>>> {
     return this.client.get('/users/', { params });
   }
@@ -98,6 +114,10 @@ export class APIClient {
 
   public deleteUserRole(id: string, roleId: string): Promise<AxiosResponse<void>> {
     return this.client.delete(`/users/${id}/roles/${roleId}`);
+  }
+
+  public listUserOAuthAccounts(id: string, params: schemas.PaginationParameters = {}): Promise<AxiosResponse<schemas.PaginatedResults<schemas.oauthAccount.OAuthAccount>>> {
+    return this.client.get(`/users/${id}/oauth-accounts`, { params });
   }
 
   public createUser(data: schemas.user.UserCreateInternal): Promise<AxiosResponse<schemas.user.User>> {

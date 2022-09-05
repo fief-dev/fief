@@ -22,9 +22,15 @@ from wtforms import (
 from wtforms.utils import unset_value
 
 from fief.apps.auth.forms.base import BaseForm, CSRFBaseForm
+from fief.dependencies.register import get_optional_registration_session
 from fief.dependencies.user_field import get_registration_user_fields
 from fief.locale import gettext_lazy as _
-from fief.models import UserField, UserFieldType
+from fief.models import (
+    RegistrationSession,
+    RegistrationSessionFlow,
+    UserField,
+    UserFieldType,
+)
 
 
 def empty_string_to_none(value: Optional[str]) -> Optional[str]:
@@ -107,15 +113,19 @@ class TimezoneField(SelectField):
         super().__init__(*args, choices=choices, **kwargs)
 
 
+class PasswordFieldForm(BaseForm):
+    password = PasswordField(_("Password"), validators=[validators.InputRequired()])
+
+
 class RegisterFormBase(CSRFBaseForm):
     email = EmailField(
         _("Email address"), validators=[validators.InputRequired(), validators.Email()]
     )
-    password = PasswordField(_("Password"), validators=[validators.InputRequired()])
     fields: FormField
 
 
 RF = TypeVar("RF", bound=RegisterFormBase)
+
 
 USER_FIELD_FORM_FIELD_MAP: Mapping[UserFieldType, Field] = {
     UserFieldType.STRING: StringField,
@@ -159,6 +169,9 @@ def _get_form_field(user_field: UserField) -> Field:
 
 async def get_register_form_class(
     registration_user_fields: List[UserField] = Depends(get_registration_user_fields),
+    registration_session: Optional[RegistrationSession] = Depends(
+        get_optional_registration_session
+    ),
 ) -> Type[RF]:
     class RegisterFormFields(BaseForm):
         pass
@@ -168,5 +181,14 @@ async def get_register_form_class(
 
     class RegisterForm(RegisterFormBase):
         fields = FormField(RegisterFormFields, separator=".")
+
+    class RegisterPasswordForm(RegisterForm, PasswordFieldForm):
+        pass
+
+    if registration_session is None or (
+        registration_session is not None
+        and registration_session.flow == RegistrationSessionFlow.PASSWORD
+    ):
+        return RegisterPasswordForm
 
     return RegisterForm
