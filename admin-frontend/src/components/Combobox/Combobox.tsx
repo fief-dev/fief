@@ -1,6 +1,6 @@
 import { useState, Fragment, useCallback, useEffect } from 'react';
 import { Combobox as BaseCombobox } from '@headlessui/react';
-import { ChevronDownIcon } from '@heroicons/react/solid';
+import { ChevronDownIcon } from '@heroicons/react/20/solid';
 
 export interface ComboboxOption {
   value: string;

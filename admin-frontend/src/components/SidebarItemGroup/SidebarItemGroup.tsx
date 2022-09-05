@@ -1,4 +1,4 @@
-import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/solid';
+import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/20/solid';
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 

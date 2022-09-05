@@ -1,7 +1,7 @@
 import { Dispatch, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { NavLink, useLocation } from 'react-router-dom';
-import { ArrowLeftIcon } from '@heroicons/react/solid';
+import { ArrowLeftIcon } from '@heroicons/react/20/solid';
 
 import { ReactComponent as AppsIcon } from '../../images/icons/apps.svg';
 import { ReactComponent as ClientsIcon } from '../../images/icons/clients.svg';

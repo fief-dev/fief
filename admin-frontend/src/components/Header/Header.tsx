@@ -1,5 +1,5 @@
 import { Dispatch, MouseEvent } from 'react';
-import { MenuIcon } from '@heroicons/react/solid';
+import { Bars3Icon } from '@heroicons/react/20/solid';
 
 import WorkspaceSwitcher from '../WorkspaceSwitcher/WorkspaceSwitcher';
 import UserMenu from '../UserMenu/UserMenu';
@@ -32,7 +32,7 @@ const Header: React.FunctionComponent<React.PropsWithChildren<HeaderProps>> = ({
               onClick={onBurgerButtonClick}
             >
               <span className="sr-only">Open sidebar</span>
-              <MenuIcon className="w-6 h-6 fill-current" />
+              <Bars3Icon className="w-6 h-6 fill-current" />
             </button>
 
           </div>

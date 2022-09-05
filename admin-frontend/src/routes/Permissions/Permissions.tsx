@@ -1,4 +1,4 @@
-import { PlusIcon } from '@heroicons/react/solid';
+import { PlusIcon } from '@heroicons/react/20/solid';
 import { useCallback, useMemo, useState } from 'react';
 import { FormProvider, useForm, SubmitHandler } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';

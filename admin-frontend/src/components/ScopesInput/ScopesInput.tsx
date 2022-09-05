@@ -1,4 +1,4 @@
-import { TrashIcon } from '@heroicons/react/solid';
+import { TrashIcon } from '@heroicons/react/20/solid';
 import { useFieldArray, useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
@@ -39,7 +39,7 @@ const ScopesInput: React.FunctionComponent<React.PropsWithChildren<ScopesInputPr
       <button
         type="button"
         className="btn-xs border-slate-200 hover:border-slate-300 text-slate-600"
-        onClick={() => append({})}
+        onClick={() => append({ id: '', value: '' })}
       >
         {t('scopes.add')}
       </button>

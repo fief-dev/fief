@@ -16,7 +16,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Popover, Transition } from '@headlessui/react';
-import { EyeIcon, EyeOffIcon, SelectorIcon, ViewListIcon } from '@heroicons/react/solid';
+import { EyeIcon, EyeSlashIcon, ChevronUpDownIcon, Bars4Icon } from '@heroicons/react/20/solid';
 import { useCallback, useContext, useState } from 'react';
 import { usePopper } from 'react-popper';
 
@@ -53,14 +53,14 @@ const UserFieldsSelectorItem: React.FunctionComponent<React.PropsWithChildren<Us
       {...attributes}
     >
       <div className="flex flex-row items-center grow" {...listeners}>
-        <SelectorIcon width="12" height="12" className="mr-1" />
+        <ChevronUpDownIcon width="12" height="12" className="mr-1" />
         {userField.name}
       </div>
       {userField.enabled &&
         <EyeIcon width="12" height="12" className="cursor-pointer" onClick={() => onToggle(userField, false)} />
       }
       {!userField.enabled &&
-        <EyeOffIcon width="12" height="12" className="cursor-pointer" onClick={() => onToggle(userField, true)} />
+        <EyeSlashIcon width="12" height="12" className="cursor-pointer" onClick={() => onToggle(userField, true)} />
       }
     </div>
   );
@@ -111,7 +111,7 @@ const UserFieldsSelector: React.FunctionComponent<React.PropsWithChildren<UserFi
         ref={setReferenceElement}
         className="btn bg-white border-slate-200 hover:border-slate-300 text-slate-500 hover:text-slate-600"
       >
-        <ViewListIcon width="16" height="16" />
+        <Bars4Icon width="16" height="16" />
       </Popover.Button>
 
       <div

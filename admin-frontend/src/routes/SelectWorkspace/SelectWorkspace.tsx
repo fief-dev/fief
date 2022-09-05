@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { ArrowRightIcon, PlusIcon } from '@heroicons/react/solid';
+import { ArrowRightIcon, PlusIcon } from '@heroicons/react/20/solid';
 
 import { ReactComponent as FiefLogo } from '../../images/logos/fief-logo-red.svg';
 import { useWorkspacesCache } from '../../hooks/workspace';

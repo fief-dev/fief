@@ -1,4 +1,4 @@
-import { QuestionMarkCircleIcon } from '@heroicons/react/solid';
+import { QuestionMarkCircleIcon } from '@heroicons/react/20/solid';
 import { Popover, Transition } from '@headlessui/react';
 import { useState } from 'react';
 import { usePopper } from 'react-popper';

@@ -1,4 +1,4 @@
-import { CheckIcon, XIcon } from '@heroicons/react/solid';
+import { CheckIcon, XMarkIcon } from '@heroicons/react/20/solid';
 import React, { useMemo } from 'react';
 
 import { formatDateTime } from '../../hooks/datetime';
@@ -22,7 +22,7 @@ const UserFieldValue: React.FunctionComponent<React.PropsWithChildren<UserFieldV
       case schemas.userField.UserFieldType.BOOLEAN:
         valueElement = value ?
           <CheckIcon className="w-4 h-4 fill-current" /> :
-          <XIcon className="w-4 h-4 fill-current" />
+          <XMarkIcon className="w-4 h-4 fill-current" />
           ;
         break;
       case schemas.userField.UserFieldType.DATE:
