@@ -13,6 +13,7 @@ from fief.repositories import (
     WorkspaceRepository,
 )
 from fief.repositories.base import ExpiresAtMixin
+from fief.services.workspace_db import WorkspaceDatabase
 from fief.tasks.base import TaskBase
 
 repository_classes: List[Type[ExpiresAtMixin]] = [
@@ -29,10 +30,13 @@ class CleanupTask(TaskBase):
     __name__ = "cleanup"
 
     async def run(self):
+        latest_revision = WorkspaceDatabase().get_latest_revision()
         async with self.get_main_session() as session:
             workspace_repository = WorkspaceRepository(session)
             workspaces = await workspace_repository.all()
             for workspace in workspaces:
+                if workspace.alembic_revision != latest_revision:
+                    continue
                 try:
                     async with self.get_workspace_session(
                         workspace
