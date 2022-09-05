@@ -1,6 +1,11 @@
-from fastapi import APIRouter, Depends, Response, status
+from datetime import datetime, timezone
+from typing import cast
+
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from fastapi.exceptions import RequestValidationError
-from pydantic import ValidationError
+from fastapi_users.exceptions import UserNotExists
+from httpx_oauth.oauth2 import RefreshTokenError, RefreshTokenNotSupportedError
+from pydantic import UUID4, ValidationError
 
 from fief import schemas
 from fief.dependencies.admin_authentication import is_authenticated_admin
@@ -9,10 +14,17 @@ from fief.dependencies.oauth_provider import (
     get_paginated_oauth_providers,
 )
 from fief.dependencies.pagination import PaginatedObjects
-from fief.dependencies.workspace_repositories import get_oauth_provider_repository
+from fief.dependencies.users import UserManager, get_user_manager
+from fief.dependencies.workspace_repositories import (
+    get_oauth_account_repository,
+    get_oauth_provider_repository,
+)
+from fief.errors import APIErrorCode
 from fief.models import OAuthProvider
-from fief.repositories import OAuthProviderRepository
+from fief.models.oauth_account import OAuthAccount
+from fief.repositories import OAuthAccountRepository, OAuthProviderRepository
 from fief.schemas.generics import PaginatedResults
+from fief.services.oauth_provider import get_oauth_provider_service
 
 router = APIRouter(dependencies=[Depends(is_authenticated_admin)])
 
@@ -91,8 +103,60 @@ async def update_oauth_provider(
     status_code=status.HTTP_204_NO_CONTENT,
     response_class=Response,
 )
-async def delete_permission(
+async def delete_oauth_provider(
     oauth_provider: OAuthProvider = Depends(get_oauth_provider_by_id_or_404),
     repository: OAuthProviderRepository = Depends(get_oauth_provider_repository),
 ):
     await repository.delete(oauth_provider)
+
+
+@router.get(
+    "/{id:uuid}/access-token/{user_id:uuid}",
+    name="oauth_providers:get_user_access_token",
+    response_model=schemas.oauth_account.OAuthAccountAccessToken,
+)
+async def get_user_access_token(
+    user_id: UUID4,
+    oauth_provider: OAuthProvider = Depends(get_oauth_provider_by_id_or_404),
+    oauth_account_repository: OAuthAccountRepository = Depends(
+        get_oauth_account_repository
+    ),
+    user_manager: UserManager = Depends(get_user_manager),
+) -> OAuthAccount:
+    try:
+        user = await user_manager.get(user_id)
+    except UserNotExists as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND) from e
+
+    oauth_account = await oauth_account_repository.get_by_provider_and_user(
+        oauth_provider.id, user.id
+    )
+    if oauth_account is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+
+    if oauth_account.is_expired():
+        oauth_provider_service = get_oauth_provider_service(oauth_provider)
+        try:
+            access_token_dict = await oauth_provider_service.refresh_token(
+                cast(str, oauth_account.refresh_token)
+            )
+        except RefreshTokenNotSupportedError as e:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=APIErrorCode.OAUTH_PROVIDER_REFRESH_TOKEN_NOT_SUPPORTED,
+            ) from e
+        except RefreshTokenError as e:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=APIErrorCode.OAUTH_PROVIDER_REFRESH_TOKEN_ERROR,
+            ) from e
+        oauth_account.access_token = access_token_dict["access_token"]  # type: ignore
+        try:
+            oauth_account.expires_at = datetime.fromtimestamp(
+                access_token_dict["expires_at"], tz=timezone.utc
+            )
+        except KeyError:
+            oauth_account.expires_at = None
+        await oauth_account_repository.update(oauth_account)
+
+    return oauth_account

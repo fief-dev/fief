@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 from pydantic import UUID4
@@ -70,3 +70,6 @@ class OAuthAccount(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
             self._refresh_token = encrypt(value, settings.encryption_key)
         else:
             self._refresh_token = None
+
+    def is_expired(self) -> bool:
+        return self.expires_at is None or self.expires_at < datetime.now(timezone.utc)

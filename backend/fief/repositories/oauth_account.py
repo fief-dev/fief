@@ -22,6 +22,15 @@ class OAuthAccountRepository(
         )
         return await self.get_one_or_none(statement)
 
+    async def get_by_provider_and_user(
+        self, provider_id: UUID4, user: UUID4
+    ) -> Optional[OAuthAccount]:
+        statement = select(OAuthAccount).where(
+            OAuthAccount.oauth_provider_id == provider_id,
+            OAuthAccount.user_id == user,
+        )
+        return await self.get_one_or_none(statement)
+
     def get_by_user_statement(self, user: UUID4) -> Select:
         statement = select(OAuthAccount).where(OAuthAccount.user_id == user)
         return statement

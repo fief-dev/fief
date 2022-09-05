@@ -1,13 +1,22 @@
 import uuid
-from typing import Dict
+from datetime import datetime, timedelta, timezone
+from typing import Dict, Type
+from unittest.mock import AsyncMock, MagicMock
 
 import httpx
 import pytest
 from fastapi import status
+from httpx_oauth.oauth2 import (
+    BaseOAuth2,
+    OAuth2Error,
+    RefreshTokenError,
+    RefreshTokenNotSupportedError,
+)
+from pytest_mock import MockerFixture
 
 from fief.db import AsyncSession
 from fief.errors import APIErrorCode
-from fief.repositories import OAuthProviderRepository
+from fief.repositories import OAuthAccountRepository, OAuthProviderRepository
 from tests.data import TestData
 
 
@@ -218,3 +227,161 @@ class TestDeleteOAuthProvider:
         )
 
         assert response.status_code == status.HTTP_204_NO_CONTENT
+
+
+@pytest.mark.asyncio
+@pytest.mark.workspace_host
+class TestGetOAuthProviderUserAccessToken:
+    async def test_unauthorized(
+        self, test_client_admin: httpx.AsyncClient, test_data: TestData
+    ):
+        oauth_provider = test_data["oauth_providers"]["google"]
+        user = test_data["users"]["regular"]
+        response = await test_client_admin.get(
+            f"/oauth-providers/{oauth_provider.id}/access-token/{user.id}"
+        )
+
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+    @pytest.mark.authenticated_admin
+    async def test_not_existing_oauth_provider(
+        self,
+        test_client_admin: httpx.AsyncClient,
+        test_data: TestData,
+        not_existing_uuid: uuid.UUID,
+    ):
+        user = test_data["users"]["regular"]
+        response = await test_client_admin.get(
+            f"/oauth-providers/{not_existing_uuid}/access-token/{user.id}"
+        )
+
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    @pytest.mark.authenticated_admin
+    async def test_not_existing_user(
+        self,
+        test_client_admin: httpx.AsyncClient,
+        test_data: TestData,
+        not_existing_uuid: uuid.UUID,
+    ):
+        oauth_provider = test_data["oauth_providers"]["google"]
+        response = await test_client_admin.get(
+            f"/oauth-providers/{oauth_provider.id}/access-token/{not_existing_uuid}"
+        )
+
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    @pytest.mark.authenticated_admin
+    async def test_no_associated_oauth_account(
+        self, test_client_admin: httpx.AsyncClient, test_data: TestData
+    ):
+        oauth_provider = test_data["oauth_providers"]["google"]
+        user = test_data["users"]["regular_secondary"]
+        response = await test_client_admin.get(
+            f"/oauth-providers/{oauth_provider.id}/access-token/{user.id}"
+        )
+
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    @pytest.mark.authenticated_admin
+    async def test_valid_fresh_token(
+        self, test_client_admin: httpx.AsyncClient, test_data: TestData
+    ):
+        oauth_provider = test_data["oauth_providers"]["google"]
+        user = test_data["users"]["regular"]
+        response = await test_client_admin.get(
+            f"/oauth-providers/{oauth_provider.id}/access-token/{user.id}"
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+
+        oauth_account = test_data["oauth_accounts"]["regular_google"]
+
+        json = response.json()
+        assert json["id"] == str(oauth_account.id)
+        assert json["account_id"] == str(oauth_account.account_id)
+        assert json["access_token"] == oauth_account.access_token
+        assert "expires_at" in json
+
+    @pytest.mark.parametrize(
+        "exception,error_code",
+        [
+            (
+                RefreshTokenNotSupportedError,
+                APIErrorCode.OAUTH_PROVIDER_REFRESH_TOKEN_NOT_SUPPORTED,
+            ),
+            (RefreshTokenError, APIErrorCode.OAUTH_PROVIDER_REFRESH_TOKEN_ERROR),
+        ],
+    )
+    @pytest.mark.authenticated_admin
+    async def test_expired_token_refresh_error(
+        self,
+        exception: Type[OAuth2Error],
+        error_code: APIErrorCode,
+        mocker: MockerFixture,
+        test_client_admin: httpx.AsyncClient,
+        test_data: TestData,
+    ):
+        oauth_provider_service_mock = MagicMock(spec=BaseOAuth2)
+        oauth_provider_service_mock.refresh_token.side_effect = exception()
+        mocker.patch(
+            "fief.apps.admin.routers.oauth_providers.get_oauth_provider_service"
+        ).return_value = oauth_provider_service_mock
+
+        oauth_provider = test_data["oauth_providers"]["openid"]
+        user = test_data["users"]["regular"]
+        response = await test_client_admin.get(
+            f"/oauth-providers/{oauth_provider.id}/access-token/{user.id}"
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+        json = response.json()
+        assert json["detail"] == error_code
+
+    @pytest.mark.authenticated_admin
+    async def test_valid_expired_token(
+        self,
+        mocker: MockerFixture,
+        test_client_admin: httpx.AsyncClient,
+        test_data: TestData,
+        workspace_session: AsyncSession,
+    ):
+        oauth_provider_service_mock = MagicMock(spec=BaseOAuth2)
+        expires_at = datetime.now(timezone.utc).replace(microsecond=0) + timedelta(
+            seconds=3600
+        )
+        oauth_provider_service_mock.refresh_token.side_effect = AsyncMock(
+            return_value={
+                "access_token": "REFRESHED_ACCESS_TOKEN",
+                "expires_in": 3600,
+                "expires_at": int(expires_at.timestamp()),
+            }
+        )
+        mocker.patch(
+            "fief.apps.admin.routers.oauth_providers.get_oauth_provider_service"
+        ).return_value = oauth_provider_service_mock
+
+        oauth_provider = test_data["oauth_providers"]["openid"]
+        user = test_data["users"]["regular"]
+        response = await test_client_admin.get(
+            f"/oauth-providers/{oauth_provider.id}/access-token/{user.id}"
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+
+        oauth_account = test_data["oauth_accounts"]["regular_openid_expired"]
+
+        json = response.json()
+        assert json["id"] == str(oauth_account.id)
+        assert json["account_id"] == str(oauth_account.account_id)
+        assert json["access_token"] == "REFRESHED_ACCESS_TOKEN"
+        assert "expires_at" in json
+
+        oauth_account_repository = OAuthAccountRepository(workspace_session)
+        updated_oauth_account = await oauth_account_repository.get_by_id(
+            oauth_account.id
+        )
+        assert updated_oauth_account is not None
+        assert updated_oauth_account.access_token == "REFRESHED_ACCESS_TOKEN"
+        assert updated_oauth_account.expires_at == expires_at

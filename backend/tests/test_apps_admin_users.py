@@ -689,8 +689,8 @@ class TestListUserOAuthAccounts:
 
         json = response.json()
 
-        assert json["count"] == 1
-        assert len(json["results"]) == 1
+        assert json["count"] == 2
+        assert len(json["results"]) == 2
 
         for result in json["results"]:
             assert "id" in result

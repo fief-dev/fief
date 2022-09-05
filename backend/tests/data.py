@@ -327,6 +327,16 @@ oauth_accounts: ModelMapping[OAuthAccount] = {
         user=users["regular"],
         tenant=tenants["default"],
     ),
+    "regular_openid_expired": OAuthAccount(
+        access_token="REGULAR_OPENID_ACCESS_TOKEN",
+        expires_at=datetime.now(timezone.utc) - timedelta(seconds=3600),
+        refresh_token="REGULAR_OPENID_REFRESH_TOKEN",
+        account_id="REGULAR_OPENID_ACCOUNT_ID",
+        account_email="anne@bretagne.duchy",
+        oauth_provider=oauth_providers["openid"],
+        user=users["regular"],
+        tenant=tenants["default"],
+    ),
     "inactive_google": OAuthAccount(
         access_token="INACTIVE_GOOGLE_ACCESS_TOKEN",
         expires_at=datetime.now(timezone.utc) + timedelta(seconds=3600),
