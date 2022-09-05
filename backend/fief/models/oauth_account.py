@@ -72,4 +72,6 @@ class OAuthAccount(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
             self._refresh_token = None
 
     def is_expired(self) -> bool:
-        return self.expires_at is None or self.expires_at < datetime.now(timezone.utc)
+        return self.expires_at is not None or (
+            self.expires_at is not None and self.expires_at < datetime.now(timezone.utc)
+        )

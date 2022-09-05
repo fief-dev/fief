@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 
 from pydantic import UUID4
 
@@ -15,4 +16,4 @@ class OAuthAccount(UUIDSchema, CreatedUpdatedAt):
 class OAuthAccountAccessToken(UUIDSchema):
     account_id: str
     access_token: str
-    expires_at: datetime
+    expires_at: Optional[datetime]
