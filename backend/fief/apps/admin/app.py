@@ -25,13 +25,15 @@ app.add_middleware(
 
 app.include_router(api_keys_router, prefix="/api-keys", include_in_schema=False)
 app.include_router(auth_router, prefix="/auth", include_in_schema=False)
-app.include_router(clients_router, prefix="/clients")
-app.include_router(oauth_providers_router, prefix="/oauth-providers")
-app.include_router(permissions_router, prefix="/permissions")
-app.include_router(roles_router, prefix="/roles")
-app.include_router(tenants_router, prefix="/tenants")
-app.include_router(users_router, prefix="/users")
-app.include_router(user_fields_router, prefix="/user-fields")
+app.include_router(clients_router, prefix="/clients", tags=["Clients"])
+app.include_router(
+    oauth_providers_router, prefix="/oauth-providers", tags=["OAuth Providers"]
+)
+app.include_router(permissions_router, prefix="/permissions", tags=["Permissions"])
+app.include_router(roles_router, prefix="/roles", tags=["Roles"])
+app.include_router(tenants_router, prefix="/tenants", tags=["Tenants"])
+app.include_router(users_router, prefix="/users", tags=["Users"])
+app.include_router(user_fields_router, prefix="/user-fields", tags=["User fields"])
 app.include_router(workspaces_router, prefix="/workspaces", include_in_schema=False)
 
 __all__ = ["app"]
