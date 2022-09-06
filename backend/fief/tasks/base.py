@@ -96,9 +96,9 @@ class TaskBase:
 
         init_audit_logger(loop)
         BabelMiddleware(app=None, **get_babel_middleware_kwargs())
-        logger.debug("Start task", task=self.__name__)
+        logger.info("Start task", task=self.__name__)
         result = loop.run_until_complete(self.run(*args, **kwargs))
-        logger.debug("Done task", task=self.__name__)
+        logger.info("Done task", task=self.__name__)
         return result
 
     async def _get_workspace(self, workspace_id: UUID4) -> Workspace:
