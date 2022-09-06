@@ -4,7 +4,7 @@ import sys
 import uuid
 from asyncio import AbstractEventLoop
 from datetime import timezone
-from typing import Dict, Optional
+from typing import Dict, Literal, Optional
 
 from loguru import logger
 from loguru._logger import Logger
@@ -13,6 +13,7 @@ from pydantic import UUID4
 from fief.db.main import get_main_async_session
 from fief.db.workspace import get_workspace_session
 from fief.models import AuditLog, AuditLogMessage, Workspace
+from fief.models.generics import M_UUID
 from fief.repositories import WorkspaceRepository
 from fief.settings import settings
 
@@ -47,14 +48,33 @@ class AuditLogger:
         subject_user_id: Optional[uuid.UUID] = None,
         **kwargs,
     ) -> None:
-        extra = kwargs.copy()
-        if subject_user_id is not None:
-            extra["subject_user_id"] = subject_user_id
-        if self.admin_user_id is not None:
-            extra["admin_user_id"] = self.admin_user_id
-        if self.admin_api_key_id is not None:
-            extra["admin_api_key_id"] = self.admin_api_key_id
-        self.logger.log(level, message, **extra)
+        self.logger.log(
+            level,
+            message,
+            subject_user_id=subject_user_id,
+            admin_user_id=self.admin_user_id,
+            admin_api_key_id=self.admin_api_key_id,
+            **kwargs,
+        )
+
+    def log_object_write(
+        self,
+        operation: Literal[
+            AuditLogMessage.OBJECT_CREATED,
+            AuditLogMessage.OBJECT_UPDATED,
+            AuditLogMessage.OBJECT_DELETED,
+        ],
+        object: M_UUID,
+        subject_user_id: Optional[uuid.UUID] = None,
+        **kwargs,
+    ) -> None:
+        return self(
+            operation,
+            object_id=str(object.id),
+            object_class=type(object).__name__,
+            subject_user_id=subject_user_id,
+            **kwargs,
+        )
 
 
 class DatabaseAuditLogSink:
@@ -75,6 +95,8 @@ class DatabaseAuditLogSink:
             extra.pop("workspace_id")
             extra.pop("audit")
             subject_user_id = extra.pop("subject_user_id", None)
+            object_id = extra.pop("object_id", None)
+            object_class = extra.pop("object_class", None)
             admin_user_id = extra.pop("admin_user_id", None)
             admin_api_key_id = extra.pop("admin_api_key_id", None)
             log = AuditLog(
@@ -82,6 +104,8 @@ class DatabaseAuditLogSink:
                 level=record["level"].name,
                 message=record["message"],
                 subject_user_id=subject_user_id,
+                object_id=object_id,
+                object_class=object_class,
                 admin_user_id=admin_user_id,
                 admin_api_key_id=admin_api_key_id,
                 extra=extra,

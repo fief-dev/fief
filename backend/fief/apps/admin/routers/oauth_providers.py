@@ -59,9 +59,11 @@ async def create_oauth_provider(
     repository: OAuthProviderRepository = Depends(
         get_workspace_repository(OAuthProviderRepository)
     ),
+    audit_logger: AuditLogger = Depends(get_audit_logger),
 ) -> schemas.oauth_provider.OAuthProvider:
     oauth_provider = OAuthProvider(**oauth_provider_create.dict())
     oauth_provider = await repository.create(oauth_provider)
+    audit_logger.log_object_write(AuditLogMessage.OBJECT_CREATED, oauth_provider)
 
     return schemas.oauth_provider.OAuthProvider.from_orm(oauth_provider)
 
@@ -77,6 +79,7 @@ async def update_oauth_provider(
     repository: OAuthProviderRepository = Depends(
         get_workspace_repository(OAuthProviderRepository)
     ),
+    audit_logger: AuditLogger = Depends(get_audit_logger),
 ) -> schemas.oauth_provider.OAuthProvider:
     oauth_provider_update_dict = oauth_provider_update.dict(exclude_unset=True)
 
@@ -96,6 +99,7 @@ async def update_oauth_provider(
         setattr(oauth_provider, field, value)
 
     await repository.update(oauth_provider)
+    audit_logger.log_object_write(AuditLogMessage.OBJECT_UPDATED, oauth_provider)
 
     return schemas.oauth_provider.OAuthProvider.from_orm(oauth_provider)
 
@@ -111,8 +115,10 @@ async def delete_oauth_provider(
     repository: OAuthProviderRepository = Depends(
         get_workspace_repository(OAuthProviderRepository)
     ),
+    audit_logger: AuditLogger = Depends(get_audit_logger),
 ):
     await repository.delete(oauth_provider)
+    audit_logger.log_object_write(AuditLogMessage.OBJECT_DELETED, oauth_provider)
 
 
 @router.get(

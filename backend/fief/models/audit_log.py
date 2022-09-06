@@ -33,9 +33,14 @@ class AuditLog(UUIDModel, WorkspaceBase):
     level: str = Column(String(length=255), nullable=False, index=True)
     message: str = Column(Text, nullable=False, index=True)
     extra: Dict = Column(JSON, nullable=True)
-    subject_user_id: Optional[UUID4] = Column(GUID, nullable=True)
-    admin_user_id: Optional[UUID4] = Column(GUID, nullable=True)
-    admin_api_key_id: Optional[UUID4] = Column(GUID, nullable=True)
+
+    subject_user_id: Optional[UUID4] = Column(GUID, nullable=True, index=True)
+
+    object_id: Optional[UUID4] = Column(GUID, nullable=True, index=True)
+    object_class: Optional[str] = Column(String(length=255), nullable=True, index=True)
+
+    admin_user_id: Optional[UUID4] = Column(GUID, nullable=True, index=True)
+    admin_api_key_id: Optional[UUID4] = Column(GUID, nullable=True, index=True)
 
     subject_user: Optional[User] = relationship(
         "User",

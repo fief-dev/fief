@@ -9,6 +9,7 @@ from sqlalchemy.orm import joinedload
 from fief import schemas, tasks
 from fief.dependencies.admin_authentication import is_authenticated_admin
 from fief.dependencies.current_workspace import get_current_workspace
+from fief.dependencies.logger import get_audit_logger
 from fief.dependencies.pagination import PaginatedObjects
 from fief.dependencies.tasks import get_send_task
 from fief.dependencies.user_field import get_user_fields
@@ -26,7 +27,9 @@ from fief.dependencies.users import (
 )
 from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.errors import APIErrorCode
+from fief.logger import AuditLogger
 from fief.models import (
+    AuditLogMessage,
     OAuthAccount,
     User,
     UserField,
@@ -79,11 +82,13 @@ async def create_user(
     user_fields: List[UserField] = Depends(get_user_fields),
     user_manager: UserManager = Depends(get_user_manager_from_create_user_internal),
     user_repository: UserRepository = Depends(get_workspace_repository(UserRepository)),
+    audit_logger: AuditLogger = Depends(get_audit_logger),
 ):
     try:
         created_user = await user_manager.create_with_fields(
             user_create, user_fields=user_fields, request=request
         )
+        audit_logger.log_object_write(AuditLogMessage.OBJECT_CREATED, created_user)
     except UserAlreadyExists as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -111,6 +116,7 @@ async def update_user(
     user: User = Depends(get_user_by_id_or_404),
     user_fields: List[UserField] = Depends(get_user_fields),
     user_manager: UserManager = Depends(get_user_manager_from_user),
+    audit_logger: AuditLogger = Depends(get_audit_logger),
 ):
     try:
         user = await user_manager.update_with_fields(
@@ -120,6 +126,7 @@ async def update_user(
             safe=False,
             request=request,
         )
+        audit_logger.log_object_write(AuditLogMessage.OBJECT_UPDATED, user)
     except UserAlreadyExists as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -172,6 +179,7 @@ async def create_user_permission(
     user_permission_repository: UserPermissionRepository = Depends(
         get_workspace_repository(UserPermissionRepository)
     ),
+    audit_logger: AuditLogger = Depends(get_audit_logger),
 ) -> None:
     permission_id = user_permission_create.id
     permission = await permission_repository.get_by_id(permission_id)
@@ -195,6 +203,12 @@ async def create_user_permission(
 
     user_permission = UserPermission(user_id=user.id, permission_id=permission_id)
     await user_permission_repository.create(user_permission)
+    audit_logger.log_object_write(
+        AuditLogMessage.OBJECT_CREATED,
+        user_permission,
+        subject_user_id=user.id,
+        permission_id=str(permission.id),
+    )
 
 
 @router.delete(
@@ -209,6 +223,7 @@ async def delete_user_permission(
     user_permission_repository: UserPermissionRepository = Depends(
         get_workspace_repository(UserPermissionRepository)
     ),
+    audit_logger: AuditLogger = Depends(get_audit_logger),
 ) -> None:
     user_permission = await user_permission_repository.get_by_permission_and_user(
         user.id, permission_id, direct_only=True
@@ -217,6 +232,12 @@ async def delete_user_permission(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
 
     await user_permission_repository.delete(user_permission)
+    audit_logger.log_object_write(
+        AuditLogMessage.OBJECT_DELETED,
+        user_permission,
+        subject_user_id=user.id,
+        permission_id=str(permission_id),
+    )
 
 
 @router.get(
@@ -250,6 +271,7 @@ async def create_user_role(
     ),
     workspace: Workspace = Depends(get_current_workspace),
     send_task: SendTask = Depends(get_send_task),
+    audit_logger: AuditLogger = Depends(get_audit_logger),
 ) -> None:
     role_id = user_role_create.id
     role = await role_repository.get_by_id(role_id)
@@ -271,6 +293,12 @@ async def create_user_role(
 
     user_role = UserRole(user_id=user.id, role_id=role_id)
     await user_role_repository.create(user_role)
+    audit_logger.log_object_write(
+        AuditLogMessage.OBJECT_CREATED,
+        user_role,
+        subject_user_id=user.id,
+        role_id=str(role.id),
+    )
 
     send_task(tasks.on_user_role_created, str(user.id), str(role.id), str(workspace.id))
 
@@ -289,12 +317,19 @@ async def delete_user_role(
     ),
     workspace: Workspace = Depends(get_current_workspace),
     send_task: SendTask = Depends(get_send_task),
+    audit_logger: AuditLogger = Depends(get_audit_logger),
 ) -> None:
     user_role = await user_role_repository.get_by_role_and_user(user.id, role_id)
     if user_role is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
 
     await user_role_repository.delete(user_role)
+    audit_logger.log_object_write(
+        AuditLogMessage.OBJECT_DELETED,
+        user_role,
+        subject_user_id=user.id,
+        role_id=str(role_id),
+    )
 
     send_task(tasks.on_user_role_deleted, str(user.id), str(role_id), str(workspace.id))
 
