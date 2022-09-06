@@ -30,7 +30,7 @@ from fief.dependencies.current_workspace import (
     get_current_workspace,
     get_current_workspace_session,
 )
-from fief.dependencies.logger import AuditLogger, get_audit_logger
+from fief.dependencies.logger import get_audit_logger
 from fief.dependencies.pagination import (
     Ordering,
     PaginatedObjects,
@@ -56,6 +56,7 @@ from fief.dependencies.workspace_repositories import (
     get_user_role_repository,
 )
 from fief.locale import gettext_lazy as _
+from fief.logger import AuditLogger
 from fief.models import (
     AuditLogMessage,
     OAuthAccount,

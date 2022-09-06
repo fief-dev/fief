@@ -9,6 +9,7 @@ from pydantic import UUID4, ValidationError
 
 from fief import schemas
 from fief.dependencies.admin_authentication import is_authenticated_admin
+from fief.dependencies.logger import get_audit_logger
 from fief.dependencies.oauth_provider import (
     get_oauth_provider_by_id_or_404,
     get_paginated_oauth_providers,
@@ -20,7 +21,8 @@ from fief.dependencies.workspace_repositories import (
     get_oauth_provider_repository,
 )
 from fief.errors import APIErrorCode
-from fief.models import OAuthProvider
+from fief.logger import AuditLogger
+from fief.models import AuditLogMessage, OAuthProvider
 from fief.models.oauth_account import OAuthAccount
 from fief.repositories import OAuthAccountRepository, OAuthProviderRepository
 from fief.schemas.generics import PaginatedResults
@@ -122,6 +124,7 @@ async def get_user_access_token(
         get_oauth_account_repository
     ),
     user_manager: UserManager = Depends(get_user_manager),
+    audit_logger: AuditLogger = Depends(get_audit_logger),
 ) -> OAuthAccount:
     try:
         user = await user_manager.get(user_id)
@@ -158,5 +161,11 @@ async def get_user_access_token(
         except KeyError:
             oauth_account.expires_at = None
         await oauth_account_repository.update(oauth_account)
+
+    audit_logger(
+        AuditLogMessage.OAUTH_PROVIDER_USER_ACCESS_TOKEN_GET,
+        subject_user_id=user.id,
+        oauth_provider_id=str(oauth_provider.id),
+    )
 
     return oauth_account

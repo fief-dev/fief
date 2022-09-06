@@ -8,10 +8,11 @@ from typing import Dict, Optional
 
 from loguru import logger
 from loguru._logger import Logger
+from pydantic import UUID4
 
 from fief.db.main import get_main_async_session
 from fief.db.workspace import get_workspace_session
-from fief.models import AuditLog, Workspace
+from fief.models import AuditLog, AuditLogMessage, Workspace
 from fief.repositories import WorkspaceRepository
 from fief.settings import settings
 
@@ -23,6 +24,37 @@ STDOUT_FORMAT = (
     "<cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level> - "
     "{extra}"
 )
+
+
+class AuditLogger:
+    def __init__(
+        self,
+        logger: Logger,
+        workspace_id: uuid.UUID,
+        *,
+        admin_user_id: Optional[UUID4] = None,
+        admin_api_key_id: Optional[UUID4] = None,
+    ) -> None:
+        self.logger = logger.bind(audit=True, workspace_id=str(workspace_id))
+        self.admin_user_id = admin_user_id
+        self.admin_api_key_id = admin_api_key_id
+
+    def __call__(
+        self,
+        message: AuditLogMessage,
+        *,
+        level="INFO",
+        subject_user_id: Optional[uuid.UUID] = None,
+        **kwargs,
+    ) -> None:
+        extra = kwargs.copy()
+        if subject_user_id is not None:
+            extra["subject_user_id"] = subject_user_id
+        if self.admin_user_id is not None:
+            extra["admin_user_id"] = self.admin_user_id
+        if self.admin_api_key_id is not None:
+            extra["admin_api_key_id"] = self.admin_api_key_id
+        self.logger.log(level, message, **extra)
 
 
 class DatabaseAuditLogSink:
@@ -42,14 +74,16 @@ class DatabaseAuditLogSink:
         async with get_workspace_session(workspace) as session:
             extra.pop("workspace_id")
             extra.pop("audit")
-            author_user_id = extra.pop("author_user_id", None)
             subject_user_id = extra.pop("subject_user_id", None)
+            admin_user_id = extra.pop("admin_user_id", None)
+            admin_api_key_id = extra.pop("admin_api_key_id", None)
             log = AuditLog(
                 timestamp=record["time"].astimezone(timezone.utc),
                 level=record["level"].name,
                 message=record["message"],
-                author_user_id=author_user_id,
                 subject_user_id=subject_user_id,
+                admin_user_id=admin_user_id,
+                admin_api_key_id=admin_api_key_id,
                 extra=extra,
             )
             session.add(log)
