@@ -68,7 +68,7 @@ def upgrade():
     )
 
     connection = op.get_bind()
-    if connection.dialect.name != "sqlite":
+    if connection.dialect.name == "postgres":
         op.drop_constraint(
             "fief_audit_logs_subject_user_id_fkey",
             "fief_audit_logs",
@@ -77,21 +77,18 @@ def upgrade():
         op.drop_constraint(
             "fief_audit_logs_author_user_id_fkey", "fief_audit_logs", type_="foreignkey"
         )
-    else:
-        # Ref: https://alembic.sqlalchemy.org/en/latest/batch.html#dropping-unnamed-or-named-foreign-key-constraints
-        naming_convention = {
-            "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
-        }
-        with op.batch_alter_table(
-            "fief_audit_logs", naming_convention=naming_convention
-        ) as batch_op:
-            batch_op.drop_constraint(
-                "fk_fief_audit_logs_subject_user_id_fief_users", type_="foreignkey"
-            )
-            batch_op.drop_constraint(
-                "fk_fief_audit_logs_author_user_id_fief_users", type_="foreignkey"
-            )
-    op.drop_column("fief_audit_logs", "author_user_id")
+        op.drop_column("fief_audit_logs", "author_user_id")
+    elif connection.dialect.name == "mysql":
+        op.drop_constraint(
+            "fief_audit_logs_ibfk_1", "fief_audit_logs", type_="foreignkey"
+        )
+        op.drop_constraint(
+            "fief_audit_logs_ibfk_2", "fief_audit_logs", type_="foreignkey"
+        )
+        op.drop_column("fief_audit_logs", "author_user_id")
+    elif connection.dialect.name == "sqlite":
+        with op.batch_alter_table("fief_audit_logs") as batch_op:
+            batch_op.drop_column("author_user_id")
     # ### end Alembic commands ###
 
 
