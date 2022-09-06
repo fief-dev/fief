@@ -6,7 +6,7 @@ from fastapi.responses import RedirectResponse
 from fief.crypto.token import generate_token
 from fief.dependencies.admin_session import get_admin_session_token, get_userinfo
 from fief.dependencies.fief import FiefAsyncRelativeEndpoints, get_fief
-from fief.dependencies.main_repositories import get_admin_session_token_repository
+from fief.dependencies.main_repositories import get_main_repository
 from fief.models import AdminSessionToken
 from fief.repositories import AdminSessionTokenRepository
 from fief.settings import settings
@@ -34,7 +34,7 @@ async def callback(
     code: str = Query(...),
     fief: FiefAsyncRelativeEndpoints = Depends(get_fief),
     repository: AdminSessionTokenRepository = Depends(
-        get_admin_session_token_repository
+        get_main_repository(AdminSessionTokenRepository)
     ),
 ):
     tokens, userinfo = await fief.auth_callback(
@@ -70,7 +70,7 @@ async def logout(
     request: Request,
     session_token: AdminSessionToken = Depends(get_admin_session_token),
     repository: AdminSessionTokenRepository = Depends(
-        get_admin_session_token_repository
+        get_main_repository(AdminSessionTokenRepository)
     ),
 ):
     await repository.delete(session_token)

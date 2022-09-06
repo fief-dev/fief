@@ -8,7 +8,7 @@ from fief.dependencies.admin_api_key import (
 )
 from fief.dependencies.admin_session import get_admin_session_token
 from fief.dependencies.current_workspace import get_current_workspace
-from fief.dependencies.main_repositories import get_admin_api_key_repository
+from fief.dependencies.main_repositories import get_main_repository
 from fief.dependencies.pagination import PaginatedObjects
 from fief.models import AdminAPIKey, Workspace
 from fief.repositories import AdminAPIKeyRepository
@@ -39,7 +39,9 @@ async def list_api_keys(
 async def create_api_key(
     create_api_key: schemas.admin_api_key.AdminAPIKeyCreate,
     current_workspace: Workspace = Depends(get_current_workspace),
-    repository: AdminAPIKeyRepository = Depends(get_admin_api_key_repository),
+    repository: AdminAPIKeyRepository = Depends(
+        get_main_repository(AdminAPIKeyRepository)
+    ),
 ) -> schemas.admin_api_key.AdminAPIKeyCreateResponse:
     token, token_hash = generate_token()
     api_key = AdminAPIKey(
@@ -61,7 +63,9 @@ async def create_api_key(
 )
 async def delete_api_key(
     api_key: AdminAPIKey = Depends(get_api_key_by_id_or_404),
-    repository: AdminAPIKeyRepository = Depends(get_admin_api_key_repository),
+    repository: AdminAPIKeyRepository = Depends(
+        get_main_repository(AdminAPIKeyRepository)
+    ),
 ) -> None:
     await repository.delete(api_key)
     return None

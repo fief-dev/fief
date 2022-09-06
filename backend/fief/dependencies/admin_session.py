@@ -4,7 +4,7 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import APIKeyCookie
 
 from fief.crypto.token import get_token_hash
-from fief.dependencies.main_repositories import get_admin_session_token_repository
+from fief.dependencies.main_repositories import get_main_repository
 from fief.models import AdminSessionToken
 from fief.repositories import AdminSessionTokenRepository
 from fief.settings import settings
@@ -17,7 +17,7 @@ cookie_scheme = APIKeyCookie(
 async def get_optional_admin_session_token(
     token: Optional[str] = Depends(cookie_scheme),
     repository: AdminSessionTokenRepository = Depends(
-        get_admin_session_token_repository
+        get_main_repository(AdminSessionTokenRepository)
     ),
 ) -> Optional[AdminSessionToken]:
     if token is None:

@@ -11,7 +11,7 @@ from fief.dependencies.pagination import (
     get_paginated_objects,
     get_pagination,
 )
-from fief.dependencies.workspace_repositories import get_tenant_repository
+from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.errors import APIErrorCode
 from fief.models import Tenant
 from fief.repositories import TenantRepository
@@ -19,7 +19,7 @@ from fief.repositories import TenantRepository
 
 async def get_current_tenant(
     tenant_slug: Optional[str] = Query(None),
-    repository: TenantRepository = Depends(get_tenant_repository),
+    repository: TenantRepository = Depends(get_workspace_repository(TenantRepository)),
 ) -> Tenant:
     if tenant_slug is None:
         tenant = await repository.get_default()
@@ -34,7 +34,7 @@ async def get_current_tenant(
 
 async def get_tenant_from_create_user_internal(
     user_create: schemas.user.UserCreateInternal,
-    repository: TenantRepository = Depends(get_tenant_repository),
+    repository: TenantRepository = Depends(get_workspace_repository(TenantRepository)),
 ) -> Tenant:
     tenant = await repository.get_by_id(user_create.tenant_id)
 
@@ -51,7 +51,7 @@ async def get_paginated_tenants(
     query: Optional[str] = Query(None),
     pagination: Pagination = Depends(get_pagination),
     ordering: Ordering = Depends(get_ordering),
-    repository: TenantRepository = Depends(get_tenant_repository),
+    repository: TenantRepository = Depends(get_workspace_repository(TenantRepository)),
 ) -> Tuple[List[Tenant], int]:
     statement = select(Tenant)
 

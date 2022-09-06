@@ -7,7 +7,7 @@ from fief.dependencies.permission import (
     get_paginated_permissions,
     get_permission_by_id_or_404,
 )
-from fief.dependencies.workspace_repositories import get_permission_repository
+from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.errors import APIErrorCode
 from fief.models import Permission
 from fief.repositories import PermissionRepository
@@ -44,7 +44,9 @@ async def list_permissions(
 )
 async def create_permission(
     permission_create: schemas.permission.PermissionCreate,
-    repository: PermissionRepository = Depends(get_permission_repository),
+    repository: PermissionRepository = Depends(
+        get_workspace_repository(PermissionRepository)
+    ),
 ) -> schemas.permission.Permission:
     existing_permission = await repository.get_by_codename(permission_create.codename)
     if existing_permission is not None:
@@ -67,7 +69,9 @@ async def create_permission(
 async def update_permission(
     permission_update: schemas.permission.PermissionUpdate,
     permission: Permission = Depends(get_permission_by_id_or_404),
-    repository: PermissionRepository = Depends(get_permission_repository),
+    repository: PermissionRepository = Depends(
+        get_workspace_repository(PermissionRepository)
+    ),
 ) -> schemas.permission.Permission:
     updated_codename = permission_update.codename
     if updated_codename is not None and updated_codename != permission.codename:
@@ -95,6 +99,8 @@ async def update_permission(
 )
 async def delete_permission(
     permission: Permission = Depends(get_permission_by_id_or_404),
-    repository: PermissionRepository = Depends(get_permission_repository),
+    repository: PermissionRepository = Depends(
+        get_workspace_repository(PermissionRepository)
+    ),
 ):
     await repository.delete(permission)

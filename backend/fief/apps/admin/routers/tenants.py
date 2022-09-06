@@ -2,9 +2,9 @@ from fastapi import APIRouter, Depends, status
 
 from fief import schemas
 from fief.dependencies.admin_authentication import is_authenticated_admin
-from fief.dependencies.client import get_client_repository
 from fief.dependencies.pagination import PaginatedObjects
-from fief.dependencies.tenant import get_paginated_tenants, get_tenant_repository
+from fief.dependencies.tenant import get_paginated_tenants
+from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.models import Client, Tenant
 from fief.repositories import ClientRepository, TenantRepository
 from fief.schemas.generics import PaginatedResults
@@ -33,8 +33,10 @@ async def list_tenants(
 )
 async def create_tenant(
     tenant_create: schemas.tenant.TenantCreate,
-    repository: TenantRepository = Depends(get_tenant_repository),
-    client_repository: ClientRepository = Depends(get_client_repository),
+    repository: TenantRepository = Depends(get_workspace_repository(TenantRepository)),
+    client_repository: ClientRepository = Depends(
+        get_workspace_repository(ClientRepository)
+    ),
 ) -> schemas.tenant.Tenant:
     slug = await repository.get_available_slug(tenant_create.name)
     tenant = Tenant(**tenant_create.dict(), slug=slug)

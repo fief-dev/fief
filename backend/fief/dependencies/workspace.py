@@ -2,7 +2,7 @@ from fastapi import Depends
 from sqlalchemy import select
 
 from fief.dependencies.admin_session import get_admin_session_token
-from fief.dependencies.main_repositories import get_workspace_repository
+from fief.dependencies.main_repositories import get_main_repository
 from fief.dependencies.pagination import (
     Ordering,
     PaginatedObjects,
@@ -18,7 +18,7 @@ from fief.repositories import WorkspaceRepository
 async def get_paginated_workspaces(
     pagination: Pagination = Depends(get_pagination),
     ordering: Ordering = Depends(get_ordering),
-    repository: WorkspaceRepository = Depends(get_workspace_repository),
+    repository: WorkspaceRepository = Depends(get_main_repository(WorkspaceRepository)),
     admin_session_token: AdminSessionToken = Depends(get_admin_session_token),
 ) -> PaginatedObjects[Workspace]:
     statement = (

@@ -11,7 +11,7 @@ from fief.dependencies.pagination import (
     get_paginated_objects,
     get_pagination,
 )
-from fief.dependencies.workspace_repositories import get_oauth_provider_repository
+from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.models import OAuthProvider
 from fief.repositories import OAuthProviderRepository
 
@@ -19,7 +19,9 @@ from fief.repositories import OAuthProviderRepository
 async def get_paginated_oauth_providers(
     pagination: Pagination = Depends(get_pagination),
     ordering: Ordering = Depends(get_ordering),
-    repository: OAuthProviderRepository = Depends(get_oauth_provider_repository),
+    repository: OAuthProviderRepository = Depends(
+        get_workspace_repository(OAuthProviderRepository)
+    ),
 ) -> Tuple[List[OAuthProvider], int]:
     statement = select(OAuthProvider)
     return await get_paginated_objects(statement, pagination, ordering, repository)
@@ -27,7 +29,9 @@ async def get_paginated_oauth_providers(
 
 async def get_oauth_provider_by_id_or_404(
     id: UUID4,
-    repository: OAuthProviderRepository = Depends(get_oauth_provider_repository),
+    repository: OAuthProviderRepository = Depends(
+        get_workspace_repository(OAuthProviderRepository)
+    ),
 ) -> OAuthProvider:
     oauth_provider = await repository.get_by_id(id)
 
@@ -38,6 +42,8 @@ async def get_oauth_provider_by_id_or_404(
 
 
 async def get_oauth_providers(
-    repository: OAuthProviderRepository = Depends(get_oauth_provider_repository),
+    repository: OAuthProviderRepository = Depends(
+        get_workspace_repository(OAuthProviderRepository)
+    ),
 ) -> List[OAuthProvider]:
     return await repository.all_by_name_and_provider()

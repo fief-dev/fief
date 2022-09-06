@@ -6,10 +6,7 @@ from fief.dependencies.current_workspace import get_current_workspace
 from fief.dependencies.pagination import PaginatedObjects
 from fief.dependencies.role import get_paginated_roles, get_role_by_id_or_404
 from fief.dependencies.tasks import get_send_task
-from fief.dependencies.workspace_repositories import (
-    get_permission_repository,
-    get_role_repository,
-)
+from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.errors import APIErrorCode
 from fief.models import Role, Workspace
 from fief.repositories import PermissionRepository, RoleRepository
@@ -42,8 +39,10 @@ async def list_roles(
 )
 async def create_role(
     role_create: schemas.role.RoleCreate,
-    repository: RoleRepository = Depends(get_role_repository),
-    permission_repository: PermissionRepository = Depends(get_permission_repository),
+    repository: RoleRepository = Depends(get_workspace_repository(RoleRepository)),
+    permission_repository: PermissionRepository = Depends(
+        get_workspace_repository(PermissionRepository)
+    ),
 ) -> schemas.role.Role:
     role = Role(**role_create.dict(exclude={"permissions"}))
 
@@ -70,8 +69,10 @@ async def create_role(
 async def update_role(
     role_update: schemas.role.RoleUpdate,
     role: Role = Depends(get_role_by_id_or_404),
-    repository: RoleRepository = Depends(get_role_repository),
-    permission_repository: PermissionRepository = Depends(get_permission_repository),
+    repository: RoleRepository = Depends(get_workspace_repository(RoleRepository)),
+    permission_repository: PermissionRepository = Depends(
+        get_workspace_repository(PermissionRepository)
+    ),
     send_task: SendTask = Depends(get_send_task),
     workspace: Workspace = Depends(get_current_workspace),
 ) -> schemas.role.Role:
@@ -116,6 +117,6 @@ async def update_role(
 )
 async def delete_role(
     role: Role = Depends(get_role_by_id_or_404),
-    repository: RoleRepository = Depends(get_role_repository),
+    repository: RoleRepository = Depends(get_workspace_repository(RoleRepository)),
 ):
     await repository.delete(role)

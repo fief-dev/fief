@@ -9,11 +9,7 @@ from pydantic import UUID4
 from fief.crypto.code_challenge import verify_code_verifier
 from fief.crypto.token import get_token_hash
 from fief.dependencies.users import UserManager, get_user_manager
-from fief.dependencies.workspace_repositories import (
-    get_authorization_code_repository,
-    get_client_repository,
-    get_refresh_token_repository,
-)
+from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.exceptions import TokenRequestException
 from fief.models import Client, ClientType, User
 from fief.repositories import (
@@ -45,7 +41,9 @@ async def get_grant_type(grant_type: Optional[str] = Form(None)) -> str:
 
 async def authenticate_client_secret_basic(
     credentials: Optional[HTTPBasicCredentials] = Depends(ClientSecretBasicScheme),
-    client_repository: ClientRepository = Depends(get_client_repository),
+    client_repository: ClientRepository = Depends(
+        get_workspace_repository(ClientRepository)
+    ),
 ) -> Optional[Client]:
     if credentials is None:
         return None
@@ -58,7 +56,9 @@ async def authenticate_client_secret_basic(
 async def authenticate_client_secret_post(
     client_id: Optional[str] = Form(None),
     client_secret: Optional[str] = Form(None),
-    client_repository: ClientRepository = Depends(get_client_repository),
+    client_repository: ClientRepository = Depends(
+        get_workspace_repository(ClientRepository)
+    ),
 ) -> Optional[Client]:
     if client_id is None or client_secret is None:
         return None
@@ -68,7 +68,9 @@ async def authenticate_client_secret_post(
 
 async def authenticate_none(
     client_id: Optional[str] = Form(None),
-    client_repository: ClientRepository = Depends(get_client_repository),
+    client_repository: ClientRepository = Depends(
+        get_workspace_repository(ClientRepository)
+    ),
     grant_type: str = Depends(get_grant_type),
     code_verifier: Optional[str] = Form(None),
 ) -> Optional[Client]:
@@ -114,10 +116,10 @@ async def validate_grant_request(
     grant_type: str = Depends(get_grant_type),
     client: Client = Depends(authenticate_client),
     authorization_code_repository: AuthorizationCodeRepository = Depends(
-        get_authorization_code_repository
+        get_workspace_repository(AuthorizationCodeRepository)
     ),
     refresh_token_repository: RefreshTokenRepository = Depends(
-        get_refresh_token_repository
+        get_workspace_repository(RefreshTokenRepository)
     ),
 ) -> AsyncGenerator[GrantRequest, None]:
     if grant_type == "authorization_code":

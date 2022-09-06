@@ -5,7 +5,7 @@ from pydantic import UUID4
 
 from fief.dependencies.oauth_provider import get_oauth_providers
 from fief.dependencies.tenant import get_current_tenant
-from fief.dependencies.workspace_repositories import get_oauth_provider_repository
+from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.exceptions import OAuthException
 from fief.locale import gettext_lazy as _
 from fief.models import OAuthProvider, Tenant
@@ -16,7 +16,7 @@ from fief.schemas.oauth import OAuthError
 async def get_oauth_provider(
     provider: UUID4 = Query(...),
     oauth_provider_repository: OAuthProviderRepository = Depends(
-        get_oauth_provider_repository
+        get_workspace_repository(OAuthProviderRepository)
     ),
     oauth_providers: Optional[List[OAuthProvider]] = Depends(get_oauth_providers),
     tenant: Tenant = Depends(get_current_tenant),

@@ -24,13 +24,7 @@ from fief.dependencies.users import (
     get_user_manager_from_create_user_internal,
     get_user_manager_from_user,
 )
-from fief.dependencies.workspace_repositories import (
-    get_permission_repository,
-    get_role_repository,
-    get_user_permission_repository,
-    get_user_repository,
-    get_user_role_repository,
-)
+from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.errors import APIErrorCode
 from fief.models import (
     OAuthAccount,
@@ -84,7 +78,7 @@ async def create_user(
     user_create: schemas.user.UserCreateInternal = Depends(get_user_create_internal),
     user_fields: List[UserField] = Depends(get_user_fields),
     user_manager: UserManager = Depends(get_user_manager_from_create_user_internal),
-    user_repository: UserRepository = Depends(get_user_repository),
+    user_repository: UserRepository = Depends(get_workspace_repository(UserRepository)),
 ):
     try:
         created_user = await user_manager.create_with_fields(
@@ -172,9 +166,11 @@ async def list_user_permissions(
 async def create_user_permission(
     user_permission_create: schemas.user_permission.UserPermissionCreate,
     user: User = Depends(get_user_by_id_or_404),
-    permission_repository: PermissionRepository = Depends(get_permission_repository),
+    permission_repository: PermissionRepository = Depends(
+        get_workspace_repository(PermissionRepository)
+    ),
     user_permission_repository: UserPermissionRepository = Depends(
-        get_user_permission_repository
+        get_workspace_repository(UserPermissionRepository)
     ),
 ) -> None:
     permission_id = user_permission_create.id
@@ -211,7 +207,7 @@ async def delete_user_permission(
     permission_id: UUID4,
     user: User = Depends(get_user_by_id_or_404),
     user_permission_repository: UserPermissionRepository = Depends(
-        get_user_permission_repository
+        get_workspace_repository(UserPermissionRepository)
     ),
 ) -> None:
     user_permission = await user_permission_repository.get_by_permission_and_user(
@@ -248,8 +244,10 @@ async def list_user_roles(
 async def create_user_role(
     user_role_create: schemas.user_role.UserRoleCreate,
     user: User = Depends(get_user_by_id_or_404),
-    role_repository: RoleRepository = Depends(get_role_repository),
-    user_role_repository: UserRoleRepository = Depends(get_user_role_repository),
+    role_repository: RoleRepository = Depends(get_workspace_repository(RoleRepository)),
+    user_role_repository: UserRoleRepository = Depends(
+        get_workspace_repository(UserRoleRepository)
+    ),
     workspace: Workspace = Depends(get_current_workspace),
     send_task: SendTask = Depends(get_send_task),
 ) -> None:
@@ -286,7 +284,9 @@ async def create_user_role(
 async def delete_user_role(
     role_id: UUID4,
     user: User = Depends(get_user_by_id_or_404),
-    user_role_repository: UserRoleRepository = Depends(get_user_role_repository),
+    user_role_repository: UserRoleRepository = Depends(
+        get_workspace_repository(UserRoleRepository)
+    ),
     workspace: Workspace = Depends(get_current_workspace),
     send_task: SendTask = Depends(get_send_task),
 ) -> None:

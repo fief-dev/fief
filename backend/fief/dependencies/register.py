@@ -5,10 +5,7 @@ from fastapi import Cookie, Depends
 from fief.dependencies.tenant import get_current_tenant
 from fief.dependencies.user_field import get_user_create_internal_model, get_user_fields
 from fief.dependencies.users import UserManager, get_user_manager
-from fief.dependencies.workspace_repositories import (
-    get_oauth_account_repository,
-    get_registration_session_repository,
-)
+from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.locale import gettext_lazy as _
 from fief.models import RegistrationSession, Tenant, UserField
 from fief.repositories import OAuthAccountRepository, RegistrationSessionRepository
@@ -19,10 +16,10 @@ from fief.settings import settings
 
 async def get_registration_flow(
     registration_session_repository: RegistrationSessionRepository = Depends(
-        get_registration_session_repository
+        get_workspace_repository(RegistrationSessionRepository)
     ),
     oauth_account_repository: OAuthAccountRepository = Depends(
-        get_oauth_account_repository
+        get_workspace_repository(OAuthAccountRepository)
     ),
     user_manager: UserManager = Depends(get_user_manager),
     user_create_internal_model: Type[UserCreateInternal[UF]] = Depends(
@@ -44,7 +41,7 @@ async def get_optional_registration_session(
         None, alias=settings.registration_session_cookie_name
     ),
     registration_session_repository: RegistrationSessionRepository = Depends(
-        get_registration_session_repository
+        get_workspace_repository(RegistrationSessionRepository)
     ),
     tenant: Tenant = Depends(get_current_tenant),
 ) -> Optional[RegistrationSession]:

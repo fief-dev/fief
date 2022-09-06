@@ -5,7 +5,7 @@ from fastapi.param_functions import Depends
 
 from fief.db import AsyncSession
 from fief.db.workspace import get_workspace_session
-from fief.dependencies.main_repositories import get_workspace_repository
+from fief.dependencies.main_repositories import get_main_repository
 from fief.dependencies.workspace_db import get_workspace_db
 from fief.errors import APIErrorCode
 from fief.models import Workspace
@@ -21,7 +21,7 @@ async def get_host(
 
 async def get_current_workspace(
     host: Optional[str] = Depends(get_host),
-    repository: WorkspaceRepository = Depends(get_workspace_repository),
+    repository: WorkspaceRepository = Depends(get_main_repository(WorkspaceRepository)),
     workspace_db: WorkspaceDatabase = Depends(get_workspace_db),
 ) -> Workspace:
     workspace = None

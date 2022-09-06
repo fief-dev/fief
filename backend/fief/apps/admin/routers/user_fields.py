@@ -9,7 +9,7 @@ from fief.dependencies.user_field import (
     get_validated_user_field_create,
     get_validated_user_field_update,
 )
-from fief.dependencies.workspace_repositories import get_user_field_repository
+from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.errors import APIErrorCode
 from fief.models import UserField
 from fief.repositories import UserFieldRepository
@@ -48,7 +48,9 @@ async def create_user_field(
     user_field_create: schemas.user_field.UserFieldCreate = Depends(
         get_validated_user_field_create
     ),
-    repository: UserFieldRepository = Depends(get_user_field_repository),
+    repository: UserFieldRepository = Depends(
+        get_workspace_repository(UserFieldRepository)
+    ),
 ) -> schemas.user_field.UserField:
     existing_user_field = await repository.get_by_slug(user_field_create.slug)
     if existing_user_field is not None:
@@ -71,7 +73,9 @@ async def update_user_field(
         get_validated_user_field_update
     ),
     user_field: UserField = Depends(get_user_field_by_id_or_404),
-    repository: UserFieldRepository = Depends(get_user_field_repository),
+    repository: UserFieldRepository = Depends(
+        get_workspace_repository(UserFieldRepository)
+    ),
 ) -> schemas.user_field.UserField:
     updated_slug = user_field_update.slug
     if updated_slug is not None and updated_slug != user_field.slug:
@@ -99,6 +103,8 @@ async def update_user_field(
 )
 async def delete_user_field(
     user_field: UserField = Depends(get_user_field_by_id_or_404),
-    repository: UserFieldRepository = Depends(get_user_field_repository),
+    repository: UserFieldRepository = Depends(
+        get_workspace_repository(UserFieldRepository)
+    ),
 ):
     await repository.delete(user_field)
