@@ -6,6 +6,7 @@ from urllib.parse import urlparse
 from pydantic import (
     BaseSettings,
     DirectoryPath,
+    EmailStr,
     Field,
     SecretStr,
     root_validator,
@@ -94,6 +95,8 @@ class Settings(BaseSettings):
     fief_client_id: str
     fief_client_secret: str
     fief_encryption_key: Optional[str] = None
+    fief_main_user_email: Optional[EmailStr] = None
+    fief_main_user_password: Optional[SecretStr] = None
 
     fief_admin_session_cookie_name: str = "fief_admin_session"
     fief_admin_session_cookie_domain: str = ""

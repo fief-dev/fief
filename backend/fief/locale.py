@@ -15,10 +15,6 @@ def get_babel_middleware_kwargs() -> Mapping[str, Any]:
     return dict(locales_dirs=[LOCALE_DIRECTORY, wtforms.i18n.messages_path()])
 
 
-def gettext_lazy(string: str, domain: str = None, **variables):
-    return support.LazyProxy(asgi_babel.gettext, string, domain, **variables)
-
-
 def get_translations(domain: str = None, locale: Locale = None) -> support.Translations:
     """
     Load and cache translations.
@@ -28,7 +24,7 @@ def get_translations(domain: str = None, locale: Locale = None) -> support.Trans
     from asgi_babel import BABEL, current_locale
 
     if BABEL is None:
-        raise RuntimeError("BabelMiddleware is not inited.")  # noqa: TC003
+        return support.NullTranslations()
 
     locale = locale or current_locale.get()
     if not locale:
@@ -47,3 +43,12 @@ def get_translations(domain: str = None, locale: Locale = None) -> support.Trans
         BABEL.translations[(domain, locale.language)] = translations
 
     return BABEL.translations[(domain, locale.language)]
+
+
+def gettext(string: str, domain: str = None, **variables):
+    t = get_translations(domain)
+    return t.ugettext(string) % variables
+
+
+def gettext_lazy(string: str, domain: str = None, **variables):
+    return support.LazyProxy(gettext, string, domain, **variables)

@@ -109,7 +109,7 @@ def create_main_workspace():
         loop.run_until_complete(create_main_fief_workspace())
         typer.echo("Main Fief workspace created")
     except MainWorkspaceAlreadyExists as e:
-        typer.echo("Main Fief workspace already exists")
+        typer.secho("Main Fief workspace already exists", fg="red")
         raise typer.Exit(code=1) from e
 
 
@@ -137,13 +137,13 @@ def create_main_user(
         loop.run_until_complete(create_main_fief_user(user_email, user_password))
         typer.echo("Main Fief user created")
     except CreateMainFiefUserError as e:
-        typer.echo("An error occured")
+        typer.secho("An error occured", fg="red")
         raise typer.Exit(code=1) from e
     except UserAlreadyExists as e:
-        typer.echo("User already exists")
+        typer.secho("User already exists", fg="red")
         raise typer.Exit(code=1) from e
     except InvalidPasswordException as e:
-        typer.echo(e.reason)
+        typer.secho(f"Invalid password: {e.reason}", fg=typer.colors.RED)
         raise typer.Exit(code=1) from e
 
 
@@ -256,11 +256,71 @@ def run_server(
         True,
         help="Run the migrations on main and workspaces databases before starting.",
     ),
+    create_main_workspace: bool = typer.Option(
+        True, help="Create the main Fief workspace before starting if needed."
+    ),
+    create_main_user: bool = typer.Option(
+        True, help="Create the main Fief user before starting if needed."
+    ),
 ):
     """Run the Fief backend server."""
     if migrate:
         migrate_main()
         migrate_workspaces()
+
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
+    if create_main_workspace:
+        from fief.services.main_workspace import (
+            MainWorkspaceAlreadyExists,
+            create_main_fief_workspace,
+        )
+
+        try:
+            loop.run_until_complete(create_main_fief_workspace())
+            typer.echo("Main Fief workspace created")
+        except MainWorkspaceAlreadyExists:
+            typer.echo("Main Fief workspace already exists")
+
+    if create_main_user:
+        settings = get_settings()
+        user_email = settings.fief_main_user_email
+        user_password = (
+            settings.fief_main_user_password.get_secret_value()
+            if settings.fief_main_user_password
+            else None
+        )
+        if user_email is None:
+            typer.secho(
+                f"Main Fief user email not provided in settings. Skipping its creation.",
+                fg=typer.colors.YELLOW,
+            )
+        else:
+            from fief.services.main_workspace import (
+                CreateMainFiefUserError,
+                create_main_fief_user,
+            )
+
+            try:
+                loop.run_until_complete(
+                    create_main_fief_user(user_email, user_password)
+                )
+                typer.echo("Main Fief user created")
+            except CreateMainFiefUserError as e:
+                typer.secho(
+                    "An error occured while creating main Fief user",
+                    fg=typer.colors.RED,
+                )
+                raise typer.Exit(code=1) from e
+            except InvalidPasswordException as e:
+                typer.secho(
+                    f"Invalid main Fief user password: {e.reason}", fg=typer.colors.RED
+                )
+                raise typer.Exit(code=1) from e
+            except UserAlreadyExists as e:
+                typer.echo("Main Fief user already exists")
+
     uvicorn.run("fief.app:app", host=host, port=port)
 
 

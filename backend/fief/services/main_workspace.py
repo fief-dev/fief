@@ -1,3 +1,5 @@
+from typing import Optional
+
 from fief.db.main import main_async_session_maker
 from fief.db.workspace import get_workspace_session
 from fief.dependencies.logger import get_audit_logger
@@ -96,7 +98,7 @@ async def create_main_fief_workspace() -> Workspace:
     return workspace
 
 
-async def create_main_fief_user(email: str, password: str) -> User:
+async def create_main_fief_user(email: str, password: Optional[str] = None) -> User:
     workspace = await get_main_fief_workspace()
 
     async with main_async_session_maker() as session:
@@ -110,7 +112,7 @@ async def create_main_fief_user(email: str, password: str) -> User:
                 raise MainWorkspaceDoesNotHaveDefaultTenant()
 
             user_db = await get_user_db(session, tenant)
-            audit_logger = await get_audit_logger(workspace)
+            audit_logger = await get_audit_logger(workspace, None, None)
             user_manager = await get_user_manager(
                 user_db,
                 tenant,
@@ -118,6 +120,8 @@ async def create_main_fief_user(email: str, password: str) -> User:
                 send_task,
                 audit_logger,
             )
+            if password is None:
+                password = user_manager.password_helper.generate()
             user = await user_manager.create(
                 UserCreateInternal(email=email, password=password, tenant_id=tenant.id)
             )
