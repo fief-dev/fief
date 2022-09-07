@@ -24,14 +24,25 @@ def upgrade():
         "fief_oauth_sessions",
         sa.Column("tenant_id", fief.models.generics.GUID(), nullable=False),
     )
-    op.create_foreign_key(
-        "fief_oauth_sessions_tenant_id_fkey",
-        "fief_oauth_sessions",
-        "fief_tenants",
-        ["tenant_id"],
-        ["id"],
-        ondelete="CASCADE",
-    )
+    connection = op.get_bind()
+    if connection.dialect.name == "sqlite":
+        with op.batch_alter_table("fief_oauth_sessions") as batch_op:
+            batch_op.create_foreign_key(
+                "fief_oauth_sessions_tenant_id_fkey",
+                "fief_tenants",
+                ["tenant_id"],
+                ["id"],
+                ondelete="CASCADE",
+            )
+    else:
+        op.create_foreign_key(
+            "fief_oauth_sessions_tenant_id_fkey",
+            "fief_oauth_sessions",
+            "fief_tenants",
+            ["tenant_id"],
+            ["id"],
+            ondelete="CASCADE",
+        )
     # ### end Alembic commands ###
 
 
