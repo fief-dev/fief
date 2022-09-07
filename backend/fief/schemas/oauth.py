@@ -7,10 +7,14 @@ from pydantic.fields import Field
 class OAuthError(BaseModel):
     error: str = Field(
         ...,
-        regex="invalid_provider|oauth_error|invalid_session|missing_code|access_token_error|inactive_user|user_already_exists",
+        regex="invalid_tenant|invalid_provider|oauth_error|invalid_session|missing_code|access_token_error|inactive_user|user_already_exists",
     )
     error_description: Optional[Any] = None
     error_uri: Optional[str] = None
+
+    @classmethod
+    def get_invalid_tenant(cls, error_description: Optional[Any] = None):
+        return cls(error="invalid_tenant", error_description=error_description)
 
     @classmethod
     def get_invalid_provider(cls, error_description: Optional[Any] = None):

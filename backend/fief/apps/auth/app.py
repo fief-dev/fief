@@ -17,7 +17,6 @@ from fief.paths import STATIC_DIRECTORY
 
 def include_routers(router: APIRouter) -> APIRouter:
     router.include_router(auth_router, include_in_schema=False)
-    router.include_router(oauth_router, include_in_schema=False)
     router.include_router(register_router, include_in_schema=False)
     router.include_router(reset_router, include_in_schema=False)
     router.include_router(token_router, prefix="/api")
@@ -43,6 +42,7 @@ app.add_middleware(
 )
 
 app.add_middleware(BabelMiddleware, **get_babel_middleware_kwargs())
+app.include_router(oauth_router, include_in_schema=False)
 app.include_router(default_tenant_router)
 app.include_router(tenant_router)
 app.mount("/static", StaticFiles(directory=STATIC_DIRECTORY), name="auth:static")

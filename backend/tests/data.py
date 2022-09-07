@@ -488,6 +488,7 @@ oauth_sessions: ModelMapping[OAuthSession] = {
         redirect_uri="http://api.fief.dev/oauth/callback",
         oauth_provider=oauth_providers["google"],
         login_session=login_sessions["default"],
+        tenant=tenants["default"],
     ),
 }
 

@@ -21,25 +21,57 @@ from fief.repositories import (
 )
 from fief.settings import settings
 from tests.data import TestData
-from tests.types import TenantParams
 
 
 @pytest.mark.asyncio
 @pytest.mark.workspace_host
 class TestOAuthAuthorize:
+    async def test_missing_tenant_id(
+        self, test_data: TestData, test_client_auth: httpx.AsyncClient
+    ):
+        login_session = test_data["login_sessions"]["default"]
+
+        cookies = {}
+        cookies[settings.login_session_cookie_name] = login_session.token
+
+        response = await test_client_auth.get("/oauth/authorize", cookies=cookies)
+
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+    async def test_unknown_tenant_id(
+        self,
+        test_data: TestData,
+        test_client_auth: httpx.AsyncClient,
+        not_existing_uuid: uuid.UUID,
+    ):
+        login_session = test_data["login_sessions"]["default"]
+
+        cookies = {}
+        cookies[settings.login_session_cookie_name] = login_session.token
+
+        response = await test_client_auth.get(
+            "/oauth/authorize", params={"tenant": str(not_existing_uuid)}
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+        headers = response.headers
+        assert headers["X-Fief-Error"] == "invalid_tenant"
+
     @pytest.mark.parametrize("cookie", [None, "INVALID_LOGIN_SESSION"])
     async def test_invalid_login_session(
         self,
         cookie: Optional[str],
-        tenant_params: TenantParams,
+        test_data: TestData,
         test_client_auth: httpx.AsyncClient,
     ):
+        tenant = test_data["tenants"]["default"]
         cookies = {}
         if cookie is not None:
             cookies[settings.login_session_cookie_name] = cookie
 
         response = await test_client_auth.get(
-            f"{tenant_params.path_prefix}/oauth/authorize", cookies=cookies
+            f"/oauth/authorize", params={"tenant": str(tenant.id)}, cookies=cookies
         )
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
@@ -56,14 +88,13 @@ class TestOAuthAuthorize:
         login_session = test_data["login_sessions"]["default"]
         client = login_session.client
         tenant = client.tenant
-        path_prefix = tenant.slug if not tenant.default else ""
 
         cookies = {}
         cookies[settings.login_session_cookie_name] = login_session.token
 
         response = await test_client_auth.get(
-            f"{path_prefix}/oauth/authorize",
-            params={"provider": str(not_existing_uuid)},
+            "/oauth/authorize",
+            params={"tenant": str(tenant.id), "provider": str(not_existing_uuid)},
             cookies=cookies,
         )
 
@@ -81,7 +112,6 @@ class TestOAuthAuthorize:
         login_session = test_data["login_sessions"]["default"]
         client = login_session.client
         tenant = client.tenant
-        path_prefix = tenant.slug if not tenant.default else ""
 
         oauth_provider = test_data["oauth_providers"]["google"]
 
@@ -89,8 +119,8 @@ class TestOAuthAuthorize:
         cookies[settings.login_session_cookie_name] = login_session.token
 
         response = await test_client_auth.get(
-            f"{path_prefix}/oauth/authorize",
-            params={"provider": str(oauth_provider.id)},
+            "/oauth/authorize",
+            params={"tenant": str(tenant.id), "provider": str(oauth_provider.id)},
             cookies=cookies,
         )
 
@@ -110,6 +140,7 @@ class TestOAuthAuthorize:
         assert oauth_session is not None
         assert oauth_session.oauth_provider_id == oauth_provider.id
         assert oauth_session.login_session_id == login_session.id
+        assert oauth_session.tenant_id == tenant.id
 
         assert set(scope.split(" ")) == set(
             (
@@ -122,30 +153,30 @@ class TestOAuthAuthorize:
         assert oauth_session.redirect_uri == redirect_uri
         assert redirect_uri.endswith("/oauth/callback")
 
+    async def test_valid_secondary_tenant(
+        self, test_client_auth: httpx.AsyncClient, test_data: TestData
+    ):
+        login_session = test_data["login_sessions"]["secondary"]
+        client = login_session.client
+        tenant = client.tenant
+
+        oauth_provider = test_data["oauth_providers"]["google"]
+
+        cookies = {}
+        cookies[settings.login_session_cookie_name] = login_session.token
+
+        response = await test_client_auth.get(
+            "/oauth/authorize",
+            params={"tenant": str(tenant.id), "provider": str(oauth_provider.id)},
+            cookies=cookies,
+        )
+
+        assert response.status_code == status.HTTP_302_FOUND
+
 
 @pytest.mark.asyncio
 @pytest.mark.workspace_host
 class TestOAuthCallback:
-    @pytest.mark.parametrize("cookie", [None, "INVALID_LOGIN_SESSION"])
-    async def test_invalid_login_session(
-        self,
-        cookie: Optional[str],
-        tenant_params: TenantParams,
-        test_client_auth: httpx.AsyncClient,
-    ):
-        cookies = {}
-        if cookie is not None:
-            cookies[settings.login_session_cookie_name] = cookie
-
-        response = await test_client_auth.get(
-            f"{tenant_params.path_prefix}/oauth/callback", cookies=cookies
-        )
-
-        assert response.status_code == status.HTTP_400_BAD_REQUEST
-
-        headers = response.headers
-        assert headers["X-Fief-Error"] == "invalid_session"
-
     @pytest.mark.parametrize(
         "params,error",
         [
@@ -183,15 +214,12 @@ class TestOAuthCallback:
         test_data: TestData,
     ):
         login_session = test_data["login_sessions"]["default"]
-        client = login_session.client
-        tenant = client.tenant
-        path_prefix = tenant.slug if not tenant.default else ""
 
         cookies = {}
         cookies[settings.login_session_cookie_name] = login_session.token
 
         response = await test_client_auth.get(
-            f"{path_prefix}/oauth/callback", params=params, cookies=cookies
+            "/oauth/callback", params=params, cookies=cookies
         )
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
@@ -206,10 +234,6 @@ class TestOAuthCallback:
         test_data: TestData,
     ):
         login_session = test_data["login_sessions"]["default"]
-        client = login_session.client
-        tenant = client.tenant
-        path_prefix = tenant.slug if not tenant.default else ""
-
         oauth_session = test_data["oauth_sessions"]["default_google"]
 
         cookies = {}
@@ -222,7 +246,7 @@ class TestOAuthCallback:
         ).return_value = oauth_provider_service_mock
 
         response = await test_client_auth.get(
-            f"{path_prefix}/oauth/callback",
+            "/oauth/callback",
             params={
                 "code": "CODE",
                 "redirect_uri": oauth_session.redirect_uri,
@@ -243,9 +267,6 @@ class TestOAuthCallback:
         test_data: TestData,
     ):
         login_session = test_data["login_sessions"]["default"]
-        client = login_session.client
-        tenant = client.tenant
-        path_prefix = tenant.slug if not tenant.default else ""
 
         oauth_session = test_data["oauth_sessions"]["default_google"]
         oauth_account = test_data["oauth_accounts"]["inactive_google"]
@@ -272,7 +293,7 @@ class TestOAuthCallback:
         )
 
         response = await test_client_auth.get(
-            f"{path_prefix}/oauth/callback",
+            "/oauth/callback",
             params={
                 "code": "CODE",
                 "redirect_uri": oauth_session.redirect_uri,
@@ -323,7 +344,7 @@ class TestOAuthCallback:
         )
 
         response = await test_client_auth.get(
-            f"{path_prefix}/oauth/callback",
+            "/oauth/callback",
             params={
                 "code": "CODE",
                 "redirect_uri": oauth_session.redirect_uri,
@@ -389,7 +410,7 @@ class TestOAuthCallback:
         ).side_effect = AsyncMock(return_value=("NEW_ACCOUNT", "louis@bretagne.duchy"))
 
         response = await test_client_auth.get(
-            f"{path_prefix}/oauth/callback",
+            "/oauth/callback",
             params={
                 "code": "CODE",
                 "redirect_uri": oauth_session.redirect_uri,

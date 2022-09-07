@@ -68,7 +68,7 @@ def upgrade():
     )
 
     connection = op.get_bind()
-    if connection.dialect.name == "postgres":
+    if connection.dialect.name == "postgresql":
         op.drop_constraint(
             "fief_audit_logs_subject_user_id_fkey",
             "fief_audit_logs",

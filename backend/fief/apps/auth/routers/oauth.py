@@ -5,13 +5,15 @@ from fastapi import APIRouter, Depends, Query, Request, status
 from fastapi.responses import RedirectResponse
 from httpx_oauth.oauth2 import GetAccessTokenError
 
-from fief.dependencies.auth import get_login_session
 from fief.dependencies.authentication_flow import get_authentication_flow
-from fief.dependencies.oauth import get_oauth_provider
+from fief.dependencies.oauth import (
+    get_login_session_with_tenant_query,
+    get_oauth_provider,
+    get_tenant_by_query,
+)
 from fief.dependencies.oauth_provider import get_oauth_providers
 from fief.dependencies.register import get_registration_flow
 from fief.dependencies.session_token import get_session_token
-from fief.dependencies.tenant import get_current_tenant
 from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.exceptions import OAuthException
 from fief.locale import gettext_lazy as _
@@ -36,7 +38,8 @@ router = APIRouter(prefix="/oauth")
 @router.get("/authorize", name="oauth:authorize")
 async def authorize(
     request: Request,
-    login_session: LoginSession = Depends(get_login_session),
+    tenant: Tenant = Depends(get_tenant_by_query),
+    login_session: LoginSession = Depends(get_login_session_with_tenant_query),
     oauth_provider: OAuthProvider = Depends(get_oauth_provider),
     oauth_session_repository: OAuthSessionRepository = Depends(
         get_workspace_repository(OAuthSessionRepository)
@@ -48,6 +51,7 @@ async def authorize(
         redirect_uri=redirect_uri,
         oauth_provider=oauth_provider,
         login_session=login_session,
+        tenant=tenant,
     )
     oauth_session = await oauth_session_repository.create(oauth_session)
     state = oauth_session.token
@@ -68,7 +72,6 @@ async def callback(
     code_verifier: Optional[str] = Query(None),
     state: Optional[str] = Query(None),
     error: Optional[str] = Query(None),
-    login_session: LoginSession = Depends(get_login_session),
     oauth_providers: Optional[List[OAuthProvider]] = Depends(get_oauth_providers),
     oauth_session_repository: OAuthSessionRepository = Depends(
         get_workspace_repository(OAuthSessionRepository)
@@ -79,20 +82,19 @@ async def callback(
     authentication_flow: AuthenticationFlow = Depends(get_authentication_flow),
     registration_flow: RegistrationFlow = Depends(get_registration_flow),
     session_token: Optional[SessionToken] = Depends(get_session_token),
-    tenant: Tenant = Depends(get_current_tenant),
 ):
     if error is not None:
         raise OAuthException(
             OAuthError.get_oauth_error(error),
             oauth_providers=oauth_providers,
-            tenant=tenant,
+            fatal=True,
         )
 
     if code is None:
         raise OAuthException(
             OAuthError.get_missing_code(_("Missing authorization code.")),
             oauth_providers=oauth_providers,
-            tenant=tenant,
+            fatal=True,
         )
 
     oauth_session = (
@@ -100,13 +102,14 @@ async def callback(
         if state is not None
         else None
     )
-    if oauth_session is None or login_session.id != oauth_session.login_session_id:
+    if oauth_session is None:
         raise OAuthException(
             OAuthError.get_invalid_session(_("Invalid OAuth session.")),
             oauth_providers=oauth_providers,
-            tenant=tenant,
+            fatal=True,
         )
 
+    tenant = oauth_session.tenant
     oauth_provider = oauth_session.oauth_provider
     oauth_provider_service = get_oauth_provider_service(oauth_provider)
 

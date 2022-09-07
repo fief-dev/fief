@@ -11,6 +11,7 @@ from fief.models.generics import GUID, CreatedUpdatedAt, ExpiresAt, UUIDModel
 from fief.models.login_session import LoginSession
 from fief.models.oauth_account import OAuthAccount
 from fief.models.oauth_provider import OAuthProvider
+from fief.models.tenant import Tenant
 from fief.settings import settings
 
 
@@ -41,3 +42,8 @@ class OAuthSession(UUIDModel, CreatedUpdatedAt, ExpiresAt, WorkspaceBase):
         GUID, ForeignKey(OAuthAccount.id, ondelete="CASCADE"), nullable=True
     )
     oauth_account: Optional[OAuthAccount] = relationship("OAuthAccount", lazy="joined")
+
+    tenant_id: UUID4 = Column(
+        GUID, ForeignKey(Tenant.id, ondelete="CASCADE"), nullable=False
+    )
+    tenant: Tenant = relationship("Tenant", lazy="joined")
