@@ -153,6 +153,14 @@ app.add_typer(workspaces, name="workspaces")
 
 @app.command()
 def quickstart(
+    user_email: str = typer.Option(..., prompt=True, help="The admin user email"),
+    user_password: str = typer.Option(
+        ...,
+        prompt=True,
+        confirmation_prompt=True,
+        hide_input=True,
+        help="The admin user password",
+    ),
     docker: bool = typer.Option(
         False,
         help="Show the Docker command to run the Fief server with required environment variables.",
@@ -184,6 +192,8 @@ def quickstart(
         "PORT": port,
         "ROOT_DOMAIN": f"{host}:{port}",
         "FIEF_DOMAIN": f"{host}:{port}",
+        "FIEF_MAIN_USER_EMAIL": user_email,
+        "FIEF_MAIN_USER_PASSWORD": user_password,
     }
     if not ssl:
         environment_variables.update(
@@ -210,7 +220,7 @@ def quickstart(
         typer.echo(" \\\n  ".join(parts))
     else:
         for (name, value) in environment_variables.items():
-            typer.echo(f"{typer.style(name, bold=True)}: {value}")
+            typer.echo(f"{typer.style(name, bold=True)}={value}")
 
 
 @app.command()
