@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  Fief\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2022-09-03 17:52+0200\n"
+"POT-Creation-Date: 2022-09-08 17:50+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: es\n"
@@ -79,15 +79,15 @@ msgstr "Email o contraseña no válidos"
 msgid "The user denied access to their data."
 msgstr "El usuario negó el acceso a sus datos."
 
-#: fief/apps/auth/routers/auth.py:221 fief/dependencies/auth.py:55
+#: fief/apps/auth/routers/auth.py:221 fief/dependencies/auth.py:51
 msgid "redirect_uri is missing"
 msgstr "error interno: falta  \"redirect_uri\""
 
-#: fief/apps/auth/routers/oauth.py:96
+#: fief/apps/auth/routers/oauth.py:95
 msgid "Missing authorization code."
 msgstr ""
 
-#: fief/apps/auth/routers/oauth.py:108
+#: fief/apps/auth/routers/oauth.py:107
 #, fuzzy
 msgid "Invalid OAuth session."
 msgstr "Sesión de Ingresso (Login) no válida"
@@ -121,71 +121,81 @@ msgstr "Falta el token de cambio de contraseña."
 msgid "The reset password token is invalid or expired."
 msgstr "El token de cambio de contraseña no es válido o ha caducado."
 
-#: fief/dependencies/auth.py:38
+#: fief/dependencies/auth.py:34
 msgid "client_id is missing"
 msgstr "error interno: falta \"client_id\""
 
-#: fief/dependencies/auth.py:44
+#: fief/dependencies/auth.py:40
 msgid "Unknown client"
 msgstr "Cliente desconocido"
 
-#: fief/dependencies/auth.py:61
+#: fief/dependencies/auth.py:57
 msgid "redirect_uri is not authorized for this client"
 msgstr "redirect_uri no está autorizado para este cliente"
 
-#: fief/dependencies/auth.py:79
+#: fief/dependencies/auth.py:75
 msgid "response_type is missing"
 msgstr "error interno: falta \"response_type\""
 
-#: fief/dependencies/auth.py:87
+#: fief/dependencies/auth.py:83
 msgid "response_type is invalid"
 msgstr "response_type no es válido\n"
 
-#: fief/dependencies/auth.py:111
+#: fief/dependencies/auth.py:107
 msgid "request parameter is not supported"
 msgstr "el request contiene parámetro de solicitud incompatible"
 
-#: fief/dependencies/auth.py:129
+#: fief/dependencies/auth.py:125
 msgid "nonce parameter is required for this response_type"
 msgstr "este tipo de respuesta requiere un parámetro"
 
-#: fief/dependencies/auth.py:147
+#: fief/dependencies/auth.py:143
 msgid "scope is missing"
 msgstr "error interno: \"scope is missing\""
 
-#: fief/dependencies/auth.py:158
+#: fief/dependencies/auth.py:154
 msgid "scope should contain \"openid\""
 msgstr "error interno: \"scope should contain openid\""
 
-#: fief/dependencies/auth.py:178
+#: fief/dependencies/auth.py:174
 msgid "prompt should either be \"none\", \"login\" or \"register\""
 msgstr "El prompt debe ser \"none\", \"login\" o \"register\""
 
-#: fief/dependencies/auth.py:187
+#: fief/dependencies/auth.py:183
 msgid "User is not logged in"
 msgstr "El usuario no ha iniciado sesión"
 
-#: fief/dependencies/auth.py:205
+#: fief/dependencies/auth.py:201
 msgid "screen should either be \"login\" or \"register\""
 msgstr "la pantalla debe ser \"login\" o \"register\""
 
-#: fief/dependencies/auth.py:228
+#: fief/dependencies/auth.py:224
 msgid "Unsupported code_challenge_method"
 msgstr "code_challenge_method no suportado"
 
-#: fief/dependencies/auth.py:279
+#: fief/dependencies/auth.py:275
 msgid "Invalid login session"
 msgstr "Sesión de Ingresso (Login) no válida"
 
-#: fief/dependencies/auth.py:319
+#: fief/dependencies/auth.py:317
 msgid "User consent is required for this scope"
 msgstr "Se requiere el consentimiento del usuario para este ámbito"
 
-#: fief/dependencies/oauth.py:27
+#: fief/dependencies/oauth.py:31
+#, fuzzy
+msgid "Unknown tenant"
+msgstr "Cliente desconocido"
+
+#: fief/dependencies/oauth.py:66
+#, fuzzy
+msgid "Invalid login session."
+msgstr "Sesión de Ingresso (Login) no válida"
+
+#: fief/dependencies/oauth.py:85
 msgid "Unknown OAuth provider"
 msgstr ""
 
-#: fief/dependencies/users.py:102
+#: fief/dependencies/users.py:101
 msgid "The password should be at least 8 characters."
 msgstr "La contraseña debe tener al menos 8 caracteres."
 

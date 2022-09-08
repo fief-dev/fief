@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  Fief\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2022-09-03 17:52+0200\n"
+"POT-Creation-Date: 2022-09-08 17:50+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en_us\n"
@@ -79,15 +79,15 @@ msgstr "Invalid email or password"
 msgid "The user denied access to their data."
 msgstr "The user denied access to their data."
 
-#: fief/apps/auth/routers/auth.py:221 fief/dependencies/auth.py:55
+#: fief/apps/auth/routers/auth.py:221 fief/dependencies/auth.py:51
 msgid "redirect_uri is missing"
 msgstr "redirect_uri is missing"
 
-#: fief/apps/auth/routers/oauth.py:96
+#: fief/apps/auth/routers/oauth.py:95
 msgid "Missing authorization code."
 msgstr ""
 
-#: fief/apps/auth/routers/oauth.py:108
+#: fief/apps/auth/routers/oauth.py:107
 #, fuzzy
 msgid "Invalid OAuth session."
 msgstr "Invalid login session"
@@ -120,71 +120,81 @@ msgstr "The reset password token is missing."
 msgid "The reset password token is invalid or expired."
 msgstr "The reset password token is invalid or expired."
 
-#: fief/dependencies/auth.py:38
+#: fief/dependencies/auth.py:34
 msgid "client_id is missing"
 msgstr "client_id is missing"
 
-#: fief/dependencies/auth.py:44
+#: fief/dependencies/auth.py:40
 msgid "Unknown client"
 msgstr "Unknown client"
 
-#: fief/dependencies/auth.py:61
+#: fief/dependencies/auth.py:57
 msgid "redirect_uri is not authorized for this client"
 msgstr "redirect_uri is not authorized for this client"
 
-#: fief/dependencies/auth.py:79
+#: fief/dependencies/auth.py:75
 msgid "response_type is missing"
 msgstr "response_type is missing"
 
-#: fief/dependencies/auth.py:87
+#: fief/dependencies/auth.py:83
 msgid "response_type is invalid"
 msgstr "response_type is invalid"
 
-#: fief/dependencies/auth.py:111
+#: fief/dependencies/auth.py:107
 msgid "request parameter is not supported"
 msgstr "request parameter is not supported"
 
-#: fief/dependencies/auth.py:129
+#: fief/dependencies/auth.py:125
 msgid "nonce parameter is required for this response_type"
 msgstr "nonce parameter is required for this response_type"
 
-#: fief/dependencies/auth.py:147
+#: fief/dependencies/auth.py:143
 msgid "scope is missing"
 msgstr "scope is missing"
 
-#: fief/dependencies/auth.py:158
+#: fief/dependencies/auth.py:154
 msgid "scope should contain \"openid\""
 msgstr "scope should contain \"openid\""
 
-#: fief/dependencies/auth.py:178
+#: fief/dependencies/auth.py:174
 msgid "prompt should either be \"none\", \"login\" or \"register\""
 msgstr "prompt should either be \"none\", \"login\" or \"register\""
 
-#: fief/dependencies/auth.py:187
+#: fief/dependencies/auth.py:183
 msgid "User is not logged in"
 msgstr "User is not logged in"
 
-#: fief/dependencies/auth.py:205
+#: fief/dependencies/auth.py:201
 msgid "screen should either be \"login\" or \"register\""
 msgstr "screen should either be \"login\" or \"register\""
 
-#: fief/dependencies/auth.py:228
+#: fief/dependencies/auth.py:224
 msgid "Unsupported code_challenge_method"
 msgstr "Unsupported code_challenge_method"
 
-#: fief/dependencies/auth.py:279
+#: fief/dependencies/auth.py:275
 msgid "Invalid login session"
 msgstr "Invalid login session"
 
-#: fief/dependencies/auth.py:319
+#: fief/dependencies/auth.py:317
 msgid "User consent is required for this scope"
 msgstr "User consent is required for this scope"
 
-#: fief/dependencies/oauth.py:27
+#: fief/dependencies/oauth.py:31
+#, fuzzy
+msgid "Unknown tenant"
+msgstr "Unknown client"
+
+#: fief/dependencies/oauth.py:66
+#, fuzzy
+msgid "Invalid login session."
+msgstr "Invalid login session"
+
+#: fief/dependencies/oauth.py:85
 msgid "Unknown OAuth provider"
 msgstr ""
 
-#: fief/dependencies/users.py:102
+#: fief/dependencies/users.py:101
 msgid "The password should be at least 8 characters."
 msgstr "The password should be at least 8 characters."
 
