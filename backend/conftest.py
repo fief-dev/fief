@@ -274,7 +274,6 @@ async def admin_session_token(
 
     yield (session_token, token)
 
-    await main_session.delete(session_token)
     await main_session.delete(workspace_user)
 
 
