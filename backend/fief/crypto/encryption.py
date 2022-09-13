@@ -1,26 +1,36 @@
 import binascii
 
-from cryptography import fernet
+from cryptography.fernet import Fernet
+from sqlalchemy_utils.types.encrypted.encrypted_type import (
+    FernetEngine as BaseFernetEngine,
+)
 
 
 def generate_key() -> bytes:
-    return fernet.Fernet.generate_key()
+    return Fernet.generate_key()
 
 
 def is_valid_key(key: bytes) -> bool:
     try:
-        fernet.Fernet(key)
+        Fernet(key)
     except binascii.Error:
         return False
     else:
         return True
 
 
-def encrypt(value: str, key: bytes) -> str:
-    f = fernet.Fernet(key)
-    return f.encrypt(value.encode("utf-8")).decode("utf-8")
+class FernetEngine(BaseFernetEngine):
+    """
+    Overload of the built-in SQLAlchemy Utils Fernet engine.
 
+    For unknown reasons, they hash the encryption key before using it.
 
-def decrypt(value: str, key: bytes) -> str:
-    f = fernet.Fernet(key)
-    return f.decrypt(value.encode("utf-8")).decode("utf-8")
+    For backward compatibility, we adjust the implementation to use the key as provided.
+    """
+
+    def _update_key(self, key: bytes):
+        return self._initialize_engine(key)
+
+    def _initialize_engine(self, parent_class_key: bytes):
+        self.secret_key = parent_class_key
+        self.fernet = Fernet(self.secret_key)

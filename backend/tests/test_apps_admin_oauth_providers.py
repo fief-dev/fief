@@ -108,9 +108,7 @@ class TestCreateOAuthProvider:
         oauth_provider = await repository.get_by_id(uuid.UUID(json["id"]))
         assert oauth_provider is not None
         assert oauth_provider.client_id == "CLIENT_ID"
-        assert oauth_provider._client_id != "CLIENT_ID"
         assert oauth_provider.client_secret == "CLIENT_SECRET"
-        assert oauth_provider._client_secret != "CLIENT_SECRET"
 
 
 @pytest.mark.asyncio
