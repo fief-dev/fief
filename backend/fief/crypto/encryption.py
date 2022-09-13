@@ -1,9 +1,17 @@
 import binascii
 
 from cryptography.fernet import Fernet
+from sqlalchemy import Text
 from sqlalchemy_utils.types.encrypted.encrypted_type import (
     FernetEngine as BaseFernetEngine,
 )
+from sqlalchemy_utils.types.encrypted.encrypted_type import (
+    StringEncryptedType as BaseStringEncryptedType,
+)
+
+
+class StringEncryptedType(BaseStringEncryptedType):
+    impl = Text
 
 
 def generate_key() -> bytes:

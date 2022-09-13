@@ -1,10 +1,8 @@
 from typing import List, Optional
 
 from sqlalchemy import JSON, Column, String, Text
-from sqlalchemy_utils import StringEncryptedType
-from sqlalchemy_utils.types.encrypted.encrypted_type import FernetEngine
 
-from fief.crypto.encryption import FernetEngine
+from fief.crypto.encryption import FernetEngine, StringEncryptedType
 from fief.models.base import WorkspaceBase
 from fief.models.generics import CreatedUpdatedAt, UUIDModel
 from fief.services.oauth_provider import AvailableOAuthProvider

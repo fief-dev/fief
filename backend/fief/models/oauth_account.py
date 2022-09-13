@@ -5,9 +5,8 @@ from pydantic import UUID4
 from sqlalchemy import Column, ForeignKey, String, Text
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.schema import UniqueConstraint
-from sqlalchemy_utils import StringEncryptedType
 
-from fief.crypto.encryption import FernetEngine
+from fief.crypto.encryption import FernetEngine, StringEncryptedType
 from fief.models.base import WorkspaceBase
 from fief.models.generics import GUID, CreatedUpdatedAt, TIMESTAMPAware, UUIDModel
 from fief.models.oauth_provider import OAuthProvider

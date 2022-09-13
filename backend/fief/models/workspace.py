@@ -2,9 +2,8 @@ from typing import TYPE_CHECKING, List, Optional
 
 from sqlalchemy import Column, Enum, String, Text
 from sqlalchemy.orm import relationship
-from sqlalchemy_utils import StringEncryptedType
 
-from fief.crypto.encryption import FernetEngine
+from fief.crypto.encryption import FernetEngine, StringEncryptedType
 from fief.db.types import (
     DatabaseConnectionParameters,
     DatabaseType,
