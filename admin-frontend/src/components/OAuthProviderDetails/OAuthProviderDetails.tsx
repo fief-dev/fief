@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 
 import { useAPI, useAPIErrorHandler } from '../../hooks/api';
 import * as schemas from '../../schemas';
+import ClipboardButton from '../ClipboardButton/ClipboardButton';
 import DeleteModal from '../DeleteModal/DeleteModal';
 import ErrorAlert from '../ErrorAlert/ErrorAlert';
 import LoadingButton from '../LoadingButton/LoadingButton';
@@ -70,7 +71,16 @@ const OAuthProviderDetails: React.FunctionComponent<React.PropsWithChildren<OAut
   return (
     <>
       <div className="text-slate-800 font-semibold text-center mb-6">{t(`available_oauth_provider.${oauthProvider.provider}`)}</div>
-      <div className="pb-6 border-b border-slate-200">
+      <div className="mt-6">
+        <ul>
+          <li className="flex items-center justify-between py-3 border-b border-slate-200">
+            <div className="text-sm whitespace-nowrap">{t('details.id')}</div>
+            <div className="text-sm font-medium text-slate-800 ml-2 truncate">{oauthProvider.id}</div>
+            <ClipboardButton text={oauthProvider.id} />
+          </li>
+        </ul>
+      </div>
+      <div className="mt-6 pb-6 border-b border-slate-200">
         <FormProvider {...form}>
           <form onSubmit={handleSubmit(onSubmit)}>
             <div className="space-y-4">
