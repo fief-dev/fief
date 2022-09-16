@@ -14,13 +14,9 @@ runs:
       working-directory: backend
       run: |
         python -m pip install --upgrade pip
-        pip install flit
-        flit install --deps develop
-    - name: Lint with isort, black and tryceratops
+        pip install hatch
+    - name: Lint and typecheck
       shell: bash
       working-directory: backend
       run: |
-        isort --check .
-        black --check .
-        mypy fief/
-        tryceratops fief/
+        hatch run lint-check

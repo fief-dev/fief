@@ -5,14 +5,14 @@ default:
 
 install:
   python -m pip install --upgrade pip
-  pip install flit
-  flit install --deps develop
+  pip install hatch
+  hatch env create
 
 lint:
-	isort . && black . && mypy fief/ && tryceratops fief/
+	hatch run lint
 
 test $UNIT_TESTS="1": start-db
-  pytest --cov fief/ --cov-report=term-missing
+  hatch run test
 
 add-translation language:
   mkdir -p fief/locale/{{language}}/LC_MESSAGES
@@ -74,6 +74,3 @@ start-server-watch app="fief.app:app":
 
 start-worker: start-db start-redis
   dramatiq fief.worker -p 1 -t 1 -f fief.scheduler:schedule
-
-bumpversion version:
-  bumpversion {{version}}
