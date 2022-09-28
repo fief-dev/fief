@@ -3,9 +3,10 @@ import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 
 import './i18n';
 import DBConnectionErrorAlert from './components/DBConnectionErrorAlert/DBConnectionErrorAlert';
-import WorkspaceContextProvider from './components/WorkspaceContextProvider/WorkspaceContextProvider';
+import LoadingScreen from './components/LoadingScreen/LoadingScreen';
 import UserContextProvider from './components/UserContextProvider/UserContextProvider';
 import UserFieldsSelectionContextProvider from './components/UserFieldsSelectionContextProvider/UserFieldsSelectionContextProvider';
+import WorkspaceContextProvider from './components/WorkspaceContextProvider/WorkspaceContextProvider';
 import APIClientContext from './contexts/api';
 import { useCurrentWorkspace, useWorkspacesCache } from './hooks/workspace';
 import APIKeys from './routes/APIKeys/APIKeys';
@@ -45,7 +46,7 @@ function App() {
   }, [pathname, loading, workspaces, currentWorkspace, currentWorkspaceLoading, navigate]);
 
   return (
-    <Suspense fallback="loading">
+    <Suspense fallback={<LoadingScreen />}>
       <APIClientContext.Provider value={api}>
         <UserContextProvider>
           <WorkspaceContextProvider>
