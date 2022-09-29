@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING, List, Optional
 
-from sqlalchemy import Column, Enum, String, Text
+from sqlalchemy import Column, Enum, Integer, String, Text
 from sqlalchemy.orm import relationship
 
 from fief.crypto.encryption import FernetEngine, StringEncryptedType
@@ -46,6 +46,8 @@ class Workspace(UUIDModel, CreatedUpdatedAt, MainBase):
     alembic_revision: Optional[str] = Column(
         String(length=255), nullable=True, index=True
     )
+
+    users_count: int = Column(Integer, nullable=False, default=0, server_default="0")
 
     workspace_users: List["WorkspaceUser"] = relationship(
         "WorkspaceUser", back_populates="workspace", cascade="all, delete"

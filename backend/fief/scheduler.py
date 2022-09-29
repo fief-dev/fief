@@ -12,6 +12,10 @@ def schedule():
         tasks.cleanup.send,
         CronTrigger.from_crontab("0 0 * * *"),
     )
+    scheduler.add_job(
+        tasks.count_users.send,
+        CronTrigger.from_crontab("0 * * * *"),
+    )
     try:
         scheduler.start()
     except KeyboardInterrupt:
