@@ -141,7 +141,7 @@ jobs:
         shell: bash
         working-directory: backend
         run: |
-          pybabel compile --domain=messages --directory=fief/locale
+          hatch run pybabel compile --domain=messages --directory=fief/locale
           npm run build:css
       - name: Download frontend build
         uses: actions/download-artifact@v2
