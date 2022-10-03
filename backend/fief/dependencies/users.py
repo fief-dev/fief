@@ -240,6 +240,12 @@ class JWTAccessTokenStrategy(Strategy[User, UUID4]):
         else:
             return user
 
+    async def write_token(self, user: User) -> str:
+        ...  # pragma: no cover
+
+    async def destroy_token(self, token: str, user: User) -> None:
+        ...  # pragma: no cover
+
 
 async def get_jwt_access_token_strategy(
     tenant: Tenant = Depends(get_current_tenant),
