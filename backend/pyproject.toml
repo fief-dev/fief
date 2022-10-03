@@ -74,6 +74,17 @@ asyncio_mode = "auto"
 
 [tool.hatch]
 
+[tool.hatch.build]
+include = [
+  "/fief/**/*.py",
+  "/fief/py.typed",
+  "/fief/alembic.ini",
+  "/fief/emails",
+  "/fief/locale",
+  "/fief/static",
+  "/fief/templates",
+]
+
 [tool.hatch.metadata]
 allow-direct-references = true
 
