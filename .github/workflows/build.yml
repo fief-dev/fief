@@ -149,6 +149,7 @@ jobs:
           name: admin-frontend-build
           path: backend/fief/static/frontend
       - name: Build and publish on PyPI
+        working-directory: backend
         env:
           HATCH_INDEX_USER: ${{ secrets.HATCH_INDEX_USER }}
           HATCH_INDEX_AUTH: ${{ secrets.HATCH_INDEX_AUTH }}
