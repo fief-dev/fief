@@ -57,7 +57,7 @@ class Settings(BaseSettings):
     database_ssl_mode: Optional[str] = None
     database_location: DirectoryPath = Path.cwd()
     database_pool_recycle_seconds: int = 600
-    database_pool_pre_pring: bool = False
+    database_pool_pre_ping: bool = False
 
     redis_url: str = "redis://localhost:6379"
 
