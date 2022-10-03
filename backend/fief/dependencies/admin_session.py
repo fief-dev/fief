@@ -1,7 +1,8 @@
-from typing import Any, Dict, Optional
+from typing import Optional
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import APIKeyCookie
+from fief_client import FiefUserInfo
 
 from fief.crypto.token import get_token_hash
 from fief.dependencies.main_repositories import get_main_repository
@@ -39,5 +40,5 @@ async def get_admin_session_token(
 
 async def get_userinfo(
     session_token: AdminSessionToken = Depends(get_admin_session_token),
-) -> Dict[str, Any]:
+) -> FiefUserInfo:
     return session_token.userinfo

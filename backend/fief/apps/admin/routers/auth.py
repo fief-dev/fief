@@ -2,6 +2,7 @@ import json
 
 from fastapi import APIRouter, Depends, Query, Request, status
 from fastapi.responses import RedirectResponse
+from fief_client import FiefUserInfo
 
 from fief.crypto.token import generate_token
 from fief.dependencies.admin_session import get_admin_session_token, get_userinfo
@@ -61,7 +62,7 @@ async def callback(
 
 
 @router.get("/userinfo", name="admin.auth:userinfo")
-async def userinfo(userinfo=Depends(get_userinfo)):
+async def userinfo(userinfo: FiefUserInfo = Depends(get_userinfo)):
     return userinfo
 
 
