@@ -50,7 +50,7 @@ async def get_connection(
             yield await connection.execution_options(**options)
     except (
         asyncpg.exceptions.PostgresConnectionError,
-        asyncpg.exceptions.InvalidPasswordError,
+        asyncpg.exceptions.InvalidAuthorizationSpecificationError,
         OSError,
     ) as e:
         raise ConnectionError from e
