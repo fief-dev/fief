@@ -4,11 +4,11 @@ from unittest.mock import AsyncMock
 
 import pytest
 from pytest_mock import MockerFixture
-from sqlalchemy import engine, select
+from sqlalchemy import select
 
 from fief.db import AsyncSession
 from fief.db.types import DatabaseConnectionParameters, DatabaseType
-from fief.db.workspace import get_workspace_session
+from fief.db.workspace import WorkspaceEngineManager, get_workspace_session
 from fief.models import User, Workspace
 from fief.repositories import (
     ClientRepository,
@@ -55,12 +55,22 @@ def workspace_create(
 
 
 @pytest.fixture
-def workspace_creation(main_session: AsyncSession) -> WorkspaceCreation:
+def workspace_engine_manager() -> WorkspaceEngineManager:
+    return WorkspaceEngineManager()
+
+
+@pytest.fixture
+def workspace_creation(
+    main_session: AsyncSession, workspace_engine_manager: WorkspaceEngineManager
+) -> WorkspaceCreation:
     workspace_repository = WorkspaceRepository(main_session)
     workspace_user_repository = WorkspaceUserRepository(main_session)
     workspace_db = WorkspaceDatabase()
     return WorkspaceCreation(
-        workspace_repository, workspace_user_repository, workspace_db
+        workspace_repository,
+        workspace_user_repository,
+        workspace_db,
+        workspace_engine_manager,
     )
 
 
@@ -105,14 +115,19 @@ class TestWorkspaceCreationCreate:
         assert workspace is None
 
     async def test_valid_db(
-        self, workspace_create: WorkspaceCreate, workspace_creation: WorkspaceCreation
+        self,
+        workspace_create: WorkspaceCreate,
+        workspace_creation: WorkspaceCreation,
+        workspace_engine_manager: WorkspaceEngineManager,
     ):
         workspace = await workspace_creation.create(workspace_create)
 
         assert workspace.domain == "burgundy.localhost:8000"
         assert workspace.alembic_revision is not None
 
-        async with get_workspace_session(workspace) as session:
+        async with get_workspace_session(
+            workspace, workspace_engine_manager
+        ) as session:
             tenant_repository = TenantRepository(session)
             tenants = await tenant_repository.all()
 
@@ -167,7 +182,10 @@ class TestWorkspaceCreationCreate:
         )
 
     async def test_default_parameters(
-        self, workspace_create: WorkspaceCreate, workspace_creation: WorkspaceCreation
+        self,
+        workspace_create: WorkspaceCreate,
+        workspace_creation: WorkspaceCreation,
+        workspace_engine_manager: WorkspaceEngineManager,
     ):
         workspace = await workspace_creation.create(
             workspace_create,
@@ -179,7 +197,9 @@ class TestWorkspaceCreationCreate:
 
         assert workspace.domain == "foobar.fief.dev"
 
-        async with get_workspace_session(workspace) as session:
+        async with get_workspace_session(
+            workspace, workspace_engine_manager
+        ) as session:
             client_repository = ClientRepository(session)
             clients = await client_repository.all()
             client = clients[0]

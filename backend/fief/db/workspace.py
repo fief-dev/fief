@@ -34,9 +34,6 @@ class WorkspaceEngineManager:
             await engine.dispose()
 
 
-workspace_engine_manager = WorkspaceEngineManager()
-
-
 @contextlib.asynccontextmanager
 async def get_connection(
     engine: AsyncEngine, schema_name: Optional[str] = None
@@ -64,6 +61,7 @@ async def get_connection(
 @contextlib.asynccontextmanager
 async def get_workspace_session(
     workspace: "Workspace",
+    workspace_engine_manager: WorkspaceEngineManager,
 ) -> AsyncGenerator[AsyncSession, None]:
     engine = workspace_engine_manager.get_engine(
         workspace.get_database_connection_parameters()

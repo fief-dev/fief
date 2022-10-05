@@ -1,4 +1,3 @@
-import contextlib
 import logging
 import sys
 import uuid
@@ -10,8 +9,7 @@ from loguru import logger
 from loguru._logger import Logger
 from pydantic import UUID4
 
-from fief.db.main import get_main_async_session
-from fief.db.workspace import get_workspace_session
+from fief.db.workspace import WorkspaceEngineManager, get_workspace_session
 from fief.models import AuditLog, AuditLogMessage, Workspace
 from fief.models.generics import M_UUID
 from fief.repositories import WorkspaceRepository
@@ -78,6 +76,12 @@ class AuditLogger:
 
 
 class DatabaseAuditLogSink:
+    def __init__(
+        self, main_async_session_maker, workspace_engine_manager: WorkspaceEngineManager
+    ):
+        self.main_async_session_maker = main_async_session_maker
+        self.workspace_engine_manager = workspace_engine_manager
+
     async def __call__(self, message):
         record: Dict = message.record
         extra: Dict = record["extra"]
@@ -91,7 +95,9 @@ class DatabaseAuditLogSink:
         if workspace is None:
             return
 
-        async with get_workspace_session(workspace) as session:
+        async with get_workspace_session(
+            workspace, self.workspace_engine_manager
+        ) as session:
             extra.pop("workspace_id")
             extra.pop("audit")
             subject_user_id = extra.pop("subject_user_id", None)
@@ -114,7 +120,7 @@ class DatabaseAuditLogSink:
             await session.commit()
 
     async def _get_workspace(self, workspace_id: uuid.UUID) -> Optional[Workspace]:
-        async with contextlib.asynccontextmanager(get_main_async_session)() as session:
+        async with self.main_async_session_maker() as session:
             repository = WorkspaceRepository(session)
             return await repository.get_by_id(workspace_id)
 
@@ -160,14 +166,18 @@ for uvicorn_logger_name in ["uvicorn.access"]:
     uvicorn_logger.handlers = [InterceptHandler()]
 
 
-def init_audit_logger(loop: Optional[AbstractEventLoop] = None):
+def init_audit_logger(
+    main_async_session_maker,
+    workspace_engine_manager: WorkspaceEngineManager,
+    loop: Optional[AbstractEventLoop] = None,
+):
     """
     Initialize the audit logger.
 
     Needs to be deferred because it relies on a running event loop.
     """
     logger.add(
-        DatabaseAuditLogSink(),
+        DatabaseAuditLogSink(main_async_session_maker, workspace_engine_manager),
         level=LOG_LEVEL,
         enqueue=True,
         loop=loop,
