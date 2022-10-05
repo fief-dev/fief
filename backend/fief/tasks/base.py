@@ -16,7 +16,7 @@ from fief.locale import BabelMiddleware, Translations, get_babel_middleware_kwar
 from fief.logger import init_audit_logger, logger
 from fief.models import Tenant, User, Workspace
 from fief.paths import EMAIL_TEMPLATES_DIRECTORY
-from fief.repositories import TenantRepository, WorkspaceRepository
+from fief.repositories import TenantRepository, UserRepository, WorkspaceRepository
 from fief.services.email import EmailProvider
 from fief.settings import settings
 
@@ -111,12 +111,10 @@ class TaskBase:
 
     async def _get_user(self, user_id: UUID4, workspace: Workspace) -> User:
         async with self.get_workspace_session(workspace) as session:
-            statement = select(User).where(User.id == user_id)
-            results = await session.execute(statement)
-            row = results.first()
-            if row is None:
+            repository = UserRepository(session)
+            user = await repository.get_by_id(user_id)
+            if user is None:
                 raise TaskError()
-            user = row[0]
             return user
 
     async def _get_tenant(self, tenant_id: UUID4, workspace: Workspace) -> Tenant:
