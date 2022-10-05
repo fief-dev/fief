@@ -3,13 +3,13 @@ import sys
 import uuid
 from asyncio import AbstractEventLoop
 from datetime import timezone
-from typing import Dict, Literal, Optional
+from typing import AsyncContextManager, Callable, Dict, Literal, Optional
 
 from loguru import logger
 from loguru._logger import Logger
 from pydantic import UUID4
 
-from fief.db.workspace import WorkspaceEngineManager, get_workspace_session
+from fief.db import AsyncSession
 from fief.models import AuditLog, AuditLogMessage, Workspace
 from fief.models.generics import M_UUID
 from fief.repositories import WorkspaceRepository
@@ -77,10 +77,12 @@ class AuditLogger:
 
 class DatabaseAuditLogSink:
     def __init__(
-        self, main_async_session_maker, workspace_engine_manager: WorkspaceEngineManager
+        self,
+        get_main_session: Callable[..., AsyncContextManager[AsyncSession]],
+        get_workspace_session: Callable[..., AsyncContextManager[AsyncSession]],
     ):
-        self.main_async_session_maker = main_async_session_maker
-        self.workspace_engine_manager = workspace_engine_manager
+        self.get_main_session = get_main_session
+        self.get_workspace_session = get_workspace_session
 
     async def __call__(self, message):
         record: Dict = message.record
@@ -95,9 +97,7 @@ class DatabaseAuditLogSink:
         if workspace is None:
             return
 
-        async with get_workspace_session(
-            workspace, self.workspace_engine_manager
-        ) as session:
+        async with self.get_workspace_session(workspace) as session:
             extra.pop("workspace_id")
             extra.pop("audit")
             subject_user_id = extra.pop("subject_user_id", None)
@@ -120,7 +120,7 @@ class DatabaseAuditLogSink:
             await session.commit()
 
     async def _get_workspace(self, workspace_id: uuid.UUID) -> Optional[Workspace]:
-        async with self.main_async_session_maker() as session:
+        async with self.get_main_session() as session:
             repository = WorkspaceRepository(session)
             return await repository.get_by_id(workspace_id)
 
@@ -167,8 +167,8 @@ for uvicorn_logger_name in ["uvicorn.access"]:
 
 
 def init_audit_logger(
-    main_async_session_maker,
-    workspace_engine_manager: WorkspaceEngineManager,
+    get_main_session: Callable[..., AsyncContextManager[AsyncSession]],
+    get_workspace_session: Callable[..., AsyncContextManager[AsyncSession]],
     loop: Optional[AbstractEventLoop] = None,
 ):
     """
@@ -177,7 +177,7 @@ def init_audit_logger(
     Needs to be deferred because it relies on a running event loop.
     """
     logger.add(
-        DatabaseAuditLogSink(main_async_session_maker, workspace_engine_manager),
+        DatabaseAuditLogSink(get_main_session, get_workspace_session),
         level=LOG_LEVEL,
         enqueue=True,
         loop=loop,

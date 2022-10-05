@@ -7,11 +7,10 @@ import dramatiq
 import jinja2
 from dramatiq.brokers.redis import RedisBroker
 from pydantic import UUID4
-from sqlalchemy import select
 
 from fief.db import AsyncSession
-from fief.db.engine import AsyncSession, create_async_session_maker, create_engine
-from fief.db.workspace import get_connection
+from fief.db.main import create_main_async_session_maker
+from fief.db.workspace import WorkspaceEngineManager, get_workspace_session
 from fief.locale import BabelMiddleware, Translations, get_babel_middleware_kwargs
 from fief.logger import init_audit_logger, logger
 from fief.models import Tenant, User, Workspace
@@ -42,18 +41,17 @@ def send_task(task: dramatiq.Actor, *args, **kwargs):
 
 
 def get_main_session_task() -> AsyncContextManager[AsyncSession]:
-    main_engine = create_engine(settings.get_database_connection_parameters())
-    return create_async_session_maker(main_engine)()
+    return create_main_async_session_maker()()
 
 
 @contextlib.asynccontextmanager
 async def get_workspace_session_task(
     workspace: Workspace,
 ) -> AsyncGenerator[AsyncSession, None]:
-    engine = create_engine(workspace.get_database_connection_parameters())
-    async with get_connection(engine, workspace.get_schema_name()) as connection:
-        async with AsyncSession(bind=connection, expire_on_commit=False) as session:
-            yield session
+    workspace_engine_manager = WorkspaceEngineManager()
+    async with get_workspace_session(workspace, workspace_engine_manager) as session:
+        yield session
+    await workspace_engine_manager.close_all()
 
 
 email_provider = settings.get_email_provider()
@@ -94,7 +92,7 @@ class TaskBase:
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
 
-        init_audit_logger(loop)
+        init_audit_logger(self.get_main_session, self.get_workspace_session, loop)
         BabelMiddleware(app=None, **get_babel_middleware_kwargs())
         logger.info("Start task", task=self.__name__)
         result = loop.run_until_complete(self.run(*args, **kwargs))

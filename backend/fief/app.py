@@ -1,3 +1,5 @@
+import functools
+
 import sentry_sdk
 from fastapi import FastAPI
 from sentry_sdk.integrations.asgi import SentryAsgiMiddleware
@@ -5,6 +7,7 @@ from sentry_sdk.integrations.redis import RedisIntegration
 
 from fief import __version__
 from fief.apps import admin_app, admin_frontend_app, auth_app
+from fief.db.workspace import get_workspace_session
 from fief.dependencies.db import main_async_session_maker, workspace_engine_manager
 from fief.logger import init_audit_logger, logger
 from fief.settings import settings
@@ -28,7 +31,12 @@ app.mount("/", auth_app)
 
 @app.on_event("startup")
 async def on_startup():
-    init_audit_logger(main_async_session_maker, workspace_engine_manager)
+    init_audit_logger(
+        main_async_session_maker,
+        functools.partial(
+            get_workspace_session, workspace_engine_manager=workspace_engine_manager
+        ),
+    )
     logger.info("Fief Server started", version=__version__)
 
 
