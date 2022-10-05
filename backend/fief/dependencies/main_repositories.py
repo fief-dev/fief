@@ -3,7 +3,7 @@ from typing import Generic, Type
 from fastapi import Depends
 
 from fief.db import AsyncSession
-from fief.db.main import get_main_async_session
+from fief.dependencies.db import get_main_async_session
 from fief.repositories import get_repository
 from fief.repositories.base import REPOSITORY
 

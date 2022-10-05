@@ -17,9 +17,9 @@ from fief.crypto.access_token import generate_access_token
 from fief.crypto.token import generate_token
 from fief.db import AsyncConnection, AsyncEngine, AsyncSession
 from fief.db.engine import create_engine
-from fief.db.main import get_main_async_session
 from fief.db.types import DatabaseConnectionParameters, DatabaseType, get_driver
 from fief.db.workspace import get_connection
+from fief.dependencies.db import get_main_async_session
 from fief.dependencies.current_workspace import get_current_workspace_session
 from fief.dependencies.fief import FiefAsyncRelativeEndpoints, get_fief
 from fief.dependencies.tasks import get_send_task
