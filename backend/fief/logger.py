@@ -3,10 +3,9 @@ import sys
 import uuid
 from asyncio import AbstractEventLoop
 from datetime import timezone
-from typing import AsyncContextManager, Callable, Dict, Literal, Optional
+from typing import TYPE_CHECKING, AsyncContextManager, Callable, Dict, Literal, Optional
 
 from loguru import logger
-from loguru._logger import Logger
 from pydantic import UUID4
 
 from fief.db import AsyncSession
@@ -14,6 +13,9 @@ from fief.models import AuditLog, AuditLogMessage, Workspace
 from fief.models.generics import M_UUID
 from fief.repositories import WorkspaceRepository
 from fief.settings import settings
+
+if TYPE_CHECKING:
+    from loguru import Logger
 
 LOG_LEVEL = settings.log_level
 
@@ -28,7 +30,7 @@ STDOUT_FORMAT = (
 class AuditLogger:
     def __init__(
         self,
-        logger: Logger,
+        logger: "Logger",
         workspace_id: uuid.UUID,
         *,
         admin_user_id: Optional[UUID4] = None,
@@ -185,4 +187,4 @@ def init_audit_logger(
     )
 
 
-__all__ = ["init_audit_logger", "logger", "Logger"]
+__all__ = ["init_audit_logger", "logger"]
