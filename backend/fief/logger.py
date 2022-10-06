@@ -1,3 +1,4 @@
+import json
 import logging
 import sys
 import uuid
@@ -15,16 +16,20 @@ from fief.repositories import WorkspaceRepository
 from fief.settings import settings
 
 if TYPE_CHECKING:
-    from loguru import Logger
+    from loguru import Logger, Record
 
 LOG_LEVEL = settings.log_level
 
-STDOUT_FORMAT = (
-    "<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | "
-    "<level>{level: <8}</level> | "
-    "<cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level> - "
-    "{extra}"
-)
+
+def stdout_format(record: "Record") -> str:
+    record["extra"]["extra_json"] = json.dumps(record["extra"])
+    return (
+        "<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | "
+        "<level>{level: <8}</level> | "
+        "<cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level> - "
+        "{extra[extra_json]}"
+        "\n{exception}"
+    )
 
 
 class AuditLogger:
@@ -151,7 +156,7 @@ logger.configure(
         dict(
             sink=sys.stdout,
             level=LOG_LEVEL,
-            format=STDOUT_FORMAT,
+            format=stdout_format,
             filter=lambda record: "audit" not in record["extra"],
         )
     ],
