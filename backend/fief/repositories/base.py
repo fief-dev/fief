@@ -86,11 +86,11 @@ class BaseRepository(BaseRepositoryProtocol, Generic[M]):
         skip=0,
     ) -> Tuple[List[M], int]:
         paginated_statement = statement.offset(skip).limit(limit)
-        [count, results] = await asyncio.gather(
+        [count, result] = await asyncio.gather(
             self._count(statement), self._execute_query(paginated_statement)
         )
 
-        return [result[0] for result in results.unique().all()], count
+        return result.scalars().unique().all(), count
 
     def orderize(
         self, statement: Select, ordering: List[Tuple[List[str], bool]]
@@ -133,15 +133,15 @@ class BaseRepository(BaseRepositoryProtocol, Generic[M]):
         return await self.list(select(self.model))
 
     async def get_one_or_none(self, statement: Select) -> Optional[M]:
-        results = await self._execute_query(statement)
-        object = results.first()
+        result = await self._execute_query(statement)
+        object = result.scalar()
         if object is None:
             return None
-        return object[0]
+        return object
 
     async def list(self, statement: Select) -> List[M]:
-        results = await self._execute_query(statement)
-        return [result[0] for result in results.unique().all()]
+        result = await self._execute_query(statement)
+        return result.scalars().unique().all()
 
     async def create(self, object: M) -> M:
         self.session.add(object)
@@ -168,8 +168,8 @@ class BaseRepository(BaseRepositoryProtocol, Generic[M]):
         count_statement = statement.with_only_columns(
             [func.count()], maintain_column_froms=True  # type: ignore
         ).order_by(None)
-        results = await self._execute_query(count_statement)
-        return results.scalar_one()
+        result = await self._execute_query(count_statement)
+        return result.scalar_one()
 
     async def _execute_query(self, statement: Select) -> Result:
         return await self.session.execute(statement)
