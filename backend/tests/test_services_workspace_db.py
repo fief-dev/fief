@@ -45,13 +45,11 @@ class TestMigrate:
         schema = "workspace_schema"
         workspace_db.migrate(database_connection_params, schema)
 
-        engine = workspace_db.get_engine(database_connection_params, schema)
-        inspector = inspect(engine)
-
-        table_names = inspector.get_table_names()
-
-        assert "fief_alembic_version" in table_names
-        assert "fief_tenants" in table_names
+        with workspace_db._get_engine(database_connection_params, schema) as engine:
+            inspector = inspect(engine)
+            table_names = inspector.get_table_names()
+            assert "fief_alembic_version" in table_names
+            assert "fief_tenants" in table_names
 
 
 @pytest.mark.asyncio
