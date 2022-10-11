@@ -1,3 +1,0 @@
-[submodule "backend/fief_cloud"]
-	path = backend/fief_cloud
-	url = git@github.com:fief-dev/cloud.git

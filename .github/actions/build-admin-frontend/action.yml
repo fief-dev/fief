@@ -21,7 +21,7 @@ runs:
         REACT_APP_API_PORT: ""
       run: npm run build
     - name: Upload build artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: admin-frontend-build
         path: |
