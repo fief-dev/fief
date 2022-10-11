@@ -10,10 +10,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - name: "Checkout with private submodules if possible"
-        uses: ./.github/actions/checkout
-        with:
-          github_token: ${{ secrets.GH_GLOBAL_TOKEN }}
       - name: Lint backend
         uses: ./.github/actions/lint-backend
 
@@ -68,10 +64,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - name: "Checkout with private submodules if possible"
-        uses: ./.github/actions/checkout
-        with:
-          github_token: ${{ secrets.GH_GLOBAL_TOKEN }}
       - name: Test backend with ${{ matrix.database_type }} database
         uses: ./.github/actions/test-backend
         with:
@@ -87,10 +79,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - name: "Checkout with private submodules if possible"
-        uses: ./.github/actions/checkout
-        with:
-          github_token: ${{ secrets.GH_GLOBAL_TOKEN }}
       - name: Test admin frontend
         uses: ./.github/actions/test-admin-frontend
 
@@ -100,10 +88,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - name: "Checkout with private submodules if possible"
-        uses: ./.github/actions/checkout
-        with:
-          github_token: ${{ secrets.GH_GLOBAL_TOKEN }}
       - name: Build admin frontend
         uses: ./.github/actions/build-admin-frontend
 
@@ -114,10 +98,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - name: "Checkout with private submodules if possible"
-        uses: ./.github/actions/checkout
-        with:
-          github_token: ${{ secrets.GH_GLOBAL_TOKEN }}
       - name: Set up Python 3.10
         uses: actions/setup-python@v2
         with:
@@ -174,10 +154,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - name: "Checkout with private submodules if possible"
-        uses: ./.github/actions/checkout
-        with:
-          github_token: ${{ secrets.GH_GLOBAL_TOKEN }}
       - name: Wait package to be truly available from PyPI
         shell: bash
         run: |
