@@ -20,6 +20,7 @@ class WorkspaceEngineManager:
     def get_engine(
         self, database_connection_parameters: DatabaseConnectionParameters
     ) -> AsyncEngine:
+        print("ENGINES", self.engines)
         database_url, _ = database_connection_parameters
         key = str(database_url)
         try:
@@ -55,7 +56,6 @@ async def get_connection(
         # Catch MySQL connection error with code 2003
         if isinstance(e.orig, pymysql.err.OperationalError) and e.orig.args[0] == 2003:
             raise ConnectionError from e
-        raise
 
 
 @contextlib.asynccontextmanager
