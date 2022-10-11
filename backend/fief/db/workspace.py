@@ -20,7 +20,6 @@ class WorkspaceEngineManager:
     def get_engine(
         self, database_connection_parameters: DatabaseConnectionParameters
     ) -> AsyncEngine:
-        print("ENGINES", self.engines)
         database_url, _ = database_connection_parameters
         key = str(database_url)
         try:

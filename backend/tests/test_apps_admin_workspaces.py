@@ -181,7 +181,6 @@ class TestCreateWorkspace:
             json={"name": "Burgundy"},
         )
 
-        print(response.json())
         assert response.status_code == status.HTTP_201_CREATED
 
         json = response.json()
