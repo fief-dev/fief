@@ -1,11 +1,11 @@
 from pathlib import Path
 
-from starlette.applications import Starlette
-from starlette.routing import Mount
 from starlette import status
-from starlette.staticfiles import StaticFiles
-from starlette.responses import FileResponse, Response
+from starlette.applications import Starlette
 from starlette.exceptions import HTTPException
+from starlette.responses import FileResponse, Response
+from starlette.routing import Mount
+from starlette.staticfiles import StaticFiles
 
 from fief.paths import STATIC_DIRECTORY
 
