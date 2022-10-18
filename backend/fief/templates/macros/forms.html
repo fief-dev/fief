@@ -1,6 +1,6 @@
 {% macro form_field_label(field) %}
 <label class="block text-sm font-medium mb-1" for="{{ field.id }}">
-  {{ field.label }}
+  {{ _(field.label) }}
   {% if field.flags.required %}
     <span class="text-rose-500">*</span>
   {% endif %}

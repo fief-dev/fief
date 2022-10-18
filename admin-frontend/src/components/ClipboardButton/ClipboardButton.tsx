@@ -1,5 +1,5 @@
 import useClipboard from 'react-use-clipboard';
-import { ClipboardIcon, ClipboardCheckIcon } from '@heroicons/react/solid';
+import { ClipboardIcon, ClipboardDocumentCheckIcon } from '@heroicons/react/20/solid';
 
 interface ClipboardButtonProps {
   text: string;
@@ -15,7 +15,7 @@ const ClipboardButton: React.FunctionComponent<React.PropsWithChildren<Clipboard
           <ClipboardIcon width={16} height={16} className="fill-current" />
         }
         {copied &&
-          <ClipboardCheckIcon width={16} height={16} className="fill-current" />
+          <ClipboardDocumentCheckIcon width={16} height={16} className="fill-current" />
         }
       </div>
     </button>

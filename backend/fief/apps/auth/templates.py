@@ -7,6 +7,7 @@ from starlette.routing import Router
 
 from fief.locale import get_translations
 from fief.paths import TEMPLATES_DIRECTORY
+from fief.services.oauth_provider import get_oauth_provider_branding
 
 
 class LocaleJinja2Templates(Jinja2Templates):
@@ -20,6 +21,7 @@ class LocaleJinja2Templates(Jinja2Templates):
             return str(router.url_path_for(name, **path_params))
 
         env.globals["url_path_for"] = url_path_for
+        env.globals["get_oauth_provider_branding"] = get_oauth_provider_branding
 
         return env
 

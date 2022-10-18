@@ -1,31 +1,96 @@
-import contextlib
+import json
 import logging
 import sys
 import uuid
 from asyncio import AbstractEventLoop
 from datetime import timezone
-from typing import Dict, Optional
+from typing import TYPE_CHECKING, AsyncContextManager, Callable, Dict, Literal, Optional
 
 from loguru import logger
-from loguru._logger import Logger
+from pydantic import UUID4
 
-from fief.db.main import get_main_async_session
-from fief.db.workspace import get_workspace_session
-from fief.models import AuditLog, Workspace
+from fief.db import AsyncSession
+from fief.models import AuditLog, AuditLogMessage, Workspace
+from fief.models.generics import M_UUID
 from fief.repositories import WorkspaceRepository
 from fief.settings import settings
 
+if TYPE_CHECKING:
+    from loguru import Logger, Record
+
 LOG_LEVEL = settings.log_level
 
-STDOUT_FORMAT = (
-    "<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | "
-    "<level>{level: <8}</level> | "
-    "<cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level> - "
-    "{extra}"
-)
+
+def stdout_format(record: "Record") -> str:
+    record["extra"]["extra_json"] = json.dumps(record["extra"])
+    return (
+        "<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | "
+        "<level>{level: <8}</level> | "
+        "<cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level> - "
+        "{extra[extra_json]}"
+        "\n{exception}"
+    )
+
+
+class AuditLogger:
+    def __init__(
+        self,
+        logger: "Logger",
+        workspace_id: uuid.UUID,
+        *,
+        admin_user_id: Optional[UUID4] = None,
+        admin_api_key_id: Optional[UUID4] = None,
+    ) -> None:
+        self.logger = logger.bind(audit=True, workspace_id=str(workspace_id))
+        self.admin_user_id = admin_user_id
+        self.admin_api_key_id = admin_api_key_id
+
+    def __call__(
+        self,
+        message: AuditLogMessage,
+        *,
+        level="INFO",
+        subject_user_id: Optional[uuid.UUID] = None,
+        **kwargs,
+    ) -> None:
+        self.logger.log(
+            level,
+            message,
+            subject_user_id=subject_user_id,
+            admin_user_id=self.admin_user_id,
+            admin_api_key_id=self.admin_api_key_id,
+            **kwargs,
+        )
+
+    def log_object_write(
+        self,
+        operation: Literal[
+            AuditLogMessage.OBJECT_CREATED,
+            AuditLogMessage.OBJECT_UPDATED,
+            AuditLogMessage.OBJECT_DELETED,
+        ],
+        object: M_UUID,
+        subject_user_id: Optional[uuid.UUID] = None,
+        **kwargs,
+    ) -> None:
+        return self(
+            operation,
+            object_id=str(object.id),
+            object_class=type(object).__name__,
+            subject_user_id=subject_user_id,
+            **kwargs,
+        )
 
 
 class DatabaseAuditLogSink:
+    def __init__(
+        self,
+        get_main_session: Callable[..., AsyncContextManager[AsyncSession]],
+        get_workspace_session: Callable[..., AsyncContextManager[AsyncSession]],
+    ):
+        self.get_main_session = get_main_session
+        self.get_workspace_session = get_workspace_session
+
     async def __call__(self, message):
         record: Dict = message.record
         extra: Dict = record["extra"]
@@ -39,24 +104,30 @@ class DatabaseAuditLogSink:
         if workspace is None:
             return
 
-        async with get_workspace_session(workspace) as session:
+        async with self.get_workspace_session(workspace) as session:
             extra.pop("workspace_id")
             extra.pop("audit")
-            author_user_id = extra.pop("author_user_id", None)
             subject_user_id = extra.pop("subject_user_id", None)
+            object_id = extra.pop("object_id", None)
+            object_class = extra.pop("object_class", None)
+            admin_user_id = extra.pop("admin_user_id", None)
+            admin_api_key_id = extra.pop("admin_api_key_id", None)
             log = AuditLog(
                 timestamp=record["time"].astimezone(timezone.utc),
                 level=record["level"].name,
                 message=record["message"],
-                author_user_id=author_user_id,
                 subject_user_id=subject_user_id,
+                object_id=object_id,
+                object_class=object_class,
+                admin_user_id=admin_user_id,
+                admin_api_key_id=admin_api_key_id,
                 extra=extra,
             )
             session.add(log)
             await session.commit()
 
     async def _get_workspace(self, workspace_id: uuid.UUID) -> Optional[Workspace]:
-        async with contextlib.asynccontextmanager(get_main_async_session)() as session:
+        async with self.get_main_session() as session:
             repository = WorkspaceRepository(session)
             return await repository.get_by_id(workspace_id)
 
@@ -85,7 +156,7 @@ logger.configure(
         dict(
             sink=sys.stdout,
             level=LOG_LEVEL,
-            format=STDOUT_FORMAT,
+            format=stdout_format,
             filter=lambda record: "audit" not in record["extra"],
         )
     ],
@@ -102,14 +173,18 @@ for uvicorn_logger_name in ["uvicorn.access"]:
     uvicorn_logger.handlers = [InterceptHandler()]
 
 
-def init_audit_logger(loop: Optional[AbstractEventLoop] = None):
+def init_audit_logger(
+    get_main_session: Callable[..., AsyncContextManager[AsyncSession]],
+    get_workspace_session: Callable[..., AsyncContextManager[AsyncSession]],
+    loop: Optional[AbstractEventLoop] = None,
+):
     """
     Initialize the audit logger.
 
     Needs to be deferred because it relies on a running event loop.
     """
     logger.add(
-        DatabaseAuditLogSink(),
+        DatabaseAuditLogSink(get_main_session, get_workspace_session),
         level=LOG_LEVEL,
         enqueue=True,
         loop=loop,
@@ -117,4 +192,4 @@ def init_audit_logger(loop: Optional[AbstractEventLoop] = None):
     )
 
 
-__all__ = ["init_audit_logger", "logger", "Logger"]
+__all__ = ["init_audit_logger", "logger"]

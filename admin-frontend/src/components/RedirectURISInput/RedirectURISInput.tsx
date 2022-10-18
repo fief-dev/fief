@@ -1,4 +1,4 @@
-import { TrashIcon } from '@heroicons/react/solid';
+import { TrashIcon } from '@heroicons/react/20/solid';
 import { useCallback } from 'react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
@@ -53,7 +53,7 @@ const RedirectURISInput: React.FunctionComponent<React.PropsWithChildren<Redirec
       <button
         type="button"
         className="btn-xs border-slate-200 hover:border-slate-300 text-slate-600"
-        onClick={() => append({})}
+        onClick={() => append({ id: '', value: '' })}
       >
         {t('redirect_uris.add')}
       </button>

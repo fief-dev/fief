@@ -34,9 +34,6 @@ class WorkspaceEngineManager:
             await engine.dispose()
 
 
-workspace_engine_manager = WorkspaceEngineManager()
-
-
 @contextlib.asynccontextmanager
 async def get_connection(
     engine: AsyncEngine, schema_name: Optional[str] = None
@@ -50,7 +47,7 @@ async def get_connection(
             yield await connection.execution_options(**options)
     except (
         asyncpg.exceptions.PostgresConnectionError,
-        asyncpg.exceptions.InvalidPasswordError,
+        asyncpg.exceptions.InvalidAuthorizationSpecificationError,
         OSError,
     ) as e:
         raise ConnectionError from e
@@ -58,12 +55,12 @@ async def get_connection(
         # Catch MySQL connection error with code 2003
         if isinstance(e.orig, pymysql.err.OperationalError) and e.orig.args[0] == 2003:
             raise ConnectionError from e
-        raise
 
 
 @contextlib.asynccontextmanager
 async def get_workspace_session(
     workspace: "Workspace",
+    workspace_engine_manager: WorkspaceEngineManager,
 ) -> AsyncGenerator[AsyncSession, None]:
     engine = workspace_engine_manager.get_engine(
         workspace.get_database_connection_parameters()

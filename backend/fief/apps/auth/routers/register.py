@@ -1,6 +1,6 @@
-from typing import List, Type
+from typing import List, Optional, Type
 
-from fastapi import APIRouter, Depends, Request, status
+from fastapi import APIRouter, Depends, Request, Response, status
 from fastapi.responses import RedirectResponse
 from fastapi_users.exceptions import InvalidPasswordException, UserAlreadyExists
 from fastapi_users.router import ErrorCode
@@ -9,13 +9,21 @@ from fief.apps.auth.forms.base import FormHelper
 from fief.apps.auth.forms.register import RF, get_register_form_class
 from fief.dependencies.auth import get_login_session
 from fief.dependencies.authentication_flow import get_authentication_flow
+from fief.dependencies.oauth_provider import get_oauth_providers
+from fief.dependencies.register import (
+    get_optional_registration_session,
+    get_registration_flow,
+)
 from fief.dependencies.tenant import get_current_tenant
-from fief.dependencies.user_field import get_user_create_internal_model, get_user_fields
-from fief.dependencies.users import UserManager, get_user_manager
 from fief.locale import gettext_lazy as _
-from fief.models import Tenant, UserField
-from fief.schemas.user import UF, UserCreateInternal
+from fief.models import (
+    OAuthProvider,
+    RegistrationSession,
+    RegistrationSessionFlow,
+    Tenant,
+)
 from fief.services.authentication_flow import AuthenticationFlow
+from fief.services.registration_flow import RegistrationFlow
 
 router = APIRouter()
 
@@ -29,30 +37,39 @@ router = APIRouter()
 async def register(
     request: Request,
     register_form_class: Type[RF] = Depends(get_register_form_class),
-    user_create_internal_model: Type[UserCreateInternal[UF]] = Depends(
-        get_user_create_internal_model
-    ),
-    user_manager: UserManager = Depends(get_user_manager),
-    user_fields: List[UserField] = Depends(get_user_fields),
-    tenant: Tenant = Depends(get_current_tenant),
+    registration_flow: RegistrationFlow = Depends(get_registration_flow),
     authentication_flow: AuthenticationFlow = Depends(get_authentication_flow),
+    registration_session: Optional[RegistrationSession] = Depends(
+        get_optional_registration_session
+    ),
+    oauth_providers: Optional[List[OAuthProvider]] = Depends(get_oauth_providers),
+    tenant: Tenant = Depends(get_current_tenant),
 ):
+    response: Response
     form_helper = FormHelper(
         register_form_class,
         "register.html",
         request=request,
-        context={"tenant": tenant},
+        context={
+            "finalize": registration_session is not None
+            and registration_session.flow != RegistrationSessionFlow.PASSWORD,
+            "oauth_providers": oauth_providers,
+            "tenant": tenant,
+        },
     )
     form = await form_helper.get_form()
 
-    if await form_helper.is_submitted_and_valid():
+    if (
+        request.method != "POST"
+        and registration_session is not None
+        and registration_session.email
+    ):
+        form.email.data = registration_session.email
+
+    if registration_session is not None and await form_helper.is_submitted_and_valid():
         try:
-            user_create = user_create_internal_model(**form.data, tenant_id=tenant.id)
-            created_user = await user_manager.create_with_fields(
-                user_create,
-                user_fields=user_fields,
-                safe=True,
-                request=request,
+            user = await registration_flow.create_user(
+                form.data, tenant, registration_session, request=request
             )
         except UserAlreadyExists:
             return await form_helper.get_error_response(
@@ -67,10 +84,15 @@ async def register(
                 tenant.url_path_for(request, "auth:consent"),
                 status_code=status.HTTP_302_FOUND,
             )
-            response = await authentication_flow.create_session_token(
-                response, created_user.id
+            response = await authentication_flow.create_session_token(response, user.id)
+            response = await registration_flow.delete_registration_session(
+                response, registration_session
             )
-
             return response
 
-    return await form_helper.get_response()
+    response = await form_helper.get_response()
+    if registration_session is None:
+        await registration_flow.create_registration_session(
+            response, flow=RegistrationSessionFlow.PASSWORD, tenant=tenant
+        )
+    return response

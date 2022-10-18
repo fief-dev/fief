@@ -1,6 +1,6 @@
 import { Fragment, useCallback, useContext } from 'react';
 import { Menu, Transition } from '@headlessui/react'
-import { ChevronDownIcon, PlusIcon } from '@heroicons/react/solid';
+import { ChevronDownIcon, PlusIcon } from '@heroicons/react/20/solid';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 

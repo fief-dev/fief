@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
-import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/solid';
+import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/20/solid';
 
 
 interface PaginationProps {

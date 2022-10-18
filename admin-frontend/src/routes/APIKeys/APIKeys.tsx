@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Column } from 'react-table';
-import { PlusIcon } from '@heroicons/react/solid';
+import { PlusIcon } from '@heroicons/react/20/solid';
 
 import CreateAPIKeyModal from '../../components/CreateAPIKeyModal/CreateAPIKeyModal';
 import DataTable from '../../components/DataTable/DataTable';

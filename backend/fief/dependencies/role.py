@@ -11,7 +11,7 @@ from fief.dependencies.pagination import (
     get_paginated_objects,
     get_pagination,
 )
-from fief.dependencies.workspace_repositories import get_role_repository
+from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.models import Role
 from fief.repositories import RoleRepository
 
@@ -20,7 +20,7 @@ async def get_paginated_roles(
     query: Optional[str] = Query(None),
     pagination: Pagination = Depends(get_pagination),
     ordering: Ordering = Depends(get_ordering),
-    repository: RoleRepository = Depends(get_role_repository),
+    repository: RoleRepository = Depends(get_workspace_repository(RoleRepository)),
 ) -> Tuple[List[Role], int]:
     statement = select(Role)
 
@@ -32,7 +32,7 @@ async def get_paginated_roles(
 
 async def get_role_by_id_or_404(
     id: UUID4,
-    repository: RoleRepository = Depends(get_role_repository),
+    repository: RoleRepository = Depends(get_workspace_repository(RoleRepository)),
 ) -> Role:
     role = await repository.get_by_id(id)
 

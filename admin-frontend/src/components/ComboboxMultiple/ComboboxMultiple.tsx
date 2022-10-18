@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import { useState, Fragment, useCallback, useEffect } from 'react';
 import { Combobox as BaseCombobox } from '@headlessui/react';
-import { ChevronDownIcon, XIcon } from '@heroicons/react/solid';
+import { ChevronDownIcon, XMarkIcon } from '@heroicons/react/20/solid';
 
 export interface ComboboxMultipleOption {
   value: string;
@@ -77,7 +77,7 @@ const ComboboxMultiple: React.FunctionComponent<React.PropsWithChildren<Combobox
                   className="text-xs inline-flex items-center font-medium bg-slate-100 text-slate-500 rounded-full px-2.5 py-1"
                 >
                   <span>{option.label}</span>
-                  <XIcon
+                  <XMarkIcon
                     width={16}
                     height={16}
                     onClick={(e) => {

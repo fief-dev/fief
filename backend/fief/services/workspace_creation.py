@@ -3,7 +3,7 @@ from typing import List, Optional
 
 from pydantic import UUID4
 
-from fief.db.workspace import get_workspace_session
+from fief.db.workspace import WorkspaceEngineManager, get_workspace_session
 from fief.models import Client, Tenant, Workspace, WorkspaceUser
 from fief.repositories import (
     ClientRepository,
@@ -29,10 +29,12 @@ class WorkspaceCreation:
         workspace_repository: WorkspaceRepository,
         workspace_user_repository: WorkspaceUserRepository,
         workspace_db: WorkspaceDatabase,
+        workspace_engine_manager: WorkspaceEngineManager,
     ) -> None:
         self.workspace_repository = workspace_repository
         self.workspace_user_repository = workspace_user_repository
         self.workspace_db = workspace_db
+        self.workspace_engine_manager = workspace_engine_manager
 
     async def create(
         self,
@@ -76,7 +78,9 @@ class WorkspaceCreation:
             await self.workspace_user_repository.create(workspace_user)
 
         # Create a default tenant and client
-        async with get_workspace_session(workspace) as session:
+        async with get_workspace_session(
+            workspace, self.workspace_engine_manager
+        ) as session:
             tenant_name = workspace.name
             tenant_slug = await TenantRepository(session).get_available_slug(
                 tenant_name
@@ -113,7 +117,9 @@ class WorkspaceCreation:
     async def _add_fief_redirect_uri(self, workspace: Workspace):
         main_workspace = await get_main_fief_workspace()
 
-        async with get_workspace_session(main_workspace) as session:
+        async with get_workspace_session(
+            main_workspace, self.workspace_engine_manager
+        ) as session:
             client_repository = ClientRepository(session)
             fief_client = await get_main_fief_client()
 

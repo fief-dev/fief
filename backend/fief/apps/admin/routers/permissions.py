@@ -2,14 +2,16 @@ from fastapi import APIRouter, Depends, HTTPException, Response, status
 
 from fief import schemas
 from fief.dependencies.admin_authentication import is_authenticated_admin
+from fief.dependencies.logger import get_audit_logger
 from fief.dependencies.pagination import PaginatedObjects
 from fief.dependencies.permission import (
     get_paginated_permissions,
     get_permission_by_id_or_404,
 )
-from fief.dependencies.workspace_repositories import get_permission_repository
+from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.errors import APIErrorCode
-from fief.models import Permission
+from fief.logger import AuditLogger
+from fief.models import AuditLogMessage, Permission
 from fief.repositories import PermissionRepository
 from fief.schemas.generics import PaginatedResults
 
@@ -44,7 +46,10 @@ async def list_permissions(
 )
 async def create_permission(
     permission_create: schemas.permission.PermissionCreate,
-    repository: PermissionRepository = Depends(get_permission_repository),
+    repository: PermissionRepository = Depends(
+        get_workspace_repository(PermissionRepository)
+    ),
+    audit_logger: AuditLogger = Depends(get_audit_logger),
 ) -> schemas.permission.Permission:
     existing_permission = await repository.get_by_codename(permission_create.codename)
     if existing_permission is not None:
@@ -55,6 +60,7 @@ async def create_permission(
 
     permission = Permission(**permission_create.dict())
     permission = await repository.create(permission)
+    audit_logger.log_object_write(AuditLogMessage.OBJECT_CREATED, permission)
 
     return schemas.permission.Permission.from_orm(permission)
 
@@ -67,7 +73,10 @@ async def create_permission(
 async def update_permission(
     permission_update: schemas.permission.PermissionUpdate,
     permission: Permission = Depends(get_permission_by_id_or_404),
-    repository: PermissionRepository = Depends(get_permission_repository),
+    repository: PermissionRepository = Depends(
+        get_workspace_repository(PermissionRepository)
+    ),
+    audit_logger: AuditLogger = Depends(get_audit_logger),
 ) -> schemas.permission.Permission:
     updated_codename = permission_update.codename
     if updated_codename is not None and updated_codename != permission.codename:
@@ -83,6 +92,7 @@ async def update_permission(
         setattr(permission, field, value)
 
     await repository.update(permission)
+    audit_logger.log_object_write(AuditLogMessage.OBJECT_UPDATED, permission)
 
     return schemas.permission.Permission.from_orm(permission)
 
@@ -95,6 +105,10 @@ async def update_permission(
 )
 async def delete_permission(
     permission: Permission = Depends(get_permission_by_id_or_404),
-    repository: PermissionRepository = Depends(get_permission_repository),
+    repository: PermissionRepository = Depends(
+        get_workspace_repository(PermissionRepository)
+    ),
+    audit_logger: AuditLogger = Depends(get_audit_logger),
 ):
     await repository.delete(permission)
+    audit_logger.log_object_write(AuditLogMessage.OBJECT_DELETED, permission)

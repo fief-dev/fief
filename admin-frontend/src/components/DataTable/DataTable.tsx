@@ -1,4 +1,4 @@
-import { ArrowDownIcon, ArrowUpIcon } from '@heroicons/react/solid';
+import { ArrowDownIcon, ArrowUpIcon } from '@heroicons/react/20/solid';
 import * as React from 'react';
 import { useEffect } from 'react';
 import {

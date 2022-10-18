@@ -13,8 +13,12 @@ class UserRole(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
     __tablename__ = "user_roles"
     __table_args__ = (UniqueConstraint("user_id", "role_id"),)
 
-    user_id: UUID4 = Column(GUID, ForeignKey(User.id, ondelete="CASCADE"), nullable=False)  # type: ignore
-    role_id: UUID4 = Column(GUID, ForeignKey(Role.id, ondelete="CASCADE"), nullable=False)  # type: ignore
+    user_id: UUID4 = Column(
+        GUID, ForeignKey(User.id, ondelete="CASCADE"), nullable=False
+    )
+    role_id: UUID4 = Column(
+        GUID, ForeignKey(Role.id, ondelete="CASCADE"), nullable=False
+    )
 
     user: User = relationship("User")
     role: Role = relationship("Role")

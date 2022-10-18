@@ -12,7 +12,7 @@ from fief.dependencies.pagination import (
     get_paginated_objects,
     get_pagination,
 )
-from fief.dependencies.workspace_repositories import get_user_field_repository
+from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.models import UserField
 from fief.models.user_field import UserFieldType
 from fief.repositories import UserFieldRepository
@@ -33,7 +33,9 @@ from fief.schemas.user_field import (
 async def get_paginated_user_fields(
     pagination: Pagination = Depends(get_pagination),
     ordering: Ordering = Depends(get_ordering),
-    repository: UserFieldRepository = Depends(get_user_field_repository),
+    repository: UserFieldRepository = Depends(
+        get_workspace_repository(UserFieldRepository)
+    ),
 ) -> Tuple[List[UserField], int]:
     statement = select(UserField)
     return await get_paginated_objects(statement, pagination, ordering, repository)
@@ -41,7 +43,9 @@ async def get_paginated_user_fields(
 
 async def get_user_field_by_id_or_404(
     id: UUID4,
-    repository: UserFieldRepository = Depends(get_user_field_repository),
+    repository: UserFieldRepository = Depends(
+        get_workspace_repository(UserFieldRepository)
+    ),
 ) -> UserField:
     user_field = await repository.get_by_id(id)
 
@@ -52,7 +56,9 @@ async def get_user_field_by_id_or_404(
 
 
 async def get_user_fields(
-    repository: UserFieldRepository = Depends(get_user_field_repository),
+    repository: UserFieldRepository = Depends(
+        get_workspace_repository(UserFieldRepository)
+    ),
 ) -> List[UserField]:
     return await repository.all()
 
@@ -135,13 +141,17 @@ async def get_validated_user_field_update(
 
 
 async def get_registration_user_fields(
-    repository: UserFieldRepository = Depends(get_user_field_repository),
+    repository: UserFieldRepository = Depends(
+        get_workspace_repository(UserFieldRepository)
+    ),
 ) -> List[UserField]:
     return await repository.get_registration_fields()
 
 
 async def get_update_user_fields(
-    repository: UserFieldRepository = Depends(get_user_field_repository),
+    repository: UserFieldRepository = Depends(
+        get_workspace_repository(UserFieldRepository)
+    ),
 ) -> List[UserField]:
     return await repository.get_update_fields()
 

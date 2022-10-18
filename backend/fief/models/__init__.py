@@ -7,8 +7,15 @@ from fief.models.client import Client, ClientType
 from fief.models.generics import M_UUID, M
 from fief.models.grant import Grant
 from fief.models.login_session import LoginSession
+from fief.models.oauth_account import OAuthAccount
+from fief.models.oauth_provider import OAuthProvider
+from fief.models.oauth_session import OAuthSession
 from fief.models.permission import Permission
 from fief.models.refresh_token import RefreshToken
+from fief.models.registration_session import (
+    RegistrationSession,
+    RegistrationSessionFlow,
+)
 from fief.models.role import Role, RolePermission
 from fief.models.session_token import SessionToken
 from fief.models.tenant import Tenant
@@ -34,8 +41,13 @@ __all__ = [
     "AuditLogMessage",
     "LoginSession",
     "MainBase",
+    "OAuthAccount",
+    "OAuthProvider",
+    "OAuthSession",
     "Permission",
     "RefreshToken",
+    "RegistrationSession",
+    "RegistrationSessionFlow",
     "Role",
     "RolePermission",
     "SessionToken",

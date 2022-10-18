@@ -4,8 +4,9 @@ from fastapi import Header, HTTPException, status
 from fastapi.param_functions import Depends
 
 from fief.db import AsyncSession
-from fief.db.workspace import get_workspace_session
-from fief.dependencies.main_repositories import get_workspace_repository
+from fief.db.workspace import WorkspaceEngineManager, get_workspace_session
+from fief.dependencies.db import get_workspace_engine_manager
+from fief.dependencies.main_repositories import get_main_repository
 from fief.dependencies.workspace_db import get_workspace_db
 from fief.errors import APIErrorCode
 from fief.models import Workspace
@@ -21,7 +22,7 @@ async def get_host(
 
 async def get_current_workspace(
     host: Optional[str] = Depends(get_host),
-    repository: WorkspaceRepository = Depends(get_workspace_repository),
+    repository: WorkspaceRepository = Depends(get_main_repository(WorkspaceRepository)),
     workspace_db: WorkspaceDatabase = Depends(get_workspace_db),
 ) -> Workspace:
     workspace = None
@@ -46,9 +47,14 @@ async def get_current_workspace(
 
 async def get_current_workspace_session(
     workspace: Workspace = Depends(get_current_workspace),
+    workspace_engine_manager: WorkspaceEngineManager = Depends(
+        get_workspace_engine_manager
+    ),
 ) -> AsyncGenerator[AsyncSession, None]:
     try:
-        async with get_workspace_session(workspace) as session:
+        async with get_workspace_session(
+            workspace, workspace_engine_manager
+        ) as session:
             yield session
     except ConnectionError as e:
         raise HTTPException(

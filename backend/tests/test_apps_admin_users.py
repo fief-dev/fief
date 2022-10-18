@@ -655,3 +655,46 @@ class TestDeleteUserRole:
         send_task_mock.assert_called_once_with(
             on_user_role_deleted, str(user.id), str(role.id), str(workspace.id)
         )
+
+
+@pytest.mark.asyncio
+@pytest.mark.workspace_host
+class TestListUserOAuthAccounts:
+    async def test_unauthorized(
+        self, test_client_admin: httpx.AsyncClient, test_data: TestData
+    ):
+        user = test_data["users"]["regular"]
+        response = await test_client_admin.get(f"/users/{user.id}/oauth-accounts")
+
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+    @pytest.mark.authenticated_admin
+    async def test_unknown_user(
+        self, test_client_admin: httpx.AsyncClient, not_existing_uuid: uuid.UUID
+    ):
+        response = await test_client_admin.get(
+            f"/users/{not_existing_uuid}/oauth-accounts"
+        )
+
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    @pytest.mark.authenticated_admin
+    async def test_valid(
+        self, test_client_admin: httpx.AsyncClient, test_data: TestData
+    ):
+        user = test_data["users"]["regular"]
+        response = await test_client_admin.get(f"/users/{user.id}/oauth-accounts")
+
+        assert response.status_code == status.HTTP_200_OK
+
+        json = response.json()
+
+        assert json["count"] == 2
+        assert len(json["results"]) == 2
+
+        for result in json["results"]:
+            assert "id" in result
+            assert "access_token" not in result
+            assert "refresh_token" not in result
+            assert "expires_at" not in result
+            assert "oauth_provider" in result

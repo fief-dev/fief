@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Column } from 'react-table';
-import { PlusIcon } from '@heroicons/react/solid';
+import { PlusIcon } from '@heroicons/react/20/solid';
 
 import ClipboardButton from '../../components/ClipboardButton/ClipboardButton';
 import CreateTenantModal from '../../components/CreateTenantModal/CreateTenantModal';

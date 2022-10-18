@@ -30,7 +30,7 @@ from fief.dependencies.current_workspace import (
     get_current_workspace,
     get_current_workspace_session,
 )
-from fief.dependencies.logger import AuditLogger, get_audit_logger
+from fief.dependencies.logger import get_audit_logger
 from fief.dependencies.pagination import (
     Ordering,
     PaginatedObjects,
@@ -49,14 +49,12 @@ from fief.dependencies.user_field import (
     get_admin_user_update_model,
     get_user_update_model,
 )
-from fief.dependencies.workspace_repositories import (
-    get_user_permission_repository,
-    get_user_repository,
-    get_user_role_repository,
-)
+from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.locale import gettext_lazy as _
+from fief.logger import AuditLogger
 from fief.models import (
     AuditLogMessage,
+    OAuthAccount,
     Tenant,
     User,
     UserField,
@@ -66,6 +64,7 @@ from fief.models import (
     Workspace,
 )
 from fief.repositories import (
+    OAuthAccountRepository,
     UserPermissionRepository,
     UserRepository,
     UserRoleRepository,
@@ -241,6 +240,12 @@ class JWTAccessTokenStrategy(Strategy[User, UUID4]):
         else:
             return user
 
+    async def write_token(self, user: User) -> str:
+        ...  # pragma: no cover
+
+    async def destroy_token(self, token: str, user: User) -> None:
+        ...  # pragma: no cover
+
 
 async def get_jwt_access_token_strategy(
     tenant: Tenant = Depends(get_current_tenant),
@@ -315,7 +320,7 @@ authentication_backend = AuthenticationBackend[User, UUID4](
 async def get_paginated_users(
     pagination: Pagination = Depends(get_pagination),
     ordering: Ordering = Depends(get_ordering),
-    repository: UserRepository = Depends(get_user_repository),
+    repository: UserRepository = Depends(get_workspace_repository(UserRepository)),
 ) -> PaginatedObjects[User]:
     statement = select(User).options(joinedload(User.tenant))
     return await get_paginated_objects(statement, pagination, ordering, repository)
@@ -323,7 +328,7 @@ async def get_paginated_users(
 
 async def get_user_by_id_or_404(
     id: UUID4,
-    repository: UserRepository = Depends(get_user_repository),
+    repository: UserRepository = Depends(get_workspace_repository(UserRepository)),
 ) -> User:
     user = await repository.get_by_id(id, (joinedload(User.tenant),))
 
@@ -338,7 +343,7 @@ async def get_paginated_user_permissions(
     ordering: Ordering = Depends(get_ordering),
     user: User = Depends(get_user_by_id_or_404),
     user_permission_repository: UserPermissionRepository = Depends(
-        get_user_permission_repository
+        get_workspace_repository(UserPermissionRepository)
     ),
 ) -> PaginatedObjects[UserPermission]:
     statement = user_permission_repository.get_by_user_statement(user.id)
@@ -351,11 +356,27 @@ async def get_paginated_user_roles(
     pagination: Pagination = Depends(get_pagination),
     ordering: Ordering = Depends(get_ordering),
     user: User = Depends(get_user_by_id_or_404),
-    user_role_repository: UserRoleRepository = Depends(get_user_role_repository),
+    user_role_repository: UserRoleRepository = Depends(
+        get_workspace_repository(UserRoleRepository)
+    ),
 ) -> PaginatedObjects[UserRole]:
     statement = user_role_repository.get_by_user_statement(user.id)
     return await get_paginated_objects(
         statement, pagination, ordering, user_role_repository
+    )
+
+
+async def get_paginated_user_oauth_accounts(
+    pagination: Pagination = Depends(get_pagination),
+    ordering: Ordering = Depends(get_ordering),
+    user: User = Depends(get_user_by_id_or_404),
+    oauth_account_repository: OAuthAccountRepository = Depends(
+        get_workspace_repository(OAuthAccountRepository)
+    ),
+) -> PaginatedObjects[OAuthAccount]:
+    statement = oauth_account_repository.get_by_user_statement(user.id)
+    return await get_paginated_objects(
+        statement, pagination, ordering, oauth_account_repository
     )
 
 

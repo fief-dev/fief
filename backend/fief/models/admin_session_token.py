@@ -1,9 +1,8 @@
 import functools
 import json
 import uuid
-from typing import Any, Dict
 
-from fief_client import FiefTokenResponse
+from fief_client import FiefTokenResponse, FiefUserInfo
 from pydantic import UUID4
 from sqlalchemy import Column, String, Text
 
@@ -26,7 +25,7 @@ class AdminSessionToken(UUIDModel, CreatedUpdatedAt, MainBase):
         return json.loads(self.raw_tokens)
 
     @functools.cached_property
-    def userinfo(self) -> Dict[str, Any]:
+    def userinfo(self) -> FiefUserInfo:
         return json.loads(self.raw_userinfo)
 
     @functools.cached_property

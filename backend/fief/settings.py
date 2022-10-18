@@ -6,6 +6,7 @@ from urllib.parse import urlparse
 from pydantic import (
     BaseSettings,
     DirectoryPath,
+    EmailStr,
     Field,
     SecretStr,
     root_validator,
@@ -56,6 +57,7 @@ class Settings(BaseSettings):
     database_ssl_mode: Optional[str] = None
     database_location: DirectoryPath = Path.cwd()
     database_pool_recycle_seconds: int = 600
+    database_pool_pre_ping: bool = False
 
     redis_url: str = "redis://localhost:6379"
 
@@ -73,6 +75,13 @@ class Settings(BaseSettings):
     login_session_cookie_secure: bool = True
     login_session_lifetime_seconds: int = 600
 
+    registration_session_cookie_name: str = "fief_registration_session"
+    registration_session_cookie_domain: str = ""
+    registration_session_cookie_secure: bool = True
+    registration_session_lifetime_seconds: int = 600
+
+    oauth_session_lifetime_seconds: int = 600
+
     session_cookie_name: str = "fief_session"
     session_cookie_domain: str = ""
     session_cookie_secure: bool = True
@@ -86,6 +95,8 @@ class Settings(BaseSettings):
     fief_client_id: str
     fief_client_secret: str
     fief_encryption_key: Optional[str] = None
+    fief_main_user_email: Optional[EmailStr] = None
+    fief_main_user_password: Optional[SecretStr] = None
 
     fief_admin_session_cookie_name: str = "fief_admin_session"
     fief_admin_session_cookie_domain: str = ""

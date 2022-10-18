@@ -1,9 +1,11 @@
 from pathlib import Path
 
-from fastapi import FastAPI, Response, status
-from fastapi.responses import FileResponse
-from fastapi.staticfiles import StaticFiles
+from starlette import status
+from starlette.applications import Starlette
 from starlette.exceptions import HTTPException
+from starlette.responses import FileResponse, Response
+from starlette.routing import Mount
+from starlette.staticfiles import StaticFiles
 
 from fief.paths import STATIC_DIRECTORY
 
@@ -22,15 +24,17 @@ class StaticFilesFallback(StaticFiles):
             raise
 
 
-app = FastAPI()
-
-app.mount(
-    "/",
-    StaticFilesFallback(
-        directory=STATIC_DIRECTORY / "frontend",
-        fallback=STATIC_DIRECTORY / "frontend" / "index.html",
-        html=False,
-        check_dir=False,
+routes = [
+    Mount(
+        "/",
+        app=StaticFilesFallback(
+            directory=STATIC_DIRECTORY / "frontend",
+            fallback=STATIC_DIRECTORY / "frontend" / "index.html",
+            html=False,
+            check_dir=False,
+        ),
+        name="admin_frontend:frontend",
     ),
-    name="admin_frontend:frontend",
-)
+]
+
+app = Starlette(routes=routes)

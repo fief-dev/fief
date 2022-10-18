@@ -1,4 +1,4 @@
-import { CheckIcon, PlusIcon, XIcon } from '@heroicons/react/solid';
+import { CheckIcon, PlusIcon, XMarkIcon } from '@heroicons/react/20/solid';
 import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Column } from 'react-table';
@@ -71,7 +71,7 @@ const Roles: React.FunctionComponent<React.PropsWithChildren<unknown>> = () => {
         Cell: ({ value }) => (
           value ?
             <CheckIcon className="w-4 h-4 fill-current" /> :
-            <XIcon className="w-4 h-4 fill-current" />
+            <XMarkIcon className="w-4 h-4 fill-current" />
         ),
       },
     ];

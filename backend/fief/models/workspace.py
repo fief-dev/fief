@@ -1,9 +1,9 @@
-from typing import TYPE_CHECKING, List, Optional, Union
+from typing import TYPE_CHECKING, List, Optional
 
-from sqlalchemy import Column, Enum, String, Text, event
+from sqlalchemy import Column, Enum, Integer, String, Text
 from sqlalchemy.orm import relationship
 
-from fief.crypto.encryption import decrypt, encrypt
+from fief.crypto.encryption import FernetEngine, StringEncryptedType
 from fief.db.types import (
     DatabaseConnectionParameters,
     DatabaseType,
@@ -24,16 +24,30 @@ class Workspace(UUIDModel, CreatedUpdatedAt, MainBase):
     domain: str = Column(String(length=255), nullable=False)
 
     database_type: Optional[DatabaseType] = Column(Enum(DatabaseType), nullable=True)
-    database_host: Optional[str] = Column(Text, nullable=True)
-    database_port: Optional[str] = Column(Text, nullable=True)
-    database_username: Optional[str] = Column(Text, nullable=True)
-    database_password: Optional[str] = Column(Text, nullable=True)
-    database_name: Optional[str] = Column(Text, nullable=True)
-    database_ssl_mode: Optional[str] = Column(Text, nullable=True)
+    database_host: Optional[str] = Column(
+        StringEncryptedType(Text, settings.encryption_key, FernetEngine), nullable=True
+    )
+    database_port: Optional[str] = Column(
+        StringEncryptedType(Text, settings.encryption_key, FernetEngine), nullable=True
+    )
+    database_username: Optional[str] = Column(
+        StringEncryptedType(Text, settings.encryption_key, FernetEngine), nullable=True
+    )
+    database_password: Optional[str] = Column(
+        StringEncryptedType(Text, settings.encryption_key, FernetEngine), nullable=True
+    )
+    database_name: Optional[str] = Column(
+        StringEncryptedType(Text, settings.encryption_key, FernetEngine), nullable=True
+    )
+    database_ssl_mode: Optional[str] = Column(
+        StringEncryptedType(Text, settings.encryption_key, FernetEngine), nullable=True
+    )
 
     alembic_revision: Optional[str] = Column(
         String(length=255), nullable=True, index=True
     )
+
+    users_count: int = Column(Integer, nullable=False, default=0, server_default="0")
 
     workspace_users: List["WorkspaceUser"] = relationship(
         "WorkspaceUser", back_populates="workspace", cascade="all, delete"
@@ -58,14 +72,14 @@ class Workspace(UUIDModel, CreatedUpdatedAt, MainBase):
             url = create_database_connection_parameters(
                 self.database_type,
                 asyncio=asyncio,
-                username=self._decrypt_database_setting("database_username"),
-                password=self._decrypt_database_setting("database_password"),
-                host=self._decrypt_database_setting("database_host"),
-                port=self._decrypt_database_port(),
-                database=self._decrypt_database_setting("database_name"),
+                username=self.database_username,
+                password=self.database_password,
+                host=self.database_host,
+                port=int(self.database_port) if self.database_port else None,
+                database=self.database_name,
                 path=settings.database_location,
                 schema=self.get_schema_name(),
-                ssl_mode=self._decrypt_database_setting("database_ssl_mode"),
+                ssl_mode=self.database_ssl_mode,
             )
 
         return url
@@ -75,34 +89,3 @@ class Workspace(UUIDModel, CreatedUpdatedAt, MainBase):
         Return the SQL schema name where the data is stored.
         """
         return str(self.id)
-
-    def _decrypt_database_setting(self, attribute: str) -> Optional[str]:
-        value = getattr(self, attribute)
-        if value is None:
-            return value
-        return decrypt(value, settings.encryption_key)
-
-    def _decrypt_database_port(self) -> Optional[int]:
-        value = self._decrypt_database_setting("database_port")
-        if value is None:
-            return value
-        return int(value)
-
-
-def encrypt_database_setting(
-    target: Workspace,
-    value: Optional[Union[str, int]],
-    oldvalue: Optional[str],
-    initiator,
-):
-    if value is None:
-        return value
-    return encrypt(str(value), settings.encryption_key)
-
-
-event.listen(Workspace.database_host, "set", encrypt_database_setting, retval=True)
-event.listen(Workspace.database_port, "set", encrypt_database_setting, retval=True)
-event.listen(Workspace.database_username, "set", encrypt_database_setting, retval=True)
-event.listen(Workspace.database_password, "set", encrypt_database_setting, retval=True)
-event.listen(Workspace.database_name, "set", encrypt_database_setting, retval=True)
-event.listen(Workspace.database_ssl_mode, "set", encrypt_database_setting, retval=True)

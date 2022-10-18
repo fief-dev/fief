@@ -17,8 +17,12 @@ class Grant(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
 
     scope: List[str] = Column(JSON, nullable=False, default=list)
 
-    user_id: UUID4 = Column(GUID, ForeignKey(User.id, ondelete="CASCADE"), nullable=False)  # type: ignore
+    user_id: UUID4 = Column(
+        GUID, ForeignKey(User.id, ondelete="CASCADE"), nullable=False
+    )
     user: User = relationship("User")
 
-    client_id: UUID4 = Column(GUID, ForeignKey(Client.id, ondelete="CASCADE"), nullable=False)  # type: ignore
+    client_id: UUID4 = Column(
+        GUID, ForeignKey(Client.id, ondelete="CASCADE"), nullable=False
+    )
     client: Client = relationship("Client", lazy="joined")

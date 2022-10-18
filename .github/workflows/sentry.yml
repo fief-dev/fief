@@ -10,14 +10,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - name: "Checkout with private submodules if possible"
-        uses: ./.github/actions/checkout
-        with:
-          github_token: ${{ secrets.GH_GLOBAL_TOKEN }}
       - name: Set raw version variable
         shell: bash
         run: |
-          echo "${{ github.ref }}" | sed "s/v/RAW_VERSION=$1/" >>  $GITHUB_ENV
+          echo "${{ github.ref_name }}" | sed "s/v/RAW_VERSION=$1/" >>  $GITHUB_ENV
       - name: Create Sentry release
         uses: getsentry/action-release@v1
         env:

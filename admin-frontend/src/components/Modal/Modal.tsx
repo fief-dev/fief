@@ -1,6 +1,6 @@
 import React, { createContext, Fragment, useContext } from 'react';
 import { Dialog, Transition } from '@headlessui/react'
-import { XIcon } from '@heroicons/react/solid';
+import { XMarkIcon } from '@heroicons/react/20/solid';
 
 interface ModalContextType {
   onClose?: () => void;
@@ -80,7 +80,7 @@ const ModalHeader: React.FunctionComponent<React.PropsWithChildren<ModalHeaderPr
         {closeButton && onClose &&
           <button type="button" className="text-slate-400 hover:text-slate-500" onClick={() => onClose()}>
             <div className="sr-only">Close</div>
-            <XIcon className="w-4 h-4 fill-current" />
+            <XMarkIcon className="w-4 h-4 fill-current" />
           </button>
         }
       </div>

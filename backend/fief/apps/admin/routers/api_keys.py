@@ -8,9 +8,11 @@ from fief.dependencies.admin_api_key import (
 )
 from fief.dependencies.admin_session import get_admin_session_token
 from fief.dependencies.current_workspace import get_current_workspace
-from fief.dependencies.main_repositories import get_admin_api_key_repository
+from fief.dependencies.logger import get_audit_logger
+from fief.dependencies.main_repositories import get_main_repository
 from fief.dependencies.pagination import PaginatedObjects
-from fief.models import AdminAPIKey, Workspace
+from fief.logger import AuditLogger
+from fief.models import AdminAPIKey, AuditLogMessage, Workspace
 from fief.repositories import AdminAPIKeyRepository
 from fief.schemas.generics import PaginatedResults
 
@@ -39,13 +41,17 @@ async def list_api_keys(
 async def create_api_key(
     create_api_key: schemas.admin_api_key.AdminAPIKeyCreate,
     current_workspace: Workspace = Depends(get_current_workspace),
-    repository: AdminAPIKeyRepository = Depends(get_admin_api_key_repository),
+    repository: AdminAPIKeyRepository = Depends(
+        get_main_repository(AdminAPIKeyRepository)
+    ),
+    audit_logger: AuditLogger = Depends(get_audit_logger),
 ) -> schemas.admin_api_key.AdminAPIKeyCreateResponse:
     token, token_hash = generate_token()
     api_key = AdminAPIKey(
         **create_api_key.dict(), token=token_hash, workspace_id=current_workspace.id
     )
     api_key = await repository.create(api_key)
+    audit_logger.log_object_write(AuditLogMessage.OBJECT_CREATED, api_key)
 
     api_key_response = schemas.admin_api_key.AdminAPIKeyCreateResponse.from_orm(api_key)
     api_key_response.token = token
@@ -61,7 +67,11 @@ async def create_api_key(
 )
 async def delete_api_key(
     api_key: AdminAPIKey = Depends(get_api_key_by_id_or_404),
-    repository: AdminAPIKeyRepository = Depends(get_admin_api_key_repository),
+    repository: AdminAPIKeyRepository = Depends(
+        get_main_repository(AdminAPIKeyRepository)
+    ),
+    audit_logger: AuditLogger = Depends(get_audit_logger),
 ) -> None:
     await repository.delete(api_key)
+    audit_logger.log_object_write(AuditLogMessage.OBJECT_DELETED, api_key)
     return None

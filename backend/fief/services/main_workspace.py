@@ -1,5 +1,7 @@
-from fief.db.main import main_async_session_maker
-from fief.db.workspace import get_workspace_session
+from typing import Optional
+
+from fief.db.main import create_main_async_session_maker
+from fief.db.workspace import WorkspaceEngineManager, get_workspace_session
 from fief.dependencies.logger import get_audit_logger
 from fief.dependencies.users import get_user_db, get_user_manager
 from fief.models import Client, User, Workspace, WorkspaceUser
@@ -41,6 +43,7 @@ class CreateMainFiefUserError(MainWorkspaceError):
 
 
 async def get_main_fief_workspace() -> Workspace:
+    main_async_session_maker = create_main_async_session_maker()
     async with main_async_session_maker() as session:
         workspace_repository = WorkspaceRepository(session)
         workspace = await workspace_repository.get_main()
@@ -53,7 +56,7 @@ async def get_main_fief_workspace() -> Workspace:
 
 async def get_main_fief_client() -> Client:
     workspace = await get_main_fief_workspace()
-    async with get_workspace_session(workspace) as session:
+    async with get_workspace_session(workspace, WorkspaceEngineManager()) as session:
         client_repository = ClientRepository(session)
         client = await client_repository.get_by_client_id(settings.fief_client_id)
 
@@ -66,6 +69,9 @@ async def get_main_fief_client() -> Client:
 async def create_main_fief_workspace() -> Workspace:
     from fief.services.workspace_creation import WorkspaceCreation
 
+    main_async_session_maker = create_main_async_session_maker()
+    workspace_engine_manager = WorkspaceEngineManager()
+
     async with main_async_session_maker() as session:
         workspace_repository = WorkspaceRepository(session)
         workspace_user_repository = WorkspaceUserRepository(session)
@@ -77,7 +83,10 @@ async def create_main_fief_workspace() -> Workspace:
         workspace_create = WorkspaceCreate(name="Fief")
         workspace_db = WorkspaceDatabase()
         workspace_creation = WorkspaceCreation(
-            workspace_repository, workspace_user_repository, workspace_db
+            workspace_repository,
+            workspace_user_repository,
+            workspace_db,
+            workspace_engine_manager,
         )
 
         workspace = await workspace_creation.create(
@@ -96,13 +105,15 @@ async def create_main_fief_workspace() -> Workspace:
     return workspace
 
 
-async def create_main_fief_user(email: str, password: str) -> User:
+async def create_main_fief_user(email: str, password: Optional[str] = None) -> User:
     workspace = await get_main_fief_workspace()
-
+    main_async_session_maker = create_main_async_session_maker()
     async with main_async_session_maker() as session:
         workspace_user_repository = WorkspaceUserRepository(session)
 
-        async with get_workspace_session(workspace) as session:
+        async with get_workspace_session(
+            workspace, WorkspaceEngineManager()
+        ) as session:
             tenant_repository = TenantRepository(session)
             tenant = await tenant_repository.get_default()
 
@@ -110,7 +121,7 @@ async def create_main_fief_user(email: str, password: str) -> User:
                 raise MainWorkspaceDoesNotHaveDefaultTenant()
 
             user_db = await get_user_db(session, tenant)
-            audit_logger = await get_audit_logger(workspace)
+            audit_logger = await get_audit_logger(workspace, None, None)
             user_manager = await get_user_manager(
                 user_db,
                 tenant,
@@ -118,6 +129,8 @@ async def create_main_fief_user(email: str, password: str) -> User:
                 send_task,
                 audit_logger,
             )
+            if password is None:
+                password = user_manager.password_helper.generate()
             user = await user_manager.create(
                 UserCreateInternal(email=email, password=password, tenant_id=tenant.id)
             )

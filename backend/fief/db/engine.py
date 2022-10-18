@@ -1,4 +1,4 @@
-from sqlalchemy import engine, event
+from sqlalchemy import event
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -15,6 +15,7 @@ def create_engine(
         connect_args=connect_args,
         echo=False,
         pool_recycle=settings.database_pool_recycle_seconds,
+        pool_pre_ping=settings.database_pool_pre_ping,
     )
     dialect_name = engine.dialect.name
 

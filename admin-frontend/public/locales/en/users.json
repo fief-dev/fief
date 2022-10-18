@@ -18,7 +18,8 @@
     "tabs": {
       "ACCOUNT": "Account",
       "ROLES": "Roles",
-      "PERMISSIONS": "Permissions"
+      "PERMISSIONS": "Permissions",
+      "OAUTH_ACCOUNTS": "OAuth"
     },
     "roles": {
       "add": "Add role",
@@ -30,6 +31,11 @@
       "codename": "Codename",
       "from_role": "From role",
       "no_permission": "No permission granted yet"
+    },
+    "oauth_accounts": {
+      "provider": "Provider",
+      "updated_at": "Last used",
+      "no_oauth_account": "No OAuth account associated to this user"
     },
     "tenant": "Tenant",
     "id": "ID",

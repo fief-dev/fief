@@ -33,7 +33,9 @@ class LoginSession(UUIDModel, CreatedUpdatedAt, ExpiresAt, WorkspaceBase):
     code_challenge: Optional[str] = Column(String(length=255), nullable=True)
     code_challenge_method: Optional[str] = Column(String(length=255), nullable=True)
 
-    client_id: UUID4 = Column(GUID, ForeignKey(Client.id, ondelete="CASCADE"), nullable=False)  # type: ignore
+    client_id: UUID4 = Column(
+        GUID, ForeignKey(Client.id, ondelete="CASCADE"), nullable=False
+    )
     client: Client = relationship("Client", lazy="joined")
 
     def get_code_challenge_tuple(self) -> Optional[Tuple[str, str]]:

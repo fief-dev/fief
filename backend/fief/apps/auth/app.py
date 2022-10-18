@@ -3,6 +3,7 @@ from fastapi.staticfiles import StaticFiles
 
 from fief.apps.auth.exception_handlers import exception_handlers
 from fief.apps.auth.routers.auth import router as auth_router
+from fief.apps.auth.routers.oauth import router as oauth_router
 from fief.apps.auth.routers.register import router as register_router
 from fief.apps.auth.routers.reset import router as reset_router
 from fief.apps.auth.routers.token import router as token_router
@@ -41,6 +42,7 @@ app.add_middleware(
 )
 
 app.add_middleware(BabelMiddleware, **get_babel_middleware_kwargs())
+app.include_router(oauth_router, include_in_schema=False)
 app.include_router(default_tenant_router)
 app.include_router(tenant_router)
 app.mount("/static", StaticFiles(directory=STATIC_DIRECTORY), name="auth:static")

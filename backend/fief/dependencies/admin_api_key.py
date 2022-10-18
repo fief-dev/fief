@@ -7,7 +7,7 @@ from sqlalchemy import select
 
 from fief.crypto.token import get_token_hash
 from fief.dependencies.current_workspace import get_current_workspace
-from fief.dependencies.main_repositories import get_admin_api_key_repository
+from fief.dependencies.main_repositories import get_main_repository
 from fief.dependencies.pagination import (
     Ordering,
     PaginatedObjects,
@@ -24,7 +24,9 @@ bearer_scheme = HTTPBearer(auto_error=False)
 
 async def get_optional_admin_api_key(
     authorization: Optional[HTTPAuthorizationCredentials] = Depends(bearer_scheme),
-    repository: AdminAPIKeyRepository = Depends(get_admin_api_key_repository),
+    repository: AdminAPIKeyRepository = Depends(
+        get_main_repository(AdminAPIKeyRepository)
+    ),
 ) -> Optional[AdminAPIKey]:
     if authorization is None:
         return None
@@ -36,7 +38,9 @@ async def get_optional_admin_api_key(
 async def get_paginated_api_keys(
     pagination: Pagination = Depends(get_pagination),
     ordering: Ordering = Depends(get_ordering),
-    repository: AdminAPIKeyRepository = Depends(get_admin_api_key_repository),
+    repository: AdminAPIKeyRepository = Depends(
+        get_main_repository(AdminAPIKeyRepository)
+    ),
     current_workspace: Workspace = Depends(get_current_workspace),
 ) -> PaginatedObjects[AdminAPIKey]:
     statement = select(AdminAPIKey).where(
@@ -47,7 +51,9 @@ async def get_paginated_api_keys(
 
 async def get_api_key_by_id_or_404(
     id: UUID4,
-    repository: AdminAPIKeyRepository = Depends(get_admin_api_key_repository),
+    repository: AdminAPIKeyRepository = Depends(
+        get_main_repository(AdminAPIKeyRepository)
+    ),
     current_workspace: Workspace = Depends(get_current_workspace),
 ) -> AdminAPIKey:
     statement = select(AdminAPIKey).where(

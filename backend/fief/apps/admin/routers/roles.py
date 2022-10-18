@@ -3,15 +3,14 @@ from fastapi import APIRouter, Depends, HTTPException, Response, status
 from fief import schemas
 from fief.dependencies.admin_authentication import is_authenticated_admin
 from fief.dependencies.current_workspace import get_current_workspace
+from fief.dependencies.logger import get_audit_logger
 from fief.dependencies.pagination import PaginatedObjects
 from fief.dependencies.role import get_paginated_roles, get_role_by_id_or_404
 from fief.dependencies.tasks import get_send_task
-from fief.dependencies.workspace_repositories import (
-    get_permission_repository,
-    get_role_repository,
-)
+from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.errors import APIErrorCode
-from fief.models import Role, Workspace
+from fief.logger import AuditLogger
+from fief.models import AuditLogMessage, Role, Workspace
 from fief.repositories import PermissionRepository, RoleRepository
 from fief.schemas.generics import PaginatedResults
 from fief.tasks import SendTask, on_role_updated
@@ -42,8 +41,11 @@ async def list_roles(
 )
 async def create_role(
     role_create: schemas.role.RoleCreate,
-    repository: RoleRepository = Depends(get_role_repository),
-    permission_repository: PermissionRepository = Depends(get_permission_repository),
+    repository: RoleRepository = Depends(get_workspace_repository(RoleRepository)),
+    permission_repository: PermissionRepository = Depends(
+        get_workspace_repository(PermissionRepository)
+    ),
+    audit_logger: AuditLogger = Depends(get_audit_logger),
 ) -> schemas.role.Role:
     role = Role(**role_create.dict(exclude={"permissions"}))
 
@@ -58,6 +60,7 @@ async def create_role(
             role.permissions.append(permission)
 
     role = await repository.create(role)
+    audit_logger.log_object_write(AuditLogMessage.OBJECT_CREATED, role)
 
     return schemas.role.Role.from_orm(role)
 
@@ -70,10 +73,13 @@ async def create_role(
 async def update_role(
     role_update: schemas.role.RoleUpdate,
     role: Role = Depends(get_role_by_id_or_404),
-    repository: RoleRepository = Depends(get_role_repository),
-    permission_repository: PermissionRepository = Depends(get_permission_repository),
+    repository: RoleRepository = Depends(get_workspace_repository(RoleRepository)),
+    permission_repository: PermissionRepository = Depends(
+        get_workspace_repository(PermissionRepository)
+    ),
     send_task: SendTask = Depends(get_send_task),
     workspace: Workspace = Depends(get_current_workspace),
+    audit_logger: AuditLogger = Depends(get_audit_logger),
 ) -> schemas.role.Role:
     role_update_dict = role_update.dict(exclude_unset=True, exclude={"permissions"})
     for field, value in role_update_dict.items():
@@ -94,6 +100,7 @@ async def update_role(
     new_permissions = {permission.id for permission in role.permissions}
 
     await repository.update(role)
+    audit_logger.log_object_write(AuditLogMessage.OBJECT_UPDATED, role)
 
     added_permissions = new_permissions - old_permissions
     deleted_permissions = old_permissions - new_permissions
@@ -116,6 +123,8 @@ async def update_role(
 )
 async def delete_role(
     role: Role = Depends(get_role_by_id_or_404),
-    repository: RoleRepository = Depends(get_role_repository),
+    repository: RoleRepository = Depends(get_workspace_repository(RoleRepository)),
+    audit_logger: AuditLogger = Depends(get_audit_logger),
 ):
     await repository.delete(role)
+    audit_logger.log_object_write(AuditLogMessage.OBJECT_DELETED, role)

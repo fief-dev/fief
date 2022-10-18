@@ -2,11 +2,9 @@ from typing import Optional
 
 from pydantic import BaseModel, root_validator, validator
 
-from fief.crypto.encryption import decrypt
 from fief.db.types import SSL_MODES, DatabaseType
 from fief.errors import APIErrorCode
 from fief.schemas.generics import UUIDSchema
-from fief.settings import settings
 
 
 def validate_all_database_settings(cls, values):
@@ -103,25 +101,6 @@ class Workspace(BaseWorkspace):
     database_password: Optional[str]
     database_name: Optional[str]
     database_ssl_mode: Optional[str]
-
-    @validator(
-        "database_host",
-        "database_username",
-        "database_password",
-        "database_name",
-        "database_ssl_mode",
-        pre=True,
-    )
-    def decrypt_database_setting(cls, value: Optional[str]) -> Optional[str]:
-        if value is None:
-            return value
-        return decrypt(value, settings.encryption_key)
-
-    @validator("database_port", pre=True)
-    def decrypt_database_port(cls, value: Optional[str]) -> Optional[int]:
-        if value is None:
-            return value
-        return int(decrypt(value, settings.encryption_key))
 
 
 class WorkspacePublic(BaseWorkspace):

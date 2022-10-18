@@ -15,8 +15,13 @@ from fief.models import (
     Grant,
     LoginSession,
     M,
+    OAuthAccount,
+    OAuthProvider,
+    OAuthSession,
     Permission,
     RefreshToken,
+    RegistrationSession,
+    RegistrationSessionFlow,
     Role,
     SessionToken,
     Tenant,
@@ -27,6 +32,7 @@ from fief.models import (
     UserPermission,
     UserRole,
 )
+from fief.services.oauth_provider import AvailableOAuthProvider
 from fief.settings import settings
 
 ModelMapping = Mapping[str, M]
@@ -40,13 +46,17 @@ class TestData(TypedDict):
 
     tenants: ModelMapping[Tenant]
     clients: ModelMapping[Client]
+    oauth_providers: ModelMapping[OAuthProvider]
     user_fields: ModelMapping[UserField]
     users: ModelMapping[User]
     user_field_values: ModelMapping[UserFieldValue]
     login_sessions: ModelMapping[LoginSession]
+    registration_sessions: ModelMapping[RegistrationSession]
+    oauth_sessions: ModelMapping[OAuthSession]
     authorization_codes: ModelMapping[AuthorizationCode]
     refresh_tokens: ModelMapping[RefreshToken]
     session_tokens: ModelMapping[SessionToken]
+    oauth_accounts: ModelMapping[OAuthAccount]
     grants: ModelMapping[Grant]
     permissions: ModelMapping[Permission]
     roles: ModelMapping[Role]
@@ -102,6 +112,22 @@ clients: ModelMapping[Client] = {
         name="Secondary",
         tenant=tenants["secondary"],
         redirect_uris=["https://nantes.city/callback"],
+    ),
+}
+
+oauth_providers: ModelMapping[OAuthProvider] = {
+    "google": OAuthProvider(
+        provider=AvailableOAuthProvider.GOOGLE,
+        scopes=["custom_scope"],
+        client_id="GOOGLE_CLIENT_ID",
+        client_secret="GOOGLE_CLIENT_SECRET",
+    ),
+    "openid": OAuthProvider(
+        provider=AvailableOAuthProvider.OPENID,
+        scopes=["openid"],
+        client_id="OPENID_CLIENT_ID",
+        client_secret="OPENID_CLIENT_SECRET",
+        openid_configuration_endpoint="http://rome.city/.well-known/openid-configuration",
     ),
 }
 
@@ -223,6 +249,13 @@ users: ModelMapping[User] = {
         hashed_password=hashed_password,
         tenant=tenants["default"],
     ),
+    "inactive": User(
+        id=uuid.uuid4(),
+        email="marguerite@bretagne.duchy",
+        hashed_password=hashed_password,
+        is_active=False,
+        tenant=tenants["default"],
+    ),
 }
 
 user_field_values: ModelMapping[UserFieldValue] = {
@@ -280,6 +313,48 @@ user_field_values: ModelMapping[UserFieldValue] = {
         value_boolean=False,
         user=users["regular_secondary"],
         user_field=user_fields["onboarding_done"],
+    ),
+}
+
+oauth_accounts: ModelMapping[OAuthAccount] = {
+    "regular_google": OAuthAccount(
+        access_token="REGULAR_GOOGLE_ACCESS_TOKEN",
+        expires_at=datetime.now(timezone.utc) + timedelta(seconds=3600),
+        refresh_token="REGULAR_GOOGLE_REFRESH_TOKEN",
+        account_id="REGULAR_GOOGLE_ACCOUNT_ID",
+        account_email="anne@bretagne.duchy",
+        oauth_provider=oauth_providers["google"],
+        user=users["regular"],
+        tenant=tenants["default"],
+    ),
+    "regular_openid_expired": OAuthAccount(
+        access_token="REGULAR_OPENID_ACCESS_TOKEN",
+        expires_at=datetime.now(timezone.utc) - timedelta(seconds=3600),
+        refresh_token="REGULAR_OPENID_REFRESH_TOKEN",
+        account_id="REGULAR_OPENID_ACCOUNT_ID",
+        account_email="anne@bretagne.duchy",
+        oauth_provider=oauth_providers["openid"],
+        user=users["regular"],
+        tenant=tenants["default"],
+    ),
+    "inactive_google": OAuthAccount(
+        access_token="INACTIVE_GOOGLE_ACCESS_TOKEN",
+        expires_at=datetime.now(timezone.utc) + timedelta(seconds=3600),
+        refresh_token="INACTIVE_GOOGLE_REFRESH_TOKEN",
+        account_id="INACTIVE_GOOGLE_ACCOUNT_ID",
+        account_email="marguerite@bretagne.duchy",
+        oauth_provider=oauth_providers["google"],
+        user=users["inactive"],
+        tenant=tenants["default"],
+    ),
+    "new_user_google": OAuthAccount(
+        access_token="NEW_USER_GOOGLE_ACCESS_TOKEN",
+        expires_at=datetime.now(timezone.utc) + timedelta(seconds=3600),
+        refresh_token="NEW_USER_GOOGLE_REFRESH_TOKEN",
+        account_id="NEW_USER_GOOGLE_ACCOUNT_ID",
+        account_email="louis@bretagne.duchy",
+        oauth_provider=oauth_providers["google"],
+        tenant=tenants["default"],
     ),
 }
 
@@ -382,6 +457,38 @@ login_sessions: ModelMapping[LoginSession] = {
         state="STATE",
         nonce="NONCE",
         client=clients["secondary_tenant"],
+    ),
+}
+
+registration_sessions: ModelMapping[RegistrationSession] = {
+    "default_password": RegistrationSession(
+        flow=RegistrationSessionFlow.PASSWORD,
+        tenant=tenants["default"],
+    ),
+    "secondary_password": RegistrationSession(
+        flow=RegistrationSessionFlow.PASSWORD,
+        tenant=tenants["secondary"],
+    ),
+    "default_oauth": RegistrationSession(
+        flow=RegistrationSessionFlow.OAUTH,
+        email="louis@bretagne.duchy",
+        oauth_account=oauth_accounts["new_user_google"],
+        tenant=tenants["default"],
+    ),
+    "secondary_oauth": RegistrationSession(
+        flow=RegistrationSessionFlow.OAUTH,
+        email="louis@nantes.city",
+        oauth_account=oauth_accounts["new_user_google"],
+        tenant=tenants["secondary"],
+    ),
+}
+
+oauth_sessions: ModelMapping[OAuthSession] = {
+    "default_google": OAuthSession(
+        redirect_uri="http://api.fief.dev/oauth/callback",
+        oauth_provider=oauth_providers["google"],
+        login_session=login_sessions["default"],
+        tenant=tenants["default"],
     ),
 }
 
@@ -490,7 +597,6 @@ authorization_codes: ModelMapping[AuthorizationCode] = {
     ),
 }
 
-
 refresh_token_tokens: Mapping[str, Tuple[str, str]] = {
     "default_regular": generate_token(),
     "default_public_regular": generate_token(),
@@ -512,7 +618,6 @@ refresh_tokens: ModelMapping[RefreshToken] = {
         authenticated_at=now,
     ),
 }
-
 
 session_token_tokens: Mapping[str, Tuple[str, str]] = {
     "regular": generate_token(),
@@ -597,13 +702,17 @@ user_roles: ModelMapping[UserRole] = {
 data_mapping: TestData = {
     "tenants": tenants,
     "clients": clients,
+    "oauth_providers": oauth_providers,
     "user_fields": user_fields,
     "users": users,
     "user_field_values": user_field_values,
     "login_sessions": login_sessions,
+    "registration_sessions": registration_sessions,
+    "oauth_sessions": oauth_sessions,
     "authorization_codes": authorization_codes,
     "refresh_tokens": refresh_tokens,
     "session_tokens": session_tokens,
+    "oauth_accounts": oauth_accounts,
     "grants": grants,
     "permissions": permissions,
     "roles": roles,
