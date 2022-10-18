@@ -1,6 +1,3 @@
-"""We're testing the EmailProvider base class' format_address function, but
-we can't instantiate an object of the base type, so we're using Null as
-a proxy."""
 from fief.services.email.base import format_address
 
 
