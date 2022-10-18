@@ -1,4 +1,4 @@
-from fief.services.email.generic import Generic
+from fief.services.email.smtp import SMTP
 
 
 def get_msg(mock):
@@ -8,7 +8,7 @@ def get_msg(mock):
 
 
 def send_email(username="username", password="password", ssl=True, **kwargs):
-    email_provider = Generic(
+    email_provider = SMTP(
         "localhost",
         username=username,
         password=password,

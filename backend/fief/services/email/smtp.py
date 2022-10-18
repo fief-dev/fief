@@ -8,7 +8,7 @@ from fief.services.email.base import (
 )
 
 
-class Generic(EmailProvider):
+class SMTP(EmailProvider):
     def __init__(
         self,
         host: str,
