@@ -1,5 +1,4 @@
 from typing import Optional, Tuple
-from backend.fief.services.email.base import format_address
 
 from postmarker.core import PostmarkClient
 from postmarker.exceptions import ClientError

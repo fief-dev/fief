@@ -43,6 +43,5 @@ class Generic(EmailProvider):
                 server.starttls(context=context)
                 server.login(self.username, self.password)
                 server.send_message(message)
-        except Exception as e:
-            # TODO: This catch is too broad, what exceptions can we expect to see here?
+        except smtplib.SMTPException as e:
             raise SendEmailError(str(e)) from e
