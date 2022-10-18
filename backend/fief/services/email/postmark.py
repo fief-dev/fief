@@ -3,11 +3,7 @@ from typing import Optional, Tuple
 from postmarker.core import PostmarkClient
 from postmarker.exceptions import ClientError
 
-from fief.services.email.base import (
-    EmailProvider,
-    SendEmailError,
-    format_address,
-)
+from fief.services.email.base import EmailProvider, SendEmailError, format_address
 
 
 class Postmark(EmailProvider):

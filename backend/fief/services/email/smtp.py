@@ -1,11 +1,9 @@
-import smtplib, ssl
+import smtplib
+import ssl
 from email.message import EmailMessage
 from typing import Optional, Tuple
-from fief.services.email.base import (
-    EmailProvider,
-    SendEmailError,
-    format_address,
-)
+
+from fief.services.email.base import EmailProvider, SendEmailError, format_address
 
 
 class SMTP(EmailProvider):
