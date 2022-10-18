@@ -3,7 +3,7 @@ from typing import Optional, Tuple
 from postmarker.core import PostmarkClient
 from postmarker.exceptions import ClientError
 
-from fief.services.email.base import EmailProvider, SendEmailError
+from fief.services.email.base import EmailProvider, SendEmailError, format_address
 
 
 class Postmark(EmailProvider):
@@ -23,8 +23,8 @@ class Postmark(EmailProvider):
         to_email, to_name = recipient
         try:
             self._client.emails.send(
-                From=from_email if from_name is None else f"{from_name} <{from_email}>",
-                To=to_email if from_name is None else f"{to_name} <{to_email}>",
+                From=format_address(from_email, from_name),
+                To=format_address(to_email, to_name),
                 Subject=subject,
                 HtmlBody=html,
                 TextBody=text,

@@ -21,3 +21,7 @@ class EmailError(Exception):
 
 class SendEmailError(EmailError):
     pass
+
+
+def format_address(email: str, name: Optional[str] = None):
+    return email if name is None else f"{name} <{email}>"
