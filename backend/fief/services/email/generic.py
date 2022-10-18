@@ -1,7 +1,11 @@
 import smtplib, ssl
 from email.message import EmailMessage
 from typing import Optional, Tuple
-from fief.services.email.base import EmailProvider, SendEmailError
+from fief.services.email.base import (
+    EmailProvider,
+    SendEmailError,
+    format_address,
+)
 
 
 class Generic(EmailProvider):
@@ -28,8 +32,8 @@ class Generic(EmailProvider):
         try:
             message = EmailMessage()
             message["Subject"] = subject
-            message["From"] = self.format_address(from_email, from_name)
-            message["To"] = self.format_address(to_email, to_name)
+            message["From"] = format_address(from_email, from_name)
+            message["To"] = format_address(to_email, to_name)
             message.set_content(text)
             message.add_alternative(html, subtype="html")
 
