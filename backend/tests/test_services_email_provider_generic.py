@@ -7,8 +7,8 @@ def get_msg(mock):
     return server.send_message.call_args[0][0]
 
 
-def send_email(**kwargs):
-    email_provider = Generic("localhost", "username", "password")
+def send_email(username="username", password="password", **kwargs):
+    email_provider = Generic("localhost", username, password)
 
     email_provider.send_email(
         sender=kwargs.get("sender", ("sender@example.com", None)),
@@ -48,6 +48,27 @@ def test_logs_into_server(smtplib_mock):
     username, password = server.login.call_args[0]
     assert username == "username"
     assert password == "password"
+
+
+def test_doesnt_log_into_server_if_no_credentials(smtplib_mock):
+    send_email(username=None, password=None)
+    smtp = smtplib_mock.return_value
+    server = smtp.__enter__.return_value
+    server.login.assert_not_called()
+
+
+def test_doesnt_log_into_server_if_no_username(smtplib_mock):
+    send_email(username=None)
+    smtp = smtplib_mock.return_value
+    server = smtp.__enter__.return_value
+    server.login.assert_not_called()
+
+
+def test_doesnt_log_into_server_if_no_password(smtplib_mock):
+    send_email(password=None)
+    smtp = smtplib_mock.return_value
+    server = smtp.__enter__.return_value
+    server.login.assert_not_called()
 
 
 def test_startstls(smtplib_mock):

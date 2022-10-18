@@ -10,7 +10,11 @@ from fief.services.email.base import (
 
 class Generic(EmailProvider):
     def __init__(
-        self, host: str, username: str, password: str, port: int = 587
+        self,
+        host: str,
+        username: Optional[str] = None,
+        password: Optional[str] = None,
+        port: int = 587,
     ) -> None:
         self.username = username
         self.password = password
@@ -41,7 +45,8 @@ class Generic(EmailProvider):
             context = ssl.create_default_context()
             with smtplib.SMTP(self.host, self.port) as server:
                 server.starttls(context=context)
-                server.login(self.username, self.password)
+                if self.username and self.password:
+                    server.login(self.username, self.password)
                 server.send_message(message)
         except smtplib.SMTPException as e:
             raise SendEmailError(str(e)) from e
