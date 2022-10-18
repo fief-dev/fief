@@ -15,11 +15,13 @@ class Generic(EmailProvider):
         username: Optional[str] = None,
         password: Optional[str] = None,
         port: int = 587,
+        ssl: Optional[bool] = True,
     ) -> None:
         self.username = username
         self.password = password
         self.host = host
         self.port = port
+        self.ssl = ssl
 
     def send_email(
         self,
@@ -41,10 +43,10 @@ class Generic(EmailProvider):
             message.set_content(text)
             message.add_alternative(html, subtype="html")
 
-            # TODO: Cope with multiple setups? Not just TLS?
-            context = ssl.create_default_context()
             with smtplib.SMTP(self.host, self.port) as server:
-                server.starttls(context=context)
+                if self.ssl:
+                    context = ssl.create_default_context()
+                    server.starttls(context=context)
                 if self.username and self.password:
                     server.login(self.username, self.password)
                 server.send_message(message)

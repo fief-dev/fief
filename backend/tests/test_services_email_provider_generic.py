@@ -7,8 +7,13 @@ def get_msg(mock):
     return server.send_message.call_args[0][0]
 
 
-def send_email(username="username", password="password", **kwargs):
-    email_provider = Generic("localhost", username, password)
+def send_email(username="username", password="password", ssl=True, **kwargs):
+    email_provider = Generic(
+        "localhost",
+        username=username,
+        password=password,
+        ssl=ssl,
+    )
 
     email_provider.send_email(
         sender=kwargs.get("sender", ("sender@example.com", None)),
@@ -76,3 +81,10 @@ def test_startstls(smtplib_mock):
     smtp = smtplib_mock.return_value
     server = smtp.__enter__.return_value
     server.starttls.assert_called()
+
+
+def test_skip_startstls_if_ssl_disabled(smtplib_mock):
+    send_email(ssl=False)
+    smtp = smtplib_mock.return_value
+    server = smtp.__enter__.return_value
+    server.starttls.assert_not_called()
