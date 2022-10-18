@@ -112,7 +112,7 @@ dependencies = [
 ]
 
 [tool.hatch.envs.default.scripts]
-test = "pytest --cov fief/ --cov-report=term-missing"
+test = "pytest {args}"
 test-cov-xml = "pytest --cov fief/ --cov-report=xml"
 lint = [
   "isort ./fief",

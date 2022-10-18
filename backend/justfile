@@ -11,8 +11,8 @@ install:
 lint:
 	hatch run lint
 
-test $UNIT_TESTS="1": start-db
-  hatch run test
+test args="--cov fief/ --cov-report=term-missing" $UNIT_TESTS="1": start-db
+  hatch run test {{args}}
 
 add-translation language:
   mkdir -p fief/locale/{{language}}/LC_MESSAGES
