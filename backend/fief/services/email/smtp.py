@@ -38,8 +38,10 @@ class SMTP(EmailProvider):
             message["Subject"] = subject
             message["From"] = format_address(from_email, from_name)
             message["To"] = format_address(to_email, to_name)
-            message.set_content(text)
-            message.add_alternative(html, subtype="html")
+            if html is not None:
+                message.add_alternative(html, subtype="html")
+            if text is not None:
+                message.add_alternative(text, subtype="plain")
 
             with smtplib.SMTP(self.host, self.port) as server:
                 if self.ssl:
