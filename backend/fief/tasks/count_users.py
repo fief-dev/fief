@@ -26,4 +26,4 @@ class CountUsersTask(TaskBase):
                     )
 
 
-count_users = dramatiq.actor(CountUsersTask())
+count_users = dramatiq.actor(CountUsersTask(), max_retries=0)
