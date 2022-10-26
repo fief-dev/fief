@@ -6,8 +6,8 @@ msgstr ""
 "POT-Creation-Date: 2022-09-08 17:50+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language: pt_pt\n"
-"Language-Team: pt_pt <LL@li.org>\n"
+"Language: pt\n"
+"Language-Team: pt <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
@@ -53,7 +53,7 @@ msgstr "Segunda linha do endereço"
 
 #: fief/apps/auth/forms/register.py:84
 msgid "Postal code"
-msgstr "Código de Postal"
+msgstr "Código Postal"
 
 #: fief/apps/auth/forms/register.py:85
 msgid "City"
@@ -69,15 +69,15 @@ msgstr "País"
 
 #: fief/apps/auth/forms/reset.py:14
 msgid "New password"
-msgstr "Nova password"
+msgstr "Nova senha"
 
 #: fief/apps/auth/routers/auth.py:117
 msgid "Invalid email or password"
-msgstr "Password ou Email inválidos"
+msgstr "Senha ou Email inválidos"
 
 #: fief/apps/auth/routers/auth.py:198
 msgid "The user denied access to their data."
-msgstr "O utilizador negou o acesso aos seus dados."
+msgstr "O usuário negou acesso a seus dados."
 
 #: fief/apps/auth/routers/auth.py:221 fief/dependencies/auth.py:51
 msgid "redirect_uri is missing"
@@ -85,7 +85,7 @@ msgstr "falta o redirect_uri"
 
 #: fief/apps/auth/routers/oauth.py:95
 msgid "Missing authorization code."
-msgstr "Falta o código de autorização."
+msgstr ""
 
 #: fief/apps/auth/routers/oauth.py:107
 #, fuzzy
@@ -94,15 +94,15 @@ msgstr "Sessão de login inválida"
 
 #: fief/apps/auth/routers/oauth.py:123
 msgid "An error occurred while getting the access token."
-msgstr "Ocorreu um erro ao obter o código de acesso."
+msgstr ""
 
 #: fief/apps/auth/routers/oauth.py:148
 msgid "Your account is inactive."
-msgstr "A sua conta está inativa."
+msgstr ""
 
 #: fief/apps/auth/routers/register.py:76
 msgid "A user with the same email address already exists."
-msgstr "Já existe um utilizador com o mesmo email"
+msgstr "Já existe usuário com o mesmo email"
 
 #: fief/apps/auth/routers/reset.py:44
 msgid ""
@@ -110,15 +110,15 @@ msgid ""
 " in our system, you'll receive a link to reset your password."
 msgstr ""
 "Verifique sua caixa de mensagens! Se existir um endereço com este email, "
-" irá receberá uma ligação para redefinir a password."
+"você receberá um enlace (link) para redefinir sua senha."
 
 #: fief/apps/auth/routers/reset.py:70
 msgid "The reset password token is missing."
-msgstr "Falta o token para redefinir a password. "
+msgstr "Falta o token para redefinir a senha. "
 
 #: fief/apps/auth/routers/reset.py:82
 msgid "The reset password token is invalid or expired."
-msgstr "O token para redefinir a password é inválido ou já expirou."
+msgstr "O token para redefinir a senha é inválido ou está vencido."
 
 #: fief/dependencies/auth.py:34
 msgid "client_id is missing"
@@ -134,7 +134,7 @@ msgstr "redirect_uri não autorizado para este cliente"
 
 #: fief/dependencies/auth.py:75
 msgid "response_type is missing"
-msgstr "falta o response_type"
+msgstr "falta o respose_type"
 
 #: fief/dependencies/auth.py:83
 msgid "response_type is invalid"
@@ -150,11 +150,11 @@ msgstr "este response_type requer um nonce parameter "
 
 #: fief/dependencies/auth.py:143
 msgid "scope is missing"
-msgstr "Falta o scope"
+msgstr "Falta o escopo"
 
 #: fief/dependencies/auth.py:154
 msgid "scope should contain \"openid\""
-msgstr "O scope deve conter o \"openid\""
+msgstr "O escopo deve conter o \"openid\""
 
 #: fief/dependencies/auth.py:174
 msgid "prompt should either be \"none\", \"login\" or \"register\""
@@ -162,11 +162,11 @@ msgstr "prompt deve ser \"none\", \"login\" ou \"register\""
 
 #: fief/dependencies/auth.py:183
 msgid "User is not logged in"
-msgstr "O utilizador não está logado"
+msgstr "O usuário não está logado"
 
 #: fief/dependencies/auth.py:201
 msgid "screen should either be \"login\" or \"register\""
-msgstr "O ecrã deve ser \"login\" ou \"register\""
+msgstr "O ecrã (a tela) deve ser \"login\" ou \"register\""
 
 #: fief/dependencies/auth.py:224
 msgid "Unsupported code_challenge_method"
@@ -178,7 +178,7 @@ msgstr "Sessão de login inválida"
 
 #: fief/dependencies/auth.py:317
 msgid "User consent is required for this scope"
-msgstr "O este scope requer o consentimento do utilizador"
+msgstr "O este escopo requer o consentimento do usuário"
 
 #: fief/dependencies/oauth.py:31
 #, fuzzy
@@ -192,7 +192,7 @@ msgstr "Sessão de login inválida"
 
 #: fief/dependencies/oauth.py:85
 msgid "Unknown OAuth provider"
-msgstr "Tipo de autenticação desconhecido"
+msgstr ""
 
 #: fief/dependencies/users.py:101
 msgid "The password should be at least 8 characters."
@@ -206,7 +206,7 @@ msgstr "&copy; %(year)d %(tenant)s. Todos os direitos reservados."
 #: fief/emails/forgot_password.html:3
 msgid "Use this link to reset your password. This link is only valid for 1 hour."
 msgstr ""
-"Use esta ligação para redefinir a password. Este link é válido por apenas 1 "
+"Use este link para redefinir sua senha. Este link é válido por apenas 1 "
 "hora."
 
 #: fief/emails/forgot_password.html:6
@@ -215,26 +215,26 @@ msgid ""
 "You recently requested to reset your password for your %(tenant)s "
 "account. Use the button below to reset it."
 msgstr ""
-"Recentemente você solicitou a troca da senha da sua conta %(tenant)s. Use"
+"Recentemente você solicitou a troca da senha de sua conta %(tenant)s. Use"
 " o botão abaixo para redefini-la."
 
 #: fief/emails/forgot_password.html:6
 msgid "This password reset is only valid for the next hour."
-msgstr "Esta redefinição de password só será válida durante a próxima hora."
+msgstr "Esta redefinição de senha só será válida durante a próxima hora."
 
 #: fief/emails/forgot_password.html:15
 msgid "Reset your password"
-msgstr "Redefinir a sua password"
+msgstr "Redefinir sua senha"
 
 #: fief/emails/welcome.html:3 fief/emails/welcome.html:6
 #, python-format
 msgid "Welcome to %(tenant)s! We're thrilled to have you on board."
-msgstr "Bem vindo a %(tenant)s! Estamos entusiasmados por tê-lo connosco."
+msgstr "Bem vindo a %(tenant)s! Estamos entusiasmados por tê-lo a bordo."
 
 #: fief/tasks/forgot_password.py:17
 #, python-format
 msgid "Reset your %(tenant)s's password"
-msgstr "Redefinir a password para %(tenant)s\n"
+msgstr "Redefinir sua senha para %(tenant)s\n"
 
 #: fief/tasks/register.py:44
 #, python-format
@@ -251,12 +251,12 @@ msgstr "Autorizar"
 
 #: fief/templates/consent.html:5
 msgid "Consent"
-msgstr "Permito"
+msgstr "Consentir"
 
 #: fief/templates/consent.html:7
 #, python-format
 msgid "%(name)s wants to access your account"
-msgstr "%(name)s deseja aceder à sua conta"
+msgstr "%(name)s deseja acessar sua conta"
 
 #: fief/templates/consent.html:12
 #, python-format
@@ -265,15 +265,15 @@ msgstr "Isto permitirá que %(name)s :"
 
 #: fief/templates/forgot_password.html:5 fief/templates/forgot_password.html:7
 msgid "Forgot password"
-msgstr "Esqueci-me da minha password"
+msgstr "Esqueci a senha"
 
 #: fief/templates/forgot_password.html:17
 msgid "I remember my password"
-msgstr "Lembro-me da minha password"
+msgstr "Lembro minha senha"
 
 #: fief/templates/forgot_password.html:19
 msgid "Send me a reset link"
-msgstr "Envie-me uma ligação para redefinir password"
+msgstr "Envie-me um enlace para redefinição"
 
 #: fief/templates/login.html:5 fief/templates/login.html:20
 msgid "Sign in"
@@ -285,12 +285,12 @@ msgstr "Bem vindo de volta!"
 
 #: fief/templates/login.html:18
 msgid "I forgot my password"
-msgstr "Esqueci-me da password"
+msgstr "Esqueci minha senha"
 
 #: fief/templates/login.html:31
 #, python-format
 msgid "Sign in with %(provider)s"
-msgstr "Login em %(provider)s"
+msgstr ""
 
 #: fief/templates/login.html:38
 msgid "Don't have an account?"
@@ -299,7 +299,7 @@ msgstr "Não tem uma conta?"
 #: fief/templates/login.html:39 fief/templates/register.html:9
 #: fief/templates/register.html:17 fief/templates/register.html:42
 msgid "Sign up"
-msgstr "Registar-se"
+msgstr "Inscrever-se"
 
 #: fief/templates/logout.html:3 fief/templates/logout.html:5
 msgid "Sign out"
@@ -308,7 +308,7 @@ msgstr "Sair"
 #: fief/templates/register.html:7 fief/templates/register.html:15
 #: fief/templates/register.html:35
 msgid "Finalize sign up"
-msgstr "Finalizar registo"
+msgstr ""
 
 #: fief/templates/register.html:40
 msgid "I already have an account"
@@ -317,23 +317,22 @@ msgstr "Eu já tenho uma conta"
 #: fief/templates/register.html:54
 #, python-format
 msgid "Sign up with %(provider)s"
-msgstr "Registar em %(provider)s"
+msgstr ""
 
 #: fief/templates/reset_password.html:5 fief/templates/reset_password.html:7
 msgid "Reset password"
-msgstr "Redefinir password"
+msgstr "Redefinir Senha"
 
 #: fief/templates/reset_password.html:18
 msgid "Reset my password"
-msgstr "Redefinir minha password"
+msgstr "Redefinir minha senha"
 
 #~ msgid ""
 #~ "A user with the same email address"
 #~ " already exists. You can try to "
 #~ "login using your email address and "
 #~ "password."
-#~ msgstr "Já existe um utilizador com o mesmo email"
+#~ msgstr "Já existe usuário com o mesmo email"
 
 #~ msgid "Invalid registration session"
 #~ msgstr "Sessão de login inválida"
-
