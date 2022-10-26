@@ -26,9 +26,11 @@ class Sendgrid(EmailProvider):
                 from_email=format_address(from_email, from_name),
                 to_emails=format_address(to_email, to_name),
                 subject=subject,
-                html_content=text)
+                html_content=html,
+                plain_text_content=text,
+            )
 
             self._client.send(message)
 
-        except Exception as e:
+        except SendGridException as e:
             raise SendEmailError(str(e)) from e
