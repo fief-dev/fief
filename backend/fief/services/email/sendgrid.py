@@ -1,6 +1,6 @@
 from typing import Optional, Tuple
 
-from sendgrid import SendGridAPIClient
+from sendgrid import SendGridAPIClient, SendGridException
 from sendgrid.helpers.mail import Mail
 
 from fief.services.email.base import EmailProvider, SendEmailError, format_address
