@@ -26,6 +26,10 @@ module = "postmarker.*"
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
+module = "sendgrid.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
 module = "dramatiq.*"
 ignore_missing_imports = true
 
