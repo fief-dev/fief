@@ -167,6 +167,7 @@ dependencies = [
     "loguru ==0.6.0",
     "phonenumbers >=8.12.48,<8.13",
     "postmarker ==1.0",
+    "sendgrid ==6.9.7",
     "psycopg2 ==2.9.3",
     "pycountry >=22.3.5,<22.4",
     "pydantic[dotenv] ==1.10.2",
