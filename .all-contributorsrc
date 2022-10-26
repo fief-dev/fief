@@ -88,6 +88,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "ruipoliveira",
+      "name": "Rui Oliveira",
+      "avatar_url": "https://avatars.githubusercontent.com/u/10942886?v=4",
+      "profile": "http://ruipoliveira.github.io/",
+      "contributions": [
+        "translation"
+      ]
     }
   ],
   "contributorsPerLine": 7,
