@@ -7,8 +7,8 @@ from fief.services.email.base import EmailProvider, SendEmailError, format_addre
 
 
 class Sendgrid(EmailProvider):
-    def __init__(self, server_token: str) -> None:
-        self._client = SendGridAPIClient(api_key=server_token)
+    def __init__(self, api_key: str) -> None:
+        self._client = SendGridAPIClient(api_key=api_key)
 
     def send_email(
         self,
