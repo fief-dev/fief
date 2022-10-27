@@ -31,7 +31,7 @@ build-css:
 
 create-db:
 	docker volume create fief-dev-db
-	docker run -p 5432:5432 --name fief-dev-db -e PGDATA=/var/lib/postgresql/data/pgdata -e POSTGRES_USER=fief -e POSTGRES_PASSWORD=fiefpassword -v fief-dev-db:/var/lib/postgresql/data -d postgres:alpine
+	docker run -p 5432:5432 --name fief-dev-db -e PGDATA=/var/lib/postgresql/data/pgdata -e POSTGRES_USER=fief -e POSTGRES_PASSWORD=fiefpassword -v fief-dev-db:/var/lib/postgresql/data -d postgres:14-alpine
 
 start-db:
   docker start fief-dev-db
