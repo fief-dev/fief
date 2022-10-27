@@ -40,7 +40,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <tr>
       <td align="center"><a href="https://github.com/plpsanchez"><img src="https://avatars.githubusercontent.com/u/45295173?v=4?s=100" width="100px;" alt="plpsanchez"/><br /><sub><b>plpsanchez</b></sub></a><br /><a href="#translation-plpsanchez" title="Translation">🌍</a></td>
       <td align="center"><a href="https://github.com/WilliamMayor"><img src="https://avatars.githubusercontent.com/u/403126?v=4?s=100" width="100px;" alt="William Mayor"/><br /><sub><b>William Mayor</b></sub></a><br /><a href="https://github.com/fief-dev/fief/commits?author=WilliamMayor" title="Code">💻</a></td>
-      <td align="center"><a href="http://ruipoliveira.github.io/"><img src="https://avatars.githubusercontent.com/u/10942886?v=4?s=100" width="100px;" alt="Rui Oliveira"/><br /><sub><b>Rui Oliveira</b></sub></a><br /><a href="#translation-ruipoliveira" title="Translation">🌍</a></td>
+      <td align="center"><a href="http://ruipoliveira.github.io/"><img src="https://avatars.githubusercontent.com/u/10942886?v=4?s=100" width="100px;" alt="Rui Oliveira"/><br /><sub><b>Rui Oliveira</b></sub></a><br /><a href="#translation-ruipoliveira" title="Translation">🌍</a> <a href="https://github.com/fief-dev/fief/commits?author=ruipoliveira" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>
