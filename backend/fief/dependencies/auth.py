@@ -27,6 +27,7 @@ from fief.settings import settings
 
 async def get_authorize_client(
     client_id: Optional[str] = Query(None),
+    tenant: Tenant = Depends(get_current_tenant),
     repository: ClientRepository = Depends(get_workspace_repository(ClientRepository)),
 ) -> Client:
     if client_id is None:
@@ -34,7 +35,7 @@ async def get_authorize_client(
             AuthorizeError.get_invalid_client(_("client_id is missing"))
         )
 
-    client = await repository.get_by_client_id(client_id)
+    client = await repository.get_by_client_id_and_tenant(client_id, tenant.id)
 
     if client is None:
         raise AuthorizeException(AuthorizeError.get_invalid_client(_("Unknown client")))

@@ -46,7 +46,7 @@ class TestAuthAuthorize:
             pytest.param(
                 {
                     "response_type": "code",
-                    "client_id": "DEFAULT_TENANT_CLIENT_ID",
+                    "client_id": "VALID_CLIENT_ID",
                     "scope": "openid",
                 },
                 "invalid_redirect_uri",
@@ -55,7 +55,7 @@ class TestAuthAuthorize:
             pytest.param(
                 {
                     "response_type": "code",
-                    "client_id": "DEFAULT_TENANT_CLIENT_ID",
+                    "client_id": "VALID_CLIENT_ID",
                     "redirect_uri": "https://bordeaux.city/callback",
                     "scope": "openid",
                 },
@@ -71,6 +71,11 @@ class TestAuthAuthorize:
         params: Dict[str, str],
         error: str,
     ):
+        # Trick to set a valid client_id for the current tenant
+        params = {**params}
+        if params.get("client_id") == "VALID_CLIENT_ID":
+            params["client_id"] = tenant_params.client.client_id
+
         response = await test_client_auth.get(
             f"{tenant_params.path_prefix}/authorize", params=params
         )
@@ -85,7 +90,6 @@ class TestAuthAuthorize:
         [
             pytest.param(
                 {
-                    "client_id": "DEFAULT_TENANT_CLIENT_ID",
                     "redirect_uri": "https://nantes.city/callback",
                     "scope": "openid",
                 },
@@ -95,7 +99,6 @@ class TestAuthAuthorize:
             pytest.param(
                 {
                     "response_type": "magic_wand",
-                    "client_id": "DEFAULT_TENANT_CLIENT_ID",
                     "redirect_uri": "https://nantes.city/callback",
                     "scope": "openid",
                 },
@@ -105,7 +108,6 @@ class TestAuthAuthorize:
             pytest.param(
                 {
                     "response_type": "code",
-                    "client_id": "DEFAULT_TENANT_CLIENT_ID",
                     "redirect_uri": "https://nantes.city/callback",
                 },
                 "invalid_request",
@@ -114,7 +116,6 @@ class TestAuthAuthorize:
             pytest.param(
                 {
                     "response_type": "code",
-                    "client_id": "DEFAULT_TENANT_CLIENT_ID",
                     "redirect_uri": "https://nantes.city/callback",
                     "scope": "user",
                 },
@@ -124,7 +125,6 @@ class TestAuthAuthorize:
             pytest.param(
                 {
                     "response_type": "code",
-                    "client_id": "DEFAULT_TENANT_CLIENT_ID",
                     "redirect_uri": "https://nantes.city/callback",
                     "scope": "openid",
                     "prompt": "INVALID_PROMPT",
@@ -135,7 +135,6 @@ class TestAuthAuthorize:
             pytest.param(
                 {
                     "response_type": "code",
-                    "client_id": "DEFAULT_TENANT_CLIENT_ID",
                     "redirect_uri": "https://nantes.city/callback",
                     "scope": "openid",
                     "prompt": "none",
@@ -146,7 +145,6 @@ class TestAuthAuthorize:
             pytest.param(
                 {
                     "response_type": "code",
-                    "client_id": "DEFAULT_TENANT_CLIENT_ID",
                     "redirect_uri": "https://nantes.city/callback",
                     "scope": "openid",
                     "prompt": "consent",
@@ -157,7 +155,6 @@ class TestAuthAuthorize:
             pytest.param(
                 {
                     "response_type": "code",
-                    "client_id": "DEFAULT_TENANT_CLIENT_ID",
                     "redirect_uri": "https://nantes.city/callback",
                     "scope": "openid",
                     "screen": "INVALID_SCREEN",
@@ -168,7 +165,6 @@ class TestAuthAuthorize:
             pytest.param(
                 {
                     "response_type": "code",
-                    "client_id": "DEFAULT_TENANT_CLIENT_ID",
                     "redirect_uri": "https://nantes.city/callback",
                     "scope": "openid",
                     "request": "REQUEST_PARAMETER",
@@ -179,7 +175,6 @@ class TestAuthAuthorize:
             pytest.param(
                 {
                     "response_type": "code id_token",
-                    "client_id": "DEFAULT_TENANT_CLIENT_ID",
                     "redirect_uri": "https://nantes.city/callback",
                     "scope": "openid",
                     "request": "REQUEST_PARAMETER",
@@ -190,7 +185,6 @@ class TestAuthAuthorize:
             pytest.param(
                 {
                     "response_type": "code",
-                    "client_id": "DEFAULT_TENANT_CLIENT_ID",
                     "redirect_uri": "https://nantes.city/callback",
                     "scope": "openid",
                     "code_challenge": "CODE_CHALLENGE",
@@ -203,7 +197,6 @@ class TestAuthAuthorize:
                 pytest.param(
                     {
                         "response_type": response_type,
-                        "client_id": "DEFAULT_TENANT_CLIENT_ID",
                         "redirect_uri": "https://nantes.city/callback",
                         "scope": "openid",
                     },
@@ -221,6 +214,11 @@ class TestAuthAuthorize:
         params: Dict[str, str],
         error: str,
     ):
+        params = {
+            **params,
+            "client_id": tenant_params.client.client_id,
+        }
+
         response = await test_client_auth.get(
             f"{tenant_params.path_prefix}/authorize", params=params
         )
@@ -237,6 +235,23 @@ class TestAuthAuthorize:
             response_mode = "query"
         redirect_params = get_params_by_response_mode(redirect_uri, response_mode)
         assert redirect_params["error"] == error
+
+    async def test_client_tenant_mismatch(
+        self, test_client_auth: httpx.AsyncClient, test_data: TestData
+    ):
+        params = {
+            "response_type": "code",
+            "client_id": test_data["clients"]["secondary_tenant"].client_id,
+            "redirect_uri": "https://nantes.city/callback",
+            "scope": "openid",
+        }
+
+        response = await test_client_auth.get("/authorize", params=params)
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+        headers = response.headers
+        assert headers["X-Fief-Error"] == "invalid_client"
 
     @pytest.mark.parametrize(
         "params,session,redirection",

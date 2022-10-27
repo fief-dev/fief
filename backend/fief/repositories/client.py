@@ -1,3 +1,4 @@
+import uuid
 from typing import Optional
 
 from sqlalchemy import select
@@ -11,6 +12,14 @@ class ClientRepository(BaseRepository[Client], UUIDRepositoryMixin[Client]):
 
     async def get_by_client_id(self, client_id: str) -> Optional[Client]:
         statement = select(Client).where(Client.client_id == client_id)
+        return await self.get_one_or_none(statement)
+
+    async def get_by_client_id_and_tenant(
+        self, client_id: str, tenant: uuid.UUID
+    ) -> Optional[Client]:
+        statement = select(Client).where(
+            Client.client_id == client_id, Client.tenant_id == tenant
+        )
         return await self.get_one_or_none(statement)
 
     async def get_by_client_id_and_secret(
