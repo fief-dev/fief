@@ -3,7 +3,7 @@ import { useFieldArray, useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
 import { useFieldRequiredErrorMessage } from '../../hooks/errors';
-import * as schemas from '../../schemas';
+import { ScopesForm } from '../../schemas';
 import FormErrorMessage from '../FormErrorMessage/FormErrorMessage';
 
 interface ScopesInputProps {
@@ -11,7 +11,7 @@ interface ScopesInputProps {
 
 const ScopesInput: React.FunctionComponent<React.PropsWithChildren<ScopesInputProps>> = () => {
   const { t } = useTranslation(['oauth-providers']);
-  const { register, control, formState: { errors } } = useFormContext<schemas.oauthProvider.ScopesForm>();
+  const { register, control, formState: { errors } } = useFormContext<ScopesForm>();
 
   const { fields, append, remove } = useFieldArray({ control, name: 'scopes' });
   const fieldRequiredErrorMessage = useFieldRequiredErrorMessage();

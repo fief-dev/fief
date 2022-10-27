@@ -26,4 +26,4 @@ export {
   workspace,
 };
 
-export type { PaginatedResults, PaginationParameters } from './generics';
+export type { PaginatedResults, PaginationParameters, ScopesForm } from './generics';

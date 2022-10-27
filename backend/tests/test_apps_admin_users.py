@@ -268,6 +268,89 @@ class TestUpdateUser:
 
 @pytest.mark.asyncio
 @pytest.mark.workspace_host
+class TestCreateUserAccessToken:
+    async def test_unauthorized(
+        self, test_client_admin: httpx.AsyncClient, test_data: TestData
+    ):
+        user = test_data["users"]["regular"]
+        response = await test_client_admin.post(
+            f"/users/{user.id}/access-token", json={}
+        )
+
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+    @pytest.mark.authenticated_admin
+    async def test_unknown_user(
+        self, test_client_admin: httpx.AsyncClient, not_existing_uuid: uuid.UUID
+    ):
+        response = await test_client_admin.post(
+            f"/users/{not_existing_uuid}/access-token", json={}
+        )
+
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    @pytest.mark.authenticated_admin
+    async def test_unknown_client(
+        self,
+        test_client_admin: httpx.AsyncClient,
+        test_data: TestData,
+        not_existing_uuid: uuid.UUID,
+    ):
+        user = test_data["users"]["regular"]
+        response = await test_client_admin.post(
+            f"/users/{user.id}/access-token",
+            json={
+                "client_id": str(not_existing_uuid),
+                "scopes": ["openid"],
+            },
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+        json = response.json()
+        assert json["detail"] == APIErrorCode.USER_CREATE_ACCESS_TOKEN_UNKNOWN_CLIENT
+
+    @pytest.mark.authenticated_admin
+    async def test_client_not_in_user_tenant(
+        self, test_client_admin: httpx.AsyncClient, test_data: TestData
+    ):
+        user = test_data["users"]["regular"]
+        response = await test_client_admin.post(
+            f"/users/{user.id}/access-token",
+            json={
+                "client_id": str(test_data["clients"]["secondary_tenant"].id),
+                "scopes": ["openid"],
+            },
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+        json = response.json()
+        assert json["detail"] == APIErrorCode.USER_CREATE_ACCESS_TOKEN_UNKNOWN_CLIENT
+
+    @pytest.mark.authenticated_admin
+    async def test_valid(
+        self, test_client_admin: httpx.AsyncClient, test_data: TestData
+    ):
+        user = test_data["users"]["regular"]
+        response = await test_client_admin.post(
+            f"/users/{str(user.id)}/access-token",
+            json={
+                "client_id": str(test_data["clients"]["default_tenant"].id),
+                "scopes": ["openid"],
+            },
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+
+        json = response.json()
+        assert "access_token" in json
+        assert json["token_type"] == "bearer"
+        assert "expires_in" in json
+
+
+@pytest.mark.asyncio
+@pytest.mark.workspace_host
 class TestListUserPermissions:
     async def test_unauthorized(
         self, test_client_admin: httpx.AsyncClient, test_data: TestData

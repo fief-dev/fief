@@ -7,6 +7,7 @@ import { useUserFieldsDefaultValues } from '../../hooks/user-field';
 import * as schemas from '../../schemas';
 import { cleanUserRequestData } from '../../services/user';
 import ClipboardButton from '../ClipboardButton/ClipboardButton';
+import CreateUserAccessTokenModal from '../CreateUserAccessTokenModal/CreateUserAccessTokenModal';
 import DateTime from '../DateTime/DateTime';
 import ErrorAlert from '../ErrorAlert/ErrorAlert';
 import LoadingButton from '../LoadingButton/LoadingButton';
@@ -52,6 +53,8 @@ const UserDetailsAccount: React.FunctionComponent<React.PropsWithChildren<UserDe
     }
   }, [user, api, onUpdated, reset, handleAPIError]);
 
+  const [createAccessTokenModalOpen, setCreateAccessTokenModalOpen] = useState(false);
+
   return (
     <>
       <div className="mt-6">
@@ -72,6 +75,16 @@ const UserDetailsAccount: React.FunctionComponent<React.PropsWithChildren<UserDe
           <li className="flex items-center justify-between py-3 border-b border-slate-200">
             <div className="text-sm whitespace-nowrap">{t('details.updated_at')}</div>
             <div className="text-sm font-medium text-slate-800 ml-2 truncate"><DateTime datetime={user.updated_at} displayTime /></div>
+          </li>
+          <li className="flex items-center justify-between py-3 border-b border-slate-200">
+            <button
+              type="button"
+              className="btn w-full btn bg-primary-500 hover:bg-primary-600 text-white"
+              onClick={() => setCreateAccessTokenModalOpen(true)}
+            >
+              {t('details.create_access_token')}
+            </button>
+            <CreateUserAccessTokenModal open={createAccessTokenModalOpen} user={user} onClose={() => setCreateAccessTokenModalOpen(false)} />
           </li>
         </ul>
       </div>

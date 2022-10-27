@@ -1,4 +1,4 @@
-import { CreatedUpdatedAt, UUIDSchema } from './generics';
+import { CreatedUpdatedAt, ScopesForm, UUIDSchema } from './generics';
 import { TenantEmbedded } from './tenant';
 
 
@@ -40,4 +40,19 @@ interface BaseUser extends UUIDSchema {
 export interface User extends BaseUser, CreatedUpdatedAt {
   tenant: TenantEmbedded;
   fields: Record<string, any>;
+}
+
+export interface CreateAccessToken {
+  client_id: string;
+  scopes: string[];
+}
+
+export interface CreateAccessTokenForm extends ScopesForm {
+  client_id: string;
+}
+
+export interface AccessTokenResponse {
+  access_token: string;
+  token_type: 'bearer';
+  expires_in: number;
 }

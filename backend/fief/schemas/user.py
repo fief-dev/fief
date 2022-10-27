@@ -1,5 +1,5 @@
 from datetime import date, datetime
-from typing import Any, Dict, Generic, Optional, TypeVar, Union
+from typing import Any, Dict, Generic, List, Optional, TypeVar, Union
 
 from fastapi_users import schemas
 from pydantic import UUID4, Field, StrictBool, StrictInt, StrictStr
@@ -46,3 +46,14 @@ class UserCreateInternal(UserCreate[UF], Generic[UF]):
 
 class UserUpdate(GenericModel, Generic[UF], schemas.BaseUserUpdate):
     fields: Optional[UF] = Field(exclude=True)
+
+
+class CreateAccessToken(BaseModel):
+    client_id: UUID4
+    scopes: List[str]
+
+
+class AccessTokenResponse(BaseModel):
+    access_token: str
+    token_type: str = Field("bearer", regex="bearer")
+    expires_in: int

@@ -14,6 +14,17 @@
     "password": "Password",
     "tenant": "Tenant"
   },
+  "create_access_token": {
+    "title": "Create an access token",
+    "client": "Client",
+    "client_details": "The access token will be tied to this client.",
+    "scopes": "Scopes",
+    "cancel": "Cancel",
+    "submit": "Create",
+    "sensitive_alert": "Treat this access token with extreme care: it gives access to a user account. Don't save it in a file and don't share it online.",
+    "access_token_expires_in": "It will expire in {{ expires_in }} seconds.",
+    "close": "Close"
+  },
   "details": {
     "tabs": {
       "ACCOUNT": "Account",
@@ -41,6 +52,7 @@
     "id": "ID",
     "created_at": "Created at",
     "updated_at": "Updated at",
+    "create_access_token": "Create an access token",
     "submit": "Update"
   }
 }

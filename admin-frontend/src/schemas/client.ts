@@ -1,4 +1,4 @@
-import { CreatedUpdatedAt, UUIDSchema } from './generics';
+import { CreatedUpdatedAt, PaginationParameters, UUIDSchema } from './generics';
 import { TenantEmbedded } from './tenant';
 
 export enum ClientType {
@@ -53,4 +53,8 @@ interface BaseClient extends UUIDSchema, CreatedUpdatedAt {
 
 export interface Client extends BaseClient {
   tenant: TenantEmbedded;
+}
+
+export interface ClientListParameters extends PaginationParameters {
+  query?: string;
 }

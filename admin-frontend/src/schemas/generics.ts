@@ -17,3 +17,10 @@ export interface PaginationParameters {
   skip?: number;
   ordering?: string;
 }
+
+export interface ScopesForm {
+  scopes: {
+    id: string;
+    value: string
+  }[];
+}

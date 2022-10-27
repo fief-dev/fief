@@ -52,7 +52,7 @@ export class APIClient {
     return this.client.post('/tenants/', data);
   }
 
-  public listClients(params: schemas.PaginationParameters = {}): Promise<AxiosResponse<schemas.PaginatedResults<schemas.client.Client>>> {
+  public listClients(params: schemas.client.ClientListParameters = {}): Promise<AxiosResponse<schemas.PaginatedResults<schemas.client.Client>>> {
     return this.client.get('/clients/', { params });
   }
 
@@ -126,6 +126,10 @@ export class APIClient {
 
   public updateUser(id: string, data: schemas.user.UserUpdate): Promise<AxiosResponse<schemas.user.User>> {
     return this.client.patch(`/users/${id}`, data);
+  }
+
+  public createUserAccessToken(id: string, data: schemas.user.CreateAccessToken): Promise<AxiosResponse<schemas.user.AccessTokenResponse>> {
+    return this.client.post(`/users/${id}/access-token`, data);
   }
 
   public listUserFields(params: schemas.PaginationParameters = {}): Promise<AxiosResponse<schemas.PaginatedResults<schemas.userField.UserField>>> {

@@ -1,4 +1,4 @@
-import { CreatedUpdatedAt, UUIDSchema } from './generics';
+import { CreatedUpdatedAt, ScopesForm, UUIDSchema } from './generics';
 
 export enum AvailableOAuthProvider {
   DISCORD = 'DISCORD',
@@ -9,13 +9,6 @@ export enum AvailableOAuthProvider {
   MICROSOFT = 'MICROSOFT',
   REDDIT = 'REDDIT',
   OPENID = 'OPENID',
-}
-
-export interface ScopesForm {
-  scopes: {
-    id: string;
-    value: string
-  }[];
 }
 
 export interface OAuthProviderCreateBase {

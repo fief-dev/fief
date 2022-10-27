@@ -1,6 +1,6 @@
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Query, status
 from pydantic import UUID4
 from sqlalchemy import select
 
@@ -17,11 +17,16 @@ from fief.repositories import ClientRepository
 
 
 async def get_paginated_clients(
+    query: Optional[str] = Query(None),
     pagination: Pagination = Depends(get_pagination),
     ordering: Ordering = Depends(get_ordering),
     repository: ClientRepository = Depends(get_workspace_repository(ClientRepository)),
 ) -> Tuple[List[Client], int]:
     statement = select(Client)
+
+    if query is not None:
+        statement = statement.where(Client.name.ilike(f"%{query}%"))
+
     return await get_paginated_objects(statement, pagination, ordering, repository)
 
 
