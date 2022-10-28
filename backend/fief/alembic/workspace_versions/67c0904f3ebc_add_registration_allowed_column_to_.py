@@ -22,7 +22,7 @@ def upgrade():
     op.add_column(
         "fief_tenants",
         sa.Column(
-            "registration_allowed", sa.Boolean(), nullable=False, server_default="TRUE"
+            "registration_allowed", sa.Boolean(), nullable=False, server_default="1"
         ),
     )
     # ### end Alembic commands ###
