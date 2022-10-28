@@ -3,12 +3,11 @@ import { FormProvider, SubmitHandler, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
 import { useAPI, useAPIErrorHandler } from '../../hooks/api';
-import { useFieldRequiredErrorMessage } from '../../hooks/errors';
 import * as schemas from '../../schemas';
 import ErrorAlert from '../ErrorAlert/ErrorAlert';
-import FormErrorMessage from '../FormErrorMessage/FormErrorMessage';
 import LoadingButton from '../LoadingButton/LoadingButton';
 import Modal from '../Modal/Modal';
+import TenantForm from '../TenantForm/TenantForm';
 
 interface CreateTenantModalProps {
   open: boolean;
@@ -20,9 +19,8 @@ const CreateTenantModal: React.FunctionComponent<React.PropsWithChildren<CreateT
   const { t } = useTranslation(['tenants']);
   const api = useAPI();
 
-  const form = useForm<schemas.tenant.TenantCreate>();
-  const { register, handleSubmit, reset, setError, formState: { errors } } = form;
-  const fieldRequiredErrorMessage = useFieldRequiredErrorMessage();
+  const form = useForm<schemas.tenant.TenantCreate>({ defaultValues: { registration_allowed: true } });
+  const { handleSubmit, reset, setError } = form;
 
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | undefined>();
@@ -56,16 +54,7 @@ const CreateTenantModal: React.FunctionComponent<React.PropsWithChildren<CreateT
           <Modal.Body>
             <div className="space-y-4">
               {errorMessage && <ErrorAlert message={t(`common:api_errors.${errorMessage}`)} />}
-              <div>
-                <label className="block text-sm font-medium mb-1" htmlFor="name">{t('base.name')}</label>
-                <input
-                  id="name"
-                  className="form-input w-full"
-                  type="text"
-                  {...register('name', { required: fieldRequiredErrorMessage })}
-                />
-                <FormErrorMessage errors={errors} name="name" />
-              </div>
+              <TenantForm update={false} />
             </div>
           </Modal.Body>
           <Modal.Footer>

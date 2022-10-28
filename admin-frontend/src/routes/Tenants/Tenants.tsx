@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Column } from 'react-table';
-import { PlusIcon } from '@heroicons/react/20/solid';
+import { CheckIcon, PlusIcon, XMarkIcon } from '@heroicons/react/20/solid';
 
 import ClipboardButton from '../../components/ClipboardButton/ClipboardButton';
 import CreateTenantModal from '../../components/CreateTenantModal/CreateTenantModal';
@@ -10,6 +10,7 @@ import Layout from '../../components/Layout/Layout';
 import { usePaginationAPI } from '../../hooks/api';
 import * as schemas from '../../schemas';
 import { FIEF_INSTANCE } from '../../services/api';
+import TenantDetails from '../../components/TenantDetails/TenantDetails';
 
 const Tenants: React.FunctionComponent<React.PropsWithChildren<unknown>> = () => {
   const { t } = useTranslation(['tenants']);
@@ -24,6 +25,16 @@ const Tenants: React.FunctionComponent<React.PropsWithChildren<unknown>> = () =>
     refresh,
   } = usePaginationAPI<'listTenants'>({ method: 'listTenants', limit: 10 });
 
+  const [selected, setSelected] = useState<schemas.tenant.Tenant | undefined>();
+
+  const onTenantSelected = useCallback((tenant: schemas.tenant.Tenant) => {
+    if (selected && selected.id === tenant.id) {
+      setSelected(undefined);
+    } else {
+      setSelected(tenant);
+    }
+  }, [selected]);
+
   const columns = useMemo<Column<schemas.tenant.Tenant>[]>(() => {
     return [
       {
@@ -31,7 +42,7 @@ const Tenants: React.FunctionComponent<React.PropsWithChildren<unknown>> = () =>
         accessor: 'name',
         Cell: ({ cell: { value }, row: { original } }) => (
           <>
-            {value}
+            <span className="font-medium text-slate-800 hover:text-slate-900 cursor-pointer" onClick={() => onTenantSelected(original)}>{value}</span>
             {original.default &&
               <div className="inline-flex font-medium rounded-full text-center ml-2 px-2.5 py-0.5 bg-green-100 text-green-600">
                 {t('tenants:list.default')}
@@ -54,17 +65,34 @@ const Tenants: React.FunctionComponent<React.PropsWithChildren<unknown>> = () =>
           );
         }
       },
+      {
+        Header: t('tenants:list.registration_allowed') as string,
+        accessor: 'registration_allowed',
+        Cell: ({ cell: { value } }) => {
+          return (
+            value ?
+              <CheckIcon className="w-4 h-4 fill-current" /> :
+              <XMarkIcon className="w-4 h-4 fill-current" />
+          );
+        }
+      },
     ];
-  }, [t]);
+  }, [t, onTenantSelected]);
 
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const onCreated = useCallback((client: schemas.tenant.Tenant) => {
+  const onCreated = useCallback((tenant: schemas.tenant.Tenant) => {
     setShowCreateModal(false);
+    onTenantSelected(tenant);
     refresh();
+  }, [onTenantSelected, refresh]);
+
+  const onUpdated = useCallback((tenant: schemas.tenant.Tenant) => {
+    refresh();
+    setSelected(tenant);
   }, [refresh]);
 
   return (
-    <Layout>
+    <Layout sidebar={selected ? <TenantDetails tenant={selected} onUpdated={onUpdated} /> : undefined}>
       <div className="sm:flex sm:justify-between sm:items-center mb-8">
 
         <div className="mb-4 sm:mb-0">

@@ -52,6 +52,10 @@ export class APIClient {
     return this.client.post('/tenants/', data);
   }
 
+  public updateTenant(id: string, data: schemas.tenant.TenantUpdate): Promise<AxiosResponse<schemas.tenant.Tenant>> {
+    return this.client.patch(`/tenants/${id}`, data);
+  }
+
   public listClients(params: schemas.client.ClientListParameters = {}): Promise<AxiosResponse<schemas.PaginatedResults<schemas.client.Client>>> {
     return this.client.get('/clients/', { params });
   }

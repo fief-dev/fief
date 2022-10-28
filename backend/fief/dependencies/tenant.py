@@ -1,6 +1,7 @@
 from typing import List, Optional, Tuple
 
 from fastapi import Depends, HTTPException, Query, status
+from pydantic import UUID4
 from sqlalchemy import select
 
 from fief import schemas
@@ -59,3 +60,15 @@ async def get_paginated_tenants(
         statement = statement.where(Tenant.name.ilike(f"%{query}%"))
 
     return await get_paginated_objects(statement, pagination, ordering, repository)
+
+
+async def get_tenant_by_id_or_404(
+    id: UUID4,
+    repository: TenantRepository = Depends(get_workspace_repository(TenantRepository)),
+) -> Tenant:
+    tenant = await repository.get_by_id(id)
+
+    if tenant is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+
+    return tenant

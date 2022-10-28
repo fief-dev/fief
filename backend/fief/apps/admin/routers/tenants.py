@@ -4,7 +4,7 @@ from fief import schemas
 from fief.dependencies.admin_authentication import is_authenticated_admin
 from fief.dependencies.logger import get_audit_logger
 from fief.dependencies.pagination import PaginatedObjects
-from fief.dependencies.tenant import get_paginated_tenants
+from fief.dependencies.tenant import get_paginated_tenants, get_tenant_by_id_or_404
 from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.logger import AuditLogger
 from fief.models import AuditLogMessage, Client, Tenant
@@ -54,5 +54,22 @@ async def create_tenant(
     )
     await client_repository.create(client)
     audit_logger.log_object_write(AuditLogMessage.OBJECT_CREATED, client)
+
+    return schemas.tenant.Tenant.from_orm(tenant)
+
+
+@router.patch("/{id:uuid}", name="tenants:update", response_model=schemas.tenant.Tenant)
+async def update_tenant(
+    tenant_update: schemas.tenant.TenantUpdate,
+    tenant: Tenant = Depends(get_tenant_by_id_or_404),
+    repository: TenantRepository = Depends(get_workspace_repository(TenantRepository)),
+    audit_logger: AuditLogger = Depends(get_audit_logger),
+) -> schemas.tenant.Tenant:
+    tenant_update_dict = tenant_update.dict(exclude_unset=True)
+    for field, value in tenant_update_dict.items():
+        setattr(tenant, field, value)
+
+    await repository.update(tenant)
+    audit_logger.log_object_write(AuditLogMessage.OBJECT_UPDATED, tenant)
 
     return schemas.tenant.Tenant.from_orm(tenant)

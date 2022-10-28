@@ -91,3 +91,40 @@ class TestCreateTenant:
         assert json["name"] == "Secondary"
         assert json["slug"] != "secondary"
         assert json["slug"].startswith("secondary")
+
+
+@pytest.mark.asyncio
+@pytest.mark.workspace_host
+class TestUpdateTenant:
+    async def test_unauthorized(
+        self, test_client_admin: httpx.AsyncClient, test_data: TestData
+    ):
+        tenant = test_data["tenants"]["default"]
+        response = await test_client_admin.patch(f"/tenants/{tenant.id}", json={})
+
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+    @pytest.mark.authenticated_admin
+    async def test_not_existing(
+        self, test_client_admin: httpx.AsyncClient, not_existing_uuid: uuid.UUID
+    ):
+        response = await test_client_admin.patch(
+            f"/tenants/{not_existing_uuid}", json={}
+        )
+
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    @pytest.mark.authenticated_admin
+    async def test_valid(
+        self, test_client_admin: httpx.AsyncClient, test_data: TestData
+    ):
+        tenant = test_data["tenants"]["default"]
+        response = await test_client_admin.patch(
+            f"/tenants/{tenant.id}",
+            json={"name": "Updated name"},
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+
+        json = response.json()
+        assert json["name"] == "Updated name"
