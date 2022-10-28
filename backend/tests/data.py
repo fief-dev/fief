@@ -12,6 +12,7 @@ from fief.models import (
     AuthorizationCode,
     Client,
     ClientType,
+    EmailTemplate,
     Grant,
     LoginSession,
     M,
@@ -32,6 +33,7 @@ from fief.models import (
     UserPermission,
     UserRole,
 )
+from fief.services.email_template import EmailTemplateType
 from fief.services.oauth_provider import AvailableOAuthProvider
 from fief.settings import settings
 
@@ -62,6 +64,7 @@ class TestData(TypedDict):
     roles: ModelMapping[Role]
     user_permissions: ModelMapping[UserPermission]
     user_roles: ModelMapping[UserRole]
+    email_templates: ModelMapping[EmailTemplate]
 
 
 tenants: ModelMapping[Tenant] = {
@@ -719,6 +722,23 @@ user_roles: ModelMapping[UserRole] = {
     ),
 }
 
+email_templates: ModelMapping[EmailTemplate] = {
+    "base": EmailTemplate(
+        type=EmailTemplateType.BASE,
+        content="<html><body><h1>{{ title }}</h1>{% block main %}{% endblock %}</body></html>",
+    ),
+    "welcome": EmailTemplate(
+        type=EmailTemplateType.WELCOME,
+        subject="TITLE",
+        content='{% extends "BASE" %}{% block main %}WELCOME{% endblock %}',
+    ),
+    "forgot_password": EmailTemplate(
+        type=EmailTemplateType.FORGOT_PASSWORD,
+        subject="TITLE",
+        content='{% extends "BASE" %}{% block main %}FORGOT_PASSWORD{% endblock %}',
+    ),
+}
+
 data_mapping: TestData = {
     "tenants": tenants,
     "clients": clients,
@@ -738,6 +758,7 @@ data_mapping: TestData = {
     "roles": roles,
     "user_permissions": user_permissions,
     "user_roles": user_roles,
+    "email_templates": email_templates,
 }
 
 __all__ = [
