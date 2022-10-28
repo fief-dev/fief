@@ -43,6 +43,26 @@ class TestGetRegister:
         headers = response.headers
         assert headers["X-Fief-Error"] == "invalid_session"
 
+    async def test_disabled_registration_tenant(
+        self, test_client_auth: httpx.AsyncClient, test_data: TestData
+    ):
+        login_session = test_data["login_sessions"]["registration_disabled"]
+        client = login_session.client
+        tenant = client.tenant
+        path_prefix = tenant.slug if not tenant.default else ""
+
+        cookies = {}
+        cookies[settings.login_session_cookie_name] = login_session.token
+
+        response = await test_client_auth.get(
+            f"{path_prefix}/register", cookies=cookies
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+        headers = response.headers
+        assert headers["X-Fief-Error"] == "registration_disabled"
+
     async def test_valid_no_registration_session(
         self,
         test_client_auth: httpx.AsyncClient,
@@ -170,6 +190,35 @@ class TestPostRegister:
 
         headers = response.headers
         assert headers["X-Fief-Error"] == "invalid_session"
+
+    async def test_disabled_registration_tenant(
+        self,
+        test_client_auth_csrf: httpx.AsyncClient,
+        csrf_token: str,
+        test_data: TestData,
+    ):
+        login_session = test_data["login_sessions"]["registration_disabled"]
+        client = login_session.client
+        tenant = client.tenant
+        path_prefix = tenant.slug if not tenant.default else ""
+
+        cookies = {}
+        cookies[settings.login_session_cookie_name] = login_session.token
+
+        response = await test_client_auth_csrf.post(
+            f"{path_prefix}/register",
+            data={
+                "email": "anne@bretagne.duchy",
+                "password": "hermine1",
+                "csrf_token": csrf_token,
+            },
+            cookies=cookies,
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+        headers = response.headers
+        assert headers["X-Fief-Error"] == "registration_disabled"
 
     @pytest.mark.parametrize("cookie", [None, "INVALID_REGISTRATION_SESSION"])
     async def test_invalid_registration_session(

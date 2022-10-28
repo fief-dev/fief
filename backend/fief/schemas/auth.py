@@ -47,13 +47,17 @@ class AuthorizeRedirectError(BaseModel):
 
 
 class LoginError(BaseModel):
-    error: str = Field(..., regex="invalid_session")
+    error: str = Field(..., regex="invalid_session|registration_disabled")
     error_description: Optional[Any] = None
     error_uri: Optional[str] = None
 
     @classmethod
     def get_invalid_session(cls, error_description: Optional[Any] = None):
         return cls(error="invalid_session", error_description=error_description)
+
+    @classmethod
+    def get_registration_disabled(cls, error_description: Optional[Any] = None):
+        return cls(error="registration_disabled", error_description=error_description)
 
 
 class TokenResponse(BaseModel):

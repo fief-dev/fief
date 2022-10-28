@@ -179,4 +179,4 @@ class TestGetCurrentWorkspaceSession:
         assert response.status_code == status.HTTP_200_OK
 
         json = response.json()
-        assert json["count"] == 2
+        assert json["count"] == 3

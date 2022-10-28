@@ -67,6 +67,12 @@ class TestData(TypedDict):
 tenants: ModelMapping[Tenant] = {
     "default": Tenant(name="Default", slug="default", default=True),
     "secondary": Tenant(name="Secondary", slug="secondary", default=False),
+    "registration_disabled": Tenant(
+        name="Registration disabled",
+        slug="registration-disabled",
+        default=False,
+        registration_allowed=False,
+    ),
 }
 
 clients: ModelMapping[Client] = {
@@ -111,6 +117,11 @@ clients: ModelMapping[Client] = {
     "secondary_tenant": Client(
         name="Secondary",
         tenant=tenants["secondary"],
+        redirect_uris=["https://nantes.city/callback"],
+    ),
+    "registration_disabled_tenant": Client(
+        name="Registration disabled",
+        tenant=tenants["registration_disabled"],
         redirect_uris=["https://nantes.city/callback"],
     ),
 }
@@ -457,6 +468,15 @@ login_sessions: ModelMapping[LoginSession] = {
         state="STATE",
         nonce="NONCE",
         client=clients["secondary_tenant"],
+    ),
+    "registration_disabled": LoginSession(
+        response_type="code",
+        response_mode="query",
+        redirect_uri="https://nantes.city/callback",
+        scope=["openid", "offline_access"],
+        state="STATE",
+        nonce="NONCE",
+        client=clients["registration_disabled_tenant"],
     ),
 }
 

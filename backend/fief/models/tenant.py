@@ -17,6 +17,7 @@ class Tenant(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
     slug: str = Column(String(length=255), nullable=False, unique=True)
     default: bool = Column(Boolean, default=False, nullable=False)
     sign_jwk: str = Column(Text, nullable=False, default=generate_signature_jwk_string)
+    registration_allowed: bool = Column(Boolean, default=True, nullable=False)
 
     def __repr__(self) -> str:
         return f"Tenant(id={self.id}, name={self.name}, slug={self.slug}, default={self.default})"

@@ -33,10 +33,12 @@
       {% endfor %}
     </div>
   {% endif %}
-  <div class="pt-5 mt-6 border-t border-gray-200">
-    <div class="text-sm">
-      {{ _("Don't have an account?") }}
-      <a href="{{ tenant.url_path_for(request, 'register:register') }}" class="font-medium text-primary-500 hover:text-primary-600">{{ _('Sign up') }}</a>
+  {% if tenant.registration_allowed %}
+    <div class="pt-5 mt-6 border-t border-gray-200">
+      <div class="text-sm">
+        {{ _("Don't have an account?") }}
+        <a href="{{ tenant.url_path_for(request, 'register:register') }}" class="font-medium text-primary-500 hover:text-primary-600">{{ _('Sign up') }}</a>
+      </div>
     </div>
-  </div>
+  {% endif %}
 {% endblock %}

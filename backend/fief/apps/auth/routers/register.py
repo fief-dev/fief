@@ -15,6 +15,7 @@ from fief.dependencies.register import (
     get_registration_flow,
 )
 from fief.dependencies.tenant import get_current_tenant
+from fief.exceptions import LoginException
 from fief.locale import gettext_lazy as _
 from fief.models import (
     OAuthProvider,
@@ -22,6 +23,7 @@ from fief.models import (
     RegistrationSessionFlow,
     Tenant,
 )
+from fief.schemas.auth import LoginError
 from fief.services.authentication_flow import AuthenticationFlow
 from fief.services.registration_flow import RegistrationFlow
 
@@ -45,6 +47,12 @@ async def register(
     oauth_providers: Optional[List[OAuthProvider]] = Depends(get_oauth_providers),
     tenant: Tenant = Depends(get_current_tenant),
 ):
+    if not tenant.registration_allowed:
+        raise LoginException(
+            LoginError.get_registration_disabled(_("Registration is disabled")),
+            fatal=True,
+        )
+
     response: Response
     form_helper = FormHelper(
         register_form_class,
