@@ -15,8 +15,14 @@ from fief.locale import BabelMiddleware, Translations, get_babel_middleware_kwar
 from fief.logger import init_audit_logger, logger
 from fief.models import Tenant, User, Workspace
 from fief.paths import EMAIL_TEMPLATES_DIRECTORY
-from fief.repositories import TenantRepository, UserRepository, WorkspaceRepository
+from fief.repositories import (
+    EmailTemplateRepository,
+    TenantRepository,
+    UserRepository,
+    WorkspaceRepository,
+)
 from fief.services.email import EmailProvider
+from fief.services.email_template import EmailSubjectRenderer, EmailTemplateRenderer
 from fief.settings import settings
 
 redis_parameters = urlparse(settings.redis_url)
@@ -123,9 +129,18 @@ class TaskBase:
                 raise TaskError()
             return tenant
 
-    def _render_email_template(
-        self, template: str, translations: Translations, context: Dict[str, Any]
-    ) -> str:
-        self.jinja_env.install_gettext_translations(translations, newstyle=True)  # type: ignore
-        template_object = self.jinja_env.get_template(template)
-        return template_object.render(context)
+    @contextlib.asynccontextmanager
+    async def _get_email_template_renderer(
+        self, workspace: Workspace
+    ) -> AsyncGenerator[EmailTemplateRenderer, None]:
+        async with self.get_workspace_session(workspace) as session:
+            repository = EmailTemplateRepository(session)
+            yield EmailTemplateRenderer(repository)
+
+    @contextlib.asynccontextmanager
+    async def _get_email_subject_renderer(
+        self, workspace: Workspace
+    ) -> AsyncGenerator[EmailSubjectRenderer, None]:
+        async with self.get_workspace_session(workspace) as session:
+            repository = EmailTemplateRepository(session)
+            yield EmailSubjectRenderer(repository)

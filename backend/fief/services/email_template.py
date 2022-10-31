@@ -1,8 +1,11 @@
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Dict, List, Literal, Optional, overload
 
 import jinja2
+from pydantic import BaseModel
 
+from fief.schemas.tenant import Tenant
+from fief.schemas.user import UserRead
 
 if TYPE_CHECKING:
     from fief.models import EmailTemplate
@@ -13,6 +16,22 @@ class EmailTemplateType(str, Enum):
     BASE = "BASE"
     WELCOME = "WELCOME"
     FORGOT_PASSWORD = "FORGOT_PASSWORD"
+
+
+class EmailContext(BaseModel):
+    tenant: Tenant
+    user: UserRead
+
+    class Config:
+        orm_mode = True
+
+
+class WelcomeContext(EmailContext):
+    pass
+
+
+class ForgotPasswordContext(EmailContext):
+    reset_url: str
 
 
 def _templates_list_to_map(
@@ -34,10 +53,24 @@ class EmailTemplateRenderer:
         self.repository = repository
         self._jinja_environment: Optional[jinja2.Environment] = None
 
-    async def render(self, type: EmailTemplateType, context: Dict[str, Any]) -> str:
+    @overload
+    async def render(
+        self, type: Literal[EmailTemplateType.WELCOME], context: WelcomeContext
+    ) -> str:
+        ...
+
+    @overload
+    async def render(
+        self,
+        type: Literal[EmailTemplateType.FORGOT_PASSWORD],
+        context: ForgotPasswordContext,
+    ) -> str:
+        ...
+
+    async def render(self, type, context: EmailContext) -> str:
         jinja_environment = await self._get_jinja_environment()
         template_object = jinja_environment.get_template(type.value)
-        return template_object.render(context)
+        return template_object.render(context.dict())
 
     async def _get_jinja_environment(self) -> jinja2.Environment:
         if self._jinja_environment is None:
@@ -60,10 +93,24 @@ class EmailSubjectRenderer:
         self.repository = repository
         self._jinja_environment: Optional[jinja2.Environment] = None
 
-    async def render(self, type: EmailTemplateType, context: Dict[str, Any]) -> str:
+    @overload
+    async def render(
+        self, type: Literal[EmailTemplateType.WELCOME], context: WelcomeContext
+    ) -> str:
+        ...
+
+    @overload
+    async def render(
+        self,
+        type: Literal[EmailTemplateType.FORGOT_PASSWORD],
+        context: ForgotPasswordContext,
+    ) -> str:
+        ...
+
+    async def render(self, type, context: EmailContext) -> str:
         jinja_environment = await self._get_jinja_environment()
         subject_template_object = jinja_environment.get_template(type.value)
-        return subject_template_object.render(context)
+        return subject_template_object.render(context.dict())
 
     async def _get_jinja_environment(self) -> jinja2.Environment:
         if self._jinja_environment is None:

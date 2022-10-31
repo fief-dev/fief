@@ -1,45 +1,77 @@
 import pytest
 
 from fief.db import AsyncSession
-from fief.services.email_template import EmailTemplateRenderer, EmailTemplateType, EmailSubjectRenderer
 from fief.repositories import EmailTemplateRepository
+from fief.services.email_template import (
+    EmailSubjectRenderer,
+    EmailTemplateRenderer,
+    EmailTemplateType,
+    ForgotPasswordContext,
+    WelcomeContext,
+)
 from tests.data import TestData
 
 
 @pytest.fixture
-def email_template_renderer(workspace_session: AsyncSession, test_data: TestData) -> EmailTemplateRenderer:
+def email_template_renderer(workspace_session: AsyncSession) -> EmailTemplateRenderer:
     return EmailTemplateRenderer(EmailTemplateRepository(workspace_session))
 
+
 @pytest.fixture
-def email_subject_renderer(workspace_session: AsyncSession, test_data: TestData) -> EmailSubjectRenderer:
+def email_subject_renderer(workspace_session: AsyncSession) -> EmailSubjectRenderer:
     return EmailSubjectRenderer(EmailTemplateRepository(workspace_session))
 
 
 @pytest.mark.asyncio
 class TestEmailTemplateRenderer:
-    async def test_render_welcome(self, email_template_renderer: EmailTemplateRenderer):
-        result = await email_template_renderer.render(
-            EmailTemplateType.WELCOME, {"title": "TITLE"}
+    async def test_render_welcome(
+        self, email_template_renderer: EmailTemplateRenderer, test_data: TestData
+    ):
+        context = WelcomeContext(
+            tenant=test_data["tenants"]["default"], user=test_data["users"]["regular"]
         )
-        assert result == "<html><body><h1>TITLE</h1>WELCOME</body></html>"
+        result = await email_template_renderer.render(
+            EmailTemplateType.WELCOME, context
+        )
+        assert result == "<html><body><h1>Default</h1>WELCOME</body></html>"
 
-    async def test_render_forgot_password(self, email_template_renderer: EmailTemplateRenderer):
-        result = await email_template_renderer.render(
-            EmailTemplateType.FORGOT_PASSWORD, {"title": "TITLE"}
+    async def test_render_forgot_password(
+        self, email_template_renderer: EmailTemplateRenderer, test_data: TestData
+    ):
+        context = ForgotPasswordContext(
+            tenant=test_data["tenants"]["default"],
+            reset_url="http://bretagne.fief.dev/reset",
+            user=test_data["users"]["regular"],
         )
-        assert result == "<html><body><h1>TITLE</h1>FORGOT_PASSWORD</body></html>"
+        result = await email_template_renderer.render(
+            EmailTemplateType.FORGOT_PASSWORD, context
+        )
+        assert (
+            result
+            == "<html><body><h1>Default</h1>FORGOT_PASSWORD http://bretagne.fief.dev/reset</body></html>"
+        )
 
 
 @pytest.mark.asyncio
 class TestEmailSubjectRenderer:
-    async def test_render_welcome(self, email_subject_renderer: EmailTemplateRenderer):
-        result = await email_subject_renderer.render(
-            EmailTemplateType.WELCOME, {"title": "TITLE"}
+    async def test_render_welcome(
+        self, email_subject_renderer: EmailTemplateRenderer, test_data: TestData
+    ):
+        context = WelcomeContext(
+            tenant=test_data["tenants"]["default"], user=test_data["users"]["regular"]
         )
+        result = await email_subject_renderer.render(EmailTemplateType.WELCOME, context)
         assert result == "TITLE"
 
-    async def test_render_forgot_password(self, email_subject_renderer: EmailTemplateRenderer):
+    async def test_render_forgot_password(
+        self, email_subject_renderer: EmailTemplateRenderer, test_data: TestData
+    ):
+        context = ForgotPasswordContext(
+            tenant=test_data["tenants"]["default"],
+            reset_url="http://bretagne.fief.dev/reset",
+            user=test_data["users"]["regular"],
+        )
         result = await email_subject_renderer.render(
-            EmailTemplateType.FORGOT_PASSWORD, {"title": "TITLE"}
+            EmailTemplateType.FORGOT_PASSWORD, context
         )
         assert result == "TITLE"

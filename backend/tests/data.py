@@ -725,7 +725,7 @@ user_roles: ModelMapping[UserRole] = {
 email_templates: ModelMapping[EmailTemplate] = {
     "base": EmailTemplate(
         type=EmailTemplateType.BASE,
-        content="<html><body><h1>{{ title }}</h1>{% block main %}{% endblock %}</body></html>",
+        content="<html><body><h1>{{ tenant.name }}</h1>{% block main %}{% endblock %}</body></html>",
     ),
     "welcome": EmailTemplate(
         type=EmailTemplateType.WELCOME,
@@ -735,7 +735,7 @@ email_templates: ModelMapping[EmailTemplate] = {
     "forgot_password": EmailTemplate(
         type=EmailTemplateType.FORGOT_PASSWORD,
         subject="TITLE",
-        content='{% extends "BASE" %}{% block main %}FORGOT_PASSWORD{% endblock %}',
+        content='{% extends "BASE" %}{% block main %}FORGOT_PASSWORD {{ reset_url }}{% endblock %}',
     ),
 }
 
