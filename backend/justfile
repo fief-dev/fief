@@ -11,7 +11,7 @@ install:
 lint:
 	hatch run lint
 
-test args="--cov fief/ --cov-report=term-missing" $UNIT_TESTS="1": start-db
+test args="" $UNIT_TESTS="1": start-db
   hatch run test {{args}}
 
 add-translation language:

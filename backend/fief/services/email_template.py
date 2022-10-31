@@ -7,7 +7,7 @@ from pydantic import BaseModel
 from fief.schemas.tenant import Tenant
 from fief.schemas.user import UserRead
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: no cover
     from fief.models import EmailTemplate
     from fief.repositories import EmailTemplateRepository
 
@@ -57,7 +57,7 @@ class EmailTemplateRenderer:
     async def render(
         self, type: Literal[EmailTemplateType.WELCOME], context: WelcomeContext
     ) -> str:
-        ...
+        ...  # pragma: no cover
 
     @overload
     async def render(
@@ -65,7 +65,7 @@ class EmailTemplateRenderer:
         type: Literal[EmailTemplateType.FORGOT_PASSWORD],
         context: ForgotPasswordContext,
     ) -> str:
-        ...
+        ...  # pragma: no cover
 
     async def render(self, type, context: EmailContext) -> str:
         jinja_environment = await self._get_jinja_environment()
@@ -97,7 +97,7 @@ class EmailSubjectRenderer:
     async def render(
         self, type: Literal[EmailTemplateType.WELCOME], context: WelcomeContext
     ) -> str:
-        ...
+        ...  # pragma: no cover
 
     @overload
     async def render(
@@ -105,7 +105,7 @@ class EmailSubjectRenderer:
         type: Literal[EmailTemplateType.FORGOT_PASSWORD],
         context: ForgotPasswordContext,
     ) -> str:
-        ...
+        ...  # pragma: no cover
 
     async def render(self, type, context: EmailContext) -> str:
         jinja_environment = await self._get_jinja_environment()

@@ -73,6 +73,7 @@ concurrency = ["thread", "gevent"]
 omit = ["fief/alembic/*"]
 
 [tool.pytest.ini_options]
+addopts = "--cov fief/ --cov-report=term-missing"
 markers = ["test_data", "workspace_host", "access_token", "authenticated_admin"]
 asyncio_mode = "auto"
 
