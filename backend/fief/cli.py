@@ -94,6 +94,32 @@ def migrate_workspaces():
                 typer.secho(f"Failed!", fg="red", err=True)
 
 
+@workspaces.command("init-email-templates")
+def init_email_templates():
+    """Ensure email templates are initialized in each workspace."""
+    from fief.models import Workspace
+    from fief.services.email_template.initializer import init_email_templates
+
+    settings = get_settings()
+
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
+    url, connect_args = settings.get_database_connection_parameters(False)
+    engine = create_engine(url, connect_args=connect_args)
+    Session = sessionmaker(engine)
+    with Session() as session:
+        workspaces = select(Workspace)
+        for [workspace] in session.execute(workspaces):
+            assert isinstance(workspace, Workspace)
+            typer.secho(f"Checking {workspace.name}... ", bold=True, nl=False)
+            try:
+                loop.run_until_complete(init_email_templates(workspace))
+                typer.secho(f"Done!")
+            except ConnectionError:
+                typer.secho(f"Failed!", fg="red", err=True)
+
+
 @workspaces.command("create-main")
 def create_main_workspace():
     """Create a main Fief workspace following the environment settings."""
