@@ -12,6 +12,7 @@ from fief.db.workspace import WorkspaceEngineManager, get_workspace_session
 from fief.models import User, Workspace
 from fief.repositories import (
     ClientRepository,
+    EmailTemplateRepository,
     TenantRepository,
     WorkspaceRepository,
     WorkspaceUserRepository,
@@ -142,6 +143,11 @@ class TestWorkspaceCreationCreate:
             client = clients[0]
             assert client.first_party
             assert client.tenant_id == tenant.id
+
+            email_template_repository = EmailTemplateRepository(session)
+            email_templates = await email_template_repository.all()
+
+            assert len(email_templates) == 3
 
     async def test_user_id(
         self,
