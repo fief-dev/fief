@@ -5,7 +5,8 @@ import dramatiq
 
 from fief.models import UserRole
 from fief.repositories import RoleRepository, UserRoleRepository
-from fief.services.email_template import EmailTemplateType, WelcomeContext
+from fief.services.email_template.contexts import WelcomeContext
+from fief.services.email_template.types import EmailTemplateType
 from fief.tasks.base import TaskBase, send_task
 from fief.tasks.user_permissions import on_user_role_created
 

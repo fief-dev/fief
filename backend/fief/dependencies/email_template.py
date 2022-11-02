@@ -14,6 +14,10 @@ from fief.dependencies.pagination import (
 from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.models import EmailTemplate
 from fief.repositories import EmailTemplateRepository
+from fief.services.email_template.renderers import (
+    EmailSubjectRenderer,
+    EmailTemplateRenderer,
+)
 
 
 async def get_paginated_email_templates(
@@ -39,3 +43,19 @@ async def get_email_template_by_id_or_404(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
 
     return email_template
+
+
+async def get_email_template_renderer(
+    repository: EmailTemplateRepository = Depends(
+        get_workspace_repository(EmailTemplateRepository)
+    ),
+) -> EmailTemplateRenderer:
+    return EmailTemplateRenderer(repository)
+
+
+async def get_email_subject_renderer(
+    repository: EmailTemplateRepository = Depends(
+        get_workspace_repository(EmailTemplateRepository)
+    ),
+) -> EmailSubjectRenderer:
+    return EmailSubjectRenderer(repository)

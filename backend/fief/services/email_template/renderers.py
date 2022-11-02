@@ -1,37 +1,17 @@
-from enum import Enum
 from typing import TYPE_CHECKING, Dict, List, Literal, Optional, overload
 
 import jinja2
-from pydantic import BaseModel
 
-from fief.schemas.tenant import Tenant
-from fief.schemas.user import UserRead
+from fief.services.email_template.types import EmailTemplateType
 
 if TYPE_CHECKING:  # pragma: no cover
     from fief.models import EmailTemplate
     from fief.repositories import EmailTemplateRepository
-
-
-class EmailTemplateType(str, Enum):
-    BASE = "BASE"
-    WELCOME = "WELCOME"
-    FORGOT_PASSWORD = "FORGOT_PASSWORD"
-
-
-class EmailContext(BaseModel):
-    tenant: Tenant
-    user: UserRead
-
-    class Config:
-        orm_mode = True
-
-
-class WelcomeContext(EmailContext):
-    pass
-
-
-class ForgotPasswordContext(EmailContext):
-    reset_url: str
+    from fief.services.email_template.contexts import (
+        EmailContext,
+        ForgotPasswordContext,
+        WelcomeContext,
+    )
 
 
 def _templates_list_to_map(
@@ -55,7 +35,7 @@ class EmailTemplateRenderer:
 
     @overload
     async def render(
-        self, type: Literal[EmailTemplateType.WELCOME], context: WelcomeContext
+        self, type: Literal[EmailTemplateType.WELCOME], context: "WelcomeContext"
     ) -> str:
         ...  # pragma: no cover
 
@@ -63,11 +43,11 @@ class EmailTemplateRenderer:
     async def render(
         self,
         type: Literal[EmailTemplateType.FORGOT_PASSWORD],
-        context: ForgotPasswordContext,
+        context: "ForgotPasswordContext",
     ) -> str:
         ...  # pragma: no cover
 
-    async def render(self, type, context: EmailContext) -> str:
+    async def render(self, type, context: "EmailContext") -> str:
         jinja_environment = await self._get_jinja_environment()
         template_object = jinja_environment.get_template(type.value)
         return template_object.render(context.dict())
@@ -95,7 +75,7 @@ class EmailSubjectRenderer:
 
     @overload
     async def render(
-        self, type: Literal[EmailTemplateType.WELCOME], context: WelcomeContext
+        self, type: Literal[EmailTemplateType.WELCOME], context: "WelcomeContext"
     ) -> str:
         ...  # pragma: no cover
 
@@ -103,11 +83,11 @@ class EmailSubjectRenderer:
     async def render(
         self,
         type: Literal[EmailTemplateType.FORGOT_PASSWORD],
-        context: ForgotPasswordContext,
+        context: "ForgotPasswordContext",
     ) -> str:
         ...  # pragma: no cover
 
-    async def render(self, type, context: EmailContext) -> str:
+    async def render(self, type, context: "EmailContext") -> str:
         jinja_environment = await self._get_jinja_environment()
         subject_template_object = jinja_environment.get_template(type.value)
         return subject_template_object.render(context.dict())

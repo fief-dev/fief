@@ -2,13 +2,12 @@ import pytest
 
 from fief.db import AsyncSession
 from fief.repositories import EmailTemplateRepository
-from fief.services.email_template import (
+from fief.services.email_template.contexts import ForgotPasswordContext, WelcomeContext
+from fief.services.email_template.renderers import (
     EmailSubjectRenderer,
     EmailTemplateRenderer,
-    EmailTemplateType,
-    ForgotPasswordContext,
-    WelcomeContext,
 )
+from fief.services.email_template.types import EmailTemplateType
 from tests.data import TestData
 
 

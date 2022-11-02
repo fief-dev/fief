@@ -22,7 +22,10 @@ from fief.repositories import (
     WorkspaceRepository,
 )
 from fief.services.email import EmailProvider
-from fief.services.email_template import EmailSubjectRenderer, EmailTemplateRenderer
+from fief.services.email_template.renderers import (
+    EmailSubjectRenderer,
+    EmailTemplateRenderer,
+)
 from fief.settings import settings
 
 redis_parameters = urlparse(settings.redis_url)

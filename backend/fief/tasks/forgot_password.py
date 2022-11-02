@@ -2,7 +2,8 @@ import uuid
 
 import dramatiq
 
-from fief.services.email_template import EmailTemplateType, ForgotPasswordContext
+from fief.services.email_template.contexts import ForgotPasswordContext
+from fief.services.email_template.types import EmailTemplateType
 from fief.tasks.base import TaskBase
 
 

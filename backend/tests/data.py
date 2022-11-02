@@ -33,7 +33,7 @@ from fief.models import (
     UserPermission,
     UserRole,
 )
-from fief.services.email_template import EmailTemplateType
+from fief.services.email_template.types import EmailTemplateType
 from fief.services.oauth_provider import AvailableOAuthProvider
 from fief.settings import settings
 
@@ -725,6 +725,7 @@ user_roles: ModelMapping[UserRole] = {
 email_templates: ModelMapping[EmailTemplate] = {
     "base": EmailTemplate(
         type=EmailTemplateType.BASE,
+        subject="",
         content="<html><body><h1>{{ tenant.name }}</h1>{% block main %}{% endblock %}</body></html>",
     ),
     "welcome": EmailTemplate(
