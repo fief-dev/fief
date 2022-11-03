@@ -195,6 +195,22 @@ export class APIClient {
   public deleteAPIKey(id: string): Promise<AxiosResponse<void>> {
     return this.client.delete(`/api-keys/${id}`);
   }
+
+  public listEmailTemplates(params: schemas.PaginationParameters = {}): Promise<AxiosResponse<schemas.PaginatedResults<schemas.emailTemplate.EmailTemplate>>> {
+    return this.client.get('/email-templates/', { params });
+  }
+
+  public getEmailTemplate(id: string): Promise<AxiosResponse<schemas.emailTemplate.EmailTemplate>> {
+    return this.client.get(`/email-templates/${id}`);
+  }
+
+  public updateEmailTemplate(id: string, data: schemas.emailTemplate.EmailTemplateUpdate): Promise<AxiosResponse<schemas.emailTemplate.EmailTemplate>> {
+    return this.client.patch(`/email-templates/${id}`, data);
+  }
+
+  public previewEmailTemplate(id: string): Promise<AxiosResponse<schemas.emailTemplate.EmailTemplatePreview>> {
+    return this.client.get(`/email-templates/${id}/preview`);
+  }
 }
 
 export const isAxiosException = (e: unknown): e is AxiosError<{ detail: any }> => e instanceof AxiosError;

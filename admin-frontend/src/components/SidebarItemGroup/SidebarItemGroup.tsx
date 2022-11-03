@@ -15,7 +15,7 @@ interface SidebarItemGroupProps {
 }
 
 const SidebarItemGroup: React.FunctionComponent<React.PropsWithChildren<SidebarItemGroupProps>> = ({ title, icon, items, pathname }) => {
-  const itemsActive = items.map(({ href }) => href === pathname);
+  const itemsActive = items.map(({ href }) => pathname.startsWith(href));
   const active = itemsActive.some((itemActive) => itemActive === true);
   const [open, setOpen] = useState(active);
 

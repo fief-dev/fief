@@ -11,7 +11,7 @@ class EmailTemplateUpdate(BaseModel):
 
 class EmailTemplateBase(UUIDSchema, CreatedUpdatedAt):
     type: EmailTemplateType
-    subject: Optional[str]
+    subject: str
     content: str
 
 
