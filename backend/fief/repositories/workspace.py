@@ -14,8 +14,7 @@ class WorkspaceRepository(BaseRepository[Workspace], UUIDRepositoryMixin[Workspa
     model = Workspace
 
     async def get_by_domain(self, domain: str) -> Optional[Workspace]:
-      
-        statement = select(Workspace).filter(Workspace.domain.like("%{}%".format(domain)))
+        statement = select(Workspace).filter(Workspace.domain.ilike(f"%{domain}%"))
         return await self.get_one_or_none(statement)
 
     async def get_main(self) -> Optional[Workspace]:
