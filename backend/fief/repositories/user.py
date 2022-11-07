@@ -17,10 +17,7 @@ class UserRepository(BaseRepository[User], UUIDRepositoryMixin[User]):
             .order_by(User.created_at)
             .limit(1)
         )
-        users = await self.list(statement)
-        if len(users) == 0:
-            return None
-        return users[0]
+        return await self.get_one_or_none(statement)
 
     async def count_all(self) -> int:
         statement = select(User)
