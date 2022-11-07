@@ -89,9 +89,9 @@ def migrate_workspaces():
                 workspace.alembic_revision = alembic_revision
                 session.add(workspace)
                 session.commit()
-                typer.secho(f"Done!")
+                typer.secho("Done!")
             except WorkspaceDatabaseConnectionError:
-                typer.secho(f"Failed!", fg="red", err=True)
+                typer.secho("Failed!", fg="red", err=True)
 
 
 @workspaces.command("init-email-templates")
@@ -112,12 +112,12 @@ def init_email_templates():
         workspaces = select(Workspace)
         for [workspace] in session.execute(workspaces):
             assert isinstance(workspace, Workspace)
-            typer.secho(f"Checking {workspace.name}... ", bold=True, nl=False)
+            typer.secho("Checking {workspace.name}... ", bold=True, nl=False)
             try:
                 loop.run_until_complete(init_email_templates(workspace))
-                typer.secho(f"Done!")
+                typer.secho("Done!")
             except ConnectionError:
-                typer.secho(f"Failed!", fg="red", err=True)
+                typer.secho("Failed!", fg="red", err=True)
 
 
 @workspaces.command("create-main")
@@ -256,7 +256,7 @@ def info():
         settings = get_settings()
 
         typer.secho(f"Fief version: {__version__}", bold=True)
-        typer.secho(f"Settings", bold=True)
+        typer.secho("Settings", bold=True)
         for key, value in settings.dict().items():
             typer.echo(f"{key}: {value}")
     except ValidationError as e:
@@ -329,7 +329,7 @@ def run_server(
         )
         if user_email is None:
             typer.secho(
-                f"Main Fief user email not provided in settings. Skipping its creation.",
+                "Main Fief user email not provided in settings. Skipping its creation.",
                 fg=typer.colors.YELLOW,
             )
         else:
@@ -354,7 +354,7 @@ def run_server(
                     f"Invalid main Fief user password: {e.reason}", fg=typer.colors.RED
                 )
                 raise typer.Exit(code=1) from e
-            except UserAlreadyExists as e:
+            except UserAlreadyExists:
                 typer.echo("Main Fief user already exists")
 
     uvicorn.run("fief.app:app", host=host, port=port)

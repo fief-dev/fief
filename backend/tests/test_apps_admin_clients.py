@@ -245,8 +245,8 @@ class TestCreateEncryptionKey:
 
         key = jwk.JWK.from_json(response.text)
 
-        assert key.has_private == True
-        assert key.has_public == True
+        assert key.has_private is True
+        assert key.has_public is True
 
         repository = ClientRepository(workspace_session)
         updated_client = await repository.get_by_id(client.id)
@@ -254,5 +254,5 @@ class TestCreateEncryptionKey:
         assert updated_client.encrypt_jwk is not None
 
         tenant_key = jwk.JWK.from_json(updated_client.encrypt_jwk)
-        assert tenant_key.has_private == False
-        assert tenant_key.has_public == True
+        assert tenant_key.has_private is False
+        assert tenant_key.has_public is True

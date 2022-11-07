@@ -6,7 +6,6 @@ from pydantic import UUID4
 from sqlalchemy import JSON, Column, String, Text
 from sqlalchemy.orm import relationship
 
-from fief.models.admin_api_key import AdminAPIKey
 from fief.models.base import WorkspaceBase
 from fief.models.generics import GUID, TIMESTAMPAware, UUIDModel
 from fief.models.user import User

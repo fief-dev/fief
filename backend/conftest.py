@@ -2,7 +2,6 @@ import asyncio
 import contextlib
 import json
 import secrets
-import smtplib
 import uuid
 from typing import Any, AsyncGenerator, Dict, Optional, Tuple
 from unittest.mock import MagicMock, patch

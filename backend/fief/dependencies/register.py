@@ -6,7 +6,6 @@ from fief.dependencies.tenant import get_current_tenant
 from fief.dependencies.user_field import get_user_create_internal_model, get_user_fields
 from fief.dependencies.users import UserManager, get_user_manager
 from fief.dependencies.workspace_repositories import get_workspace_repository
-from fief.locale import gettext_lazy as _
 from fief.models import RegistrationSession, Tenant, UserField
 from fief.repositories import OAuthAccountRepository, RegistrationSessionRepository
 from fief.schemas.user import UF, UserCreateInternal

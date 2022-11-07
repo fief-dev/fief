@@ -1,6 +1,6 @@
 import asyncio
 import contextlib
-from typing import Any, AsyncContextManager, AsyncGenerator, Callable, ClassVar, Dict
+from typing import AsyncContextManager, AsyncGenerator, Callable, ClassVar
 from urllib.parse import urlparse
 
 import dramatiq
@@ -11,7 +11,7 @@ from pydantic import UUID4
 from fief.db import AsyncSession
 from fief.db.main import create_main_async_session_maker
 from fief.db.workspace import WorkspaceEngineManager, get_workspace_session
-from fief.locale import BabelMiddleware, Translations, get_babel_middleware_kwargs
+from fief.locale import BabelMiddleware, get_babel_middleware_kwargs
 from fief.logger import init_audit_logger, logger
 from fief.models import Tenant, User, Workspace
 from fief.paths import EMAIL_TEMPLATES_DIRECTORY

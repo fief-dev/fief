@@ -39,7 +39,7 @@ class Workspaces:
                         WorkspaceStats(
                             workspace=workspace,
                             reachable=True,
-                            external_db=workspace.database_type != None,
+                            external_db=workspace.database_type is not None,
                             nb_users=nb_users,
                         )
                     )
@@ -47,7 +47,7 @@ class Workspaces:
                 stats.append(
                     WorkspaceStats(
                         workspace=workspace,
-                        external_db=workspace.database_type != None,
+                        external_db=workspace.database_type is not None,
                         reachable=False,
                     )
                 )

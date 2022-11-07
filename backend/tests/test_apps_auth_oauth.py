@@ -71,7 +71,7 @@ class TestOAuthAuthorize:
             cookies[settings.login_session_cookie_name] = cookie
 
         response = await test_client_auth.get(
-            f"/oauth/authorize", params={"tenant": str(tenant.id)}, cookies=cookies
+            "/oauth/authorize", params={"tenant": str(tenant.id)}, cookies=cookies
         )
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST

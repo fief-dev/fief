@@ -13,7 +13,7 @@ sentry_sdk.init(
     integrations=[sentry_dramatiq.DramatiqIntegration(), RedisIntegration()],
 )
 
-from fief import tasks
+from fief import tasks  # noqa: E402
 
 logger.info("Fief Worker started", version=__version__)
 
