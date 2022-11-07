@@ -4,6 +4,7 @@ import httpx
 import pytest
 from fastapi import status
 
+from fief import schemas
 from tests.data import TestData
 
 
@@ -64,57 +65,64 @@ class TestGetEmailTemplate:
 @pytest.mark.asyncio
 @pytest.mark.workspace_host
 class TestPreviewEmailTemplate:
-    async def test_unauthorized(
-        self, test_client_admin: httpx.AsyncClient, test_data: TestData
-    ):
-        email_template = test_data["email_templates"]["base"]
-        response = await test_client_admin.get(
-            f"/email-templates/{email_template.id}/preview"
+    async def test_unauthorized(self, test_client_admin: httpx.AsyncClient):
+        response = await test_client_admin.post(
+            "/email-templates/preview",
+            json={
+                "type": schemas.email_template.EmailTemplateType.WELCOME,
+                "subject": "SUBJECT",
+                "content": "CONTENT",
+            },
         )
 
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
     @pytest.mark.authenticated_admin
-    async def test_not_existing(
-        self, test_client_admin: httpx.AsyncClient, not_existing_uuid: uuid.UUID
-    ):
-        response = await test_client_admin.get(
-            f"/email-templates/{not_existing_uuid}/preview"
-        )
-
-        assert response.status_code == status.HTTP_404_NOT_FOUND
-
-    @pytest.mark.authenticated_admin
     @pytest.mark.parametrize(
-        "type,subject,content",
+        "type,subject_input,subject_output,content_input,content_output",
         [
-            ("base", "", "<html><body><h1>Default</h1></body></html>"),
-            ("welcome", "TITLE", "<html><body><h1>Default</h1>WELCOME</body></html>"),
             (
-                "forgot_password",
-                "TITLE",
-                "<html><body><h1>Default</h1>FORGOT_PASSWORD https://example.fief.dev/reset</body></html>",
+                "BASE",
+                "",
+                "",
+                "<html>{{ tenant.name }}</html>",
+                "<html>Default</html>",
+            ),
+            (
+                "WELCOME",
+                "Hello, {{ user.email }}",
+                "Hello, anne@bretagne.duchy",
+                "{% extends 'BASE' %}{% block main %}WELCOME, {{ user.email }}{% endblock %}",
+                "<html><body><h1>Default</h1>WELCOME, anne@bretagne.duchy</body></html>",
+            ),
+            (
+                "FORGOT_PASSWORD",
+                "Password forgot, {{ user.email }}",
+                "Password forgot, anne@bretagne.duchy",
+                "{% extends 'BASE' %}{% block main %}FORGOT_PASSWORD, {{ user.email }} {{ reset_url }}{% endblock %}",
+                "<html><body><h1>Default</h1>FORGOT_PASSWORD, anne@bretagne.duchy https://example.fief.dev/reset</body></html>",
             ),
         ],
     )
     async def test_valid(
         self,
         type: str,
-        subject: str,
-        content: str,
+        subject_input: str,
+        subject_output: str,
+        content_input: str,
+        content_output: str,
         test_client_admin: httpx.AsyncClient,
-        test_data: TestData,
     ):
-        email_template = test_data["email_templates"][type]
-        response = await test_client_admin.get(
-            f"/email-templates/{email_template.id}/preview"
+        response = await test_client_admin.post(
+            "/email-templates/preview",
+            json={"type": type, "subject": subject_input, "content": content_input},
         )
 
         assert response.status_code == status.HTTP_200_OK
 
         json = response.json()
-        assert json["subject"] == subject
-        assert json["content"] == content
+        assert json["subject"] == subject_output
+        assert json["content"] == content_output
 
 
 @pytest.mark.asyncio

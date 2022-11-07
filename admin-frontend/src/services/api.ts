@@ -208,8 +208,8 @@ export class APIClient {
     return this.client.patch(`/email-templates/${id}`, data);
   }
 
-  public previewEmailTemplate(id: string): Promise<AxiosResponse<schemas.emailTemplate.EmailTemplatePreview>> {
-    return this.client.get(`/email-templates/${id}/preview`);
+  public previewEmailTemplate(data: schemas.emailTemplate.EmailTemplatePreviewInput): Promise<AxiosResponse<schemas.emailTemplate.EmailTemplatePreviewResult>> {
+    return this.client.post(`/email-templates/preview`, data);
   }
 }
 

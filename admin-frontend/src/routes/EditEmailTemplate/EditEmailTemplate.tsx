@@ -32,27 +32,23 @@ const EditEmailTemplate: React.FunctionComponent<React.PropsWithChildren<unknown
 
   const [loadingPreview, setLoadingPreview] = useState(false);
 
-  const update = useCallback(async () => {
+  const onUpdate = useCallback(async () => {
     await api.updateEmailTemplate(emailTemplate.id, { content, subject });
+    navigate('/email-templates');
+  }, [api, emailTemplate, content, subject, navigate]);
+
+  const preview = useCallback(async () => {
+    setLoadingPreview(true);
+    const { data: preview } = await api.previewEmailTemplate({ type: emailTemplate.type, content, subject });
+    setPreviewContent(preview.content);
+    setPreviewSubject(preview.subject);
+    setLoadingPreview(false);
   }, [api, emailTemplate, content, subject]);
 
-  const onUpdate = useCallback(async () => {
-    await update();
-    navigate('/email-templates');
-  }, [update, navigate]);
-
   useEffect(() => {
-    const _update = async () => {
-      setLoadingPreview(true);
-      await update();
-      const { data: preview } = await api.previewEmailTemplate(emailTemplate.id);
-      setPreviewContent(preview.content);
-      setPreviewSubject(preview.subject);
-      setLoadingPreview(false);
-    };
-    let timeoutId = setTimeout(() => _update(), 1000);
+    let timeoutId = setTimeout(() => preview(), 1000);
     return () => window.clearTimeout(timeoutId);
-  }, [api, emailTemplate, content, update]);
+  }, [preview]);
 
   return (
     <Layout>
@@ -82,19 +78,22 @@ const EditEmailTemplate: React.FunctionComponent<React.PropsWithChildren<unknown
 
       </div>
       <div className="grid grid-cols-2 gap-4">
-        <div style={{ height: '75vh', overflow: 'auto' }}>
+        <div>
+
           <input
             className="form-input w-full mb-4"
             type="text"
             value={subject}
             onChange={(event) => setSubject(event.target.value)}
           />
-          <CodeMirror
-            value={content}
-            extensions={[html()]}
-            theme={githubDark}
-            onChange={(value) => setContent(value)}
-          />
+          <div style={{ height: '75vh', overflow: 'auto' }}>
+            <CodeMirror
+              value={content}
+              extensions={[html()]}
+              theme={githubDark}
+              onChange={(value) => setContent(value)}
+            />
+          </div>
         </div>
         <div className="h-full w-full relative">
           <input
@@ -103,7 +102,9 @@ const EditEmailTemplate: React.FunctionComponent<React.PropsWithChildren<unknown
             type="text"
             value={previewSubject}
           />
-          <iframe className="h-full w-full" title="Preview" srcDoc={previewContent} />
+          <div style={{ height: '75vh', overflow: 'auto' }}>
+            <iframe className="h-full w-full" title="Preview" srcDoc={previewContent} />
+          </div>
           {loadingPreview &&
             <div className="absolute inset-0 bg-gray-300 w-full h-full flex justify-center items-center">
               <div className="w-6 h-6">

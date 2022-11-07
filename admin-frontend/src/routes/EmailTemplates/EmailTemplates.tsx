@@ -30,6 +30,10 @@ const EmailTemplates: React.FunctionComponent<React.PropsWithChildren<unknown>> 
         ),
       },
       {
+        Header: t('list.subject') as string,
+        accessor: 'subject',
+      },
+      {
         id: 'actions',
         disableSortBy: true,
         accessor: 'id',

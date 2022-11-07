@@ -58,24 +58,27 @@ async def get_email_template(
     return schemas.email_template.EmailTemplate.from_orm(email_template)
 
 
-@router.get(
-    "/{id:uuid}/preview",
+@router.post(
+    "/preview",
     name="email_templates:preview",
-    response_model=schemas.email_template.EmailTemplatePreview,
+    response_model=schemas.email_template.EmailTemplatePreviewResult,
 )
 async def preview_email_template(
-    email_template: EmailTemplate = Depends(get_email_template_by_id_or_404),
-    session: AsyncSession = Depends(get_current_workspace_session),
+    email_template_preview_input: schemas.email_template.EmailTemplatePreviewInput,
     email_template_renderer: EmailTemplateRenderer = Depends(
         get_email_template_renderer
     ),
     email_subject_renderer: EmailSubjectRenderer = Depends(get_email_subject_renderer),
-) -> schemas.email_template.EmailTemplatePreview:
-    context_class = EMAIL_TEMPLATE_CONTEXT_CLASS_MAP[email_template.type]
+    session: AsyncSession = Depends(get_current_workspace_session),
+) -> schemas.email_template.EmailTemplatePreviewResult:
+    type = email_template_preview_input.type
+    context_class = EMAIL_TEMPLATE_CONTEXT_CLASS_MAP[type]
     sample_context = await context_class.create_sample_context(session)
-    subject = await email_subject_renderer.render(EmailTemplateType[email_template.type], sample_context)  # type: ignore
-    content = await email_template_renderer.render(EmailTemplateType[email_template.type], sample_context)  # type: ignore
-    return schemas.email_template.EmailTemplatePreview(subject=subject, content=content)
+    subject = await email_subject_renderer.render(EmailTemplateType[type], sample_context)  # type: ignore
+    content = await email_template_renderer.render(EmailTemplateType[type], sample_context)  # type: ignore
+    return schemas.email_template.EmailTemplatePreviewResult(
+        subject=subject, content=content
+    )
 
 
 @router.patch(

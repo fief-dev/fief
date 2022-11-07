@@ -17,9 +17,15 @@ interface EmailTemplateBase extends UUIDSchema, CreatedUpdatedAt {
   content: string;
 }
 
-export interface EmailTemplate extends EmailTemplateBase {}
+export interface EmailTemplate extends EmailTemplateBase { }
 
-export interface EmailTemplatePreview {
+export interface EmailTemplatePreviewInput {
+  type: EmailTemplateType
+  subject: string;
+  content: string;
+}
+
+export interface EmailTemplatePreviewResult {
   subject: string;
   content: string;
 }

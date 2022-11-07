@@ -21,17 +21,31 @@ def _templates_list_to_map(
 
 
 class EmailTemplateLoader:
-    def __init__(self, templates: List["EmailTemplate"]):
+    def __init__(
+        self,
+        templates: List["EmailTemplate"],
+        *,
+        templates_overrides: Optional[Dict[EmailTemplateType, "EmailTemplate"]] = None,
+    ):
         self.templates_map = _templates_list_to_map(templates)
+        if templates_overrides:
+            for type, template in templates_overrides.items():
+                self.templates_map[type] = template
 
     def __call__(self, name: str) -> str:
         return self.templates_map[name].content
 
 
 class EmailTemplateRenderer:
-    def __init__(self, repository: "EmailTemplateRepository"):
+    def __init__(
+        self,
+        repository: "EmailTemplateRepository",
+        *,
+        templates_overrides: Optional[Dict[EmailTemplateType, "EmailTemplate"]] = None,
+    ):
         self.repository = repository
         self._jinja_environment: Optional[jinja2.Environment] = None
+        self.templates_overrides = templates_overrides
 
     @overload
     async def render(
@@ -55,23 +69,41 @@ class EmailTemplateRenderer:
     async def _get_jinja_environment(self) -> jinja2.Environment:
         if self._jinja_environment is None:
             templates = await self.repository.all()
-            loader = jinja2.FunctionLoader(EmailTemplateLoader(templates))
+            loader = jinja2.FunctionLoader(
+                EmailTemplateLoader(
+                    templates, templates_overrides=self.templates_overrides
+                )
+            )
             self._jinja_environment = jinja2.Environment(loader=loader, autoescape=True)
         return self._jinja_environment
 
 
 class EmailSubjectLoader:
-    def __init__(self, templates: List["EmailTemplate"]):
+    def __init__(
+        self,
+        templates: List["EmailTemplate"],
+        *,
+        templates_overrides: Optional[Dict[EmailTemplateType, "EmailTemplate"]] = None,
+    ):
         self.templates_map = _templates_list_to_map(templates)
+        if templates_overrides:
+            for type, template in templates_overrides.items():
+                self.templates_map[type] = template
 
     def __call__(self, name: str) -> str:
         return self.templates_map[name].subject
 
 
 class EmailSubjectRenderer:
-    def __init__(self, repository: "EmailTemplateRepository"):
+    def __init__(
+        self,
+        repository: "EmailTemplateRepository",
+        *,
+        templates_overrides: Optional[Dict[EmailTemplateType, "EmailTemplate"]] = None,
+    ):
         self.repository = repository
         self._jinja_environment: Optional[jinja2.Environment] = None
+        self.templates_overrides = templates_overrides
 
     @overload
     async def render(
@@ -95,6 +127,10 @@ class EmailSubjectRenderer:
     async def _get_jinja_environment(self) -> jinja2.Environment:
         if self._jinja_environment is None:
             templates = await self.repository.all()
-            loader = jinja2.FunctionLoader(EmailSubjectLoader(templates))
+            loader = jinja2.FunctionLoader(
+                EmailSubjectLoader(
+                    templates, templates_overrides=self.templates_overrides
+                )
+            )
             self._jinja_environment = jinja2.Environment(loader=loader, autoescape=True)
         return self._jinja_environment

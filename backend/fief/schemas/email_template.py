@@ -19,6 +19,12 @@ class EmailTemplate(EmailTemplateBase):
     pass
 
 
-class EmailTemplatePreview(BaseModel):
+class EmailTemplatePreviewInput(BaseModel):
+    type: EmailTemplateType
+    subject: str
+    content: str
+
+
+class EmailTemplatePreviewResult(BaseModel):
     subject: str
     content: str
