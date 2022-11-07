@@ -82,10 +82,12 @@ class TaskBase:
             ..., AsyncContextManager[AsyncSession]
         ] = get_workspace_session_task,
         email_provider: EmailProvider = email_provider,
+        send_task: SendTask = send_task,
     ) -> None:
         self.get_main_session = get_main_session
         self.get_workspace_session = get_workspace_session
         self.email_provider = email_provider
+        self.send_task = send_task
 
         self.jinja_env = jinja2.Environment(
             loader=jinja2.FileSystemLoader(EMAIL_TEMPLATES_DIRECTORY), autoescape=True

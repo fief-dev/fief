@@ -38,6 +38,7 @@ from tests.types import TestClientGeneratorType
 @pytest.mark.asyncio
 async def unreachable_external_db_workspace(
     request,
+    latest_revision: str,
     main_session: AsyncSession,
 ) -> AsyncGenerator[Workspace, None]:
     workspace = Workspace(
@@ -49,7 +50,7 @@ async def unreachable_external_db_workspace(
         database_username="guillaume",
         database_password="alienor",
         database_name="fief_normandy",
-        alembic_revision="LATEST",
+        alembic_revision=latest_revision,
     )
     main_session.add(workspace)
     await main_session.commit()

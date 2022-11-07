@@ -26,6 +26,9 @@ class BaseRepositoryProtocol(Protocol[M]):
     model: Type[M]
     session: AsyncSession
 
+    def __init__(self, session: AsyncSession) -> None:
+        ...
+
     async def paginate(
         self,
         statement: Select,

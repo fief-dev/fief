@@ -136,17 +136,25 @@ async def workspace(
         database_username=url.username,
         database_password=url.password,
         database_name=url.database,
-        alembic_revision="LATEST",
     )
     main_session.add(workspace)
     await main_session.commit()
 
     workspace_db = WorkspaceDatabase()
-    workspace_db.migrate(
+    revision = workspace_db.migrate(
         workspace.get_database_connection_parameters(False), workspace.get_schema_name()
     )
+    workspace.alembic_revision = revision
+    main_session.add(workspace)
+    await main_session.commit()
 
     yield workspace
+
+
+@pytest.fixture(scope="session")
+def latest_revision(workspace: Workspace) -> str:
+    assert workspace.alembic_revision is not None
+    return workspace.alembic_revision
 
 
 @pytest.fixture(scope="session")
@@ -209,9 +217,9 @@ def not_existing_uuid() -> uuid.UUID:
 
 
 @pytest.fixture
-async def workspace_db_mock() -> MagicMock:
+async def workspace_db_mock(latest_revision: str) -> MagicMock:
     mock = MagicMock(spec=WorkspaceDatabase)
-    mock.get_latest_revision.return_value = "LATEST"
+    mock.get_latest_revision.return_value = latest_revision
     return mock
 
 
