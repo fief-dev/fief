@@ -112,7 +112,7 @@ def init_email_templates():
         workspaces = select(Workspace)
         for [workspace] in session.execute(workspaces):
             assert isinstance(workspace, Workspace)
-            typer.secho("Checking {workspace.name}... ", bold=True, nl=False)
+            typer.secho(f"Checking {workspace.name}... ", bold=True, nl=False)
             try:
                 loop.run_until_complete(init_email_templates(workspace))
                 typer.secho("Done!")
