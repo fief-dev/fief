@@ -11,7 +11,12 @@ class UserRepository(BaseRepository[User], UUIDRepositoryMixin[User]):
     model = User
 
     async def get_one_by_tenant(self, tenant: UUID4) -> Optional[User]:
-        statement = select(User).where(User.tenant_id == tenant).limit(1)
+        statement = (
+            select(User)
+            .where(User.tenant_id == tenant)
+            .order_by(User.created_at)
+            .limit(1)
+        )
         users = await self.list(statement)
         if len(users) == 0:
             return None
