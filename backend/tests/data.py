@@ -247,24 +247,28 @@ user_fields: ModelMapping[UserField] = {
 users: ModelMapping[User] = {
     "regular": User(
         id=uuid.uuid4(),
+        created_at=datetime.now(tz=timezone.utc),
         email="anne@bretagne.duchy",
         hashed_password=hashed_password,
         tenant=tenants["default"],
     ),
     "regular_secondary": User(
         id=uuid.uuid4(),
+        created_at=datetime.now(tz=timezone.utc) + timedelta(seconds=1),
         email="anne@nantes.city",
         hashed_password=hashed_password,
         tenant=tenants["secondary"],
     ),
     "regular_default_2": User(
         id=uuid.uuid4(),
+        created_at=datetime.now(tz=timezone.utc) + timedelta(seconds=2),
         email="isabeau@bretagne.duchy",
         hashed_password=hashed_password,
         tenant=tenants["default"],
     ),
     "inactive": User(
         id=uuid.uuid4(),
+        created_at=datetime.now(tz=timezone.utc) + timedelta(seconds=3),
         email="marguerite@bretagne.duchy",
         hashed_password=hashed_password,
         is_active=False,
