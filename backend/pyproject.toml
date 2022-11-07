@@ -68,11 +68,17 @@ ignore_missing_imports = true
 [tool.isort]
 profile = "black"
 
+[tool.ruff]
+ignore = ["E501"]
+per-file-ignores = {"conftest.py" = ["E731"], "fief/repositories/*" = ["E711", "E712"], "fief/alembic/*" = ["F401"]}
+
+
 [tool.coverage.run]
 concurrency = ["thread", "gevent"]
 omit = ["fief/alembic/*"]
 
 [tool.pytest.ini_options]
+addopts = "--cov fief/ --cov-report=term-missing"
 markers = ["test_data", "workspace_host", "access_token", "authenticated_admin"]
 asyncio_mode = "auto"
 
@@ -110,6 +116,7 @@ dependencies = [
   "pytest-cov",
   "pytest-asyncio",
   "pytest-mock",
+  "ruff",
   "tryceratops",
   "types-python-slugify",
   "types-pytz",
@@ -122,12 +129,14 @@ lint = [
   "isort ./fief",
   "isort ./tests",
   "black . ",
+  "ruff -f .",
   "mypy fief/",
   "tryceratops fief/",
 ]
 lint-check = [
   "isort --check-only ./fief ./tests",
   "black --check .",
+  "ruff .",
   "mypy fief/",
   "tryceratops fief/",
 ]

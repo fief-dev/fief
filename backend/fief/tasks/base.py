@@ -1,6 +1,6 @@
 import asyncio
 import contextlib
-from typing import Any, AsyncContextManager, AsyncGenerator, Callable, ClassVar, Dict
+from typing import AsyncContextManager, AsyncGenerator, Callable, ClassVar
 from urllib.parse import urlparse
 
 import dramatiq
@@ -11,12 +11,21 @@ from pydantic import UUID4
 from fief.db import AsyncSession
 from fief.db.main import create_main_async_session_maker
 from fief.db.workspace import WorkspaceEngineManager, get_workspace_session
-from fief.locale import BabelMiddleware, Translations, get_babel_middleware_kwargs
+from fief.locale import BabelMiddleware, get_babel_middleware_kwargs
 from fief.logger import init_audit_logger, logger
 from fief.models import Tenant, User, Workspace
 from fief.paths import EMAIL_TEMPLATES_DIRECTORY
-from fief.repositories import TenantRepository, UserRepository, WorkspaceRepository
+from fief.repositories import (
+    EmailTemplateRepository,
+    TenantRepository,
+    UserRepository,
+    WorkspaceRepository,
+)
 from fief.services.email import EmailProvider
+from fief.services.email_template.renderers import (
+    EmailSubjectRenderer,
+    EmailTemplateRenderer,
+)
 from fief.settings import settings
 
 redis_parameters = urlparse(settings.redis_url)
@@ -123,9 +132,18 @@ class TaskBase:
                 raise TaskError()
             return tenant
 
-    def _render_email_template(
-        self, template: str, translations: Translations, context: Dict[str, Any]
-    ) -> str:
-        self.jinja_env.install_gettext_translations(translations, newstyle=True)  # type: ignore
-        template_object = self.jinja_env.get_template(template)
-        return template_object.render(context)
+    @contextlib.asynccontextmanager
+    async def _get_email_template_renderer(
+        self, workspace: Workspace
+    ) -> AsyncGenerator[EmailTemplateRenderer, None]:
+        async with self.get_workspace_session(workspace) as session:
+            repository = EmailTemplateRepository(session)
+            yield EmailTemplateRenderer(repository)
+
+    @contextlib.asynccontextmanager
+    async def _get_email_subject_renderer(
+        self, workspace: Workspace
+    ) -> AsyncGenerator[EmailSubjectRenderer, None]:
+        async with self.get_workspace_session(workspace) as session:
+            repository = EmailTemplateRepository(session)
+            yield EmailSubjectRenderer(repository)

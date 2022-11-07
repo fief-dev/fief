@@ -12,6 +12,7 @@ from fief.models import (
     AuthorizationCode,
     Client,
     ClientType,
+    EmailTemplate,
     Grant,
     LoginSession,
     M,
@@ -32,6 +33,7 @@ from fief.models import (
     UserPermission,
     UserRole,
 )
+from fief.services.email_template.types import EmailTemplateType
 from fief.services.oauth_provider import AvailableOAuthProvider
 from fief.settings import settings
 
@@ -62,6 +64,7 @@ class TestData(TypedDict):
     roles: ModelMapping[Role]
     user_permissions: ModelMapping[UserPermission]
     user_roles: ModelMapping[UserRole]
+    email_templates: ModelMapping[EmailTemplate]
 
 
 tenants: ModelMapping[Tenant] = {
@@ -244,24 +247,28 @@ user_fields: ModelMapping[UserField] = {
 users: ModelMapping[User] = {
     "regular": User(
         id=uuid.uuid4(),
+        created_at=datetime.now(tz=timezone.utc),
         email="anne@bretagne.duchy",
         hashed_password=hashed_password,
         tenant=tenants["default"],
     ),
     "regular_secondary": User(
         id=uuid.uuid4(),
+        created_at=datetime.now(tz=timezone.utc) + timedelta(seconds=1),
         email="anne@nantes.city",
         hashed_password=hashed_password,
         tenant=tenants["secondary"],
     ),
     "regular_default_2": User(
         id=uuid.uuid4(),
+        created_at=datetime.now(tz=timezone.utc) + timedelta(seconds=2),
         email="isabeau@bretagne.duchy",
         hashed_password=hashed_password,
         tenant=tenants["default"],
     ),
     "inactive": User(
         id=uuid.uuid4(),
+        created_at=datetime.now(tz=timezone.utc) + timedelta(seconds=3),
         email="marguerite@bretagne.duchy",
         hashed_password=hashed_password,
         is_active=False,
@@ -719,6 +726,24 @@ user_roles: ModelMapping[UserRole] = {
     ),
 }
 
+email_templates: ModelMapping[EmailTemplate] = {
+    "base": EmailTemplate(
+        type=EmailTemplateType.BASE,
+        subject="",
+        content="<html><body><h1>{{ tenant.name }}</h1>{% block main %}{% endblock %}</body></html>",
+    ),
+    "welcome": EmailTemplate(
+        type=EmailTemplateType.WELCOME,
+        subject="TITLE",
+        content='{% extends "BASE" %}{% block main %}WELCOME{% endblock %}',
+    ),
+    "forgot_password": EmailTemplate(
+        type=EmailTemplateType.FORGOT_PASSWORD,
+        subject="TITLE",
+        content='{% extends "BASE" %}{% block main %}FORGOT_PASSWORD {{ reset_url }}{% endblock %}',
+    ),
+}
+
 data_mapping: TestData = {
     "tenants": tenants,
     "clients": clients,
@@ -738,6 +763,7 @@ data_mapping: TestData = {
     "roles": roles,
     "user_permissions": user_permissions,
     "user_roles": user_roles,
+    "email_templates": email_templates,
 }
 
 __all__ = [

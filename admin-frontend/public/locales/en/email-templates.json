@@ -1,0 +1,19 @@
+{
+  "email_template_type": {
+    "BASE": "Base",
+    "WELCOME": "Welcome",
+    "FORGOT_PASSWORD": "Forgot password"
+  },
+  "list": {
+    "title": "Email templates",
+    "type": "Type",
+    "subject": "Subject",
+    "actions": "Actions",
+    "update": "Update"
+  },
+  "edit": {
+    "title": "Edit {{ type }} template",
+    "back": "Back",
+    "update": "Update"
+  }
+}

@@ -26,3 +26,7 @@ class Tenant(BaseTenant):
 
 class TenantEmbedded(BaseTenant):
     pass
+
+
+class TenantEmailContext(BaseTenant):
+    pass

@@ -5,6 +5,8 @@ import dramatiq
 
 from fief.models import UserRole
 from fief.repositories import RoleRepository, UserRoleRepository
+from fief.services.email_template.contexts import WelcomeContext
+from fief.services.email_template.types import EmailTemplateType
 from fief.tasks.base import TaskBase, send_task
 from fief.tasks.user_permissions import on_user_role_created
 
@@ -40,14 +42,25 @@ class OnAfterRegisterTask(TaskBase):
                 )
 
         # Send welcome email
-        translations = user.get_translations()
-        title = translations.gettext("Welcome to %(tenant)s!") % {"tenant": tenant.name}
-        context = {"tenant": tenant, "title": title}
-        html = self._render_email_template("welcome.html", translations, context)
+        context = WelcomeContext(tenant=tenant, user=user)
+        async with self._get_email_subject_renderer(
+            workspace
+        ) as email_subject_renderer:
+            subject = await email_subject_renderer.render(
+                EmailTemplateType.WELCOME, context
+            )
+
+        async with self._get_email_template_renderer(
+            workspace
+        ) as email_template_renderer:
+            html = await email_template_renderer.render(
+                EmailTemplateType.WELCOME, context
+            )
+
         self.email_provider.send_email(
             sender=("contact@fief.dev", None),
             recipient=(user.email, None),
-            subject=title,
+            subject=subject,
             html=html,
         )
 

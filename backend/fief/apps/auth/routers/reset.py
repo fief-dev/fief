@@ -77,7 +77,7 @@ async def reset_password(
             await user_manager.reset_password(
                 form.token.data, form.password.data, request
             )
-        except (InvalidResetPasswordToken, UserNotExists, UserInactive) as e:
+        except (InvalidResetPasswordToken, UserNotExists, UserInactive):
             return await form_helper.get_error_response(
                 _("The reset password token is invalid or expired."),
                 "invalid_token",

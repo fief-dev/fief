@@ -5,6 +5,7 @@ import { ArrowLeftIcon } from '@heroicons/react/20/solid';
 
 import { ReactComponent as AppsIcon } from '../../images/icons/apps.svg';
 import { ReactComponent as ClientsIcon } from '../../images/icons/clients.svg';
+import { ReactComponent as GeometryIcon } from '../../images/icons/geometry.svg';
 import { ReactComponent as DashboardIcon } from '../../images/icons/dashboard.svg';
 import { ReactComponent as KeyIcon } from '../../images/icons/key.svg';
 import { ReactComponent as LockIcon } from '../../images/icons/lock.svg';
@@ -132,6 +133,14 @@ const Sidebar: React.FunctionComponent<React.PropsWithChildren<SidebarProps>> = 
                 items={[
                   { title: t('sidebar.permissions'), href: '/permissions'},
                   { title: t('sidebar.roles'), href: '/roles'},
+                ]}
+                pathname={pathname}
+              />
+              <SidebarItemGroup
+                title={t('sidebar.customization')}
+                icon={<GeometryIcon className="className: 'shrink-0 h-6 w-6" />}
+                items={[
+                  { title: t('sidebar.email_templates'), href: '/email-templates'},
                 ]}
                 pathname={pathname}
               />

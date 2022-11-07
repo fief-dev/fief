@@ -4,6 +4,7 @@ from fief.models.audit_log import AuditLog, AuditLogMessage
 from fief.models.authorization_code import AuthorizationCode
 from fief.models.base import MainBase, WorkspaceBase
 from fief.models.client import Client, ClientType
+from fief.models.email_template import EmailTemplate
 from fief.models.generics import M_UUID, M
 from fief.models.grant import Grant
 from fief.models.login_session import LoginSession
@@ -36,6 +37,7 @@ __all__ = [
     "AuthorizationCode",
     "Client",
     "ClientType",
+    "EmailTemplate",
     "Grant",
     "AuditLog",
     "AuditLogMessage",

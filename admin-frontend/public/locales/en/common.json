@@ -38,6 +38,8 @@
     "rbac": "Access control",
     "permissions": "Permissions",
     "roles": "Roles",
+    "customization": "Customization",
+    "email_templates": "Email templates",
     "api_keys": "API Keys"
   },
   "tenant_combobox": {

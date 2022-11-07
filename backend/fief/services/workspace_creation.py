@@ -7,11 +7,13 @@ from fief.db.workspace import WorkspaceEngineManager, get_workspace_session
 from fief.models import Client, Tenant, Workspace, WorkspaceUser
 from fief.repositories import (
     ClientRepository,
+    EmailTemplateRepository,
     TenantRepository,
     WorkspaceRepository,
     WorkspaceUserRepository,
 )
 from fief.schemas.workspace import WorkspaceCreate
+from fief.services.email_template.initializer import EmailTemplateInitializer
 from fief.services.main_workspace import get_main_fief_client, get_main_fief_workspace
 from fief.services.workspace_db import (
     WorkspaceDatabase,
@@ -77,7 +79,7 @@ class WorkspaceCreation:
             workspace_user = WorkspaceUser(workspace_id=workspace.id, user_id=user_id)
             await self.workspace_user_repository.create(workspace_user)
 
-        # Create a default tenant and client
+        # Create a default tenant, client and email templates
         async with get_workspace_session(
             workspace, self.workspace_engine_manager
         ) as session:
@@ -106,6 +108,12 @@ class WorkspaceCreation:
                 client.encrypt_jwk = default_encryption_key
 
             session.add(client)
+
+            email_template_repository = EmailTemplateRepository(session)
+            email_template_initializer = EmailTemplateInitializer(
+                email_template_repository
+            )
+            await email_template_initializer.init_templates()
 
             await session.commit()
 

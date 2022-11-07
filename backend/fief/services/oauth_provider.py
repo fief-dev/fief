@@ -74,7 +74,7 @@ async def get_oauth_id_email(
 
     try:
         return await oauth_provider_service.get_id_email(access_token)
-    except (NotImplementedError, GetIdEmailError) as e:
+    except (NotImplementedError, GetIdEmailError):
         raise
 
 

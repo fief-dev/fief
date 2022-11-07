@@ -1,6 +1,5 @@
 from typing import List, Optional
 
-from fief.locale import gettext_lazy as _
 from fief.models import OAuthProvider, Tenant
 from fief.schemas.auth import (
     AuthorizeError,

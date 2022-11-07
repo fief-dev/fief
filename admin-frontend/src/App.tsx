@@ -1,5 +1,5 @@
 import { Suspense, useEffect, useMemo } from 'react';
-import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 
 import './i18n';
 import DBConnectionErrorAlert from './components/DBConnectionErrorAlert/DBConnectionErrorAlert';
@@ -17,6 +17,8 @@ import CreateWorkspaceStep2 from './routes/CreateWorkspaceStep2/CreateWorkspaceS
 import CreateWorkspaceStep3 from './routes/CreateWorkspaceStep3/CreateWorkspaceStep3';
 import CreateWorkspaceStep4 from './routes/CreateWorkspaceStep4/CreateWorkspaceStep4';
 import Dashboard from './routes/Dashboard/Dashboard';
+import EditEmailTemplate, { loader as emailTemplateLoader } from './routes/EditEmailTemplate/EditEmailTemplate';
+import EmailTemplates from './routes/EmailTemplates/EmailTemplates';
 import OAuthProviders from './routes/OAuthProviders/OAuthProviders';
 import Permissions from './routes/Permissions/Permissions';
 import Roles from './routes/Roles/Roles';
@@ -30,20 +32,98 @@ function App() {
   const [workspaces, loading] = useWorkspacesCache();
   const [currentWorkspace, currentWorkspaceLoading] = useCurrentWorkspace();
   const api = useMemo(() => new APIClient(), []);
-  const navigate = useNavigate();
-  const { pathname } = useLocation();
+
+  const router = createBrowserRouter(
+    [
+      {
+        path: "/",
+        element: <Dashboard />,
+      },
+      {
+        path: "/tenants",
+        element: <Tenants />,
+      },
+      {
+        path: "/clients",
+        element: <Clients />,
+      },
+      {
+        path: "/oauth-providers",
+        element: <OAuthProviders />,
+      },
+      {
+        path: "/users",
+        element: <UserFieldsSelectionContextProvider><Users /></UserFieldsSelectionContextProvider>,
+      },
+      {
+        path: "/user-fields",
+        element: <UserFields />,
+      },
+      {
+        path: "/permissions",
+        element: <Permissions />,
+      },
+      {
+        path: "/roles",
+        element: <Roles />,
+      },
+      {
+        path: "/email-templates",
+        element: <EmailTemplates />,
+      },
+      {
+        path: "/email-templates/:emailTemplateId",
+        element: <EditEmailTemplate />,
+        loader: emailTemplateLoader,
+      },
+      {
+        path: "/api-keys",
+        element: <APIKeys />,
+      },
+      {
+        path: "/select-workspace",
+        element: <SelectWorkspace />,
+      },
+      {
+        path: "/create-workspace",
+        element: <CreateWorkspace />,
+        children: [
+          {
+            path: 'step1',
+            element: <CreateWorkspaceStep1 />
+          },
+          {
+            path: 'step2',
+            element: <CreateWorkspaceStep2 />
+          },
+          {
+            path: 'step3',
+            element: <CreateWorkspaceStep3 />
+          },
+          {
+            path: 'step4',
+            element: <CreateWorkspaceStep4 />
+          },
+        ]
+      },
+    ],
+    { basename: process.env.PUBLIC_URL },
+  );
+
+  const { state: { location: { pathname } } } = router;
 
   useEffect(() => {
-    if (pathname === '/create-workspace') {
-      navigate('/create-workspace/step1', { replace: true });
-    } else if (!loading && !currentWorkspaceLoading && !pathname.startsWith('/create-workspace')) {
+    console.log(pathname);
+    if (pathname === '/admin/create-workspace') {
+      router.navigate('/admin/create-workspace/step1', { replace: true });
+    } else if (!loading && !currentWorkspaceLoading && !pathname.startsWith('/admin/create-workspace')) {
       if (workspaces.length === 0) {
-        navigate('/create-workspace');
+        router.navigate('/admin/create-workspace');
       } else if (!currentWorkspace) {
-        navigate('/select-workspace');
+        router.navigate('/admin/select-workspace');
       }
     }
-  }, [pathname, loading, workspaces, currentWorkspace, currentWorkspaceLoading, navigate]);
+  }, [loading, workspaces, currentWorkspace, currentWorkspaceLoading, router, pathname]);
 
   return (
     <Suspense fallback={<LoadingScreen />}>
@@ -51,24 +131,7 @@ function App() {
         <UserContextProvider>
           <WorkspaceContextProvider>
             <DBConnectionErrorAlert />
-            <Routes>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/tenants" element={<Tenants />} />
-              <Route path="/clients" element={<Clients />} />
-              <Route path="/oauth-providers" element={<OAuthProviders />} />
-              <Route path="/users" element={<UserFieldsSelectionContextProvider><Users /></UserFieldsSelectionContextProvider>} />
-              <Route path="/user-fields" element={<UserFields />} />
-              <Route path="/permissions" element={<Permissions />} />
-              <Route path="/roles" element={<Roles />} />
-              <Route path="/api-keys" element={<APIKeys />} />
-              <Route path="/select-workspace" element={<SelectWorkspace />} />
-              <Route path="/create-workspace" element={<CreateWorkspace />}>
-                <Route path="step1" element={<CreateWorkspaceStep1 />} />
-                <Route path="step2" element={<CreateWorkspaceStep2 />} />
-                <Route path="step3" element={<CreateWorkspaceStep3 />} />
-                <Route path="step4" element={<CreateWorkspaceStep4 />} />
-              </Route>
-            </Routes>
+            <RouterProvider router={router} />
           </WorkspaceContextProvider>
         </UserContextProvider>
       </APIClientContext.Provider>

@@ -3,7 +3,7 @@ from enum import Enum
 from typing import Optional
 
 from pydantic import UUID4
-from sqlalchemy import Boolean, Column, ForeignKey
+from sqlalchemy import Column, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.sqltypes import String
 
@@ -11,7 +11,6 @@ from fief.models.base import WorkspaceBase
 from fief.models.generics import GUID, CreatedUpdatedAt, ExpiresAt, UUIDModel
 from fief.models.oauth_account import OAuthAccount
 from fief.models.tenant import Tenant
-from fief.models.user import User
 from fief.settings import settings
 
 

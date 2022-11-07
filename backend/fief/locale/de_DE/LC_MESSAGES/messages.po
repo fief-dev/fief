@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  Fief\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2022-09-08 17:50+0200\n"
+"POT-Creation-Date: 2022-11-07 13:39+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: de\n"
@@ -79,7 +79,7 @@ msgstr "Ungültige E-Mail oder Passwort"
 msgid "The user denied access to their data."
 msgstr "Der Benutzer hat den Zugriff auf dessen Daten verweigert."
 
-#: fief/apps/auth/routers/auth.py:221 fief/dependencies/auth.py:51
+#: fief/apps/auth/routers/auth.py:221 fief/dependencies/auth.py:52
 msgid "redirect_uri is missing"
 msgstr "redirect_uri fehlt"
 
@@ -100,7 +100,11 @@ msgstr ""
 msgid "Your account is inactive."
 msgstr ""
 
-#: fief/apps/auth/routers/register.py:76
+#: fief/apps/auth/routers/register.py:52
+msgid "Registration is disabled"
+msgstr ""
+
+#: fief/apps/auth/routers/register.py:84
 msgid "A user with the same email address already exists."
 msgstr "Ein Benutzer mit derselben E-Mail Adresse existiert bereits."
 
@@ -123,65 +127,65 @@ msgstr ""
 "Das Token zur Passwort-Wiederherstellung ist entweder ungültig oder "
 "abgelaufen."
 
-#: fief/dependencies/auth.py:34
+#: fief/dependencies/auth.py:35
 msgid "client_id is missing"
 msgstr "client_id fehlt"
 
-#: fief/dependencies/auth.py:40
+#: fief/dependencies/auth.py:41
 msgid "Unknown client"
 msgstr "Unbekannter Client"
 
-#: fief/dependencies/auth.py:57
+#: fief/dependencies/auth.py:58
 msgid "redirect_uri is not authorized for this client"
 msgstr "redirect_url ist für diesen Client nicht authorisiert"
 
-#: fief/dependencies/auth.py:75
+#: fief/dependencies/auth.py:76
 msgid "response_type is missing"
 msgstr "response_type fehlt"
 
-#: fief/dependencies/auth.py:83
+#: fief/dependencies/auth.py:84
 msgid "response_type is invalid"
 msgstr "response_type ist ungültig"
 
-#: fief/dependencies/auth.py:107
+#: fief/dependencies/auth.py:108
 msgid "request parameter is not supported"
 msgstr "Request Parameter wird nicht unterstützt"
 
-#: fief/dependencies/auth.py:125
+#: fief/dependencies/auth.py:126
 msgid "nonce parameter is required for this response_type"
 msgstr "Für diesen response_type wird der Parameter nonce benötigt"
 
-#: fief/dependencies/auth.py:143
+#: fief/dependencies/auth.py:144
 msgid "scope is missing"
 msgstr "scope fehlt"
 
-#: fief/dependencies/auth.py:154
+#: fief/dependencies/auth.py:155
 msgid "scope should contain \"openid\""
 msgstr "scope sollte \"openid\" enthalten"
 
-#: fief/dependencies/auth.py:174
+#: fief/dependencies/auth.py:175
 #, fuzzy
 msgid "prompt should either be \"none\", \"login\" or \"register\""
 msgstr "prompt sollte entweder \"none\", \"login\" oder \"register\" sein"
 
-#: fief/dependencies/auth.py:183
+#: fief/dependencies/auth.py:184
 msgid "User is not logged in"
 msgstr "Benutzer ist nicht eingeloggt"
 
-#: fief/dependencies/auth.py:201
+#: fief/dependencies/auth.py:202
 #, fuzzy
 msgid "screen should either be \"login\" or \"register\""
 msgstr "screen sollte entweder \"login\" oder \"register\" sein"
 
-#: fief/dependencies/auth.py:224
+#: fief/dependencies/auth.py:225
 msgid "Unsupported code_challenge_method"
 msgstr "Nicht untersützte code_challenge_method"
 
-#: fief/dependencies/auth.py:275
+#: fief/dependencies/auth.py:276
 msgid "Invalid login session"
 msgstr "Ungültige Login Sitzung"
 
-#: fief/dependencies/auth.py:317
+#: fief/dependencies/auth.py:318
 msgid "User consent is required for this scope"
 msgstr "Für diesen Scope ist die Benutzerzustimmung nötig"
 
@@ -202,50 +206,6 @@ msgstr ""
 #: fief/dependencies/users.py:101
 msgid "The password should be at least 8 characters."
 msgstr "Das Passwort sollte mindestens 8 Zeichen lang sein."
-
-#: fief/emails/base.html:496
-#, python-format
-msgid "&copy; %(year)d %(tenant)s. All rights reserved."
-msgstr "&copy; %(year)d %(tenant)s. Alle Rechte vorbehalten."
-
-#: fief/emails/forgot_password.html:3
-msgid "Use this link to reset your password. This link is only valid for 1 hour."
-msgstr ""
-"Benutze diesen Link um dein Passwort zurückzusetzen. Dieser Link ist nur "
-"für 1 Stunde gültig."
-
-#: fief/emails/forgot_password.html:6
-#, fuzzy, python-format
-msgid ""
-"You recently requested to reset your password for your %(tenant)s "
-"account. Use the button below to reset it."
-msgstr ""
-"Du hast vor kurzem ein neues Passwort für deinen %(tenant)s Account "
-"angefordert. Nutzen den folgenden Button um es zurückzusetzen."
-
-#: fief/emails/forgot_password.html:6
-#, fuzzy
-msgid "This password reset is only valid for the next hour."
-msgstr "Diese Passwort-Wiederherstellung ist nur für die nächste Stunde gültig."
-
-#: fief/emails/forgot_password.html:15
-msgid "Reset your password"
-msgstr "Setze dein Passwort zurück"
-
-#: fief/emails/welcome.html:3 fief/emails/welcome.html:6
-#, python-format
-msgid "Welcome to %(tenant)s! We're thrilled to have you on board."
-msgstr "Willkommen bei %(tenant)s! Wir freuen uns dich an Bord zu haben."
-
-#: fief/tasks/forgot_password.py:17
-#, python-format
-msgid "Reset your %(tenant)s's password"
-msgstr "Setze dein %(tenant)s's Passwort zurück"
-
-#: fief/tasks/register.py:44
-#, python-format
-msgid "Welcome to %(tenant)s!"
-msgstr "Willkommen bei %(tenant)s!"
 
 #: fief/templates/auth_layout.html:46
 msgid "Powered and secured by"
@@ -300,12 +260,12 @@ msgstr "Passwort vergessen?"
 msgid "Sign in with %(provider)s"
 msgstr ""
 
-#: fief/templates/login.html:38
+#: fief/templates/login.html:39
 #, fuzzy
 msgid "Don't have an account?"
 msgstr "Noch kein Account?"
 
-#: fief/templates/login.html:39 fief/templates/register.html:9
+#: fief/templates/login.html:40 fief/templates/register.html:9
 #: fief/templates/register.html:17 fief/templates/register.html:42
 msgid "Sign up"
 msgstr "Registrieren"
@@ -345,4 +305,41 @@ msgstr "Setze mein Passwort zurück"
 
 #~ msgid "Invalid registration session"
 #~ msgstr "Ungültige Login Sitzung"
+
+#~ msgid "&copy; %(year)d %(tenant)s. All rights reserved."
+#~ msgstr "&copy; %(year)d %(tenant)s. Alle Rechte vorbehalten."
+
+#~ msgid ""
+#~ "Use this link to reset your "
+#~ "password. This link is only valid "
+#~ "for 1 hour."
+#~ msgstr ""
+#~ "Benutze diesen Link um dein Passwort "
+#~ "zurückzusetzen. Dieser Link ist nur für"
+#~ " 1 Stunde gültig."
+
+#~ msgid ""
+#~ "You recently requested to reset your "
+#~ "password for your %(tenant)s account. "
+#~ "Use the button below to reset it."
+#~ msgstr ""
+#~ "Du hast vor kurzem ein neues "
+#~ "Passwort für deinen %(tenant)s Account "
+#~ "angefordert. Nutzen den folgenden Button "
+#~ "um es zurückzusetzen."
+
+#~ msgid "This password reset is only valid for the next hour."
+#~ msgstr "Diese Passwort-Wiederherstellung ist nur für die nächste Stunde gültig."
+
+#~ msgid "Reset your password"
+#~ msgstr "Setze dein Passwort zurück"
+
+#~ msgid "Welcome to %(tenant)s! We're thrilled to have you on board."
+#~ msgstr "Willkommen bei %(tenant)s! Wir freuen uns dich an Bord zu haben."
+
+#~ msgid "Reset your %(tenant)s's password"
+#~ msgstr "Setze dein %(tenant)s's Passwort zurück"
+
+#~ msgid "Welcome to %(tenant)s!"
+#~ msgstr "Willkommen bei %(tenant)s!"
 
