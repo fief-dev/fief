@@ -25,13 +25,13 @@ def upgrade():
         sa.Column(
             "created_at",
             fief.models.generics.TIMESTAMPAware(timezone=True),
-            server_default=sa.text("now()"),
+            server_default=sa.func.now(),
             nullable=False,
         ),
         sa.Column(
             "updated_at",
             fief.models.generics.TIMESTAMPAware(timezone=True),
-            server_default=sa.text("now()"),
+            server_default=sa.func.now(),
             nullable=False,
         ),
         sa.Column("type", sa.String(length=255), nullable=False),
