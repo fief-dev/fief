@@ -5,13 +5,13 @@ from pydantic import BaseModel
 from fief.db import AsyncSession
 from fief.repositories import TenantRepository, UserRepository
 from fief.schemas.tenant import Tenant
-from fief.schemas.user import UserRead
+from fief.schemas.user import UserEmailContext
 from fief.services.email_template.types import EmailTemplateType
 
 
 class EmailContext(BaseModel):
     tenant: Tenant
-    user: UserRead
+    user: UserEmailContext
 
     class Config:
         orm_mode = True
@@ -32,7 +32,7 @@ class EmailContext(BaseModel):
         user_repository = UserRepository(session)
         user = await user_repository.get_one_by_tenant(tenant.id)
         if user is None:
-            context_kwargs["user"] = UserRead.create_sample(tenant)
+            context_kwargs["user"] = UserEmailContext.create_sample(tenant)
         else:
             context_kwargs["user"] = user
 

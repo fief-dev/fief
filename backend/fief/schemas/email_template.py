@@ -1,7 +1,7 @@
 from typing import Optional
 
 from fief.schemas.generics import BaseModel, CreatedUpdatedAt, UUIDSchema
-from fief.services.email_template.contexts import EmailTemplateType
+from fief.services.email_template.types import EmailTemplateType
 
 
 class EmailTemplateUpdate(BaseModel):

@@ -23,21 +23,6 @@ class UserRead(schemas.BaseUser, CreatedUpdatedAt):
     class Config:
         orm_mode = True
 
-    @classmethod
-    def create_sample(cls, tenant: "Tenant") -> "UserRead":
-        return cls(
-            id=uuid.uuid4(),
-            email="anne@bretagne.duchy",
-            created_at=datetime.now(timezone.utc),
-            updated_at=datetime.now(timezone.utc),
-            tenant_id=tenant.id,
-            tenant=tenant,
-            fields={
-                "first_name": "Anne",
-                "last_name": "De Bretagne",
-            },
-        )
-
 
 class UserFields(BaseModel):
     def get_value(self, field: str) -> Any:
@@ -76,3 +61,28 @@ class AccessTokenResponse(BaseModel):
     access_token: str
     token_type: str = Field("bearer", regex="bearer")
     expires_in: int
+
+
+class UserEmailContext(schemas.BaseUser, CreatedUpdatedAt):
+    tenant_id: UUID4
+    fields: Dict[
+        str, Union[Address, Timezone, StrictBool, StrictInt, StrictStr, datetime, date]
+    ]
+
+    class Config:
+        orm_mode = True
+
+    @classmethod
+    def create_sample(cls, tenant: "Tenant") -> "UserEmailContext":
+        return cls(
+            id=uuid.uuid4(),
+            email="anne@bretagne.duchy",
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc),
+            tenant_id=tenant.id,
+            tenant=tenant,
+            fields={
+                "first_name": "Anne",
+                "last_name": "De Bretagne",
+            },
+        )
