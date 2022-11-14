@@ -89,10 +89,10 @@ include = [
   "/fief/**/*.py",
   "/fief/py.typed",
   "/fief/alembic.ini",
-  "/fief/emails",
   "/fief/locale",
   "/fief/static",
   "/fief/templates",
+  "/fief/services/email_template/templates",
 ]
 
 [tool.hatch.metadata]
