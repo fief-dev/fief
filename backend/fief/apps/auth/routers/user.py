@@ -1,5 +1,3 @@
-from typing import List
-
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import JSONResponse
 from fastapi_users.exceptions import InvalidPasswordException, UserAlreadyExists
@@ -47,7 +45,7 @@ async def post_userinfo(user: User = Depends(current_active_user)):
 async def update_profile(
     request: Request,
     user_update: UserUpdate[UF] = Depends(get_user_update),
-    update_user_fields: List[UserField] = Depends(get_update_user_fields),
+    update_user_fields: list[UserField] = Depends(get_update_user_fields),
     user: User = Depends(current_active_user),
     user_manager: UserManager = Depends(get_user_manager),
 ):

@@ -1,5 +1,6 @@
 import contextlib
-from typing import TYPE_CHECKING, AsyncGenerator, Dict, Optional
+from collections.abc import AsyncGenerator
+from typing import TYPE_CHECKING
 
 import asyncpg.exceptions
 import pymysql.err
@@ -15,7 +16,7 @@ if TYPE_CHECKING:
 
 class WorkspaceEngineManager:
     def __init__(self) -> None:
-        self.engines: Dict[str, AsyncEngine] = {}
+        self.engines: dict[str, AsyncEngine] = {}
 
     def get_engine(
         self, database_connection_parameters: DatabaseConnectionParameters
@@ -36,7 +37,7 @@ class WorkspaceEngineManager:
 
 @contextlib.asynccontextmanager
 async def get_connection(
-    engine: AsyncEngine, schema_name: Optional[str] = None
+    engine: AsyncEngine, schema_name: str | None = None
 ) -> AsyncGenerator[AsyncConnection, None]:
     dialect_name = engine.dialect.name
     options = {}

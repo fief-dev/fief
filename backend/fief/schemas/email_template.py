@@ -1,12 +1,10 @@
-from typing import Optional
-
 from fief.schemas.generics import BaseModel, CreatedUpdatedAt, UUIDSchema
 from fief.services.email_template.types import EmailTemplateType
 
 
 class EmailTemplateUpdate(BaseModel):
-    subject: Optional[str]
-    content: Optional[str]
+    subject: str | None
+    content: str | None
 
 
 class EmailTemplateBase(UUIDSchema, CreatedUpdatedAt):

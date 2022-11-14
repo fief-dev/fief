@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import TYPE_CHECKING, Any, List, Optional, Tuple, TypedDict
+from typing import TYPE_CHECKING, Any, TypedDict
 
 from sqlalchemy import JSON, Column
 from sqlalchemy import Enum as SQLEnum
@@ -26,11 +26,11 @@ class UserFieldType(str, Enum):
 
 
 class UserFieldConfiguration(TypedDict):
-    choices: Optional[List[Tuple[str, str]]]
+    choices: list[tuple[str, str]] | None
     at_registration: bool
     at_update: bool
     required: bool
-    default: Optional[Any]
+    default: Any | None
 
 
 class UserField(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
@@ -41,12 +41,12 @@ class UserField(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
     type: UserFieldType = Column(SQLEnum(UserFieldType), index=True, nullable=True)
     configuration: UserFieldConfiguration = Column(JSON, nullable=False)
 
-    user_field_values: List["UserFieldValue"] = relationship(
+    user_field_values: list["UserFieldValue"] = relationship(
         "UserFieldValue", back_populates="user_field", cascade="all, delete"
     )
 
     def get_required(self) -> bool:
         return self.configuration["required"]
 
-    def get_default(self) -> Optional[Any]:
+    def get_default(self) -> Any | None:
         return self.configuration["default"]

@@ -1,5 +1,3 @@
-from typing import Optional
-
 from pydantic import UUID4
 from sqlalchemy import select
 from sqlalchemy.sql import Select
@@ -15,7 +13,7 @@ class OAuthAccountRepository(
 
     async def get_by_provider_and_account_id(
         self, provider_id: UUID4, account_id: str
-    ) -> Optional[OAuthAccount]:
+    ) -> OAuthAccount | None:
         statement = select(OAuthAccount).where(
             OAuthAccount.oauth_provider_id == provider_id,
             OAuthAccount.account_id == account_id,
@@ -24,7 +22,7 @@ class OAuthAccountRepository(
 
     async def get_by_provider_and_user(
         self, provider_id: UUID4, user: UUID4
-    ) -> Optional[OAuthAccount]:
+    ) -> OAuthAccount | None:
         statement = select(OAuthAccount).where(
             OAuthAccount.oauth_provider_id == provider_id,
             OAuthAccount.user_id == user,

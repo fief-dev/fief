@@ -1,5 +1,3 @@
-from typing import Optional
-
 from fastapi import Depends, HTTPException, status
 from fastapi.security import APIKeyCookie
 from fief_client import FiefUserInfo
@@ -16,11 +14,11 @@ cookie_scheme = APIKeyCookie(
 
 
 async def get_optional_admin_session_token(
-    token: Optional[str] = Depends(cookie_scheme),
+    token: str | None = Depends(cookie_scheme),
     repository: AdminSessionTokenRepository = Depends(
         get_main_repository(AdminSessionTokenRepository)
     ),
-) -> Optional[AdminSessionToken]:
+) -> AdminSessionToken | None:
     if token is None:
         return None
     token_hash = get_token_hash(token)
@@ -29,9 +27,8 @@ async def get_optional_admin_session_token(
 
 
 async def get_admin_session_token(
-    admin_session_token: Optional[AdminSessionToken] = Depends(
-        get_optional_admin_session_token
-    ),
+    admin_session_token: AdminSessionToken
+    | None = Depends(get_optional_admin_session_token),
 ) -> AdminSessionToken:
     if admin_session_token is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)

@@ -1,5 +1,4 @@
 from datetime import datetime, timezone
-from typing import Optional
 
 from sqlalchemy import select
 
@@ -16,7 +15,7 @@ class RefreshTokenRepository(
 
     async def get_by_token(
         self, token: str, *, fresh: bool = True
-    ) -> Optional[RefreshToken]:
+    ) -> RefreshToken | None:
         statement = select(RefreshToken).where(RefreshToken.token == token)
         if fresh:
             statement = statement.where(

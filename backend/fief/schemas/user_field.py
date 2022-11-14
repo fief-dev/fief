@@ -1,6 +1,7 @@
+from collections.abc import Mapping
 from datetime import date, datetime
 from enum import Enum
-from typing import Any, Generic, List, Mapping, Optional, Tuple, Type, TypeVar, Union
+from typing import Any, Generic, TypeVar
 
 from pydantic import BaseModel, StrictBool, StrictInt, StrictStr, constr
 from pydantic.generics import GenericModel
@@ -15,7 +16,7 @@ from fief.schemas.generics import (
     UUIDSchema,
 )
 
-USER_FIELD_TYPE_MAP: Mapping[UserFieldType, Type[Any]] = {
+USER_FIELD_TYPE_MAP: Mapping[UserFieldType, type[Any]] = {
     UserFieldType.STRING: constr(min_length=1),
     UserFieldType.INTEGER: int,
     UserFieldType.BOOLEAN: bool,
@@ -43,7 +44,7 @@ D = TypeVar("D", Timezone, bool, int, str)
 UFT = TypeVar("UFT", bound=UserFieldType)
 
 
-def get_user_field_pydantic_type(field: UserFieldModel) -> Type[Any]:
+def get_user_field_pydantic_type(field: UserFieldModel) -> type[Any]:
     if field.type == UserFieldType.CHOICE:
         choices = (
             field.configuration["choices"] if field.configuration["choices"] else []
@@ -63,18 +64,18 @@ class UserFieldConfigurationBase(BaseModel):
 
 
 class UserFieldConfiguration(UserFieldConfigurationBase):
-    choices: Optional[List[Tuple[str, str]]]
-    default: Optional[Union[Timezone, StrictBool, StrictInt, StrictStr]]
+    choices: list[tuple[str, str]] | None
+    default: Timezone | StrictBool | StrictInt | StrictStr | None
 
 
 class UserFieldConfigurationDefault(
     GenericModel, Generic[D], UserFieldConfigurationBase
 ):
-    default: Optional[D]
+    default: D | None
 
 
 class UserFieldConfigurationChoice(UserFieldConfigurationDefault[str]):
-    choices: Optional[List[Tuple[str, str]]]
+    choices: list[tuple[str, str]] | None
 
 
 class UserFieldCreate(BaseModel):
@@ -85,9 +86,9 @@ class UserFieldCreate(BaseModel):
 
 
 class UserFieldUpdate(BaseModel):
-    name: Optional[str]
-    slug: Optional[str]
-    configuration: Optional[UserFieldConfiguration]
+    name: str | None
+    slug: str | None
+    configuration: UserFieldConfiguration | None
 
 
 class BaseUserField(UUIDSchema, CreatedUpdatedAt):

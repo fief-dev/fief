@@ -1,4 +1,5 @@
-from typing import Any, Callable, Coroutine, List, Optional, Tuple
+from collections.abc import Callable, Coroutine
+from typing import Any
 
 from fastapi import Depends, HTTPException, Query, status
 from pydantic import UUID4
@@ -17,13 +18,13 @@ from fief.repositories import PermissionRepository
 
 
 async def get_paginated_permissions(
-    query: Optional[str] = Query(None),
+    query: str | None = Query(None),
     pagination: Pagination = Depends(get_pagination),
     ordering: Ordering = Depends(get_ordering),
     repository: PermissionRepository = Depends(
         get_workspace_repository(PermissionRepository)
     ),
-) -> Tuple[List[Permission], int]:
+) -> tuple[list[Permission], int]:
     statement = select(Permission)
 
     if query is not None:
@@ -49,7 +50,7 @@ async def get_permission_by_id_or_404(
     return permission
 
 
-UserPermissionsGetter = Callable[[User], Coroutine[Any, Any, List[str]]]
+UserPermissionsGetter = Callable[[User], Coroutine[Any, Any, list[str]]]
 
 
 async def get_user_permissions_getter(
@@ -57,7 +58,7 @@ async def get_user_permissions_getter(
         get_workspace_repository(PermissionRepository)
     ),
 ) -> UserPermissionsGetter:
-    async def _get_user_permissions(user: User) -> List[str]:
+    async def _get_user_permissions(user: User) -> list[str]:
         permissions = await repository.list(
             repository.get_user_permissions_statement(user.id)
         )

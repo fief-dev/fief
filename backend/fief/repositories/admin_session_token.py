@@ -1,5 +1,3 @@
-from typing import Optional
-
 from sqlalchemy import select
 
 from fief.models import AdminSessionToken
@@ -11,6 +9,6 @@ class AdminSessionTokenRepository(
 ):
     model = AdminSessionToken
 
-    async def get_by_token(self, token: str) -> Optional[AdminSessionToken]:
+    async def get_by_token(self, token: str) -> AdminSessionToken | None:
         statement = select(AdminSessionToken).where(AdminSessionToken.token == token)
         return await self.get_one_or_none(statement)

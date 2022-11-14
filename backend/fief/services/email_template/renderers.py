@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Dict, List, Literal, Optional, overload
+from typing import TYPE_CHECKING, Literal, overload
 
 import jinja2
 
@@ -15,17 +15,17 @@ if TYPE_CHECKING:  # pragma: no cover
 
 
 def _templates_list_to_map(
-    templates: List["EmailTemplate"],
-) -> Dict[str, "EmailTemplate"]:
+    templates: list["EmailTemplate"],
+) -> dict[str, "EmailTemplate"]:
     return {template.type: template for template in templates}
 
 
 class EmailTemplateLoader:
     def __init__(
         self,
-        templates: List["EmailTemplate"],
+        templates: list["EmailTemplate"],
         *,
-        templates_overrides: Optional[Dict[EmailTemplateType, "EmailTemplate"]] = None,
+        templates_overrides: dict[EmailTemplateType, "EmailTemplate"] | None = None,
     ):
         self.templates_map = _templates_list_to_map(templates)
         if templates_overrides:
@@ -41,10 +41,10 @@ class EmailTemplateRenderer:
         self,
         repository: "EmailTemplateRepository",
         *,
-        templates_overrides: Optional[Dict[EmailTemplateType, "EmailTemplate"]] = None,
+        templates_overrides: dict[EmailTemplateType, "EmailTemplate"] | None = None,
     ):
         self.repository = repository
-        self._jinja_environment: Optional[jinja2.Environment] = None
+        self._jinja_environment: jinja2.Environment | None = None
         self.templates_overrides = templates_overrides
 
     @overload
@@ -81,9 +81,9 @@ class EmailTemplateRenderer:
 class EmailSubjectLoader:
     def __init__(
         self,
-        templates: List["EmailTemplate"],
+        templates: list["EmailTemplate"],
         *,
-        templates_overrides: Optional[Dict[EmailTemplateType, "EmailTemplate"]] = None,
+        templates_overrides: dict[EmailTemplateType, "EmailTemplate"] | None = None,
     ):
         self.templates_map = _templates_list_to_map(templates)
         if templates_overrides:
@@ -99,10 +99,10 @@ class EmailSubjectRenderer:
         self,
         repository: "EmailTemplateRepository",
         *,
-        templates_overrides: Optional[Dict[EmailTemplateType, "EmailTemplate"]] = None,
+        templates_overrides: dict[EmailTemplateType, "EmailTemplate"] | None = None,
     ):
         self.repository = repository
-        self._jinja_environment: Optional[jinja2.Environment] = None
+        self._jinja_environment: jinja2.Environment | None = None
         self.templates_overrides = templates_overrides
 
     @overload

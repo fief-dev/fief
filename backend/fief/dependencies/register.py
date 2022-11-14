@@ -1,5 +1,3 @@
-from typing import List, Optional, Type
-
 from fastapi import Cookie, Depends
 
 from fief.dependencies.tenant import get_current_tenant
@@ -21,10 +19,10 @@ async def get_registration_flow(
         get_workspace_repository(OAuthAccountRepository)
     ),
     user_manager: UserManager = Depends(get_user_manager),
-    user_create_internal_model: Type[UserCreateInternal[UF]] = Depends(
+    user_create_internal_model: type[UserCreateInternal[UF]] = Depends(
         get_user_create_internal_model
     ),
-    user_fields: List[UserField] = Depends(get_user_fields),
+    user_fields: list[UserField] = Depends(get_user_fields),
 ) -> RegistrationFlow:
     return RegistrationFlow(
         registration_session_repository,
@@ -36,14 +34,12 @@ async def get_registration_flow(
 
 
 async def get_optional_registration_session(
-    token: Optional[str] = Cookie(
-        None, alias=settings.registration_session_cookie_name
-    ),
+    token: str | None = Cookie(None, alias=settings.registration_session_cookie_name),
     registration_session_repository: RegistrationSessionRepository = Depends(
         get_workspace_repository(RegistrationSessionRepository)
     ),
     tenant: Tenant = Depends(get_current_tenant),
-) -> Optional[RegistrationSession]:
+) -> RegistrationSession | None:
     if token is None:
         return None
 

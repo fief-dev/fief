@@ -1,5 +1,6 @@
 import functools
-from typing import List, Mapping, Optional, Type, TypeVar
+from collections.abc import Mapping
+from typing import TypeVar
 
 import phonenumbers
 import pycountry
@@ -33,7 +34,7 @@ from fief.models import (
 )
 
 
-def empty_string_to_none(value: Optional[str]) -> Optional[str]:
+def empty_string_to_none(value: str | None) -> str | None:
     if value is None or value == "":
         return None
     return value
@@ -168,11 +169,10 @@ def _get_form_field(user_field: UserField) -> Field:
 
 
 async def get_register_form_class(
-    registration_user_fields: List[UserField] = Depends(get_registration_user_fields),
-    registration_session: Optional[RegistrationSession] = Depends(
-        get_optional_registration_session
-    ),
-) -> Type[RF]:
+    registration_user_fields: list[UserField] = Depends(get_registration_user_fields),
+    registration_session: RegistrationSession
+    | None = Depends(get_optional_registration_session),
+) -> type[RF]:
     class RegisterFormFields(BaseForm):
         pass
 

@@ -1,4 +1,4 @@
-from typing import Generic, Type
+from typing import Generic
 
 from fastapi import Depends
 
@@ -9,7 +9,7 @@ from fief.repositories.base import REPOSITORY
 
 
 class get_main_repository(Generic[REPOSITORY]):
-    def __init__(self, repository_class: Type[REPOSITORY]):
+    def __init__(self, repository_class: type[REPOSITORY]):
         self.repository_class = repository_class
 
     async def __call__(

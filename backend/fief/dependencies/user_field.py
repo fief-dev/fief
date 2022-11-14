@@ -1,4 +1,4 @@
-from typing import Any, List, Literal, Optional, Tuple, Type
+from typing import Any, Literal, Optional
 
 from fastapi import Depends, HTTPException, status
 from fastapi.exceptions import RequestValidationError
@@ -36,7 +36,7 @@ async def get_paginated_user_fields(
     repository: UserFieldRepository = Depends(
         get_workspace_repository(UserFieldRepository)
     ),
-) -> Tuple[List[UserField], int]:
+) -> tuple[list[UserField], int]:
     statement = select(UserField)
     return await get_paginated_objects(statement, pagination, ordering, repository)
 
@@ -59,7 +59,7 @@ async def get_user_fields(
     repository: UserFieldRepository = Depends(
         get_workspace_repository(UserFieldRepository)
     ),
-) -> List[UserField]:
+) -> list[UserField]:
     return await repository.all()
 
 
@@ -83,7 +83,7 @@ async def get_user_field_create_internal_model(user_field_create: UserFieldCreat
 
 async def get_validated_user_field_create(
     user_field_create: UserFieldCreate,
-    user_field_create_internal_model: Type[UserFieldCreate] = Depends(
+    user_field_create_internal_model: type[UserFieldCreate] = Depends(
         get_user_field_create_internal_model
     ),
 ) -> UserFieldCreate:
@@ -122,7 +122,7 @@ async def get_user_field_update_internal_model(
 async def get_validated_user_field_update(
     user_field_update: UserFieldUpdate,
     user_field: UserField = Depends(get_user_field_by_id_or_404),
-    user_field_update_internal_model: Type[UserFieldUpdate] = Depends(
+    user_field_update_internal_model: type[UserFieldUpdate] = Depends(
         get_user_field_update_internal_model
     ),
 ) -> UserFieldUpdate:
@@ -144,7 +144,7 @@ async def get_registration_user_fields(
     repository: UserFieldRepository = Depends(
         get_workspace_repository(UserFieldRepository)
     ),
-) -> List[UserField]:
+) -> list[UserField]:
     return await repository.get_registration_fields()
 
 
@@ -152,11 +152,11 @@ async def get_update_user_fields(
     repository: UserFieldRepository = Depends(
         get_workspace_repository(UserFieldRepository)
     ),
-) -> List[UserField]:
+) -> list[UserField]:
     return await repository.get_update_fields()
 
 
-def _get_pydantic_specification(user_fields: List[UserField]) -> Tuple[Any, Any]:
+def _get_pydantic_specification(user_fields: list[UserField]) -> tuple[Any, Any]:
     fields: Any = {}
     validators: Any = {}
     for field in user_fields:
@@ -194,8 +194,8 @@ def _get_pydantic_specification(user_fields: List[UserField]) -> Tuple[Any, Any]
 
 
 async def get_user_create_model(
-    registration_user_fields: List[UserField] = Depends(get_registration_user_fields),
-) -> Type[UserCreate[UF]]:
+    registration_user_fields: list[UserField] = Depends(get_registration_user_fields),
+) -> type[UserCreate[UF]]:
     fields, validators = _get_pydantic_specification(registration_user_fields)
     user_fields_model = create_model(
         "UserFields",
@@ -207,8 +207,8 @@ async def get_user_create_model(
 
 
 async def get_user_create_internal_model(
-    registration_user_fields: List[UserField] = Depends(get_registration_user_fields),
-) -> Type[UserCreateInternal[UF]]:
+    registration_user_fields: list[UserField] = Depends(get_registration_user_fields),
+) -> type[UserCreateInternal[UF]]:
     fields, validators = _get_pydantic_specification(registration_user_fields)
     user_fields_model = create_model(
         "UserFields",
@@ -220,8 +220,8 @@ async def get_user_create_internal_model(
 
 
 async def get_admin_user_create_internal_model(
-    user_fields: List[UserField] = Depends(get_user_fields),
-) -> Type[UserCreateInternal[UF]]:
+    user_fields: list[UserField] = Depends(get_user_fields),
+) -> type[UserCreateInternal[UF]]:
     fields, validators = _get_pydantic_specification(user_fields)
     user_fields_model = create_model(
         "UserFields",
@@ -233,8 +233,8 @@ async def get_admin_user_create_internal_model(
 
 
 async def get_user_update_model(
-    update_user_fields: List[UserField] = Depends(get_update_user_fields),
-) -> Type[UserUpdate[UF]]:
+    update_user_fields: list[UserField] = Depends(get_update_user_fields),
+) -> type[UserUpdate[UF]]:
     fields, validators = _get_pydantic_specification(update_user_fields)
     user_fields_model = create_model(
         "UserFields",
@@ -246,8 +246,8 @@ async def get_user_update_model(
 
 
 async def get_admin_user_update_model(
-    user_fields: List[UserField] = Depends(get_user_fields),
-) -> Type[UserUpdate[UF]]:
+    user_fields: list[UserField] = Depends(get_user_fields),
+) -> type[UserUpdate[UF]]:
     fields, validators = _get_pydantic_specification(user_fields)
     user_fields_model = create_model(
         "UserFields",

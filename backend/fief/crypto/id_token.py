@@ -1,7 +1,6 @@
 import base64
 import hashlib
 from datetime import datetime, timezone
-from typing import Optional
 
 from jwcrypto import jwk, jwt
 
@@ -16,10 +15,10 @@ def generate_id_token(
     user: User,
     lifetime_seconds: int,
     *,
-    nonce: Optional[str] = None,
-    c_hash: Optional[str] = None,
-    access_token: Optional[str] = None,
-    encryption_key: Optional[jwk.JWK] = None,
+    nonce: str | None = None,
+    c_hash: str | None = None,
+    access_token: str | None = None,
+    encryption_key: jwk.JWK | None = None,
 ) -> str:
     """
     Generate an ID Token for an authenticated user.

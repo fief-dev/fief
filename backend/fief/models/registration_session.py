@@ -1,6 +1,5 @@
 import secrets
 from enum import Enum
-from typing import Optional
 
 from pydantic import UUID4
 from sqlalchemy import Column, ForeignKey
@@ -35,12 +34,12 @@ class RegistrationSession(UUIDModel, CreatedUpdatedAt, ExpiresAt, WorkspaceBase)
         String(length=255), default=RegistrationSessionFlow.PASSWORD, nullable=False
     )
 
-    email: Optional[str] = Column(String(length=320), nullable=True)
+    email: str | None = Column(String(length=320), nullable=True)
 
-    oauth_account_id: Optional[UUID4] = Column(
+    oauth_account_id: UUID4 | None = Column(
         GUID, ForeignKey(OAuthAccount.id, ondelete="CASCADE"), nullable=True
     )
-    oauth_account: Optional[OAuthAccount] = relationship("OAuthAccount", lazy="joined")
+    oauth_account: OAuthAccount | None = relationship("OAuthAccount", lazy="joined")
 
     tenant_id: UUID4 = Column(
         GUID, ForeignKey(Tenant.id, ondelete="CASCADE"), nullable=False

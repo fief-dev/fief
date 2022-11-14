@@ -1,7 +1,7 @@
 import ssl
 from enum import Enum
 from pathlib import Path
-from typing import Dict, Optional, Tuple, Type, Union
+from typing import Union
 
 from sqlalchemy import engine
 
@@ -31,18 +31,18 @@ class MySQLSSLMode(str, Enum):
 
 SSLMode = Union[PostreSQLSSLMode, MySQLSSLMode]
 
-SSL_MODES: Dict[DatabaseType, Type[SSLMode]] = {
+SSL_MODES: dict[DatabaseType, type[SSLMode]] = {
     DatabaseType.POSTGRESQL: PostreSQLSSLMode,
     DatabaseType.MYSQL: MySQLSSLMode,
 }
 
-SYNC_DRIVERS: Dict[DatabaseType, str] = {
+SYNC_DRIVERS: dict[DatabaseType, str] = {
     DatabaseType.POSTGRESQL: "postgresql",
     DatabaseType.MYSQL: "mysql+pymysql",
     DatabaseType.SQLITE: "sqlite",
 }
 
-ASYNC_DRIVERS: Dict[DatabaseType, str] = {
+ASYNC_DRIVERS: dict[DatabaseType, str] = {
     DatabaseType.POSTGRESQL: "postgresql+asyncpg",
     DatabaseType.MYSQL: "mysql+aiomysql",
     DatabaseType.SQLITE: "sqlite+aiosqlite",
@@ -55,8 +55,8 @@ def get_driver(type: DatabaseType, *, asyncio: bool) -> str:
 
 
 def get_ssl_mode_parameters(
-    drivername: str, ssl_mode: str, query: Dict[str, str], connect_args: Dict
-) -> Tuple[Dict[str, str], Dict]:
+    drivername: str, ssl_mode: str, query: dict[str, str], connect_args: dict
+) -> tuple[dict[str, str], dict]:
     if ssl_mode in [PostreSQLSSLMode.DISABLE, MySQLSSLMode.DISABLED]:
         return query, connect_args
 
@@ -85,25 +85,25 @@ def get_ssl_mode_parameters(
     return query, connect_args
 
 
-DatabaseConnectionParameters = Tuple[engine.URL, Dict]
+DatabaseConnectionParameters = tuple[engine.URL, dict]
 
 
 def create_database_connection_parameters(
     type: DatabaseType,
     *,
     asyncio: bool,
-    username: Optional[str] = None,
-    password: Optional[str] = None,
-    host: Optional[str] = None,
-    port: Optional[int] = None,
-    database: Optional[str] = None,
-    path: Optional[Path] = None,
-    schema: Optional[str] = None,
-    ssl_mode: Optional[str] = None,
+    username: str | None = None,
+    password: str | None = None,
+    host: str | None = None,
+    port: int | None = None,
+    database: str | None = None,
+    path: Path | None = None,
+    schema: str | None = None,
+    ssl_mode: str | None = None,
 ) -> DatabaseConnectionParameters:
     drivername = get_driver(type, asyncio=asyncio)
-    query: Dict[str, str] = {}
-    connect_args: Dict = {}
+    query: dict[str, str] = {}
+    connect_args: dict = {}
 
     if ssl_mode:
         query, connect_args = get_ssl_mode_parameters(

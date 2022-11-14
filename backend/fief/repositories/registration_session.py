@@ -1,5 +1,4 @@
 from datetime import datetime, timezone
-from typing import Optional
 
 from sqlalchemy import select
 
@@ -16,7 +15,7 @@ class RegistrationSessionRepository(
 
     async def get_by_token(
         self, token: str, *, fresh: bool = True
-    ) -> Optional[RegistrationSession]:
+    ) -> RegistrationSession | None:
         statement = select(RegistrationSession).where(
             RegistrationSession.token == token
         )

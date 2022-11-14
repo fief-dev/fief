@@ -1,4 +1,5 @@
-from typing import Any, Mapping, Optional
+from collections.abc import Mapping
+from typing import Any
 
 from fastapi.templating import Jinja2Templates
 from jinja2 import pass_context
@@ -30,9 +31,9 @@ class LocaleJinja2Templates(Jinja2Templates):
         name: str,
         context: dict,
         status_code: int = 200,
-        headers: Optional[Mapping[str, str]] = None,
-        media_type: Optional[str] = None,
-        background: Optional[BackgroundTask] = None,
+        headers: Mapping[str, str] | None = None,
+        media_type: str | None = None,
+        background: BackgroundTask | None = None,
     ):
         self.env.install_gettext_translations(get_translations(), newstyle=True)  # type: ignore
         return super().TemplateResponse(

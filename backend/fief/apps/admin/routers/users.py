@@ -1,5 +1,3 @@
-from typing import List
-
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from fastapi.responses import JSONResponse
 from fastapi_users.exceptions import InvalidPasswordException, UserAlreadyExists
@@ -86,7 +84,7 @@ async def get_user(
 async def create_user(
     request: Request,
     user_create: schemas.user.UserCreateInternal = Depends(get_user_create_internal),
-    user_fields: List[UserField] = Depends(get_user_fields),
+    user_fields: list[UserField] = Depends(get_user_fields),
     user_manager: UserManager = Depends(get_user_manager_from_create_user_internal),
     user_repository: UserRepository = Depends(get_workspace_repository(UserRepository)),
     audit_logger: AuditLogger = Depends(get_audit_logger),
@@ -121,7 +119,7 @@ async def update_user(
     request: Request,
     user_update: schemas.user.UserUpdate = Depends(get_admin_user_update),
     user: User = Depends(get_user_by_id_or_404),
-    user_fields: List[UserField] = Depends(get_user_fields),
+    user_fields: list[UserField] = Depends(get_user_fields),
     user_manager: UserManager = Depends(get_user_manager_from_user),
     audit_logger: AuditLogger = Depends(get_audit_logger),
 ):

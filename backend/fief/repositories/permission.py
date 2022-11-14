@@ -1,5 +1,3 @@
-from typing import Optional
-
 from pydantic import UUID4
 from sqlalchemy import select
 from sqlalchemy.sql import Select
@@ -11,7 +9,7 @@ from fief.repositories.base import BaseRepository, UUIDRepositoryMixin
 class PermissionRepository(BaseRepository[Permission], UUIDRepositoryMixin[Permission]):
     model = Permission
 
-    async def get_by_codename(self, codename: str) -> Optional[Permission]:
+    async def get_by_codename(self, codename: str) -> Permission | None:
         statement = select(Permission).where(Permission.codename == codename)
         return await self.get_one_or_none(statement)
 

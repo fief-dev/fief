@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import List
 
 from pydantic import UUID4
 from sqlalchemy import JSON, Column, ForeignKey, String
@@ -28,7 +27,7 @@ class RefreshToken(UUIDModel, CreatedUpdatedAt, ExpiresAt, WorkspaceBase):
         index=True,
         unique=True,
     )
-    scope: List[str] = Column(JSON, nullable=False, default=list)
+    scope: list[str] = Column(JSON, nullable=False, default=list)
     authenticated_at: datetime = Column(TIMESTAMPAware(timezone=True), nullable=False)
 
     user_id: UUID4 = Column(

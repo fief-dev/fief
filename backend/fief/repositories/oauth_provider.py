@@ -1,5 +1,3 @@
-from typing import List
-
 from sqlalchemy import select
 
 from fief.models import OAuthProvider
@@ -11,7 +9,7 @@ class OAuthProviderRepository(
 ):
     model = OAuthProvider
 
-    async def all_by_name_and_provider(self) -> List[OAuthProvider]:
+    async def all_by_name_and_provider(self) -> list[OAuthProvider]:
         return await self.list(
             select(OAuthProvider).order_by(OAuthProvider.name, OAuthProvider.provider)
         )

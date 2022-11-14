@@ -1,5 +1,3 @@
-from typing import Optional
-
 from pydantic import BaseModel
 
 from fief.schemas.generics import CreatedUpdatedAt, UUIDSchema
@@ -11,8 +9,8 @@ class PermissionCreate(BaseModel):
 
 
 class PermissionUpdate(BaseModel):
-    name: Optional[str]
-    codename: Optional[str]
+    name: str | None
+    codename: str | None
 
 
 class BasePermission(UUIDSchema, CreatedUpdatedAt):
