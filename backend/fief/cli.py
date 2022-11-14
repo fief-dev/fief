@@ -11,6 +11,7 @@ from pydantic import ValidationError
 from rich.console import Console
 from rich.table import Table
 from sqlalchemy import create_engine, select
+from sqlalchemy.exc import DBAPIError
 from sqlalchemy.orm import sessionmaker
 
 from fief import __version__
@@ -120,7 +121,7 @@ def init_email_templates():
             try:
                 loop.run_until_complete(init_email_templates(workspace))
                 typer.secho("Done!")
-            except ConnectionError:
+            except (ConnectionError, DBAPIError):
                 typer.secho("Failed!", fg="red", err=True)
 
 
