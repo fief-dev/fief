@@ -15,7 +15,9 @@ def get_babel_middleware_kwargs() -> Mapping[str, Any]:
     return dict(locales_dirs=[LOCALE_DIRECTORY, wtforms.i18n.messages_path()])
 
 
-def get_translations(domain: str = None, locale: Locale = None) -> support.Translations:
+def get_translations(
+    domain: str | None = None, locale: Locale | None = None
+) -> support.Translations:
     """
     Load and cache translations.
 
@@ -45,10 +47,10 @@ def get_translations(domain: str = None, locale: Locale = None) -> support.Trans
     return BABEL.translations[(domain, locale.language)]
 
 
-def gettext(string: str, domain: str = None, **variables):
+def gettext(string: str, domain: str | None = None, **variables):
     t = get_translations(domain)
     return t.ugettext(string) % variables
 
 
-def gettext_lazy(string: str, domain: str = None, **variables):
+def gettext_lazy(string: str, domain: str | None = None, **variables):
     return support.LazyProxy(gettext, string, domain, **variables)

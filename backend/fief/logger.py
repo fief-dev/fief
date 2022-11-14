@@ -4,7 +4,7 @@ import sys
 import uuid
 from asyncio import AbstractEventLoop
 from datetime import timezone
-from typing import TYPE_CHECKING, AsyncContextManager, Callable, Dict, Literal, Optional
+from typing import TYPE_CHECKING, AsyncContextManager, Callable, Literal, Optional
 
 from loguru import logger
 from pydantic import UUID4
@@ -92,8 +92,8 @@ class DatabaseAuditLogSink:
         self.get_workspace_session = get_workspace_session
 
     async def __call__(self, message):
-        record: Dict = message.record
-        extra: Dict = record["extra"]
+        record = message.record
+        extra = record["extra"]
         workspace_id = extra.get("workspace_id")
 
         if workspace_id is None:

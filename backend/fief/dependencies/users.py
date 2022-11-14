@@ -241,10 +241,10 @@ class JWTAccessTokenStrategy(Strategy[User, UUID4]):
             return user
 
     async def write_token(self, user: User) -> str:
-        ...  # pragma: no cover
+        raise NotImplementedError()
 
     async def destroy_token(self, token: str, user: User) -> None:
-        ...  # pragma: no cover
+        raise NotImplementedError()
 
 
 async def get_jwt_access_token_strategy(
