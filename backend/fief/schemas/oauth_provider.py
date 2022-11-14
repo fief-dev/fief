@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Dict, List, Optional
 
 from pydantic import HttpUrl, SecretStr, root_validator
 
@@ -7,7 +7,7 @@ from fief.schemas.generics import BaseModel, CreatedUpdatedAt, UUIDSchema
 from fief.services.oauth_provider import AvailableOAuthProvider
 
 
-def validate_openid_provider(cls, values: dict[str, Any]):
+def validate_openid_provider(cls, values: Dict[str, Any]):
     provider: AvailableOAuthProvider = values["provider"]
     if provider == AvailableOAuthProvider.OPENID:
         openid_configuration_endpoint = values.get("openid_configuration_endpoint")
@@ -22,9 +22,9 @@ class OAuthProviderCreate(BaseModel):
     provider: AvailableOAuthProvider
     client_id: str
     client_secret: str
-    scopes: list[str]
-    name: str | None = None
-    openid_configuration_endpoint: HttpUrl | None = None
+    scopes: List[str]
+    name: Optional[str] = None
+    openid_configuration_endpoint: Optional[HttpUrl] = None
 
     _validate_openid_provider = root_validator(allow_reuse=True)(
         validate_openid_provider
@@ -32,11 +32,11 @@ class OAuthProviderCreate(BaseModel):
 
 
 class OAuthProviderUpdate(BaseModel):
-    client_id: str | None
-    client_secret: str | None
-    scopes: list[str] | None
-    name: str | None
-    openid_configuration_endpoint: HttpUrl | None
+    client_id: Optional[str]
+    client_secret: Optional[str]
+    scopes: Optional[List[str]]
+    name: Optional[str]
+    openid_configuration_endpoint: Optional[HttpUrl]
 
 
 class OAuthProviderUpdateProvider(OAuthProviderUpdate):
@@ -51,9 +51,9 @@ class BaseOAuthProvider(UUIDSchema, CreatedUpdatedAt):
     provider: AvailableOAuthProvider
     client_id: SecretStr
     client_secret: SecretStr
-    scopes: list[str]
-    name: str | None = None
-    openid_configuration_endpoint: HttpUrl | None = None
+    scopes: List[str]
+    name: Optional[str] = None
+    openid_configuration_endpoint: Optional[HttpUrl] = None
 
 
 class OAuthProvider(BaseOAuthProvider):

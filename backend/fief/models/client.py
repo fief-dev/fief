@@ -1,5 +1,6 @@
 import enum
 import secrets
+from typing import List, Optional
 
 from jwcrypto import jwk
 from pydantic import UUID4
@@ -13,7 +14,7 @@ from fief.models.generics import GUID, CreatedUpdatedAt, UUIDModel
 from fief.models.tenant import Tenant
 
 
-def get_default_redirect_uris() -> list[str]:
+def get_default_redirect_uris() -> List[str]:
     return ["http://localhost:8000/docs/oauth2-redirect"]
 
 
@@ -40,7 +41,7 @@ class Client(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
     client_secret: str = Column(
         String(length=255), default=secrets.token_urlsafe, nullable=False, index=True
     )
-    redirect_uris: list[str] = Column(
+    redirect_uris: List[str] = Column(
         JSON, nullable=False, default=get_default_redirect_uris
     )
     encrypt_jwk: str = Column(Text, nullable=True)
@@ -53,7 +54,7 @@ class Client(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
     def __repr__(self) -> str:
         return f"Client(id={self.id}, name={self.name}, client_id={self.client_id})"
 
-    def get_encrypt_jwk(self) -> jwk.JWK | None:
+    def get_encrypt_jwk(self) -> Optional[jwk.JWK]:
         if self.encrypt_jwk is None:
             return None
         return load_jwk(self.encrypt_jwk)

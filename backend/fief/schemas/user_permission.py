@@ -1,3 +1,5 @@
+from typing import Optional
+
 from pydantic import UUID4
 
 from fief.schemas.generics import BaseModel, CreatedUpdatedAt
@@ -12,9 +14,9 @@ class UserPermissionCreate(BaseModel):
 class BaseUserPermission(CreatedUpdatedAt):
     user_id: UUID4
     permission_id: UUID4
-    from_role_id: UUID4 | None
+    from_role_id: Optional[UUID4]
 
 
 class UserPermission(BaseUserPermission):
     permission: PermissionEmbedded
-    from_role: RoleEmbedded | None
+    from_role: Optional[RoleEmbedded]

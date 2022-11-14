@@ -1,3 +1,5 @@
+from typing import List, Optional
+
 from pydantic import UUID4
 from sqlalchemy import select
 from sqlalchemy.orm import joinedload
@@ -19,10 +21,12 @@ class UserRoleRepository(BaseRepository[UserRole], UUIDRepositoryMixin[UserRole]
 
         return statement
 
-    async def get_by_role_and_user(self, user: UUID4, role: UUID4) -> UserRole | None:
+    async def get_by_role_and_user(
+        self, user: UUID4, role: UUID4
+    ) -> Optional[UserRole]:
         return await self.get_one_or_none(
             select(UserRole).where(UserRole.user_id == user, UserRole.role_id == role)
         )
 
-    async def get_by_role(self, role: UUID4) -> list[UserRole]:
+    async def get_by_role(self, role: UUID4) -> List[UserRole]:
         return await self.list(select(UserRole).where(UserRole.role_id == role))

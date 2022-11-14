@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Dict, Type
 
 from pydantic import BaseModel
 
@@ -22,8 +22,8 @@ class EmailContext(BaseModel):
         return cls(**context_kwargs)
 
     @classmethod
-    async def _get_sample_context_kwargs(cls, session: AsyncSession) -> dict[str, Any]:
-        context_kwargs: dict[str, Any] = {}
+    async def _get_sample_context_kwargs(cls, session: AsyncSession) -> Dict[str, Any]:
+        context_kwargs: Dict[str, Any] = {}
         tenant_repository = TenantRepository(session)
         tenant = await tenant_repository.get_default()
         assert tenant is not None
@@ -47,13 +47,13 @@ class ForgotPasswordContext(EmailContext):
     reset_url: str
 
     @classmethod
-    async def _get_sample_context_kwargs(cls, session: AsyncSession) -> dict[str, Any]:
+    async def _get_sample_context_kwargs(cls, session: AsyncSession) -> Dict[str, Any]:
         context_kwargs = await super()._get_sample_context_kwargs(session)
         context_kwargs["reset_url"] = "https://example.fief.dev/reset"
         return context_kwargs
 
 
-EMAIL_TEMPLATE_CONTEXT_CLASS_MAP: dict[EmailTemplateType, type[EmailContext]] = {
+EMAIL_TEMPLATE_CONTEXT_CLASS_MAP: Dict[EmailTemplateType, Type[EmailContext]] = {
     EmailTemplateType.BASE: EmailContext,
     EmailTemplateType.WELCOME: WelcomeContext,
     EmailTemplateType.FORGOT_PASSWORD: ForgotPasswordContext,

@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 from babel import Locale
 from pydantic import UUID4
@@ -38,7 +38,7 @@ class User(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
     )
     tenant: Tenant = relationship("Tenant")
 
-    user_field_values: list["UserFieldValue"] = relationship(
+    user_field_values: List["UserFieldValue"] = relationship(
         "UserFieldValue", back_populates="user", cascade="all, delete", lazy="selectin"
     )
 
@@ -46,7 +46,7 @@ class User(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
         return f"User(id={self.id}, email={self.email})"
 
     @property
-    def fields(self) -> dict[str, Any]:
+    def fields(self) -> Dict[str, Any]:
         return dict(
             user_field_value.get_slug_and_value()
             for user_field_value in self.user_field_values
@@ -61,7 +61,7 @@ class User(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
                 return user_field_value
         return None
 
-    def get_claims(self) -> dict[str, Any]:
+    def get_claims(self) -> Dict[str, Any]:
         fields = dict(
             user_field_value.get_slug_and_value(json_serializable=True)
             for user_field_value in self.user_field_values

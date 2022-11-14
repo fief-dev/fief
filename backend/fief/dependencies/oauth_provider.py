@@ -1,3 +1,5 @@
+from typing import List, Tuple
+
 from fastapi import Depends, HTTPException, status
 from pydantic import UUID4
 from sqlalchemy import select
@@ -20,7 +22,7 @@ async def get_paginated_oauth_providers(
     repository: OAuthProviderRepository = Depends(
         get_workspace_repository(OAuthProviderRepository)
     ),
-) -> tuple[list[OAuthProvider], int]:
+) -> Tuple[List[OAuthProvider], int]:
     statement = select(OAuthProvider)
     return await get_paginated_objects(statement, pagination, ordering, repository)
 
@@ -43,5 +45,5 @@ async def get_oauth_providers(
     repository: OAuthProviderRepository = Depends(
         get_workspace_repository(OAuthProviderRepository)
     ),
-) -> list[OAuthProvider]:
+) -> List[OAuthProvider]:
     return await repository.all_by_name_and_provider()

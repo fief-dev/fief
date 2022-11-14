@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Dict
 from urllib.parse import urlsplit, urlunsplit
 
 from fief_client import FiefAsync
@@ -8,7 +8,7 @@ from fief.settings import settings
 
 class FiefAsyncRelativeEndpoints(FiefAsync):
     def _get_endpoint_url(
-        self, openid_configuration: dict[str, Any], field: str
+        self, openid_configuration: Dict[str, Any], field: str
     ) -> str:
         """
         Tweak the URL so they are relative instead of absolute.

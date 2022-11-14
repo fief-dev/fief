@@ -1,6 +1,7 @@
 import smtplib
 import ssl
 from email.message import EmailMessage
+from typing import Optional, Tuple
 
 from fief.services.email.base import EmailProvider, SendEmailError, format_address
 
@@ -9,10 +10,10 @@ class SMTP(EmailProvider):
     def __init__(
         self,
         host: str,
-        username: str | None = None,
-        password: str | None = None,
+        username: Optional[str] = None,
+        password: Optional[str] = None,
         port: int = 587,
-        ssl: bool | None = True,
+        ssl: Optional[bool] = True,
     ) -> None:
         self.username = username
         self.password = password
@@ -23,11 +24,11 @@ class SMTP(EmailProvider):
     def send_email(
         self,
         *,
-        sender: tuple[str, str | None],
-        recipient: tuple[str, str | None],
+        sender: Tuple[str, Optional[str]],
+        recipient: Tuple[str, Optional[str]],
         subject: str,
-        html: str | None = None,
-        text: str | None = None,
+        html: Optional[str] = None,
+        text: Optional[str] = None,
     ):
         from_email, from_name = sender
         to_email, to_name = recipient

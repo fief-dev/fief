@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import cast
+from typing import List, Optional, Tuple, cast
 
 from pydantic import UUID4
 from sqlalchemy import Column, ForeignKey
@@ -31,11 +31,11 @@ class AuthorizationCode(UUIDModel, CreatedUpdatedAt, ExpiresAt, WorkspaceBase):
     )
     c_hash: str = Column(String(length=255), nullable=False)
     redirect_uri: str = Column(String(length=2048), nullable=False)
-    scope: list[str] = Column(JSON, nullable=False, default=list)
+    scope: List[str] = Column(JSON, nullable=False, default=list)
     authenticated_at: datetime = Column(TIMESTAMPAware(timezone=True), nullable=False)
-    nonce: str | None = Column(String(length=255), nullable=True)
-    code_challenge: str | None = Column(String(length=255), nullable=True)
-    code_challenge_method: str | None = Column(String(length=255), nullable=True)
+    nonce: Optional[str] = Column(String(length=255), nullable=True)
+    code_challenge: Optional[str] = Column(String(length=255), nullable=True)
+    code_challenge_method: Optional[str] = Column(String(length=255), nullable=True)
 
     user_id: UUID4 = Column(
         GUID, ForeignKey(User.id, ondelete="CASCADE"), nullable=False
@@ -47,7 +47,7 @@ class AuthorizationCode(UUIDModel, CreatedUpdatedAt, ExpiresAt, WorkspaceBase):
     )
     client: Client = relationship("Client", lazy="joined")
 
-    def get_code_challenge_tuple(self) -> tuple[str, str] | None:
+    def get_code_challenge_tuple(self) -> Optional[Tuple[str, str]]:
         if self.code_challenge is not None:
             return (self.code_challenge, cast(str, self.code_challenge_method))
         return None

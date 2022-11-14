@@ -1,3 +1,5 @@
+from typing import List, Optional, Tuple
+
 from fastapi import Depends, HTTPException, Query, status
 from pydantic import UUID4
 from sqlalchemy import select
@@ -15,11 +17,11 @@ from fief.repositories import RoleRepository
 
 
 async def get_paginated_roles(
-    query: str | None = Query(None),
+    query: Optional[str] = Query(None),
     pagination: Pagination = Depends(get_pagination),
     ordering: Ordering = Depends(get_ordering),
     repository: RoleRepository = Depends(get_workspace_repository(RoleRepository)),
-) -> tuple[list[Role], int]:
+) -> Tuple[List[Role], int]:
     statement = select(Role)
 
     if query is not None:

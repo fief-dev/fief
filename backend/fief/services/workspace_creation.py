@@ -1,4 +1,5 @@
 import re
+from typing import List, Optional
 
 from pydantic import UUID4
 
@@ -40,12 +41,12 @@ class WorkspaceCreation:
     async def create(
         self,
         workspace_create: WorkspaceCreate,
-        user_id: UUID4 | None = None,
-        default_domain: str | None = None,
-        default_client_id: str | None = None,
-        default_client_secret: str | None = None,
-        default_redirect_uris: list[str] | None = None,
-        default_encryption_key: str | None = None,
+        user_id: Optional[UUID4] = None,
+        default_domain: Optional[str] = None,
+        default_client_id: Optional[str] = None,
+        default_client_secret: Optional[str] = None,
+        default_redirect_uris: Optional[List[str]] = None,
+        default_encryption_key: Optional[str] = None,
     ) -> Workspace:
         workspace = Workspace(**workspace_create.dict())
 

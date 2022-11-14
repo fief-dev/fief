@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+from typing import Optional
 
 from pydantic import UUID4
 from sqlalchemy import Column, ForeignKey, String, Text
@@ -21,22 +22,24 @@ class OAuthAccount(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
     access_token: str = Column(
         StringEncryptedType(Text, settings.encryption_key, FernetEngine), nullable=False
     )
-    expires_at: datetime | None = Column(TIMESTAMPAware(timezone=True), nullable=True)
-    refresh_token: str | None = Column(
+    expires_at: Optional[datetime] = Column(
+        TIMESTAMPAware(timezone=True), nullable=True
+    )
+    refresh_token: Optional[str] = Column(
         StringEncryptedType(Text, settings.encryption_key, FernetEngine), nullable=True
     )
     account_id: str = Column(String(length=1024), index=True, nullable=False)
-    account_email: str | None = Column(String(length=1024), nullable=True)
+    account_email: Optional[str] = Column(String(length=1024), nullable=True)
 
     oauth_provider_id: UUID4 = Column(
         GUID, ForeignKey(OAuthProvider.id, ondelete="CASCADE"), nullable=False
     )
     oauth_provider: OAuthProvider = relationship("OAuthProvider", lazy="joined")
 
-    user_id: UUID4 | None = Column(
+    user_id: Optional[UUID4] = Column(
         GUID, ForeignKey(User.id, ondelete="CASCADE"), nullable=True
     )
-    user: User | None = relationship("User", lazy="joined")
+    user: Optional[User] = relationship("User", lazy="joined")
 
     tenant_id: UUID4 = Column(
         GUID, ForeignKey(Tenant.id, ondelete="CASCADE"), nullable=False

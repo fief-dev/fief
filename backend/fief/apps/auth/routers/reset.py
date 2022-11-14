@@ -1,3 +1,5 @@
+from typing import Optional
+
 from fastapi import APIRouter, Depends, Query, Request, status
 from fastapi.responses import RedirectResponse
 from fastapi_users.exceptions import (
@@ -49,9 +51,9 @@ async def forgot_password(
 @router.api_route("/reset", methods=["GET", "POST"], name="reset:reset")
 async def reset_password(
     request: Request,
-    token: str | None = Query(None),
+    token: Optional[str] = Query(None),
     user_manager: UserManager = Depends(get_user_manager),
-    login_session: LoginSession | None = Depends(get_optional_login_session),
+    login_session: Optional[LoginSession] = Depends(get_optional_login_session),
     tenant: Tenant = Depends(get_current_tenant),
 ):
     form_helper = FormHelper(

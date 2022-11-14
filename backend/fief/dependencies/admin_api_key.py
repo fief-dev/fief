@@ -1,3 +1,5 @@
+from typing import Optional
+
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import UUID4
@@ -21,11 +23,11 @@ bearer_scheme = HTTPBearer(auto_error=False)
 
 
 async def get_optional_admin_api_key(
-    authorization: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
+    authorization: Optional[HTTPAuthorizationCredentials] = Depends(bearer_scheme),
     repository: AdminAPIKeyRepository = Depends(
         get_main_repository(AdminAPIKeyRepository)
     ),
-) -> AdminAPIKey | None:
+) -> Optional[AdminAPIKey]:
     if authorization is None:
         return None
     token_hash = get_token_hash(authorization.credentials)

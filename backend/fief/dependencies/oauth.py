@@ -1,3 +1,5 @@
+from typing import List, Optional
+
 from fastapi import Cookie, Depends, Query
 from pydantic import UUID4
 
@@ -33,12 +35,12 @@ async def get_tenant_by_query(
 
 
 async def get_optional_login_session_with_tenant_query(
-    token: str | None = Cookie(None, alias=settings.login_session_cookie_name),
+    token: Optional[str] = Cookie(None, alias=settings.login_session_cookie_name),
     login_session_repository: LoginSessionRepository = Depends(
         get_workspace_repository(LoginSessionRepository)
     ),
     tenant: Tenant = Depends(get_tenant_by_query),
-) -> LoginSession | None:
+) -> Optional[LoginSession]:
     if token is None:
         return None
 
@@ -53,10 +55,11 @@ async def get_optional_login_session_with_tenant_query(
 
 
 async def get_login_session_with_tenant_query(
-    login_session: LoginSession
-    | None = Depends(get_optional_login_session_with_tenant_query),
+    login_session: Optional[LoginSession] = Depends(
+        get_optional_login_session_with_tenant_query
+    ),
     tenant: Tenant = Depends(get_tenant_by_query),
-    oauth_providers: list[OAuthProvider] | None = Depends(get_oauth_providers),
+    oauth_providers: Optional[List[OAuthProvider]] = Depends(get_oauth_providers),
 ) -> LoginSession:
     if login_session is None:
         raise OAuthException(
@@ -73,7 +76,7 @@ async def get_oauth_provider(
     oauth_provider_repository: OAuthProviderRepository = Depends(
         get_workspace_repository(OAuthProviderRepository)
     ),
-    oauth_providers: list[OAuthProvider] | None = Depends(get_oauth_providers),
+    oauth_providers: Optional[List[OAuthProvider]] = Depends(get_oauth_providers),
     tenant: Tenant = Depends(get_current_tenant),
 ) -> OAuthProvider:
     oauth_provider = await oauth_provider_repository.get_by_id(provider)

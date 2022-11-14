@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List, Optional
 
 from sqlalchemy import Column, Enum, Integer, String, Text
 from sqlalchemy.orm import relationship
@@ -23,31 +23,33 @@ class Workspace(UUIDModel, CreatedUpdatedAt, MainBase):
     name: str = Column(String(length=255), nullable=False)
     domain: str = Column(String(length=255), nullable=False)
 
-    database_type: DatabaseType | None = Column(Enum(DatabaseType), nullable=True)
-    database_host: str | None = Column(
+    database_type: Optional[DatabaseType] = Column(Enum(DatabaseType), nullable=True)
+    database_host: Optional[str] = Column(
         StringEncryptedType(Text, settings.encryption_key, FernetEngine), nullable=True
     )
-    database_port: str | None = Column(
+    database_port: Optional[str] = Column(
         StringEncryptedType(Text, settings.encryption_key, FernetEngine), nullable=True
     )
-    database_username: str | None = Column(
+    database_username: Optional[str] = Column(
         StringEncryptedType(Text, settings.encryption_key, FernetEngine), nullable=True
     )
-    database_password: str | None = Column(
+    database_password: Optional[str] = Column(
         StringEncryptedType(Text, settings.encryption_key, FernetEngine), nullable=True
     )
-    database_name: str | None = Column(
+    database_name: Optional[str] = Column(
         StringEncryptedType(Text, settings.encryption_key, FernetEngine), nullable=True
     )
-    database_ssl_mode: str | None = Column(
+    database_ssl_mode: Optional[str] = Column(
         StringEncryptedType(Text, settings.encryption_key, FernetEngine), nullable=True
     )
 
-    alembic_revision: str | None = Column(String(length=255), nullable=True, index=True)
+    alembic_revision: Optional[str] = Column(
+        String(length=255), nullable=True, index=True
+    )
 
     users_count: int = Column(Integer, nullable=False, default=0, server_default="0")
 
-    workspace_users: list["WorkspaceUser"] = relationship(
+    workspace_users: List["WorkspaceUser"] = relationship(
         "WorkspaceUser", back_populates="workspace", cascade="all, delete"
     )
 

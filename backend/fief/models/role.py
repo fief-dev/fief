@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List
 
 from sqlalchemy import Boolean, Column, ForeignKey, String, Table
 from sqlalchemy.orm import relationship
@@ -32,10 +32,10 @@ class Role(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
     name: str = Column(String(length=255), nullable=False)
     granted_by_default: bool = Column(Boolean, default=False, nullable=False)
 
-    permissions: list[Permission] = relationship(
+    permissions: List[Permission] = relationship(
         "Permission", secondary=RolePermission, lazy="selectin"
     )
-    user_permissions: list["UserPermission"] = relationship(
+    user_permissions: List["UserPermission"] = relationship(
         "UserPermission", cascade="all, delete"
     )
 

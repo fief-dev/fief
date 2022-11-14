@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import TypeVar
+from typing import List, Optional, Tuple, TypeVar
 
 from fastapi import Response, status
 from fastapi.responses import RedirectResponse
@@ -53,10 +53,10 @@ class AuthenticationFlow:
         response_type: str,
         response_mode: str,
         redirect_uri: str,
-        scope: list[str],
-        state: str | None,
-        nonce: str | None,
-        code_challenge_tuple: tuple[str, str] | None,
+        scope: List[str],
+        state: Optional[str],
+        nonce: Optional[str],
+        code_challenge_tuple: Optional[Tuple[str, str]],
         client: Client,
     ) -> ResponseType:
         login_session = LoginSession(
@@ -117,14 +117,14 @@ class AuthenticationFlow:
         response: ResponseType,
         user_id: UUID4,
         *,
-        session_token: SessionToken | None,
+        session_token: Optional[SessionToken],
     ) -> ResponseType:
         if session_token is not None:
             await self.session_token_repository.delete(session_token)
         return await self.create_session_token(response, user_id)
 
     async def create_or_update_grant(
-        self, user_id: UUID4, client: Client, scope: list[str]
+        self, user_id: UUID4, client: Client, scope: List[str]
     ) -> Grant:
         grant = await self.grant_repository.get_by_user_and_client(user_id, client.id)
         if grant is not None:
@@ -173,7 +173,7 @@ class AuthenticationFlow:
             params["state"] = login_session.state
 
         tenant_host = tenant.get_host(workspace.domain)
-        access_token: str | None = None
+        access_token: Optional[str] = None
 
         if login_session.response_type in ["code token", "code id_token token"]:
             permissions = await self.get_user_permissions(user)
@@ -222,9 +222,9 @@ class AuthenticationFlow:
         response_mode: str,
         error: str,
         *,
-        error_description: str | None = None,
-        error_uri: str | None = None,
-        state: str | None = None,
+        error_description: Optional[str] = None,
+        error_uri: Optional[str] = None,
+        state: Optional[str] = None,
     ) -> RedirectResponse:
         parsed_redirect_uri = furl(redirect_uri)
 

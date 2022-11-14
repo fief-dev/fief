@@ -1,5 +1,6 @@
 from datetime import datetime
 from enum import Enum
+from typing import Dict, Optional
 
 from pydantic import UUID4
 from sqlalchemy import JSON, Column, String, Text
@@ -31,17 +32,17 @@ class AuditLog(UUIDModel, WorkspaceBase):
     )
     level: str = Column(String(length=255), nullable=False, index=True)
     message: str = Column(Text, nullable=False, index=True)
-    extra: dict = Column(JSON, nullable=True)
+    extra: Dict = Column(JSON, nullable=True)
 
-    subject_user_id: UUID4 | None = Column(GUID, nullable=True, index=True)
+    subject_user_id: Optional[UUID4] = Column(GUID, nullable=True, index=True)
 
-    object_id: UUID4 | None = Column(GUID, nullable=True, index=True)
-    object_class: str | None = Column(String(length=255), nullable=True, index=True)
+    object_id: Optional[UUID4] = Column(GUID, nullable=True, index=True)
+    object_class: Optional[str] = Column(String(length=255), nullable=True, index=True)
 
-    admin_user_id: UUID4 | None = Column(GUID, nullable=True, index=True)
-    admin_api_key_id: UUID4 | None = Column(GUID, nullable=True, index=True)
+    admin_user_id: Optional[UUID4] = Column(GUID, nullable=True, index=True)
+    admin_api_key_id: Optional[UUID4] = Column(GUID, nullable=True, index=True)
 
-    subject_user: User | None = relationship(
+    subject_user: Optional[User] = relationship(
         "User",
         # Define a relationship, but without a foreign key constraint
         foreign_keys="AuditLog.subject_user_id",

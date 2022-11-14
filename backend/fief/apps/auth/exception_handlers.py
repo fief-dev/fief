@@ -1,4 +1,4 @@
-from collections.abc import Callable
+from typing import Callable, Dict, Type, Union
 
 from fastapi import Request, status
 from fastapi.responses import JSONResponse
@@ -16,7 +16,7 @@ from fief.exceptions import (
 )
 from fief.services.authentication_flow import AuthenticationFlow
 
-exception_handlers: dict[type[Exception], Callable] = {}
+exception_handlers: Dict[Type[Exception], Callable] = {}
 
 
 async def authorize_exception_handler(request: Request, exc: AuthorizeException):
@@ -53,7 +53,7 @@ exception_handlers[AuthorizeRedirectException] = authorize_redirect_exception_ha
 
 
 async def login_exception_handler(
-    request: Request, exc: LoginException | OAuthException
+    request: Request, exc: Union[LoginException, OAuthException]
 ):
     form_helper = FormHelper(
         LoginForm, "login.html", request=request, context={"tenant": exc.tenant}

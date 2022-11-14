@@ -1,3 +1,5 @@
+from typing import Optional
+
 from fastapi import Depends, HTTPException, status
 
 from fief.dependencies.admin_api_key import get_optional_admin_api_key
@@ -9,8 +11,10 @@ from fief.repositories.workspace_user import WorkspaceUserRepository
 
 
 async def is_authenticated_admin(
-    session_token: AdminSessionToken | None = Depends(get_optional_admin_session_token),
-    admin_api_key: AdminAPIKey | None = Depends(get_optional_admin_api_key),
+    session_token: Optional[AdminSessionToken] = Depends(
+        get_optional_admin_session_token
+    ),
+    admin_api_key: Optional[AdminAPIKey] = Depends(get_optional_admin_api_key),
     current_workspace: Workspace = Depends(get_current_workspace),
     workspace_user_repository: WorkspaceUserRepository = Depends(
         get_main_repository(WorkspaceUserRepository)

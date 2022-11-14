@@ -1,4 +1,5 @@
 import uuid
+from typing import List
 
 import dramatiq
 
@@ -24,7 +25,7 @@ class OnAfterRegisterTask(TaskBase):
             user_role_repository = UserRoleRepository(session)
 
             default_roles = await role_repository.get_granted_by_default()
-            user_roles: list[UserRole] = []
+            user_roles: List[UserRole] = []
             for role in default_roles:
                 existing_user_role = await user_role_repository.get_by_role_and_user(
                     user.id, role.id

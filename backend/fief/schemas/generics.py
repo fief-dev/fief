@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Generic, TypeVar
+from typing import Any, Dict, Generic, List, Optional, TypeVar
 
 import phonenumbers
 import pycountry
@@ -29,7 +29,7 @@ class CreatedUpdatedAt(BaseModel):
 
 class PaginatedResults(GenericModel, Generic[PM]):
     count: int
-    results: list[PM]
+    results: List[PM]
 
 
 class TrueBooleanError(PydanticValueError):
@@ -55,7 +55,7 @@ class PhoneNumberMissingRegionError(PhoneNumberError):
 
 class PhoneNumber(str):
     @classmethod
-    def __modify_schema__(cls, field_schema: dict[str, Any]) -> None:
+    def __modify_schema__(cls, field_schema: Dict[str, Any]) -> None:
         field_schema.update(type="string")
 
     @classmethod
@@ -80,7 +80,7 @@ class CountryCodeError(PydanticValueError):
 
 class CountryCode(str):
     @classmethod
-    def __modify_schema__(cls, field_schema: dict[str, Any]) -> None:
+    def __modify_schema__(cls, field_schema: Dict[str, Any]) -> None:
         countries = sorted(pycountry.countries, key=lambda c: c.name)
         field_schema.update(
             type="enum",
@@ -104,10 +104,10 @@ class CountryCode(str):
 
 class Address(BaseModel):
     line1: str = Field(..., min_length=1)
-    line2: str | None = Field(None, min_length=1)
+    line2: Optional[str] = Field(None, min_length=1)
     postal_code: str = Field(..., min_length=1)
     city: str = Field(..., min_length=1)
-    state: str | None = Field(None, min_length=1)
+    state: Optional[str] = Field(None, min_length=1)
     country: CountryCode
 
 
@@ -118,7 +118,7 @@ class TimezoneError(PydanticValueError):
 
 class Timezone(str):
     @classmethod
-    def __modify_schema__(cls, field_schema: dict[str, Any]) -> None:
+    def __modify_schema__(cls, field_schema: Dict[str, Any]) -> None:
         field_schema.update(
             type="enum", enum=sorted(pytz.common_timezones), title="timezone"
         )

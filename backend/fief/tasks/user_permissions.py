@@ -1,4 +1,5 @@
 import uuid
+from typing import List
 
 import dramatiq
 
@@ -22,7 +23,7 @@ class OnUserRoleCreated(TaskBase):
             if role is None:
                 raise TaskError(f"Role {role_id} doesn't exist.")
 
-            user_permissions: list[UserPermission] = []
+            user_permissions: List[UserPermission] = []
             for permission in role.permissions:
                 user_permissions.append(
                     UserPermission(

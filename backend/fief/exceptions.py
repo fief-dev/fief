@@ -1,3 +1,5 @@
+from typing import List, Optional
+
 from fief.models import OAuthProvider, Tenant
 from fief.schemas.auth import (
     AuthorizeError,
@@ -10,7 +12,7 @@ from fief.schemas.oauth import OAuthError
 
 
 class AuthorizeException(Exception):
-    def __init__(self, error: AuthorizeError, tenant: Tenant | None = None) -> None:
+    def __init__(self, error: AuthorizeError, tenant: Optional[Tenant] = None) -> None:
         self.error = error
         self.tenant = tenant
 
@@ -21,8 +23,8 @@ class AuthorizeRedirectException(Exception):
         error: AuthorizeRedirectError,
         redirect_uri: str,
         response_mode: str,
-        state: str | None,
-        tenant: Tenant | None = None,
+        state: Optional[str],
+        tenant: Optional[Tenant] = None,
     ) -> None:
         self.error = error
         self.redirect_uri = redirect_uri
@@ -35,8 +37,8 @@ class LoginException(Exception):
     def __init__(
         self,
         error: LoginError,
-        oauth_providers: list[OAuthProvider] | None = None,
-        tenant: Tenant | None = None,
+        oauth_providers: Optional[List[OAuthProvider]] = None,
+        tenant: Optional[Tenant] = None,
         *,
         fatal: bool = False
     ) -> None:
@@ -50,8 +52,8 @@ class OAuthException(Exception):
     def __init__(
         self,
         error: OAuthError,
-        oauth_providers: list[OAuthProvider] | None = None,
-        tenant: Tenant | None = None,
+        oauth_providers: Optional[List[OAuthProvider]] = None,
+        tenant: Optional[Tenant] = None,
         *,
         fatal: bool = False
     ) -> None:
@@ -67,6 +69,6 @@ class TokenRequestException(Exception):
 
 
 class LogoutException(Exception):
-    def __init__(self, error: LogoutError, tenant: Tenant | None = None) -> None:
+    def __init__(self, error: LogoutError, tenant: Optional[Tenant] = None) -> None:
         self.error = error
         self.tenant = tenant

@@ -1,5 +1,5 @@
-from collections.abc import Generator
 from contextlib import contextmanager
+from typing import Generator, Optional, Tuple
 
 from alembic import command
 from alembic.config import Config
@@ -44,7 +44,7 @@ class WorkspaceDatabase:
 
     def check_connection(
         self, database_connection_parameters: DatabaseConnectionParameters
-    ) -> tuple[bool, str | None]:
+    ) -> Tuple[bool, Optional[str]]:
         with self._get_engine(database_connection_parameters) as engine:
             try:
                 with engine.begin():

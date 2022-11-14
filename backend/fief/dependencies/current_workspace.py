@@ -1,4 +1,4 @@
-from collections.abc import AsyncGenerator
+from typing import AsyncGenerator, Optional
 
 from fastapi import Header, HTTPException, status
 from fastapi.param_functions import Depends
@@ -15,13 +15,13 @@ from fief.services.workspace_db import WorkspaceDatabase
 
 
 async def get_host(
-    host: str | None = Header(None, include_in_schema=False)
-) -> str | None:
+    host: Optional[str] = Header(None, include_in_schema=False)
+) -> Optional[str]:
     return host
 
 
 async def get_current_workspace(
-    host: str | None = Depends(get_host),
+    host: Optional[str] = Depends(get_host),
     repository: WorkspaceRepository = Depends(get_main_repository(WorkspaceRepository)),
     workspace_db: WorkspaceDatabase = Depends(get_workspace_db),
 ) -> Workspace:

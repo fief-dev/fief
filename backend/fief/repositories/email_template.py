@@ -1,3 +1,5 @@
+from typing import Optional
+
 from sqlalchemy import select
 
 from fief.models import EmailTemplate
@@ -10,6 +12,6 @@ class EmailTemplateRepository(
 ):
     model = EmailTemplate
 
-    async def get_by_type(self, type: EmailTemplateType) -> EmailTemplate | None:
+    async def get_by_type(self, type: EmailTemplateType) -> Optional[EmailTemplate]:
         statement = select(EmailTemplate).where(EmailTemplate.type == type.value)
         return await self.get_one_or_none(statement)

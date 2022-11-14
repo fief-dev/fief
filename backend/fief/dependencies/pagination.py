@@ -1,15 +1,17 @@
+from typing import List, Tuple
+
 from fastapi import Query
 from sqlalchemy.sql import Select
 
 from fief.repositories.base import BaseRepository, M
 
-PaginatedObjects = tuple[list[M], int]
+PaginatedObjects = Tuple[List[M], int]
 
 
 async def get_paginated_objects(
     statement: Select,
-    pagination: tuple[int, int],
-    ordering: list[tuple[list[str], bool]],
+    pagination: Tuple[int, int],
+    ordering: List[Tuple[List[str], bool]],
     repository: BaseRepository[M],
 ) -> PaginatedObjects[M]:
     limit, skip = pagination
@@ -17,7 +19,7 @@ async def get_paginated_objects(
     return await repository.paginate(statement, limit, skip)
 
 
-Pagination = tuple[int, int]
+Pagination = Tuple[int, int]
 
 
 async def get_pagination(
@@ -26,7 +28,7 @@ async def get_pagination(
     return min(limit, 100), skip
 
 
-Ordering = list[tuple[list[str], bool]]
+Ordering = List[Tuple[List[str], bool]]
 
 
 async def get_ordering(ordering: str = Query(None)) -> Ordering:

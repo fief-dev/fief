@@ -1,5 +1,6 @@
 import random
 import string
+from typing import Optional
 
 from slugify import slugify
 from sqlalchemy import select
@@ -11,11 +12,11 @@ from fief.repositories.base import BaseRepository, UUIDRepositoryMixin
 class TenantRepository(BaseRepository[Tenant], UUIDRepositoryMixin[Tenant]):
     model = Tenant
 
-    async def get_default(self) -> Tenant | None:
+    async def get_default(self) -> Optional[Tenant]:
         statement = select(Tenant).where(Tenant.default == True)
         return await self.get_one_or_none(statement)
 
-    async def get_by_slug(self, slug: str) -> Tenant | None:
+    async def get_by_slug(self, slug: str) -> Optional[Tenant]:
         statement = select(Tenant).where(Tenant.slug == slug)
         return await self.get_one_or_none(statement)
 

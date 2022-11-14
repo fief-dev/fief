@@ -41,7 +41,7 @@ class EmailTemplateInitializer:
             await self.repository.create(forgot_password)
 
     def _load_template(self, name: str) -> str:
-        with open(self.templates_dir / name) as file:
+        with open(self.templates_dir / name, "r") as file:
             return file.read()
 
 

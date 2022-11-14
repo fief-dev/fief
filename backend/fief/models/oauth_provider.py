@@ -1,3 +1,5 @@
+from typing import List, Optional
+
 from sqlalchemy import JSON, Column, String, Text
 
 from fief.crypto.encryption import FernetEngine, StringEncryptedType
@@ -18,6 +20,6 @@ class OAuthProvider(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
     client_secret: str = Column(
         StringEncryptedType(Text, settings.encryption_key, FernetEngine), nullable=False
     )
-    scopes: list[str] = Column(JSON, nullable=False, default=list)
-    name: str | None = Column(String(length=255), nullable=True)
-    openid_configuration_endpoint: str | None = Column(Text, nullable=True)
+    scopes: List[str] = Column(JSON, nullable=False, default=list)
+    name: Optional[str] = Column(String(length=255), nullable=True)
+    openid_configuration_endpoint: Optional[str] = Column(Text, nullable=True)

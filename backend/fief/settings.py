@@ -1,6 +1,6 @@
 from enum import Enum
 from pathlib import Path
-from typing import Any
+from typing import Any, Dict, Optional
 from urllib.parse import urlparse
 
 from pydantic import (
@@ -36,8 +36,8 @@ class Settings(BaseSettings):
     environment: Environment = Environment.DEVELOPMENT
     log_level: str = "INFO"
     unit_tests: bool = False
-    sentry_dsn_server: str | None = None
-    sentry_dsn_worker: str | None = None
+    sentry_dsn_server: Optional[str] = None
+    sentry_dsn_worker: Optional[str] = None
     root_domain: str = "localhost:8000"
     allow_origin_regex: str = "http://.*localhost:[0-9]+"
     port: int = 8000
@@ -48,13 +48,13 @@ class Settings(BaseSettings):
     generated_jwk_size: int = 4096
 
     database_type: DatabaseType = DatabaseType.SQLITE
-    database_url: str | None = None
-    database_host: str | None = None
-    database_port: int | None = None
-    database_username: str | None = None
-    database_password: str | None = None
-    database_name: str | None = "fief.db"
-    database_ssl_mode: str | None = None
+    database_url: Optional[str] = None
+    database_host: Optional[str] = None
+    database_port: Optional[int] = None
+    database_username: Optional[str] = None
+    database_password: Optional[str] = None
+    database_name: Optional[str] = "fief.db"
+    database_ssl_mode: Optional[str] = None
     database_location: DirectoryPath = Path.cwd()
     database_pool_recycle_seconds: int = 600
     database_pool_pre_ping: bool = False
@@ -62,7 +62,7 @@ class Settings(BaseSettings):
     redis_url: str = "redis://localhost:6379"
 
     email_provider: AvailableEmailProvider = AvailableEmailProvider.NULL
-    email_provider_params: dict[str, Any] = Field(default_factory=dict)
+    email_provider_params: Dict[str, Any] = Field(default_factory=dict)
 
     workspace_table_prefix: str = "fief_"
 
@@ -94,9 +94,9 @@ class Settings(BaseSettings):
     fief_domain: str = "localhost:8000"
     fief_client_id: str
     fief_client_secret: str
-    fief_encryption_key: str | None = None
-    fief_main_user_email: EmailStr | None = None
-    fief_main_user_password: SecretStr | None = None
+    fief_encryption_key: Optional[str] = None
+    fief_main_user_email: Optional[EmailStr] = None
+    fief_main_user_password: Optional[SecretStr] = None
 
     fief_admin_session_cookie_name: str = "fief_admin_session"
     fief_admin_session_cookie_domain: str = ""
@@ -120,7 +120,7 @@ class Settings(BaseSettings):
         return values
 
     @validator("encryption_key", pre=True)
-    def validate_encryption_key(cls, value: str | None) -> bytes | None:
+    def validate_encryption_key(cls, value: Optional[str]) -> Optional[bytes]:
         if value is None:
             return value
 
@@ -131,13 +131,13 @@ class Settings(BaseSettings):
         return key
 
     @validator("database_port", pre=True)
-    def validate_empty_port(cls, value: str | None) -> str | None:
+    def validate_empty_port(cls, value: Optional[str]) -> Optional[str]:
         if value is None or value == "":
             return None
         return value
 
     def get_database_connection_parameters(
-        self, asyncio: bool = True, schema: str | None = None
+        self, asyncio: bool = True, schema: Optional[str] = None
     ) -> DatabaseConnectionParameters:
         """
         Returns a proper database URL and connection arguments for async or not-async context.

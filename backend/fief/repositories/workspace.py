@@ -1,5 +1,6 @@
 import random
 import string
+from typing import Optional
 
 from slugify import slugify
 from sqlalchemy import select
@@ -12,11 +13,11 @@ from fief.settings import settings
 class WorkspaceRepository(BaseRepository[Workspace], UUIDRepositoryMixin[Workspace]):
     model = Workspace
 
-    async def get_by_domain(self, domain: str) -> Workspace | None:
+    async def get_by_domain(self, domain: str) -> Optional[Workspace]:
         statement = select(Workspace).where(Workspace.domain == domain)
         return await self.get_one_or_none(statement)
 
-    async def get_main(self) -> Workspace | None:
+    async def get_main(self) -> Optional[Workspace]:
         return await self.get_by_domain(settings.fief_domain)
 
     async def get_available_subdomain(self, name: str) -> str:

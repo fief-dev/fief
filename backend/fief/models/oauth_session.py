@@ -1,4 +1,5 @@
 import secrets
+from typing import Optional
 
 from pydantic import UUID4
 from sqlalchemy import Column, ForeignKey, Text
@@ -37,10 +38,10 @@ class OAuthSession(UUIDModel, CreatedUpdatedAt, ExpiresAt, WorkspaceBase):
     )
     login_session: LoginSession = relationship("LoginSession")
 
-    oauth_account_id: UUID4 | None = Column(
+    oauth_account_id: Optional[UUID4] = Column(
         GUID, ForeignKey(OAuthAccount.id, ondelete="CASCADE"), nullable=True
     )
-    oauth_account: OAuthAccount | None = relationship("OAuthAccount", lazy="joined")
+    oauth_account: Optional[OAuthAccount] = relationship("OAuthAccount", lazy="joined")
 
     tenant_id: UUID4 = Column(
         GUID, ForeignKey(Tenant.id, ondelete="CASCADE"), nullable=False

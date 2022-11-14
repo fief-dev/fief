@@ -1,7 +1,16 @@
 import asyncio
-from collections.abc import Sequence
 from datetime import datetime, timezone
-from typing import Any, Generic, Protocol, TypeVar
+from typing import (
+    Any,
+    Generic,
+    List,
+    Optional,
+    Protocol,
+    Sequence,
+    Tuple,
+    Type,
+    TypeVar,
+)
 
 from pydantic import UUID4
 from sqlalchemy import delete, func, select
@@ -14,7 +23,7 @@ from fief.models.generics import M_EXPIRES_AT, M_UUID, M
 
 
 class BaseRepositoryProtocol(Protocol[M]):
-    model: type[M]
+    model: Type[M]
     session: AsyncSession
 
     def __init__(self, session: AsyncSession) -> None:
@@ -25,18 +34,18 @@ class BaseRepositoryProtocol(Protocol[M]):
         statement: Select,
         limit=10,
         skip=0,
-    ) -> tuple[list[M], int]:
+    ) -> Tuple[List[M], int]:
         ...  # pragma: no cover
 
     def orderize(
-        self, statement: Select, ordering: list[tuple[list[str], bool]]
+        self, statement: Select, ordering: List[Tuple[List[str], bool]]
     ) -> Select:
         ...  # pragma: no cover
 
-    async def get_one_or_none(self, statement: Select) -> M | None:
+    async def get_one_or_none(self, statement: Select) -> Optional[M]:
         ...  # pragma: no cover
 
-    async def list(self, statement: Select) -> list[M]:
+    async def list(self, statement: Select) -> List[M]:
         ...  # pragma: no cover
 
     async def create(self, object: M) -> M:
@@ -56,14 +65,14 @@ class BaseRepositoryProtocol(Protocol[M]):
 
 
 class UUIDRepositoryProtocol(BaseRepositoryProtocol, Protocol[M_UUID]):
-    model: type[M_UUID]
+    model: Type[M_UUID]
 
-    async def get_by_id(self, id: UUID4) -> M_UUID | None:
+    async def get_by_id(self, id: UUID4) -> Optional[M_UUID]:
         ...  # pragma: no cover
 
 
 class ExpiresAtRepositoryProtocol(BaseRepositoryProtocol, Protocol[M_EXPIRES_AT]):
-    model: type[M_EXPIRES_AT]
+    model: Type[M_EXPIRES_AT]
 
     async def delete_expired(self) -> None:
         ...  # pragma: no cover
@@ -78,7 +87,7 @@ class BaseRepository(BaseRepositoryProtocol, Generic[M]):
         statement: Select,
         limit=10,
         skip=0,
-    ) -> tuple[list[M], int]:
+    ) -> Tuple[List[M], int]:
         paginated_statement = statement.offset(skip).limit(limit)
         [count, result] = await asyncio.gather(
             self._count(statement), self._execute_query(paginated_statement)
@@ -87,7 +96,7 @@ class BaseRepository(BaseRepositoryProtocol, Generic[M]):
         return result.scalars().unique().all(), count
 
     def orderize(
-        self, statement: Select, ordering: list[tuple[list[str], bool]]
+        self, statement: Select, ordering: List[Tuple[List[str], bool]]
     ) -> Select:
         for (accessors, is_desc) in ordering:
             field: InstrumentedAttribute
@@ -123,15 +132,19 @@ class BaseRepository(BaseRepositoryProtocol, Generic[M]):
                     )
         return statement
 
-    async def all(self) -> list[M]:
+    async def all(self) -> List[M]:
         return await self.list(select(self.model))
 
-    async def get_one_or_none(self, statement: Select) -> M | None:
+    async def get_one_or_none(self, statement: Select) -> Optional[M]:
         result = await self._execute_query(statement)
         object = result.scalar()
         if object is None:
             return None
         return object
+
+    async def list(self, statement: Select) -> List[M]:
+        result = await self._execute_query(statement)
+        return result.scalars().unique().all()
 
     async def create(self, object: M) -> M:
         self.session.add(object)
@@ -148,15 +161,11 @@ class BaseRepository(BaseRepositoryProtocol, Generic[M]):
         await self.session.delete(object)
         await self.session.commit()
 
-    async def create_many(self, objects: list[M]) -> list[M]:
+    async def create_many(self, objects: List[M]) -> List[M]:
         for object in objects:
             self.session.add(object)
         await self.session.commit()
         return objects
-
-    async def list(self, statement: Select) -> list[M]:
-        result = await self._execute_query(statement)
-        return result.scalars().unique().all()
 
     async def _count(self, statement: Select) -> int:
         count_statement = statement.with_only_columns(
@@ -178,8 +187,8 @@ class UUIDRepositoryMixin(Generic[M_UUID]):
     async def get_by_id(
         self: UUIDRepositoryProtocol[M_UUID],
         id: UUID4,
-        options: Sequence[Any] | None = None,
-    ) -> M_UUID | None:
+        options: Optional[Sequence[Any]] = None,
+    ) -> Optional[M_UUID]:
         statement = select(self.model).where(self.model.id == id)
 
         if options is not None:
@@ -200,6 +209,6 @@ REPOSITORY = TypeVar("REPOSITORY", bound=BaseRepository)
 
 
 def get_repository(
-    repository_class: type[REPOSITORY], session: AsyncSession
+    repository_class: Type[REPOSITORY], session: AsyncSession
 ) -> REPOSITORY:
     return repository_class(session)

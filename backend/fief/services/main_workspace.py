@@ -1,3 +1,5 @@
+from typing import Optional
+
 from fief.db.main import create_main_async_session_maker
 from fief.db.workspace import WorkspaceEngineManager, get_workspace_session
 from fief.dependencies.logger import get_audit_logger
@@ -103,7 +105,7 @@ async def create_main_fief_workspace() -> Workspace:
     return workspace
 
 
-async def create_main_fief_user(email: str, password: str | None = None) -> User:
+async def create_main_fief_user(email: str, password: Optional[str] = None) -> User:
     workspace = await get_main_fief_workspace()
     main_async_session_maker = create_main_async_session_maker()
     async with main_async_session_maker() as session:

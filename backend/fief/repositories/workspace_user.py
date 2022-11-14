@@ -1,3 +1,5 @@
+from typing import Optional
+
 from pydantic import UUID4
 from sqlalchemy import select
 
@@ -12,7 +14,7 @@ class WorkspaceUserRepository(
 
     async def get_by_workspace_and_user(
         self, workspace_id: UUID4, user_id: UUID4
-    ) -> WorkspaceUser | None:
+    ) -> Optional[WorkspaceUser]:
         statement = select(WorkspaceUser).where(
             WorkspaceUser.workspace_id == workspace_id, WorkspaceUser.user_id == user_id
         )

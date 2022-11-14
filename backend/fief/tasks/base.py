@@ -1,7 +1,6 @@
 import asyncio
 import contextlib
-from collections.abc import AsyncGenerator, Callable
-from typing import AsyncContextManager, ClassVar
+from typing import AsyncContextManager, AsyncGenerator, Callable, ClassVar
 from urllib.parse import urlparse
 
 import dramatiq

@@ -1,6 +1,6 @@
 import uuid
 from datetime import date, datetime, timezone
-from typing import TYPE_CHECKING, Any, Generic, TypeVar
+from typing import TYPE_CHECKING, Any, Dict, Generic, List, Optional, TypeVar, Union
 
 from fastapi_users import schemas
 from pydantic import UUID4, Field, StrictBool, StrictInt, StrictStr
@@ -16,8 +16,8 @@ if TYPE_CHECKING:  # pragma: no cover
 class UserRead(schemas.BaseUser, CreatedUpdatedAt):
     tenant_id: UUID4
     tenant: TenantEmbedded
-    fields: dict[
-        str, Address | Timezone | StrictBool | StrictInt | StrictStr | datetime | date
+    fields: Dict[
+        str, Union[Address, Timezone, StrictBool, StrictInt, StrictStr, datetime, date]
     ]
 
     class Config:
@@ -49,12 +49,12 @@ class UserCreateInternal(UserCreate[UF], Generic[UF]):
 
 
 class UserUpdate(GenericModel, Generic[UF], schemas.BaseUserUpdate):
-    fields: UF | None = Field(exclude=True)
+    fields: Optional[UF] = Field(exclude=True)
 
 
 class CreateAccessToken(BaseModel):
     client_id: UUID4
-    scopes: list[str]
+    scopes: List[str]
 
 
 class AccessTokenResponse(BaseModel):
@@ -65,8 +65,8 @@ class AccessTokenResponse(BaseModel):
 
 class UserEmailContext(schemas.BaseUser, CreatedUpdatedAt):
     tenant_id: UUID4
-    fields: dict[
-        str, Address | Timezone | StrictBool | StrictInt | StrictStr | datetime | date
+    fields: Dict[
+        str, Union[Address, Timezone, StrictBool, StrictInt, StrictStr, datetime, date]
     ]
 
     class Config:

@@ -1,4 +1,4 @@
-from collections.abc import AsyncGenerator
+from typing import AsyncGenerator
 
 from fief.db import AsyncSession
 from fief.db.main import create_main_async_session_maker

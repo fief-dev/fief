@@ -1,5 +1,5 @@
 import secrets
-from typing import Generic, TypeVar
+from typing import Generic, Optional, Type, TypeVar
 
 from fastapi import Request, status
 from starlette.templating import _TemplateResponse
@@ -23,7 +23,7 @@ class CSRFCookie(CSRF):
         return super().setup_form(form)
 
     def generate_csrf_token(self, csrf_token_field: Field):
-        csrf_token: str | None = self.get_challenge_csrf_token()
+        csrf_token: Optional[str] = self.get_challenge_csrf_token()
         if csrf_token is None:
             csrf_token = secrets.token_urlsafe()
             # Will be catched by CSRFCookieSetterMiddleware and set in cookies
@@ -40,7 +40,7 @@ class CSRFCookie(CSRF):
         ):
             raise validators.ValidationError(field.gettext("CSRF failed."))
 
-    def get_challenge_csrf_token(self) -> str | None:
+    def get_challenge_csrf_token(self) -> Optional[str]:
         return self.request.cookies.get(self.form_meta.csrf_cookie_name)
 
     @property
@@ -70,11 +70,11 @@ F = TypeVar("F", bound=BaseForm)
 class FormHelper(Generic[F]):
     def __init__(
         self,
-        form_class: type[F],
+        form_class: Type[F],
         template: str,
         *,
         request: Request,
-        context: dict | None = None
+        context: Optional[dict] = None
     ):
         self.form_class = form_class
         self.template = template
@@ -85,7 +85,7 @@ class FormHelper(Generic[F]):
         }
 
         self._valid = True
-        self._form: F | None = None
+        self._form: Optional[F] = None
 
     async def get_form(self) -> F:
         if self._form:

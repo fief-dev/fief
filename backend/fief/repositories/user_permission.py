@@ -1,3 +1,5 @@
+from typing import Optional
+
 from pydantic import UUID4
 from sqlalchemy import delete, select
 from sqlalchemy.orm import joinedload
@@ -31,7 +33,7 @@ class UserPermissionRepository(
 
     async def get_by_permission_and_user(
         self, user: UUID4, permission: UUID4, *, direct_only: bool = False
-    ) -> UserPermission | None:
+    ) -> Optional[UserPermission]:
         statement = select(UserPermission).where(
             UserPermission.user_id == user, UserPermission.permission_id == permission
         )

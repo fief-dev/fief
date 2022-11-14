@@ -1,6 +1,7 @@
 import json
 import uuid
 from datetime import datetime, timezone
+from typing import List
 
 from jwcrypto import jwk, jwt
 from jwcrypto.common import JWException
@@ -18,8 +19,8 @@ def generate_access_token(
     host: str,
     client: Client,
     user: User,
-    scope: list[str],
-    permissions: list[str],
+    scope: List[str],
+    permissions: List[str],
     lifetime_seconds: int,
 ) -> str:
     iat = int(datetime.now(timezone.utc).timestamp())
