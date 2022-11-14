@@ -109,7 +109,11 @@ def init_email_templates():
     engine = create_engine(url, connect_args=connect_args)
     Session = sessionmaker(engine)
     with Session() as session:
-        workspaces = select(Workspace)
+        workspace_db = WorkspaceDatabase()
+        latest_revision = workspace_db.get_latest_revision()
+        workspaces = select(Workspace).where(
+            Workspace.alembic_revision == latest_revision
+        )
         for [workspace] in session.execute(workspaces):
             assert isinstance(workspace, Workspace)
             typer.secho(f"Checking {workspace.name}... ", bold=True, nl=False)
