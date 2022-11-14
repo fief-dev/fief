@@ -14,7 +14,7 @@ def schedule():
     )
     scheduler.add_job(
         tasks.count_users.send,
-        CronTrigger.from_crontab("0 * * * *"),
+        CronTrigger.from_crontab("0 0 * * *"),
     )
     try:
         scheduler.start()
