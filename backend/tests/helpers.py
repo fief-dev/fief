@@ -1,6 +1,5 @@
 import json
 from datetime import datetime
-from typing import Dict, Optional, Tuple
 
 from furl import furl
 from jwcrypto import jwk, jwt
@@ -26,8 +25,8 @@ async def id_token_assertions(
     id_token: str,
     jwk: jwk.JWK,
     authenticated_at: datetime,
-    authorization_code_tuple: Optional[Tuple[AuthorizationCode, str]] = None,
-    access_token: Optional[str] = None,
+    authorization_code_tuple: tuple[AuthorizationCode, str] | None = None,
+    access_token: str | None = None,
 ):
     id_token_jwt = jwt.JWT(jwt=id_token, algs=["RS256"], key=jwk)
     id_token_claims = json.loads(id_token_jwt.claims)
@@ -50,7 +49,7 @@ async def id_token_assertions(
 
 def get_params_by_response_mode(
     redirect_uri: str, response_mode: str
-) -> Dict[str, str]:
+) -> dict[str, str]:
     parsed_uri = furl(redirect_uri)
     if response_mode == "query":
         return parsed_uri.query.params

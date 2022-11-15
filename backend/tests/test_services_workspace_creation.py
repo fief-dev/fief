@@ -1,5 +1,5 @@
 import re
-from typing import AsyncGenerator, Tuple
+from collections.abc import AsyncGenerator
 from unittest.mock import AsyncMock
 
 import pytest
@@ -30,7 +30,7 @@ from tests.types import GetTestDatabase
 @pytest.fixture(scope="module")
 async def test_database_url(
     get_test_database: GetTestDatabase,
-) -> AsyncGenerator[Tuple[DatabaseConnectionParameters, DatabaseType], None]:
+) -> AsyncGenerator[tuple[DatabaseConnectionParameters, DatabaseType], None]:
     async with get_test_database(name="fief-test-workspace-creation") as (
         database_connection_parameters,
         database_type,
@@ -40,7 +40,7 @@ async def test_database_url(
 
 @pytest.fixture
 def workspace_create(
-    test_database_url: Tuple[DatabaseConnectionParameters, DatabaseType]
+    test_database_url: tuple[DatabaseConnectionParameters, DatabaseType]
 ) -> WorkspaceCreate:
     (url, _), database_type = test_database_url
     return WorkspaceCreate(

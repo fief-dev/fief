@@ -1,5 +1,6 @@
+from collections.abc import AsyncGenerator
 from datetime import datetime
-from typing import AsyncGenerator, List, Optional, TypedDict
+from typing import TypedDict
 
 from fastapi import Depends, Form
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
@@ -24,15 +25,15 @@ ClientSecretBasicScheme = HTTPBasic(scheme_name="client_secret_basic", auto_erro
 
 class GrantRequest(TypedDict):
     user_id: UUID4
-    scope: List[str]
+    scope: list[str]
     authenticated_at: datetime
-    nonce: Optional[str]
-    c_hash: Optional[str]
+    nonce: str | None
+    c_hash: str | None
     client: Client
     grant_type: str
 
 
-async def get_grant_type(grant_type: Optional[str] = Form(None)) -> str:
+async def get_grant_type(grant_type: str | None = Form(None)) -> str:
     if grant_type is None:
         raise TokenRequestException(TokenError.get_invalid_request())
 
@@ -40,11 +41,11 @@ async def get_grant_type(grant_type: Optional[str] = Form(None)) -> str:
 
 
 async def authenticate_client_secret_basic(
-    credentials: Optional[HTTPBasicCredentials] = Depends(ClientSecretBasicScheme),
+    credentials: HTTPBasicCredentials | None = Depends(ClientSecretBasicScheme),
     client_repository: ClientRepository = Depends(
         get_workspace_repository(ClientRepository)
     ),
-) -> Optional[Client]:
+) -> Client | None:
     if credentials is None:
         return None
 
@@ -54,12 +55,12 @@ async def authenticate_client_secret_basic(
 
 
 async def authenticate_client_secret_post(
-    client_id: Optional[str] = Form(None),
-    client_secret: Optional[str] = Form(None),
+    client_id: str | None = Form(None),
+    client_secret: str | None = Form(None),
     client_repository: ClientRepository = Depends(
         get_workspace_repository(ClientRepository)
     ),
-) -> Optional[Client]:
+) -> Client | None:
     if client_id is None or client_secret is None:
         return None
 
@@ -67,13 +68,13 @@ async def authenticate_client_secret_post(
 
 
 async def authenticate_none(
-    client_id: Optional[str] = Form(None),
+    client_id: str | None = Form(None),
     client_repository: ClientRepository = Depends(
         get_workspace_repository(ClientRepository)
     ),
     grant_type: str = Depends(get_grant_type),
-    code_verifier: Optional[str] = Form(None),
-) -> Optional[Client]:
+    code_verifier: str | None = Form(None),
+) -> Client | None:
     if client_id is None:
         return None
 
@@ -91,9 +92,9 @@ async def authenticate_none(
 
 
 async def authenticate_client(
-    client_secret_basic: Optional[Client] = Depends(authenticate_client_secret_basic),
-    client_secret_post: Optional[Client] = Depends(authenticate_client_secret_post),
-    client_none: Optional[Client] = Depends(authenticate_none),
+    client_secret_basic: Client | None = Depends(authenticate_client_secret_basic),
+    client_secret_post: Client | None = Depends(authenticate_client_secret_post),
+    client_none: Client | None = Depends(authenticate_none),
 ) -> Client:
     if client_secret_basic is not None:
         return client_secret_basic
@@ -108,11 +109,11 @@ async def authenticate_client(
 
 
 async def validate_grant_request(
-    code: Optional[str] = Form(None),
-    code_verifier: Optional[str] = Form(None),
-    redirect_uri: Optional[str] = Form(None),
-    refresh_token_token: Optional[str] = Form(None, alias="refresh_token"),
-    scope: Optional[str] = Form(None),
+    code: str | None = Form(None),
+    code_verifier: str | None = Form(None),
+    redirect_uri: str | None = Form(None),
+    refresh_token_token: str | None = Form(None, alias="refresh_token"),
+    scope: str | None = Form(None),
     grant_type: str = Depends(get_grant_type),
     client: Client = Depends(authenticate_client),
     authorization_code_repository: AuthorizationCodeRepository = Depends(

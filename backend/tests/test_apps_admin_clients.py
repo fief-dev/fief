@@ -1,5 +1,4 @@
 import uuid
-from typing import List
 
 import httpx
 import pytest
@@ -122,7 +121,7 @@ class TestCreateClient:
     )
     async def test_valid(
         self,
-        redirect_uris: List[str],
+        redirect_uris: list[str],
         test_client_admin: httpx.AsyncClient,
         test_data: TestData,
     ):

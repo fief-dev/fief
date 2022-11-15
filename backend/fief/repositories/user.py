@@ -1,5 +1,3 @@
-from typing import Optional
-
 from pydantic import UUID4
 from sqlalchemy import select
 
@@ -10,7 +8,7 @@ from fief.repositories.base import BaseRepository, UUIDRepositoryMixin
 class UserRepository(BaseRepository[User], UUIDRepositoryMixin[User]):
     model = User
 
-    async def get_one_by_tenant(self, tenant: UUID4) -> Optional[User]:
+    async def get_one_by_tenant(self, tenant: UUID4) -> User | None:
         statement = (
             select(User)
             .where(User.tenant_id == tenant)

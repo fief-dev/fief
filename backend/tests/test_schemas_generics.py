@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any
 
 import pytest
 from pydantic import BaseModel, ValidationError
@@ -61,7 +61,7 @@ class TestAddress:
             ),
         ],
     )
-    def test_invalid(self, address: Dict[str, Any], nb_errors: int):
+    def test_invalid(self, address: dict[str, Any], nb_errors: int):
         with pytest.raises(ValidationError) as e:
             TestAddress.Model(address=address)
 

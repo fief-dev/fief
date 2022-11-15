@@ -1,5 +1,3 @@
-from typing import List, Optional, Type
-
 from fastapi import APIRouter, Depends, Request, Response, status
 from fastapi.responses import RedirectResponse
 from fastapi_users.exceptions import InvalidPasswordException, UserAlreadyExists
@@ -38,13 +36,12 @@ router = APIRouter()
 )
 async def register(
     request: Request,
-    register_form_class: Type[RF] = Depends(get_register_form_class),
+    register_form_class: type[RF] = Depends(get_register_form_class),
     registration_flow: RegistrationFlow = Depends(get_registration_flow),
     authentication_flow: AuthenticationFlow = Depends(get_authentication_flow),
-    registration_session: Optional[RegistrationSession] = Depends(
-        get_optional_registration_session
-    ),
-    oauth_providers: Optional[List[OAuthProvider]] = Depends(get_oauth_providers),
+    registration_session: RegistrationSession
+    | None = Depends(get_optional_registration_session),
+    oauth_providers: list[OAuthProvider] | None = Depends(get_oauth_providers),
     tenant: Tenant = Depends(get_current_tenant),
 ):
     if not tenant.registration_allowed:

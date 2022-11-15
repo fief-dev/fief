@@ -1,5 +1,4 @@
 from datetime import datetime, timezone
-from typing import List, Optional
 
 from fastapi import APIRouter, Depends, Query, Request, status
 from fastapi.responses import RedirectResponse
@@ -68,11 +67,11 @@ async def authorize(
 @router.get("/callback", name="oauth:callback")
 async def callback(
     request: Request,
-    code: Optional[str] = Query(None),
-    code_verifier: Optional[str] = Query(None),
-    state: Optional[str] = Query(None),
-    error: Optional[str] = Query(None),
-    oauth_providers: Optional[List[OAuthProvider]] = Depends(get_oauth_providers),
+    code: str | None = Query(None),
+    code_verifier: str | None = Query(None),
+    state: str | None = Query(None),
+    error: str | None = Query(None),
+    oauth_providers: list[OAuthProvider] | None = Depends(get_oauth_providers),
     oauth_session_repository: OAuthSessionRepository = Depends(
         get_workspace_repository(OAuthSessionRepository)
     ),
@@ -81,7 +80,7 @@ async def callback(
     ),
     authentication_flow: AuthenticationFlow = Depends(get_authentication_flow),
     registration_flow: RegistrationFlow = Depends(get_registration_flow),
-    session_token: Optional[SessionToken] = Depends(get_session_token),
+    session_token: SessionToken | None = Depends(get_session_token),
 ):
     if error is not None:
         raise OAuthException(

@@ -1,5 +1,4 @@
 import re
-from typing import List, Optional
 
 from pydantic import UUID4, AnyUrl, Field, SecretStr, validator
 
@@ -25,7 +24,7 @@ class ClientCreate(BaseModel):
     name: str
     first_party: bool
     client_type: ClientType
-    redirect_uris: List[AnyUrl] = Field(..., min_items=1)
+    redirect_uris: list[AnyUrl] = Field(..., min_items=1)
     tenant_id: UUID4
 
     _validate_redirect_uri = validator(
@@ -34,10 +33,10 @@ class ClientCreate(BaseModel):
 
 
 class ClientUpdate(BaseModel):
-    name: Optional[str]
-    first_party: Optional[bool]
-    client_type: Optional[ClientType]
-    redirect_uris: Optional[List[AnyUrl]] = Field(None, min_items=1)
+    name: str | None
+    first_party: bool | None
+    client_type: ClientType | None
+    redirect_uris: list[AnyUrl] | None = Field(None, min_items=1)
 
     _validate_redirect_uri = validator(
         "redirect_uris", each_item=True, allow_reuse=True
@@ -50,10 +49,10 @@ class BaseClient(UUIDSchema, CreatedUpdatedAt):
     client_type: ClientType
     client_id: str
     client_secret: str
-    redirect_uris: List[AnyUrl]
+    redirect_uris: list[AnyUrl]
     tenant_id: UUID4
 
 
 class Client(BaseClient):
     tenant: TenantEmbedded
-    encrypt_jwk: Optional[SecretStr]
+    encrypt_jwk: SecretStr | None

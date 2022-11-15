@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Type, Union, cast
+from typing import Any, cast
 
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.exceptions import RequestValidationError
@@ -94,7 +94,7 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, UUID4]):
         self.audit_logger = audit_logger
 
     async def validate_password(  # type: ignore
-        self, password: str, user: Union[UserCreate, User]
+        self, password: str, user: UserCreate | User
     ) -> None:
         if len(password) < 8:
             raise InvalidPasswordException(
@@ -105,9 +105,9 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, UUID4]):
         self,
         user_create: UserCreate[UF],
         *,
-        user_fields: List[UserField],
+        user_fields: list[UserField],
         safe: bool = False,
-        request: Optional[Request] = None,
+        request: Request | None = None,
     ) -> User:
         user = await self.create(user_create, safe, request)
 
@@ -131,9 +131,9 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, UUID4]):
         user_update: UserUpdate[UF],
         user: User,
         *,
-        user_fields: List[UserField],
+        user_fields: list[UserField],
         safe: bool = False,
-        request: Optional[Request] = None,
+        request: Request | None = None,
     ) -> User:
         user = await self.update(user_update, user, safe, request)
 
@@ -168,17 +168,17 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, UUID4]):
 
         return user
 
-    async def on_after_register(self, user: User, request: Optional[Request] = None):
+    async def on_after_register(self, user: User, request: Request | None = None):
         self.audit_logger(AuditLogMessage.USER_REGISTERED, subject_user_id=user.id)
         self.send_task(on_after_register, str(user.id), str(self.workspace.id))
 
     async def on_after_update(
-        self, user: User, update_dict: Dict[str, Any], request: Optional[Request] = None
+        self, user: User, update_dict: dict[str, Any], request: Request | None = None
     ):
         self.audit_logger(AuditLogMessage.USER_UPDATED, subject_user_id=user.id)
 
     async def on_after_forgot_password(
-        self, user: User, token: str, request: Optional[Request] = None
+        self, user: User, token: str, request: Request | None = None
     ):
         self.audit_logger(
             AuditLogMessage.USER_FORGOT_PASSWORD_REQUESTED, subject_user_id=user.id
@@ -194,12 +194,12 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, UUID4]):
         )
 
     async def on_after_reset_password(
-        self, user: User, request: Optional[Request] = None
+        self, user: User, request: Request | None = None
     ) -> None:
         self.audit_logger(AuditLogMessage.USER_PASSWORD_RESET, subject_user_id=user.id)
 
     async def on_after_request_verify(
-        self, user: User, token: str, request: Optional[Request] = None
+        self, user: User, token: str, request: Request | None = None
     ):
         print(f"Verification requested for user {user.id}. Verification token: {token}")
 
@@ -209,13 +209,13 @@ class SQLAlchemyUserTenantDatabase(SQLAlchemyUserDatabase[User, UUID4]):
         self,
         session: AsyncSession,
         tenant: Tenant,
-        user_table: Type[User],
-        oauth_account_table: Optional[Type[SQLAlchemyBaseOAuthAccountTable]] = None,
+        user_table: type[User],
+        oauth_account_table: type[SQLAlchemyBaseOAuthAccountTable] | None = None,
     ):
         super().__init__(session, user_table, oauth_account_table=oauth_account_table)
         self.tenant = tenant
 
-    async def _get_user(self, statement: Select) -> Optional[User]:
+    async def _get_user(self, statement: Select) -> User | None:
         statement = statement.where(User.tenant_id == self.tenant.id)
         return await super()._get_user(statement)
 
@@ -225,8 +225,8 @@ class JWTAccessTokenStrategy(Strategy[User, UUID4]):
         self.key = key
 
     async def read_token(
-        self, token: Optional[str], user_manager: BaseUserManager[User, UUID4]
-    ) -> Optional[User]:
+        self, token: str | None, user_manager: BaseUserManager[User, UUID4]
+    ) -> User | None:
         if token is None:
             return None
 
@@ -301,7 +301,7 @@ class AuthorizationCodeBearerTransport(BearerTransport):
         authorizationUrl: str,
         tokenUrl: str,
         refreshUrl: str,
-        scopes: Dict[str, str],
+        scopes: dict[str, str],
     ):
         self.scheme = OAuth2AuthorizationCodeBearer(
             authorizationUrl, tokenUrl, refreshUrl, scopes=scopes
@@ -401,7 +401,7 @@ async def get_user_manager_from_user(
 
 async def get_user_create_internal(
     request: Request,
-    user_create_internal_model: Type[UserCreateInternal[UF]] = Depends(
+    user_create_internal_model: type[UserCreateInternal[UF]] = Depends(
         get_admin_user_create_internal_model
     ),
 ) -> UserCreateInternal[UF]:
@@ -419,7 +419,7 @@ async def get_user_create_internal(
 
 async def get_user_update(
     request: Request,
-    user_update_model: Type[UserUpdate[UF]] = Depends(get_user_update_model),
+    user_update_model: type[UserUpdate[UF]] = Depends(get_user_update_model),
 ) -> UserUpdate[UF]:
     body_model = create_model(
         "UserUpdateBody",
@@ -435,7 +435,7 @@ async def get_user_update(
 
 async def get_admin_user_update(
     request: Request,
-    user_update_model: Type[UserUpdate[UF]] = Depends(get_admin_user_update_model),
+    user_update_model: type[UserUpdate[UF]] = Depends(get_admin_user_update_model),
 ) -> UserUpdate[UF]:
     body_model = create_model(
         "UserUpdateBody",

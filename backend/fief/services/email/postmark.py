@@ -1,5 +1,3 @@
-from typing import Optional, Tuple
-
 from postmarker.core import PostmarkClient
 from postmarker.exceptions import ClientError
 
@@ -13,11 +11,11 @@ class Postmark(EmailProvider):
     def send_email(
         self,
         *,
-        sender: Tuple[str, Optional[str]],
-        recipient: Tuple[str, Optional[str]],
+        sender: tuple[str, str | None],
+        recipient: tuple[str, str | None],
         subject: str,
-        html: Optional[str] = None,
-        text: Optional[str] = None,
+        html: str | None = None,
+        text: str | None = None,
     ):
         from_email, from_name = sender
         to_email, to_name = recipient

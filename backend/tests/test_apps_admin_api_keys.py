@@ -1,5 +1,4 @@
 import uuid
-from typing import Tuple
 
 import httpx
 import pytest
@@ -31,7 +30,7 @@ class TestListAPIKeys:
     async def test_valid(
         self,
         test_client_admin: httpx.AsyncClient,
-        admin_api_key: Tuple[AdminAPIKey, str],
+        admin_api_key: tuple[AdminAPIKey, str],
     ):
         response = await test_client_admin.get("/api-keys/")
 
@@ -89,7 +88,7 @@ class TestDeleteAPIKey:
     async def test_unauthorized(
         self,
         test_client_admin: httpx.AsyncClient,
-        admin_api_key: Tuple[AdminAPIKey, str],
+        admin_api_key: tuple[AdminAPIKey, str],
     ):
         response = await test_client_admin.delete(f"/api-keys/{admin_api_key[0].id}")
 
@@ -99,7 +98,7 @@ class TestDeleteAPIKey:
     async def test_unauthorized_with_api_key(
         self,
         test_client_admin: httpx.AsyncClient,
-        admin_api_key: Tuple[AdminAPIKey, str],
+        admin_api_key: tuple[AdminAPIKey, str],
     ):
         response = await test_client_admin.delete(f"/api-keys/{admin_api_key[0].id}")
 

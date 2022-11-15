@@ -1,4 +1,4 @@
-from typing import AsyncGenerator, Tuple
+from collections.abc import AsyncGenerator
 
 import httpx
 import pytest
@@ -64,7 +64,7 @@ async def unreachable_external_db_workspace(
 @pytest.fixture(scope="module")
 @pytest.mark.asyncio
 async def outdated_migration_workspace(
-    main_test_database: Tuple[DatabaseConnectionParameters, DatabaseType],
+    main_test_database: tuple[DatabaseConnectionParameters, DatabaseType],
     main_session: AsyncSession,
 ) -> AsyncGenerator[Workspace, None]:
     (url, _), database_type = main_test_database

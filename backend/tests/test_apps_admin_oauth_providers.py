@@ -1,6 +1,5 @@
 import uuid
 from datetime import datetime, timedelta, timezone
-from typing import Dict, Type
 from unittest.mock import AsyncMock, MagicMock
 
 import httpx
@@ -84,7 +83,7 @@ class TestCreateOAuthProvider:
     @pytest.mark.authenticated_admin
     async def test_valid(
         self,
-        payload: Dict[str, str],
+        payload: dict[str, str],
         test_client_admin: httpx.AsyncClient,
         workspace_session: AsyncSession,
     ):
@@ -314,7 +313,7 @@ class TestGetOAuthProviderUserAccessToken:
     @pytest.mark.authenticated_admin
     async def test_expired_token_refresh_error(
         self,
-        exception: Type[OAuth2Error],
+        exception: type[OAuth2Error],
         error_code: APIErrorCode,
         mocker: MockerFixture,
         test_client_admin: httpx.AsyncClient,

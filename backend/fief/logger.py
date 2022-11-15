@@ -3,8 +3,9 @@ import logging
 import sys
 import uuid
 from asyncio import AbstractEventLoop
+from collections.abc import Callable
 from datetime import timezone
-from typing import TYPE_CHECKING, AsyncContextManager, Callable, Literal, Optional
+from typing import TYPE_CHECKING, AsyncContextManager, Literal
 
 from loguru import logger
 from pydantic import UUID4
@@ -38,8 +39,8 @@ class AuditLogger:
         logger: "Logger",
         workspace_id: uuid.UUID,
         *,
-        admin_user_id: Optional[UUID4] = None,
-        admin_api_key_id: Optional[UUID4] = None,
+        admin_user_id: UUID4 | None = None,
+        admin_api_key_id: UUID4 | None = None,
     ) -> None:
         self.logger = logger.bind(audit=True, workspace_id=str(workspace_id))
         self.admin_user_id = admin_user_id
@@ -50,7 +51,7 @@ class AuditLogger:
         message: AuditLogMessage,
         *,
         level="INFO",
-        subject_user_id: Optional[uuid.UUID] = None,
+        subject_user_id: uuid.UUID | None = None,
         **kwargs,
     ) -> None:
         self.logger.log(
@@ -70,7 +71,7 @@ class AuditLogger:
             AuditLogMessage.OBJECT_DELETED,
         ],
         object: M_UUID,
-        subject_user_id: Optional[uuid.UUID] = None,
+        subject_user_id: uuid.UUID | None = None,
         **kwargs,
     ) -> None:
         return self(
@@ -126,7 +127,7 @@ class DatabaseAuditLogSink:
             session.add(log)
             await session.commit()
 
-    async def _get_workspace(self, workspace_id: uuid.UUID) -> Optional[Workspace]:
+    async def _get_workspace(self, workspace_id: uuid.UUID) -> Workspace | None:
         async with self.get_main_session() as session:
             repository = WorkspaceRepository(session)
             return await repository.get_by_id(workspace_id)
@@ -176,7 +177,7 @@ for uvicorn_logger_name in ["uvicorn.access"]:
 def init_audit_logger(
     get_main_session: Callable[..., AsyncContextManager[AsyncSession]],
     get_workspace_session: Callable[..., AsyncContextManager[AsyncSession]],
-    loop: Optional[AbstractEventLoop] = None,
+    loop: AbstractEventLoop | None = None,
 ):
     """
     Initialize the audit logger.

@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any
 from unittest.mock import MagicMock
 
 import httpx
@@ -26,7 +26,7 @@ class TestGetRegister:
     @pytest.mark.parametrize("cookie", [None, "INVALID_LOGIN_SESSION"])
     async def test_invalid_login_session(
         self,
-        cookie: Optional[str],
+        cookie: str | None,
         tenant_params: TenantParams,
         test_client_auth: httpx.AsyncClient,
     ):
@@ -167,7 +167,7 @@ class TestPostRegister:
     @pytest.mark.parametrize("cookie", [None, "INVALID_LOGIN_SESSION"])
     async def test_invalid_login_session(
         self,
-        cookie: Optional[str],
+        cookie: str | None,
         tenant_params: TenantParams,
         test_client_auth_csrf: httpx.AsyncClient,
         csrf_token: str,
@@ -223,7 +223,7 @@ class TestPostRegister:
     @pytest.mark.parametrize("cookie", [None, "INVALID_REGISTRATION_SESSION"])
     async def test_invalid_registration_session(
         self,
-        cookie: Optional[str],
+        cookie: str | None,
         tenant_params: TenantParams,
         test_client_auth_csrf: httpx.AsyncClient,
         csrf_token: str,
@@ -260,7 +260,7 @@ class TestPostRegister:
     )
     async def test_invalid_form(
         self,
-        data: Dict[str, str],
+        data: dict[str, str],
         tenant_params: TenantParams,
         test_client_auth_csrf: httpx.AsyncClient,
         csrf_token: str,
@@ -443,7 +443,7 @@ class TestPostRegister:
     )
     async def test_required_boolean_field(
         self,
-        data: Dict[str, Any],
+        data: dict[str, Any],
         status_code: int,
         test_client_auth_csrf: httpx.AsyncClient,
         csrf_token: str,

@@ -1,4 +1,3 @@
-from typing import List, Optional
 
 import pytest
 from pydantic import ValidationError
@@ -11,7 +10,7 @@ from fief.schemas.user import UserCreate
 @pytest.mark.asyncio
 class TestGetUserCreateModel:
     async def test_basic(self):
-        user_fields: List[UserField] = [
+        user_fields: list[UserField] = [
             UserField(
                 name="First name",
                 slug="first_name",
@@ -41,7 +40,7 @@ class TestGetUserCreateModel:
         assert user_create.fields.first_name == "Anne"
 
     async def test_missing_required_field(self):
-        user_fields: List[UserField] = [
+        user_fields: list[UserField] = [
             UserField(
                 name="First name",
                 slug="first_name",
@@ -68,7 +67,7 @@ class TestGetUserCreateModel:
         )
 
     async def test_invalid_empty_string(self):
-        user_fields: List[UserField] = [
+        user_fields: list[UserField] = [
             UserField(
                 name="First name",
                 slug="first_name",
@@ -99,7 +98,7 @@ class TestGetUserCreateModel:
         )
 
     async def test_missing_boolean_field(self):
-        user_fields: List[UserField] = [
+        user_fields: list[UserField] = [
             UserField(
                 name="Subscribe to newsletter",
                 slug="newsletter",
@@ -120,7 +119,7 @@ class TestGetUserCreateModel:
         assert user_create.fields.newsletter is False
 
     async def test_provided_boolean_field(self):
-        user_fields: List[UserField] = [
+        user_fields: list[UserField] = [
             UserField(
                 name="Subscribe to newsletter",
                 slug="newsletter",
@@ -143,8 +142,8 @@ class TestGetUserCreateModel:
         assert user_create.fields.newsletter is True
 
     @pytest.mark.parametrize("value", [None, "off"])
-    async def test_required_boolean_field_false(self, value: Optional[str]):
-        user_fields: List[UserField] = [
+    async def test_required_boolean_field_false(self, value: str | None):
+        user_fields: list[UserField] = [
             UserField(
                 name="Consent",
                 slug="consent",
@@ -175,7 +174,7 @@ class TestGetUserCreateModel:
         assert errors[0]["type"] == "value_error.boolean.must_be_true"
 
     async def test_required_boolean_field_true(self):
-        user_fields: List[UserField] = [
+        user_fields: list[UserField] = [
             UserField(
                 name="Consent",
                 slug="consent",
@@ -198,7 +197,7 @@ class TestGetUserCreateModel:
         assert user_create.fields.consent is True
 
     async def test_invalid_choice(self):
-        user_fields: List[UserField] = [
+        user_fields: list[UserField] = [
             UserField(
                 name="Choice",
                 slug="choice",
@@ -228,7 +227,7 @@ class TestGetUserCreateModel:
         assert errors[0]["type"] == "type_error.enum"
 
     async def test_valid_choice(self):
-        user_fields: List[UserField] = [
+        user_fields: list[UserField] = [
             UserField(
                 name="Choice",
                 slug="choice",

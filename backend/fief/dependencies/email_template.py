@@ -1,5 +1,3 @@
-from typing import Dict, List, Tuple
-
 from fastapi import Depends, HTTPException, status
 from pydantic import UUID4
 from sqlalchemy import select
@@ -28,7 +26,7 @@ async def get_paginated_email_templates(
     repository: EmailTemplateRepository = Depends(
         get_workspace_repository(EmailTemplateRepository)
     ),
-) -> Tuple[List[EmailTemplate], int]:
+) -> tuple[list[EmailTemplate], int]:
     statement = select(EmailTemplate)
     return await get_paginated_objects(statement, pagination, ordering, repository)
 
@@ -49,13 +47,13 @@ async def get_email_template_by_id_or_404(
 
 async def get_preview_templates_overrides(
     email_template_preview_input: schemas.email_template.EmailTemplatePreviewInput,
-) -> Dict[EmailTemplateType, EmailTemplate]:
+) -> dict[EmailTemplateType, EmailTemplate]:
     email_template = EmailTemplate(**email_template_preview_input.dict())
     return {email_template.type: email_template}
 
 
 async def get_email_template_renderer(
-    preview_templates_overrides: Dict[EmailTemplateType, EmailTemplate] = Depends(
+    preview_templates_overrides: dict[EmailTemplateType, EmailTemplate] = Depends(
         get_preview_templates_overrides
     ),
     repository: EmailTemplateRepository = Depends(
@@ -68,7 +66,7 @@ async def get_email_template_renderer(
 
 
 async def get_email_subject_renderer(
-    preview_templates_overrides: Dict[EmailTemplateType, EmailTemplate] = Depends(
+    preview_templates_overrides: dict[EmailTemplateType, EmailTemplate] = Depends(
         get_preview_templates_overrides
     ),
     repository: EmailTemplateRepository = Depends(

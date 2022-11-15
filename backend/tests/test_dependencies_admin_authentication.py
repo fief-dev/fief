@@ -1,6 +1,6 @@
 import json
 import uuid
-from typing import AsyncGenerator
+from collections.abc import AsyncGenerator
 
 import pytest
 from fastapi import Depends, FastAPI, status

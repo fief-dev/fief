@@ -1,5 +1,3 @@
-from typing import Optional
-
 from fief.schemas.generics import BaseModel, CreatedUpdatedAt, UUIDSchema
 
 
@@ -9,8 +7,8 @@ class TenantCreate(BaseModel):
 
 
 class TenantUpdate(BaseModel):
-    name: Optional[str]
-    registration_allowed: Optional[bool]
+    name: str | None
+    registration_allowed: bool | None
 
 
 class BaseTenant(UUIDSchema, CreatedUpdatedAt):

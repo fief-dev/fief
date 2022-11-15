@@ -1,7 +1,6 @@
 import hashlib
 import hmac
 import secrets
-from typing import Tuple
 
 from fief.settings import settings
 
@@ -15,7 +14,7 @@ def get_token_hash(
 
 def generate_token(
     *, secret: str = settings.secret.get_secret_value()
-) -> Tuple[str, str]:
+) -> tuple[str, str]:
     """
     Generate a token suitable for sensitive values
     like authorization codes or refresh tokens.

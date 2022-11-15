@@ -1,5 +1,4 @@
 import base64
-from typing import Dict, Tuple
 
 import httpx
 import pytest
@@ -24,9 +23,9 @@ def get_basic_authorization_header(client_id: str, client_secret: str) -> str:
 
 def get_authenticated_request_headers_data(
     method: str, client: Client
-) -> Tuple[Dict[str, str], Dict[str, str]]:
-    headers: Dict[str, str] = {}
-    data: Dict[str, str] = {}
+) -> tuple[dict[str, str], dict[str, str]]:
+    headers: dict[str, str] = {}
+    data: dict[str, str] = {}
     if method == "client_secret_basic":
         headers["Authorization"] = get_basic_authorization_header(
             client.client_id, client.client_secret
@@ -153,8 +152,8 @@ class TestAuthTokenAuthorizationCode:
         self,
         tenant_params: TenantParams,
         test_client_auth: httpx.AsyncClient,
-        headers: Dict[str, str],
-        data: Dict[str, str],
+        headers: dict[str, str],
+        data: dict[str, str],
         error: str,
     ):
         response = await test_client_auth.post(
@@ -271,7 +270,7 @@ class TestAuthTokenAuthorizationCode:
         self,
         auth_method: str,
         authorization_code_alias: str,
-        code_verifier_data: Dict[str, str],
+        code_verifier_data: dict[str, str],
         tenant_params: TenantParams,
         test_client_auth: httpx.AsyncClient,
         test_data: TestData,
@@ -605,8 +604,8 @@ class TestAuthTokenRefreshToken:
         self,
         tenant_params: TenantParams,
         test_client_auth: httpx.AsyncClient,
-        headers: Dict[str, str],
-        data: Dict[str, str],
+        headers: dict[str, str],
+        data: dict[str, str],
         error: str,
     ):
         response = await test_client_auth.post(

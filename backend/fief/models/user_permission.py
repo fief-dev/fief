@@ -1,5 +1,3 @@
-from typing import Optional
-
 from pydantic import UUID4
 from sqlalchemy import Column, ForeignKey
 from sqlalchemy.orm import relationship
@@ -22,7 +20,7 @@ class UserPermission(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
     permission_id: UUID4 = Column(
         GUID, ForeignKey(Permission.id, ondelete="CASCADE"), nullable=False
     )
-    from_role_id: Optional[UUID4] = Column(
+    from_role_id: UUID4 | None = Column(
         GUID, ForeignKey(Role.id, ondelete="CASCADE"), nullable=True  # type: ignore
     )
 

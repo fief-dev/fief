@@ -1,5 +1,4 @@
 import uuid
-from typing import List
 
 import dramatiq
 
@@ -18,8 +17,8 @@ class OnRoleUpdated(TaskBase):
     async def run(
         self,
         role_id: str,
-        added_permissions: List[str],
-        deleted_permissions: List[str],
+        added_permissions: list[str],
+        deleted_permissions: list[str],
         workspace_id: str,
     ):
         workspace = await self._get_workspace(uuid.UUID(workspace_id))
@@ -36,7 +35,7 @@ class OnRoleUpdated(TaskBase):
 
             # Add newly added permissions to users with this role
             user_roles = await user_role_repository.get_by_role(role.id)
-            user_permissions: List[UserPermission] = []
+            user_permissions: list[UserPermission] = []
             for user_role in user_roles:
                 for added_permission in added_permissions:
                     user_permissions.append(

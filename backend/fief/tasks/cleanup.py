@@ -1,5 +1,4 @@
 import uuid
-from typing import List, Type
 
 import dramatiq
 from sqlalchemy.exc import DBAPIError
@@ -18,7 +17,7 @@ from fief.repositories.base import ExpiresAtRepositoryProtocol
 from fief.services.workspace_db import WorkspaceDatabase
 from fief.tasks.base import TaskBase
 
-repository_classes: List[Type[ExpiresAtRepositoryProtocol]] = [
+repository_classes: list[type[ExpiresAtRepositoryProtocol]] = [
     AuthorizationCodeRepository,
     LoginSessionRepository,
     OAuthSessionRepository,

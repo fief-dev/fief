@@ -1,7 +1,7 @@
 import functools
 import uuid
 from datetime import datetime, timedelta, timezone
-from typing import Optional, TypeVar
+from typing import TypeVar
 
 from pydantic import UUID4
 from sqlalchemy import TIMESTAMP, Column
@@ -75,7 +75,7 @@ class TIMESTAMPAware(TypeDecorator):
     impl = TIMESTAMP
     cache_ok = True
 
-    def process_result_value(self, value: Optional[datetime], dialect):
+    def process_result_value(self, value: datetime | None, dialect):
         if value is not None and dialect.name != "postgresql":
             return value.replace(tzinfo=timezone.utc)
         return value

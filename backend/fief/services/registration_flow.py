@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Type, TypeVar
+from typing import Any, TypeVar
 
 from fastapi import Request, Response
 
@@ -24,8 +24,8 @@ class RegistrationFlow:
         registration_session_repository: RegistrationSessionRepository,
         oauth_account_repository: OAuthAccountRepository,
         user_manager: UserManager,
-        user_create_internal_model: Type[UserCreateInternal[UF]],
-        user_fields: List[UserField],
+        user_create_internal_model: type[UserCreateInternal[UF]],
+        user_fields: list[UserField],
     ) -> None:
         self.registration_session_repository = registration_session_repository
         self.oauth_account_repository = oauth_account_repository
@@ -39,7 +39,7 @@ class RegistrationFlow:
         flow: RegistrationSessionFlow,
         *,
         tenant: Tenant,
-        oauth_account: Optional[OAuthAccount] = None
+        oauth_account: OAuthAccount | None = None
     ) -> ResponseType:
         email = None
         oauth_account_id = None
@@ -78,12 +78,12 @@ class RegistrationFlow:
 
     async def create_user(
         self,
-        data: Dict[str, Any],
+        data: dict[str, Any],
         tenant: Tenant,
         registration_session: RegistrationSession,
-        request: Optional[Request] = None,
+        request: Request | None = None,
     ) -> User:
-        user_create_dict: Dict[str, Any] = {**data, "tenant_id": tenant.id}
+        user_create_dict: dict[str, Any] = {**data, "tenant_id": tenant.id}
         if "password" not in user_create_dict:
             user_create_dict["password"] = self.user_manager.password_helper.generate()
         user_create = self.user_create_internal_model(**user_create_dict)

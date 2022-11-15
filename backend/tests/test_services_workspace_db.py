@@ -1,4 +1,4 @@
-from typing import AsyncGenerator, Tuple
+from collections.abc import AsyncGenerator
 
 import pytest
 from sqlalchemy import engine, inspect
@@ -13,7 +13,7 @@ from fief.services.workspace_db import (
 @pytest.fixture
 async def test_database_url(
     get_test_database,
-) -> AsyncGenerator[Tuple[DatabaseConnectionParameters, DatabaseType], None]:
+) -> AsyncGenerator[tuple[DatabaseConnectionParameters, DatabaseType], None]:
     async with get_test_database(name="fief-test-workspace-db") as (
         database_connection_params,
         database_type,
@@ -39,7 +39,7 @@ class TestMigrate:
     async def test_valid_db(
         self,
         workspace_db: WorkspaceDatabase,
-        test_database_url: Tuple[DatabaseConnectionParameters, DatabaseType],
+        test_database_url: tuple[DatabaseConnectionParameters, DatabaseType],
     ):
         database_connection_params, _ = test_database_url
         schema = "workspace_schema"
@@ -66,7 +66,7 @@ class TestCheckConnection:
     async def test_valid_db(
         self,
         workspace_db: WorkspaceDatabase,
-        test_database_url: Tuple[DatabaseConnectionParameters, DatabaseType],
+        test_database_url: tuple[DatabaseConnectionParameters, DatabaseType],
     ):
         database_connection_params, _ = test_database_url
         valid, message = workspace_db.check_connection(database_connection_params)

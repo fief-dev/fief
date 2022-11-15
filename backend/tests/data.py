@@ -1,7 +1,8 @@
 import secrets
 import uuid
+from collections.abc import Mapping
 from datetime import date, datetime, timedelta, timezone
-from typing import Mapping, Tuple, TypedDict
+from typing import TypedDict
 
 from fief.crypto.code_challenge import get_code_verifier_hash
 from fief.crypto.id_token import get_validation_hash
@@ -519,7 +520,7 @@ oauth_sessions: ModelMapping[OAuthSession] = {
     ),
 }
 
-authorization_code_codes: Mapping[str, Tuple[str, str]] = {
+authorization_code_codes: Mapping[str, tuple[str, str]] = {
     "default_regular": generate_token(),
     "default_regular_code_challenge_plain": generate_token(),
     "default_regular_code_challenge_s256": generate_token(),
@@ -624,7 +625,7 @@ authorization_codes: ModelMapping[AuthorizationCode] = {
     ),
 }
 
-refresh_token_tokens: Mapping[str, Tuple[str, str]] = {
+refresh_token_tokens: Mapping[str, tuple[str, str]] = {
     "default_regular": generate_token(),
     "default_public_regular": generate_token(),
 }
@@ -646,7 +647,7 @@ refresh_tokens: ModelMapping[RefreshToken] = {
     ),
 }
 
-session_token_tokens: Mapping[str, Tuple[str, str]] = {
+session_token_tokens: Mapping[str, tuple[str, str]] = {
     "regular": generate_token(),
     "regular_secondary": generate_token(),
 }

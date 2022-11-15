@@ -1,4 +1,3 @@
-from typing import Dict, Optional
 
 import httpx
 import pytest
@@ -68,7 +67,7 @@ class TestAuthAuthorize:
         self,
         tenant_params: TenantParams,
         test_client_auth: httpx.AsyncClient,
-        params: Dict[str, str],
+        params: dict[str, str],
         error: str,
     ):
         # Trick to set a valid client_id for the current tenant
@@ -211,7 +210,7 @@ class TestAuthAuthorize:
         self,
         tenant_params: TenantParams,
         test_client_auth: httpx.AsyncClient,
-        params: Dict[str, str],
+        params: dict[str, str],
         error: str,
     ):
         params = {
@@ -342,7 +341,7 @@ class TestAuthAuthorize:
     )
     async def test_valid(
         self,
-        params: Dict[str, str],
+        params: dict[str, str],
         session: bool,
         redirection: str,
         tenant_params: TenantParams,
@@ -401,7 +400,7 @@ class TestAuthGetLogin:
     @pytest.mark.parametrize("cookie", [None, "INVALID_LOGIN_SESSION"])
     async def test_invalid_login_session(
         self,
-        cookie: Optional[str],
+        cookie: str | None,
         tenant_params: TenantParams,
         test_client_auth: httpx.AsyncClient,
     ):
@@ -440,7 +439,7 @@ class TestAuthPostLogin:
     @pytest.mark.parametrize("cookie", [None, "INVALID_LOGIN_SESSION"])
     async def test_invalid_login_session(
         self,
-        cookie: Optional[str],
+        cookie: str | None,
         tenant_params: TenantParams,
         test_client_auth_csrf: httpx.AsyncClient,
     ):
@@ -573,7 +572,7 @@ class TestAuthGetConsent:
     @pytest.mark.parametrize("cookie", [None, "INVALID_LOGIN_SESSION"])
     async def test_invalid_login_session(
         self,
-        cookie: Optional[str],
+        cookie: str | None,
         tenant_params: TenantParams,
         test_client_auth: httpx.AsyncClient,
     ):
@@ -593,7 +592,7 @@ class TestAuthGetConsent:
     @pytest.mark.parametrize("cookie", [None, "INVALID_SESSION_TOKEN"])
     async def test_invalid_session_token(
         self,
-        cookie: Optional[str],
+        cookie: str | None,
         test_client_auth: httpx.AsyncClient,
         test_data: TestData,
     ):
@@ -767,7 +766,7 @@ class TestAuthPostConsent:
     @pytest.mark.parametrize("cookie", [None, "INVALID_LOGIN_SESSION"])
     async def test_invalid_login_session(
         self,
-        cookie: Optional[str],
+        cookie: str | None,
         tenant_params: TenantParams,
         test_client_auth_csrf: httpx.AsyncClient,
         csrf_token: str,
@@ -790,7 +789,7 @@ class TestAuthPostConsent:
     @pytest.mark.parametrize("cookie", [None, "INVALID_SESSION_TOKEN"])
     async def test_invalid_session_token(
         self,
-        cookie: Optional[str],
+        cookie: str | None,
         test_client_auth_csrf: httpx.AsyncClient,
         csrf_token: str,
         test_data: TestData,
@@ -958,7 +957,7 @@ class TestAuthLogout:
     @pytest.mark.parametrize("cookie", [None, "INVALID_SESSION_TOKEN"])
     async def test_no_session_token(
         self,
-        cookie: Optional[str],
+        cookie: str | None,
         test_client_auth: httpx.AsyncClient,
         test_data: TestData,
     ):

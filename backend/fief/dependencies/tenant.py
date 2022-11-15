@@ -1,5 +1,3 @@
-from typing import List, Optional, Tuple
-
 from fastapi import Depends, HTTPException, Query, status
 from pydantic import UUID4
 from sqlalchemy import select
@@ -19,7 +17,7 @@ from fief.repositories import TenantRepository
 
 
 async def get_current_tenant(
-    tenant_slug: Optional[str] = Query(None),
+    tenant_slug: str | None = Query(None),
     repository: TenantRepository = Depends(get_workspace_repository(TenantRepository)),
 ) -> Tenant:
     if tenant_slug is None:
@@ -49,11 +47,11 @@ async def get_tenant_from_create_user_internal(
 
 
 async def get_paginated_tenants(
-    query: Optional[str] = Query(None),
+    query: str | None = Query(None),
     pagination: Pagination = Depends(get_pagination),
     ordering: Ordering = Depends(get_ordering),
     repository: TenantRepository = Depends(get_workspace_repository(TenantRepository)),
-) -> Tuple[List[Tenant], int]:
+) -> tuple[list[Tenant], int]:
     statement = select(Tenant)
 
     if query is not None:

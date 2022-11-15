@@ -1,7 +1,6 @@
 import urllib.parse
 import uuid
 from datetime import datetime, timezone
-from typing import Dict, Optional
 from unittest.mock import AsyncMock, MagicMock
 
 import httpx
@@ -61,7 +60,7 @@ class TestOAuthAuthorize:
     @pytest.mark.parametrize("cookie", [None, "INVALID_LOGIN_SESSION"])
     async def test_invalid_login_session(
         self,
-        cookie: Optional[str],
+        cookie: str | None,
         test_data: TestData,
         test_client_auth: httpx.AsyncClient,
     ):
@@ -142,13 +141,11 @@ class TestOAuthAuthorize:
         assert oauth_session.login_session_id == login_session.id
         assert oauth_session.tenant_id == tenant.id
 
-        assert set(scope.split(" ")) == set(
-            (
-                "https://www.googleapis.com/auth/userinfo.profile",
-                "https://www.googleapis.com/auth/userinfo.email",
-                "custom_scope",
-            )
-        )
+        assert set(scope.split(" ")) == {
+            "https://www.googleapis.com/auth/userinfo.profile",
+            "https://www.googleapis.com/auth/userinfo.email",
+            "custom_scope",
+        }
 
         assert oauth_session.redirect_uri == redirect_uri
         assert redirect_uri.endswith("/oauth/callback")
@@ -209,7 +206,7 @@ class TestOAuthCallback:
     async def test_redirect_error(
         self,
         test_client_auth: httpx.AsyncClient,
-        params: Dict[str, str],
+        params: dict[str, str],
         error: str,
         test_data: TestData,
     ):

@@ -1,5 +1,3 @@
-from typing import List, Optional, Tuple
-
 from fastapi import APIRouter, Depends, Query, Request, status
 from fastapi.responses import RedirectResponse
 from pydantic import AnyUrl
@@ -52,14 +50,13 @@ async def authorize(
     client: Client = Depends(get_authorize_client),
     redirect_uri: str = Depends(get_authorize_redirect_uri),
     response_mode: str = Depends(get_authorize_response_mode),
-    scope: List[str] = Depends(get_authorize_scope),
-    prompt: Optional[str] = Depends(get_authorize_prompt),
+    scope: list[str] = Depends(get_authorize_scope),
+    prompt: str | None = Depends(get_authorize_prompt),
     screen: str = Depends(get_authorize_screen),
-    code_challenge_tuple: Optional[Tuple[str, str]] = Depends(
-        get_authorize_code_challenge
-    ),
-    nonce: Optional[str] = Depends(get_nonce),
-    state: Optional[str] = Query(None),
+    code_challenge_tuple: tuple[str, str]
+    | None = Depends(get_authorize_code_challenge),
+    nonce: str | None = Depends(get_nonce),
+    state: str | None = Query(None),
     authentication_flow: AuthenticationFlow = Depends(get_authentication_flow),
     has_valid_session_token: bool = Depends(has_valid_session_token),
 ):
@@ -98,8 +95,8 @@ async def login(
     request: Request,
     user_manager: UserManager = Depends(get_user_manager),
     authentication_flow: AuthenticationFlow = Depends(get_authentication_flow),
-    session_token: Optional[SessionToken] = Depends(get_session_token),
-    oauth_providers: Optional[List[OAuthProvider]] = Depends(get_oauth_providers),
+    session_token: SessionToken | None = Depends(get_session_token),
+    oauth_providers: list[OAuthProvider] | None = Depends(get_oauth_providers),
     tenant: Tenant = Depends(get_current_tenant),
 ):
     form_helper = FormHelper(
@@ -133,8 +130,8 @@ async def login(
 async def consent(
     request: Request,
     login_session: LoginSession = Depends(get_login_session),
-    session_token: Optional[SessionToken] = Depends(get_session_token),
-    prompt: Optional[str] = Depends(get_consent_prompt),
+    session_token: SessionToken | None = Depends(get_session_token),
+    prompt: str | None = Depends(get_consent_prompt),
     needs_consent: bool = Depends(get_needs_consent),
     tenant: Tenant = Depends(get_current_tenant),
     workspace: Workspace = Depends(get_current_workspace),
@@ -209,8 +206,8 @@ async def consent(
 
 @router.get("/logout", name="auth:logout")
 async def logout(
-    redirect_uri: Optional[AnyUrl] = Query(None),
-    session_token: Optional[SessionToken] = Depends(get_session_token),
+    redirect_uri: AnyUrl | None = Query(None),
+    session_token: SessionToken | None = Depends(get_session_token),
     sesstion_token_repository: SessionTokenRepository = Depends(
         get_workspace_repository(SessionTokenRepository)
     ),

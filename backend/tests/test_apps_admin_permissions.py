@@ -1,5 +1,5 @@
 import uuid
-from typing import Any, Dict
+from typing import Any
 
 import httpx
 import pytest
@@ -27,7 +27,7 @@ class TestListPermissions:
     @pytest.mark.authenticated_admin
     async def test_valid(
         self,
-        params: Dict[str, Any],
+        params: dict[str, Any],
         nb_results: int,
         test_client_admin: httpx.AsyncClient,
         test_data: TestData,
@@ -129,7 +129,7 @@ class TestUpdatePermission:
     @pytest.mark.authenticated_admin
     async def test_valid(
         self,
-        payload: Dict[str, str],
+        payload: dict[str, str],
         test_client_admin: httpx.AsyncClient,
         test_data: TestData,
     ):

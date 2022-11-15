@@ -1,4 +1,3 @@
-from typing import Tuple
 from unittest.mock import AsyncMock, MagicMock
 
 import httpx
@@ -97,7 +96,7 @@ class TestAuthLogout:
     async def test_valid(
         self,
         test_client_admin: httpx.AsyncClient,
-        admin_session_token: Tuple[AdminSessionToken, str],
+        admin_session_token: tuple[AdminSessionToken, str],
         main_session: AsyncSession,
         fief_client_mock: MagicMock,
     ):

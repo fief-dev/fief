@@ -3,7 +3,8 @@ import contextlib
 import json
 import secrets
 import uuid
-from typing import Any, AsyncGenerator, Dict, Optional, Tuple
+from typing import Any
+from collections.abc import AsyncGenerator
 from unittest.mock import MagicMock, patch
 
 import asgi_lifespan
@@ -56,7 +57,7 @@ def get_test_database() -> GetTestDatabase:
     @contextlib.asynccontextmanager
     async def _get_test_database(
         *, name: str = "fief-test"
-    ) -> AsyncGenerator[Tuple[DatabaseConnectionParameters, DatabaseType], None]:
+    ) -> AsyncGenerator[tuple[DatabaseConnectionParameters, DatabaseType], None]:
         url, connect_args = settings.get_database_connection_parameters(False)
         url = url.set(database=name)
         assert url.database == name
@@ -70,7 +71,7 @@ def get_test_database() -> GetTestDatabase:
 @pytest.fixture(scope="session")
 async def main_test_database(
     get_test_database: GetTestDatabase,
-) -> AsyncGenerator[Tuple[DatabaseConnectionParameters, DatabaseType], None]:
+) -> AsyncGenerator[tuple[DatabaseConnectionParameters, DatabaseType], None]:
     async with get_test_database() as (database_connection_parameters, database_type):
         url, connect_args = database_connection_parameters
         url = url.set(drivername=get_driver(database_type, asyncio=True))
@@ -79,7 +80,7 @@ async def main_test_database(
 
 @pytest.fixture(scope="session")
 async def main_engine(
-    main_test_database: Tuple[DatabaseConnectionParameters, DatabaseType],
+    main_test_database: tuple[DatabaseConnectionParameters, DatabaseType],
 ) -> AsyncGenerator[AsyncEngine, None]:
     database_connection_parameters, _ = main_test_database
     engine = create_engine(database_connection_parameters)
@@ -122,7 +123,7 @@ def main_session_manager(main_session: AsyncSession):
 @pytest.fixture(scope="session", autouse=True)
 @pytest.mark.asyncio
 async def workspace(
-    main_test_database: Tuple[DatabaseConnectionParameters, DatabaseType],
+    main_test_database: tuple[DatabaseConnectionParameters, DatabaseType],
     main_session,
     create_main_db,
 ) -> AsyncGenerator[Workspace, None]:
@@ -245,9 +246,7 @@ def smtplib_mock() -> MagicMock:
 
 
 @pytest.fixture
-def workspace_host(
-    request: pytest.FixtureRequest, workspace: Workspace
-) -> Optional[str]:
+def workspace_host(request: pytest.FixtureRequest, workspace: Workspace) -> str | None:
     marker = request.node.get_closest_marker("workspace_host")
     if marker:
         return workspace.domain
@@ -269,7 +268,7 @@ async def admin_session_token(
     main_session: AsyncSession,
     workspace: Workspace,
     workspace_admin_user: User,
-) -> AsyncGenerator[Tuple[AdminSessionToken, str], None]:
+) -> AsyncGenerator[tuple[AdminSessionToken, str], None]:
     workspace_user = WorkspaceUser(
         workspace_id=workspace.id, user_id=workspace_admin_user.id
     )
@@ -294,7 +293,7 @@ async def admin_session_token(
 @pytest.fixture
 async def admin_api_key(
     main_session: AsyncSession, workspace: Workspace
-) -> AsyncGenerator[Tuple[AdminAPIKey, str], None]:
+) -> AsyncGenerator[tuple[AdminAPIKey, str], None]:
     token, token_hash = generate_token()
     admin_api_key = AdminAPIKey(
         name="API Key", token=token_hash, workspace_id=workspace.id
@@ -310,9 +309,9 @@ async def admin_api_key(
 @pytest.fixture
 async def authenticated_admin(
     request: pytest.FixtureRequest,
-    admin_session_token: Tuple[AdminSessionToken, str],
-    admin_api_key: Tuple[AdminAPIKey, str],
-) -> Dict[str, Any]:
+    admin_session_token: tuple[AdminSessionToken, str],
+    admin_api_key: tuple[AdminAPIKey, str],
+) -> dict[str, Any]:
     marker = request.node.get_closest_marker("authenticated_admin")
     headers = {}
     if marker:
@@ -375,7 +374,7 @@ def access_token(
     test_data: TestData,
     tenant_params: TenantParams,
     workspace: Workspace,
-) -> Optional[str]:
+) -> str | None:
     marker = request.node.get_closest_marker("access_token")
     if marker:
         from_tenant_params: bool = marker.kwargs.get("from_tenant_params", False)
@@ -417,8 +416,8 @@ async def test_client_admin_generator(
     workspace_creation_mock: MagicMock,
     send_task_mock: MagicMock,
     fief_client_mock: MagicMock,
-    authenticated_admin: Dict[str, Any],
-    workspace_host: Optional[str],
+    authenticated_admin: dict[str, Any],
+    workspace_host: str | None,
 ) -> TestClientGeneratorType:
     @contextlib.asynccontextmanager
     async def _test_client_generator(app: FastAPI):
@@ -465,8 +464,8 @@ async def test_client_auth_generator(
     workspace_db_mock: MagicMock,
     workspace_creation_mock: MagicMock,
     send_task_mock: MagicMock,
-    workspace_host: Optional[str],
-    access_token: Optional[str],
+    workspace_host: str | None,
+    access_token: str | None,
 ) -> TestClientGeneratorType:
     @contextlib.asynccontextmanager
     async def _test_client_generator(app: FastAPI):

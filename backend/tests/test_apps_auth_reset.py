@@ -1,4 +1,3 @@
-from typing import Dict
 from unittest.mock import MagicMock
 
 import httpx
@@ -37,7 +36,7 @@ class TestPostForgotPassword:
     )
     async def test_invalid_form(
         self,
-        data: Dict[str, str],
+        data: dict[str, str],
         tenant_params: TenantParams,
         test_client_auth_csrf: httpx.AsyncClient,
         csrf_token: str,
@@ -129,7 +128,7 @@ class TestPostResetPassword:
     )
     async def test_invalid_form(
         self,
-        data: Dict[str, str],
+        data: dict[str, str],
         tenant_params: TenantParams,
         test_client_auth_csrf: httpx.AsyncClient,
         csrf_token: str,

@@ -1,4 +1,3 @@
-from typing import Optional
 
 import httpx
 import pytest
@@ -24,7 +23,7 @@ class TestUserUserinfo:
     async def test_unauthorized(
         self,
         method: str,
-        authorization: Optional[str],
+        authorization: str | None,
         tenant_params: TenantParams,
         test_client_auth: httpx.AsyncClient,
     ):
@@ -71,7 +70,7 @@ class TestUserUpdateProfile:
     )
     async def test_unauthorized(
         self,
-        authorization: Optional[str],
+        authorization: str | None,
         tenant_params: TenantParams,
         test_client_auth: httpx.AsyncClient,
     ):

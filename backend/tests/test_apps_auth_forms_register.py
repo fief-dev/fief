@@ -1,4 +1,3 @@
-from typing import Dict, List, Optional
 
 import pytest
 from starlette.datastructures import FormData
@@ -97,7 +96,7 @@ class TestAddressFormField:
             ),
         ],
     )
-    def test_invalid(self, data: Dict[str, str], nb_errors: int):
+    def test_invalid(self, data: dict[str, str], nb_errors: int):
         form = TestAddressFormField.AddressForm(FormData(data))
         assert form.validate() is False
         assert len(form.address.errors) == nb_errors
@@ -143,7 +142,7 @@ class TestTimezoneField:
 @pytest.mark.asyncio
 class TestGetRegisterFormClass:
     async def test_basic(self):
-        user_fields: List[UserField] = [
+        user_fields: list[UserField] = [
             UserField(
                 name="First name",
                 slug="first_name",
@@ -175,7 +174,7 @@ class TestGetRegisterFormClass:
         assert form.fields.first_name.data == "Anne"
 
     async def test_missing_required_field(self):
-        user_fields: List[UserField] = [
+        user_fields: list[UserField] = [
             UserField(
                 name="First name",
                 slug="first_name",
@@ -202,7 +201,7 @@ class TestGetRegisterFormClass:
         assert form.fields.first_name.errors == ["This field is required."]
 
     async def test_invalid_empty_string(self):
-        user_fields: List[UserField] = [
+        user_fields: list[UserField] = [
             UserField(
                 name="First name",
                 slug="first_name",
@@ -235,7 +234,7 @@ class TestGetRegisterFormClass:
         assert form.fields.first_name.errors == ["This field is required."]
 
     async def test_missing_boolean_field(self):
-        user_fields: List[UserField] = [
+        user_fields: list[UserField] = [
             UserField(
                 name="Subscribe to newsletter",
                 slug="newsletter",
@@ -261,7 +260,7 @@ class TestGetRegisterFormClass:
         assert form.fields.newsletter.data is False
 
     async def test_provided_boolean_field(self):
-        user_fields: List[UserField] = [
+        user_fields: list[UserField] = [
             UserField(
                 name="Subscribe to newsletter",
                 slug="newsletter",
@@ -293,8 +292,8 @@ class TestGetRegisterFormClass:
         assert form.fields.newsletter.data is True
 
     @pytest.mark.parametrize("value", [None, ""])
-    async def test_required_boolean_field_false(self, value: Optional[str]):
-        user_fields: List[UserField] = [
+    async def test_required_boolean_field_false(self, value: str | None):
+        user_fields: list[UserField] = [
             UserField(
                 name="Consent",
                 slug="consent",
@@ -321,7 +320,7 @@ class TestGetRegisterFormClass:
         assert form.fields.consent.errors == ["This field is required."]
 
     async def test_required_boolean_field_true(self):
-        user_fields: List[UserField] = [
+        user_fields: list[UserField] = [
             UserField(
                 name="Consent",
                 slug="consent",
@@ -353,7 +352,7 @@ class TestGetRegisterFormClass:
         assert form.fields.consent.data is True
 
     async def test_invalid_choice(self):
-        user_fields: List[UserField] = [
+        user_fields: list[UserField] = [
             UserField(
                 name="Choice",
                 slug="choice",
@@ -386,7 +385,7 @@ class TestGetRegisterFormClass:
         assert form.fields.choice.errors == ["Not a valid choice."]
 
     async def test_valid_choice(self):
-        user_fields: List[UserField] = [
+        user_fields: list[UserField] = [
             UserField(
                 name="Choice",
                 slug="choice",
@@ -418,7 +417,7 @@ class TestGetRegisterFormClass:
         assert form.fields.choice.data == "a"
 
     async def test_phone_number(self):
-        user_fields: List[UserField] = [
+        user_fields: list[UserField] = [
             UserField(
                 name="Phone number",
                 slug="phone_number",
@@ -450,7 +449,7 @@ class TestGetRegisterFormClass:
         assert form.fields.phone_number.data == "+33102030405"
 
     async def test_optional_address(self):
-        user_fields: List[UserField] = [
+        user_fields: list[UserField] = [
             UserField(
                 name="Address",
                 slug="address",

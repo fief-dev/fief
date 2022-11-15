@@ -1,4 +1,3 @@
-from typing import Optional
 
 import httpx
 import pytest
@@ -16,7 +15,7 @@ class TestWellKnownOpenIDConfiguration:
     @pytest.mark.parametrize("x_forwarded_host", [None, "proxy.bretagne.duchy"])
     async def test_return_configuration(
         self,
-        x_forwarded_host: Optional[str],
+        x_forwarded_host: str | None,
         workspace: Workspace,
         tenant_params: TenantParams,
         test_client_auth: httpx.AsyncClient,
@@ -68,8 +67,6 @@ class TestWellKnownJWKS:
 
         keyset = jwk.JWKSet.from_json(response.text)
 
-        key: Optional[jwk.JWK] = keyset.get_key(
-            tenant_params.tenant.get_sign_jwk()["kid"]
-        )
+        key: jwk.JWK | None = keyset.get_key(tenant_params.tenant.get_sign_jwk()["kid"])
         assert key is not None
         assert key.has_private is False

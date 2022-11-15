@@ -1,5 +1,5 @@
 import uuid
-from typing import Any, Optional
+from typing import Any
 
 import httpx
 import pytest
@@ -136,8 +136,8 @@ class TestCreateUserField:
     async def test_valid(
         self,
         type: str,
-        default_input: Optional[str],
-        default_output: Optional[Any],
+        default_input: str | None,
+        default_output: Any | None,
         test_client_admin: httpx.AsyncClient,
         test_data: TestData,
     ):

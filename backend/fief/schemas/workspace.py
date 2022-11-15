@@ -1,5 +1,3 @@
-from typing import Optional
-
 from pydantic import BaseModel, root_validator, validator
 
 from fief.db.types import SSL_MODES, DatabaseType
@@ -60,7 +58,7 @@ class WorkspaceCheckConnection(BaseModel):
     database_username: str
     database_password: str
     database_name: str
-    database_ssl_mode: Optional[str]
+    database_ssl_mode: str | None
 
     _validate_all_database_settings = root_validator(allow_reuse=True)(
         validate_all_database_settings
@@ -72,13 +70,13 @@ class WorkspaceCheckConnection(BaseModel):
 
 class WorkspaceCreate(BaseModel):
     name: str
-    database_type: Optional[DatabaseType]
-    database_host: Optional[str]
-    database_port: Optional[int]
-    database_username: Optional[str]
-    database_password: Optional[str]
-    database_name: Optional[str]
-    database_ssl_mode: Optional[str]
+    database_type: DatabaseType | None
+    database_host: str | None
+    database_port: int | None
+    database_username: str | None
+    database_password: str | None
+    database_name: str | None
+    database_ssl_mode: str | None
 
     _validate_all_database_settings = root_validator(allow_reuse=True)(
         validate_all_database_settings
@@ -94,13 +92,13 @@ class BaseWorkspace(UUIDSchema):
 
 
 class Workspace(BaseWorkspace):
-    database_type: Optional[DatabaseType]
-    database_host: Optional[str]
-    database_port: Optional[int]
-    database_username: Optional[str]
-    database_password: Optional[str]
-    database_name: Optional[str]
-    database_ssl_mode: Optional[str]
+    database_type: DatabaseType | None
+    database_host: str | None
+    database_port: int | None
+    database_username: str | None
+    database_password: str | None
+    database_name: str | None
+    database_ssl_mode: str | None
 
 
 class WorkspacePublic(BaseWorkspace):

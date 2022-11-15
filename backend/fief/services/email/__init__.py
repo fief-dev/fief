@@ -1,5 +1,4 @@
 from enum import Enum
-from typing import Dict, Type
 
 from fief.services.email.base import EmailError, EmailProvider, SendEmailError
 from fief.services.email.null import Null
@@ -15,7 +14,7 @@ class AvailableEmailProvider(str, Enum):
     SENDGRID = "SENDGRID"
 
 
-EMAIL_PROVIDERS: Dict[AvailableEmailProvider, Type[EmailProvider]] = {
+EMAIL_PROVIDERS: dict[AvailableEmailProvider, type[EmailProvider]] = {
     AvailableEmailProvider.NULL: Null,
     AvailableEmailProvider.POSTMARK: Postmark,
     AvailableEmailProvider.SMTP: SMTP,
