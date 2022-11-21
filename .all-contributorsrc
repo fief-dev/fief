@@ -98,6 +98,15 @@
         "translation",
         "code"
       ]
+    },
+    {
+      "login": "JimScope",
+      "name": "Jimmy Angel Pérez Díaz",
+      "avatar_url": "https://avatars.githubusercontent.com/u/27647007?v=4",
+      "profile": "https://jimscope.is-a.dev",
+      "contributions": [
+        "translation"
+      ]
     }
   ],
   "contributorsPerLine": 7,
