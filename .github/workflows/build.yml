@@ -81,7 +81,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - name: Test backend with ${{ matrix.database_type }} database
+      - name: Test backend with ${{ matrix.name }} database
         uses: ./.github/actions/test-backend
         with:
           database_type: ${{ matrix.database_type }}
