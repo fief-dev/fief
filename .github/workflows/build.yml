@@ -39,23 +39,40 @@ jobs:
         env:
           MARIADB_ROOT_PASSWORD: fiefpassword
 
+      mysql:
+        image: mysql
+        ports:
+          - 3307:3306
+        env:
+          MYSQL_ROOT_PASSWORD: fiefpassword
+
     strategy:
       fail-fast: false
       matrix:
         include:
-          - database_type: POSTGRESQL
+          - name: POSTGRESQL
+            database_type: POSTGRESQL
             database_host: localhost
             database_port: 5432
             database_username: fief
             database_password: fiefpassword
             database_ssl_mode: disable
-          - database_type: MYSQL
+          - name: MARIADB
+            database_type: MYSQL
             database_host: localhost
             database_port: 3306
             database_username: root
             database_password: fiefpassword
             database_ssl_mode: DISABLED
-          - database_type: SQLITE
+          - name: MYSQL
+            database_type: MYSQL
+            database_host: localhost
+            database_port: 3307
+            database_username: root
+            database_password: fiefpassword
+            database_ssl_mode: DISABLED
+          - name: SQLITE
+            database_type: SQLITE
             database_host: null
             database_port: null
             database_username: null
