@@ -1,4 +1,3 @@
-
 import pytest
 from starlette.datastructures import FormData
 from wtforms import Form
