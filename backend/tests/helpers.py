@@ -1,6 +1,7 @@
 import json
 from datetime import datetime
 
+import pytest
 from furl import furl
 from jwcrypto import jwk, jwt
 
@@ -83,9 +84,9 @@ async def authorization_code_assertions(
         authorization_code.code_challenge_method == login_session.code_challenge_method
     )
 
-    assert authorization_code.authenticated_at.replace(
-        microsecond=0
-    ) == session_token.created_at.replace(microsecond=0)
+    assert authorization_code.authenticated_at.timestamp() == pytest.approx(
+        session_token.created_at.timestamp()
+    )
 
     assert authorization_code.c_hash == get_validation_hash(code)
 

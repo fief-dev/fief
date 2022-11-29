@@ -25,8 +25,8 @@ class OAuthAccount(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
     refresh_token: str | None = Column(
         StringEncryptedType(Text, settings.encryption_key, FernetEngine), nullable=True
     )
-    account_id: str = Column(String(length=1024), index=True, nullable=False)
-    account_email: str | None = Column(String(length=1024), nullable=True)
+    account_id: str = Column(String(length=512), index=True, nullable=False)
+    account_email: str | None = Column(String(length=512), nullable=True)
 
     oauth_provider_id: UUID4 = Column(
         GUID, ForeignKey(OAuthProvider.id, ondelete="CASCADE"), nullable=False
