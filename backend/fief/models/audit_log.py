@@ -30,7 +30,7 @@ class AuditLog(UUIDModel, WorkspaceBase):
         TIMESTAMPAware(timezone=True), nullable=False, index=True
     )
     level: str = Column(String(length=255), nullable=False, index=True)
-    message: str = Column(Text, nullable=False, index=True)
+    message: str = Column(Text, nullable=False)
     extra: dict = Column(JSON, nullable=True)
 
     subject_user_id: UUID4 | None = Column(GUID, nullable=True, index=True)
