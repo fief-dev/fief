@@ -13,7 +13,7 @@ from fief.dependencies.current_workspace import (
 )
 from fief.errors import APIErrorCode
 from fief.models import Tenant, Workspace
-from tests.types import TestClientGeneratorType
+from tests.types import HTTPClientGeneratorType
 
 
 @pytest.fixture(
@@ -111,7 +111,7 @@ def app() -> FastAPI:
 @pytest.fixture
 @pytest.mark.asyncio
 async def test_client_auth(
-    test_client_auth_generator: TestClientGeneratorType, app: FastAPI
+    test_client_auth_generator: HTTPClientGeneratorType, app: FastAPI
 ) -> AsyncGenerator[httpx.AsyncClient, None]:
     async with test_client_auth_generator(app) as test_client:
         del app.dependency_overrides[get_current_workspace_session]

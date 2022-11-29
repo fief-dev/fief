@@ -29,7 +29,7 @@ class TenantParams:
     session_token_token: tuple[str, str]
 
 
-TestClientGeneratorType = Callable[[FastAPI], AsyncContextManager[httpx.AsyncClient]]
+HTTPClientGeneratorType = Callable[[FastAPI], AsyncContextManager[httpx.AsyncClient]]
 
 GetTestDatabase = Callable[
     ..., AsyncContextManager[tuple[DatabaseConnectionParameters, DatabaseType]]

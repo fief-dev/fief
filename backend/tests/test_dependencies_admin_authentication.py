@@ -10,7 +10,7 @@ from fief.db import AsyncSession
 from fief.dependencies.admin_authentication import is_authenticated_admin
 from fief.models import AdminAPIKey, AdminSessionToken, Workspace, WorkspaceUser
 from fief.settings import settings
-from tests.types import TestClientGeneratorType
+from tests.types import HTTPClientGeneratorType
 
 
 @pytest.fixture
@@ -40,7 +40,7 @@ async def another_workspace(
 @pytest.mark.asyncio
 @pytest.mark.workspace_host
 async def test_no_authentication(
-    test_client_admin_generator: TestClientGeneratorType, app: FastAPI
+    test_client_admin_generator: HTTPClientGeneratorType, app: FastAPI
 ):
     async with test_client_admin_generator(app) as test_client:
         response = await test_client.get("/protected")
@@ -53,7 +53,7 @@ async def test_no_authentication(
 async def test_admin_session_for_another_workspace(
     main_session: AsyncSession,
     not_existing_uuid: uuid.UUID,
-    test_client_admin_generator: TestClientGeneratorType,
+    test_client_admin_generator: HTTPClientGeneratorType,
     another_workspace: Workspace,
     app: FastAPI,
 ):
@@ -82,7 +82,7 @@ async def test_admin_session_for_another_workspace(
 @pytest.mark.workspace_host
 @pytest.mark.authenticated_admin(mode="session")
 async def test_valid_admin_session(
-    test_client_admin_generator: TestClientGeneratorType, app: FastAPI
+    test_client_admin_generator: HTTPClientGeneratorType, app: FastAPI
 ):
     async with test_client_admin_generator(app) as test_client:
         response = await test_client.get("/protected")
@@ -93,7 +93,7 @@ async def test_valid_admin_session(
 @pytest.mark.workspace_host
 async def test_admin_api_key_for_another_workspace(
     main_session: AsyncSession,
-    test_client_admin_generator: TestClientGeneratorType,
+    test_client_admin_generator: HTTPClientGeneratorType,
     another_workspace: Workspace,
     app: FastAPI,
 ):
@@ -115,7 +115,7 @@ async def test_admin_api_key_for_another_workspace(
 @pytest.mark.workspace_host
 @pytest.mark.authenticated_admin(mode="api_key")
 async def test_valid_admin_api_key(
-    test_client_admin_generator: TestClientGeneratorType, app: FastAPI
+    test_client_admin_generator: HTTPClientGeneratorType, app: FastAPI
 ):
     async with test_client_admin_generator(app) as test_client:
         response = await test_client.get("/protected")

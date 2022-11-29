@@ -39,7 +39,7 @@ from fief.services.workspace_db import WorkspaceDatabase
 from fief.settings import settings
 from fief.tasks import send_task
 from tests.data import TestData, data_mapping, session_token_tokens
-from tests.types import GetTestDatabase, TenantParams, TestClientGeneratorType
+from tests.types import GetTestDatabase, TenantParams, HTTPClientGeneratorType
 
 pytest.register_assert_rewrite("tests.helpers")
 
@@ -418,7 +418,7 @@ async def test_client_admin_generator(
     fief_client_mock: MagicMock,
     authenticated_admin: dict[str, Any],
     workspace_host: str | None,
-) -> TestClientGeneratorType:
+) -> HTTPClientGeneratorType:
     @contextlib.asynccontextmanager
     async def _test_client_generator(app: FastAPI):
         app.dependency_overrides = {}
@@ -451,7 +451,7 @@ async def test_client_admin_generator(
 
 @pytest.fixture
 async def test_client_admin(
-    test_client_admin_generator: TestClientGeneratorType,
+    test_client_admin_generator: HTTPClientGeneratorType,
 ) -> AsyncGenerator[httpx.AsyncClient, None]:
     async with test_client_admin_generator(admin_app) as test_client:
         yield test_client
@@ -466,7 +466,7 @@ async def test_client_auth_generator(
     send_task_mock: MagicMock,
     workspace_host: str | None,
     access_token: str | None,
-) -> TestClientGeneratorType:
+) -> HTTPClientGeneratorType:
     @contextlib.asynccontextmanager
     async def _test_client_generator(app: FastAPI):
         app.dependency_overrides = {}
@@ -497,7 +497,7 @@ async def test_client_auth_generator(
 
 @pytest.fixture
 async def test_client_auth(
-    test_client_auth_generator: TestClientGeneratorType,
+    test_client_auth_generator: HTTPClientGeneratorType,
 ) -> AsyncGenerator[httpx.AsyncClient, None]:
     async with test_client_auth_generator(auth_app) as test_client:
         yield test_client
