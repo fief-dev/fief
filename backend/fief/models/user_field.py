@@ -1,9 +1,8 @@
 from enum import Enum
 from typing import TYPE_CHECKING, Any, TypedDict
 
-from sqlalchemy import JSON, Column
+from sqlalchemy import JSON, Column, String
 from sqlalchemy import Enum as SQLEnum
-from sqlalchemy import String
 from sqlalchemy.orm import relationship
 
 from fief.models.base import WorkspaceBase

@@ -4,9 +4,8 @@ from typing import Any, Generic, TypeVar
 import phonenumbers
 import pycountry
 import pytz
-from pydantic import UUID4
+from pydantic import UUID4, Field, PydanticValueError
 from pydantic import BaseModel as PydanticBaseModel
-from pydantic import Field, PydanticValueError
 from pydantic.generics import GenericModel
 
 

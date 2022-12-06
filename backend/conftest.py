@@ -3,8 +3,8 @@ import contextlib
 import json
 import secrets
 import uuid
-from typing import Any
 from collections.abc import AsyncGenerator
+from typing import Any
 from unittest.mock import MagicMock, patch
 
 import asgi_lifespan
@@ -20,8 +20,8 @@ from fief.db import AsyncConnection, AsyncEngine, AsyncSession
 from fief.db.engine import create_engine
 from fief.db.types import DatabaseConnectionParameters, DatabaseType, get_driver
 from fief.db.workspace import get_connection
-from fief.dependencies.db import get_main_async_session
 from fief.dependencies.current_workspace import get_current_workspace_session
+from fief.dependencies.db import get_main_async_session
 from fief.dependencies.fief import FiefAsyncRelativeEndpoints, get_fief
 from fief.dependencies.tasks import get_send_task
 from fief.dependencies.workspace_creation import get_workspace_creation
@@ -39,7 +39,7 @@ from fief.services.workspace_db import WorkspaceDatabase
 from fief.settings import settings
 from fief.tasks import send_task
 from tests.data import TestData, data_mapping, session_token_tokens
-from tests.types import GetTestDatabase, TenantParams, HTTPClientGeneratorType
+from tests.types import GetTestDatabase, HTTPClientGeneratorType, TenantParams
 
 pytest.register_assert_rewrite("tests.helpers")
 

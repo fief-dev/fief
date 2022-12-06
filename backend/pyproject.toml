@@ -65,13 +65,10 @@ ignore_missing_imports = true
 module = "sqlalchemy_utils.*"
 ignore_missing_imports = true
 
-[tool.isort]
-profile = "black"
-
 [tool.ruff]
+extend-select = ["I"]
 ignore = ["E501"]
 per-file-ignores = {"conftest.py" = ["E731"], "fief/repositories/*" = ["E711", "E712"], "fief/alembic/*" = ["F401"]}
-
 
 [tool.coverage.run]
 concurrency = ["thread", "gevent"]
@@ -110,7 +107,6 @@ dependencies = [
   "coverage[toml]",
   "gevent",
   "httpx",
-  "isort",
   "mypy",
   "pytest",
   "pytest-cov",
@@ -126,15 +122,12 @@ dependencies = [
 test = "pytest {args}"
 test-cov-xml = "pytest --cov fief/ --cov-report=xml"
 lint = [
-  "isort ./fief",
-  "isort ./tests",
   "black . ",
   "ruff --fix .",
   "mypy fief/",
   "tryceratops fief/",
 ]
 lint-check = [
-  "isort --check-only ./fief ./tests",
   "black --check .",
   "ruff .",
   "mypy fief/",
