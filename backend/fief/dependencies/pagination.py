@@ -21,7 +21,7 @@ Pagination = tuple[int, int]
 
 
 async def get_pagination(
-    limit: int = Query(10, gt=0), skip: int = Query(0)
+    limit: int = Query(10, gt=0), skip: int = Query(0, ge=0)
 ) -> Pagination:
     return min(limit, 100), skip
 

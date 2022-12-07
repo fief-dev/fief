@@ -1,0 +1,37 @@
+{% import "macros/icons.html" as icons %}
+
+{% macro pagination(count, skip, limit) %}
+{% set page = skip // limit + 1 %}
+{% set max_page = count // limit %}
+{% set first_index = (page - 1) * limit + 1 %}
+{% set last_index = page * limit %}
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+  <nav class="mb-4 sm:mb-0 sm:order-1" role="navigation" aria-label="Navigation">
+    <ul class="flex justify-center" hx-boost="true" hx-target="#main">
+      <li class="ml-3 first:ml-0">
+        <a
+          href="?skip={{ skip - limit }}&limit={{ limit }}"
+          class="flex items-center {{ 'btn bg-white border-slate-200 text-slate-300 cursor-not-allowed pointer-events-none' if page == 1 else 'btn bg-white border-slate-200 hover:border-slate-300 text-primary-500' }}"
+          {{ 'disabled' if page == 1 else '' }}
+        >
+          {{ icons.arrow_left("w-3 h-3 mr-1") }}
+          Previous
+        </a>
+      </li>
+      <li class="ml-3 first:ml-0">
+        <a
+          href="?skip={{ skip + limit }}&limit={{ limit }}"
+          class="flex items-center disabled:pointer-events-none {{ 'btn bg-white border-slate-200 text-slate-300 cursor-not-allowed pointer-events-none' if page >= max_page else 'btn bg-white border-slate-200 hover:border-slate-300 text-primary-500' }}"
+          {{ 'disabled' if page >= max_page else '' }}
+        >
+          Next
+          {{ icons.arrow_right("w-3 h-3 ml-1") }}
+        </a>
+      </li>
+    </ul>
+  </nav>
+  <div class="text-sm text-slate-500 text-center sm:text-left">
+    Showing {{ first_index }} to {{ last_index }} of {{ count }} results
+  </div>
+</div>
+{% endmacro %}

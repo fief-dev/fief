@@ -6,7 +6,7 @@ from sentry_sdk.integrations.asgi import SentryAsgiMiddleware
 from sentry_sdk.integrations.redis import RedisIntegration
 
 from fief import __version__
-from fief.apps import admin_app, admin_frontend_app, auth_app
+from fief.apps import admin_app, admin_frontend_app, auth_app, admin_htmx_app
 from fief.db.workspace import get_workspace_session
 from fief.dependencies.db import main_async_session_maker, workspace_engine_manager
 from fief.logger import init_audit_logger, logger
@@ -25,7 +25,7 @@ app = FastAPI(openapi_url=None)
 app.add_middleware(SentryAsgiMiddleware)
 
 app.mount("/admin/api", admin_app)
-app.mount("/admin", admin_frontend_app)
+app.mount("/admin", admin_htmx_app)
 app.mount("/", auth_app)
 
 

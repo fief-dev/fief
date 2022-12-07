@@ -1,0 +1,10 @@
+{% import "clients/table.html" as table %}
+{% import "macros/pagination.html" as pagination %}
+
+{% extends layout %}
+
+{% block main %}
+<h1>Clients</h1>
+{{ table.clients_table(clients) }}
+{{ pagination.pagination(count, skip, limit) }}
+{% endblock %}

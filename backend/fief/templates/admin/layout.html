@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block body %}
+<div class="flex h-screen overflow-hidden">
+  {% include "sidebar.html" %}
+
+  <div class="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
+    {% include "header.html" %}
+    <main>
+      <div class="grid grid-cols-12">
+        <div id="main" class="px-4 sm:px-6 lg:px-8 py-8 col-span-9">
+          {% block main %}{% endblock %}
+        </div>
+          <div class="col-span-12 lg:col-span-3">
+            <div class="lg:sticky lg:top-16 bg-slate-50 lg:overflow-x-hidden lg:overflow-y-auto no-scrollbar lg:shrink-0 border-t lg:border-t-0 lg:border-l border-slate-200">
+              <div class="py-8 px-4 lg:px-8">
+                <div class="max-w-sm mx-auto lg:max-w-none">
+                  SIDEBAR
+                </div>
+              </div>
+            </div>
+          </div>
+      </div>
+    </main>
+
+  </div>
+
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{% endblock %}

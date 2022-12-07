@@ -1,0 +1,18 @@
+{% macro clients_table(clients) %}
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Client ID</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for client in clients %}
+      <tr>
+        <td>{{ client.name }}</td>
+        <td>{{ client.client_id }}</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endmacro %}

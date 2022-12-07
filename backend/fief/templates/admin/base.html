@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    {% block head %}
+      <title>{% block head_title %}{% endblock %}</title>
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <link rel="icon" href="{{ url_for('admin_htmx:static', path='/favicon.svg') }}" />
+      <link href="{{ url_for('admin_htmx:static', path='/output.css') }}" rel="stylesheet">
+      <script src="https://unpkg.com/htmx.org@1.8.4"></script>
+      <script src="https://unpkg.com/hyperscript.org@0.9.7"></script>
+    {% endblock %}
+  </head>
+  <body class="font-inter antialiased bg-gray-100 text-gray-600">
+    {% block body %}
+
+    {% endblock %}
+    {% block javascripts %}
+
+    {% endblock %}
+  </body>
+</html>

@@ -1,4 +1,4 @@
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status, Request
 from fastapi.security import APIKeyCookie
 from fief_client import FiefUserInfo
 
@@ -27,11 +27,15 @@ async def get_optional_admin_session_token(
 
 
 async def get_admin_session_token(
+    request: Request,
     admin_session_token: AdminSessionToken
     | None = Depends(get_optional_admin_session_token),
 ) -> AdminSessionToken:
     if admin_session_token is None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+        raise HTTPException(
+            status_code=status.HTTP_307_TEMPORARY_REDIRECT,
+            headers={"Location": request.url_for("admin.auth:login")},
+        )
     return admin_session_token
 
 
