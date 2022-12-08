@@ -1,4 +1,4 @@
-from fastapi import Query
+from fastapi import Query, Depends
 from sqlalchemy.sql import Select
 
 from fief.repositories.base import BaseRepository, M
@@ -26,17 +26,24 @@ async def get_pagination(
     return min(limit, 100), skip
 
 
+RawOrdering = list[str]
+
+
+async def get_raw_ordering(ordering: str = Query(None)) -> RawOrdering:
+    return ordering.split(",") if ordering else []
+
+
 Ordering = list[tuple[list[str], bool]]
 
 
-async def get_ordering(ordering: str = Query(None)) -> Ordering:
+async def get_ordering(
+    raw_ordering: RawOrdering = Depends(get_raw_ordering),
+) -> Ordering:
     ordering_fields = []
-    if ordering:
-        fields = ordering.split(",")
-        for field in fields:
-            is_desc = False
-            if field.startswith("-"):
-                is_desc = True
-                field = field[1:]
-            ordering_fields.append((field.split("."), is_desc))
+    for field in raw_ordering:
+        is_desc = False
+        if field.startswith("-"):
+            is_desc = True
+            field = field[1:]
+        ordering_fields.append((field.split("."), is_desc))
     return ordering_fields

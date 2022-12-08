@@ -1,0 +1,49 @@
+{% import "macros/icons.html" as icons %}
+{% import "macros/pagination.html" as pagination %}
+
+{% macro datatable(data, count, skip, limit, ordering, title, headers, columns) %}
+<div class="bg-white shadow-lg rounded-sm border border-slate-200 relative">
+  <header class="px-5 py-4">
+    <h2 class="font-semibold text-slate-800">{{ title }} <span class="text-slate-400 font-medium">{{ count }}</span>
+    </h2>
+  </header>
+  <div>
+    <div class="overflow-x-auto">
+      <table class="table-auto w-full">
+        <thead class="text-xs font-semibold uppercase text-slate-500 bg-slate-50 border-t border-b border-slate-200">
+          <tr>
+            {% for header in headers %}
+              <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap font-semibold text-left">
+                {% if header.ordering %}
+                  <a href="?skip={{ skip }}&limit={{ limit }}&ordering={{ ('-' if header.ordering in ordering else '') ~ header.ordering }}" class="flex items-center">
+                    {{ header.title }}
+                    {% if header.ordering in ordering %}
+                      {{ icons.arrow_down('ml-1 w-2 h-2 fill-current') }}
+                    {% elif "-" ~ header.ordering in ordering %}
+                      {{ icons.arrow_up('ml-1 w-2 h-2 fill-current') }}
+                    {% endif %}
+                  </a>
+                {% else %}
+                  {{ header.title }}
+                {% endif %}
+              </th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody class="text-sm divide-y divide-slate-200">
+          {% for row in data %}
+            <tr>
+              {% for column in columns %}
+                <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">{{ column(row) }}</td>
+              {% endfor %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<div class="mt-8">
+  {{ pagination.pagination(count, skip, limit) }}
+</div>
+{% endmacro %}

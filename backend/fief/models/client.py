@@ -21,6 +21,13 @@ class ClientType(str, enum.Enum):
     PUBLIC = "public"
     CONFIDENTIAL = "confidential"
 
+    def get_display_name(self):
+        display_names = {
+            ClientType.PUBLIC: "Public",
+            ClientType.CONFIDENTIAL: "Confidential",
+        }
+        return display_names[self]
+
 
 class Client(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
     __tablename__ = "clients"

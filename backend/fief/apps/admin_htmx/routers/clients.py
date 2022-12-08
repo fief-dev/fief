@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends
 from fief.dependencies.admin_session import get_admin_session_token
 from fief.dependencies.client import get_paginated_clients
 from fief.dependencies.pagination import PaginatedObjects
+from fief.dependencies.pagination import RawOrdering, get_raw_ordering
 from fief.models import Client
 from fief.apps.admin_htmx.templates import templates
 from fief.dependencies.pagination import Pagination, get_pagination
@@ -14,6 +15,7 @@ router = APIRouter(dependencies=[Depends(get_admin_session_token)])
 @router.get("/", name="clients:list")
 async def list_clients(
     pagination: Pagination = Depends(get_pagination),
+    raw_ordering: RawOrdering = Depends(get_raw_ordering),
     paginated_clients: PaginatedObjects[Client] = Depends(get_paginated_clients),
     context: BaseContext = Depends(get_base_context),
 ):
@@ -27,5 +29,6 @@ async def list_clients(
             "count": count,
             "limit": limit,
             "skip": skip,
+            "ordering": raw_ordering,
         },
     )

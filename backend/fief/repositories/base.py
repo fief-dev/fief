@@ -7,7 +7,7 @@ from pydantic import UUID4
 from sqlalchemy import delete, func, select
 from sqlalchemy.engine import Result
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import InstrumentedAttribute, RelationshipProperty
+from sqlalchemy.orm import InstrumentedAttribute, RelationshipProperty, contains_eager
 from sqlalchemy.sql import Executable, Select
 
 from fief.models.generics import M_EXPIRES_AT, M_UUID, M
@@ -111,8 +111,12 @@ class BaseRepository(BaseRepositoryProtocol, Generic[M]):
                     try:
                         field = getattr(model, accessor)
                         if isinstance(field.prop, RelationshipProperty):
-                            if field.prop.lazy != "joined":
-                                statement = statement.join(field)
+                            statement = statement.join(field)
+                            if field.prop.lazy == "joined":
+                                # If the relationship is eagerly loaded,
+                                # this ensures we reuse the existing JOIN instead of adding another
+                                # Ref: https://docs.sqlalchemy.org/en/14/orm/loading_relationships.html#routing-explicit-joins-statements-into-eagerly-loaded-collections
+                                statement = statement.options(contains_eager(field))
                             model = field.prop.entity.class_
                     except AttributeError:
                         valid_field = False

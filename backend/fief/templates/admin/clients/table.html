@@ -1,18 +1,47 @@
-{% macro clients_table(clients) %}
-<table>
-  <thead>
-    <tr>
-      <th>Name</th>
-      <th>Client ID</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for client in clients %}
-      <tr>
-        <td>{{ client.name }}</td>
-        <td>{{ client.client_id }}</td>
-      </tr>
-    {% endfor %}
-  </tbody>
-</table>
+{% import "macros/datatable.html" as datatable %}
+
+{% macro name_column(client) %}
+<span class="font-medium text-slate-800 hover:text-slate-900 cursor-pointer">
+  {{ client.name }}
+</span>
+{% if client.first_party %}
+  <div class="inline-flex font-medium rounded-full text-center ml-2 px-2.5 py-0.5 bg-green-100 text-green-600">
+    First-party
+  </div>
+{% endif %}
 {% endmacro %}
+
+{% macro type_column(client) %}
+{{ client.client_type.get_display_name() }}
+{% endmacro %}
+
+{% macro tenant_column(client) %}
+{{ client.tenant.name }}
+{% endmacro %}
+
+{% macro client_id_column(client) %}
+{{ client.client_id }}
+{% endmacro %}
+
+{{
+  datatable.datatable(
+    clients,
+    count,
+    skip,
+    limit,
+    ordering,
+    "Clients",
+    [
+      { "title": "Name", "ordering": "name" },
+      { "title": "Type", "ordering": "client_type" },
+      { "title": "Tenant", "ordering": "tenant.name" },
+      { "title": "Client ID", "ordering": "client_id" },
+    ],
+    [
+      name_column,
+      type_column,
+      tenant_column,
+      client_id_column,
+    ],
+  )
+}}
