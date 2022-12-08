@@ -1,15 +1,24 @@
-from fastapi import Query, Depends
+from collections.abc import Callable, Coroutine
+
+from fastapi import Query, Depends, Header
 from sqlalchemy.sql import Select
 
 from fief.repositories.base import BaseRepository, M
 
+RawOrdering = list[str]
+Ordering = list[tuple[list[str], bool]]
+Pagination = tuple[int, int]
 PaginatedObjects = tuple[list[M], int]
+GetPaginatedObjects = Callable[
+    [Select, Pagination, Ordering, BaseRepository[M]],
+    Coroutine[None, None, PaginatedObjects[M]],
+]
 
 
 async def get_paginated_objects(
     statement: Select,
-    pagination: tuple[int, int],
-    ordering: list[tuple[list[str], bool]],
+    pagination: Pagination,
+    ordering: Ordering,
     repository: BaseRepository[M],
 ) -> PaginatedObjects[M]:
     limit, skip = pagination
@@ -17,7 +26,21 @@ async def get_paginated_objects(
     return await repository.paginate(statement, limit, skip)
 
 
-Pagination = tuple[int, int]
+async def get_paginated_objects_noop(
+    statement: Select,
+    pagination: Pagination,
+    ordering: Ordering,
+    repository: BaseRepository[M],
+) -> PaginatedObjects[M]:
+    return ([], 0)
+
+
+async def get_paginated_objects_getter(
+    hx_target: str | None = Header(None),
+) -> GetPaginatedObjects[M]:
+    if hx_target == "aside-content":
+        return get_paginated_objects_noop
+    return get_paginated_objects
 
 
 async def get_pagination(
@@ -26,14 +49,8 @@ async def get_pagination(
     return min(limit, 100), skip
 
 
-RawOrdering = list[str]
-
-
 async def get_raw_ordering(ordering: str = Query(None)) -> RawOrdering:
     return ordering.split(",") if ordering else []
-
-
-Ordering = list[tuple[list[str], bool]]
 
 
 async def get_ordering(

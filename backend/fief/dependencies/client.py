@@ -5,9 +5,11 @@ from sqlalchemy import select
 from fief.dependencies.pagination import (
     Ordering,
     Pagination,
+    PaginatedObjects,
     get_ordering,
-    get_paginated_objects,
+    get_paginated_objects_getter,
     get_pagination,
+    GetPaginatedObjects,
 )
 from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.models import Client
@@ -19,7 +21,10 @@ async def get_paginated_clients(
     pagination: Pagination = Depends(get_pagination),
     ordering: Ordering = Depends(get_ordering),
     repository: ClientRepository = Depends(get_workspace_repository(ClientRepository)),
-) -> tuple[list[Client], int]:
+    get_paginated_objects: GetPaginatedObjects[Client] = Depends(
+        get_paginated_objects_getter
+    ),
+) -> PaginatedObjects[Client]:
     statement = select(Client)
 
     if query is not None:

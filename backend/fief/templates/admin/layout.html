@@ -8,18 +8,20 @@
     {% include "header.html" %}
     <main>
       <div class="grid grid-cols-12">
-        <div id="main" class="px-4 sm:px-6 lg:px-8 py-8 col-span-9">
+        <div id="main" class="px-4 sm:px-6 lg:px-8 py-8 col-span-12 {{ 'lg:col-span-9' if aside else '' }}">
           {% block main %}{% endblock %}
         </div>
-          <div class="col-span-12 lg:col-span-3">
+        {% block aside %}
+          <aside id="aside" class="col-span-12 lg:col-span-3 {{ 'hidden' if not aside else '' }}">
             <div class="lg:sticky lg:top-16 bg-slate-50 lg:overflow-x-hidden lg:overflow-y-auto no-scrollbar lg:shrink-0 border-t lg:border-t-0 lg:border-l border-slate-200">
               <div class="py-8 px-4 lg:px-8">
-                <div class="max-w-sm mx-auto lg:max-w-none">
-                  SIDEBAR
+                <div id="aside-content" class="max-w-sm mx-auto lg:max-w-none">
+                  {% block aside_content %}{% endblock %}
                 </div>
               </div>
             </div>
-          </div>
+          </aside>
+        {% endblock %}
       </div>
     </main>
 
@@ -28,5 +30,31 @@
 </div>
 {% endblock %}
 
-{% block javascripts %}
+{% block hyperscripts %}
+  <script type="text/hyperscript">
+    behavior OpenAside()
+      on htmx:afterOnLoad
+        remove .hidden from #aside
+        add .lg:col-span-9 to #main
+      end
+    end
+
+    behavior CloseAside()
+      on htmx:afterOnLoad
+        add .hidden to #aside
+        remove .lg:col-span-9 from #main
+      end
+    end
+
+    behavior DropdownMenuToggle(menuId)
+      on click
+        toggle .hidden on #{menuId}
+      end
+      on click from the document
+        if event.target is not me and event.target is not in me
+          add .hidden to #{menuId}
+        end
+      end
+    end
+  </script>
 {% endblock %}

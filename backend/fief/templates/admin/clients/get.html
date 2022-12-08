@@ -1,0 +1,47 @@
+{% import "macros/clipboard.html" as clipboard %}
+{% import "macros/icons.html" as icons %}
+
+{% extends "clients/list.html" %}
+
+{% block main %}
+  {% if not aside_only %}
+    {{ super() }}
+  {% endif %}
+{% endblock %}
+
+{% block aside_content %}
+<div class="text-slate-800 font-semibold text-center mb-6">{{ client.name }}</div>
+<div class="mt-6">
+  <ul>
+    <li class="flex items-center justify-between py-3 border-b border-slate-200">
+      <div class="text-sm whitespace-nowrap">Type</div>
+      <div class="text-sm font-medium text-slate-800 ml-2 truncate">{{ client.client_type.get_display_name() }}</div>
+    </li>
+    <li class="flex items-center justify-between py-3 border-b border-slate-200">
+      <div class="text-sm whitespace-nowrap">ID</div>
+      <div class="text-sm font-medium text-slate-800 ml-2 truncate">{{ client.client_id }}</div>
+      {{ clipboard.clipbard_button(client.client_id) }}
+    </li>
+    <li class="flex items-center justify-between py-3 border-b border-slate-200">
+      <div class="text-sm whitespace-nowrap">Secret</div>
+      <div class="text-sm font-medium text-slate-800 ml-2 truncate">{{ client.client_secret }}</div>
+      {{ clipboard.clipbard_button(client.client_secret) }}
+    </li>
+  </ul>
+</div>
+<div class="mt-6">
+  <div class="text-sm font-semibold text-slate-800">Redirect URIs</div>
+  <ul class="mb-3">
+    {% for redirect_uri in client.redirect_uris %}
+      <li class="flex items-center justify-between py-3 border-b border-slate-200">
+        <div class="text-sm whitespace-nowrap truncate">{{ redirect_uri }}</div>
+      </li>
+    {% endfor %}
+  </ul>
+  <button
+    type="button"
+    class="btn w-full border-slate-200 hover:border-slate-300"
+  >
+    Edit Client
+  </button>
+{% endblock %}

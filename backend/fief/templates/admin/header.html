@@ -1,18 +1,5 @@
 {% import "macros/icons.html" as icons %}
 
-<script type="text/hyperscript">
-  behavior DropdownMenuToggle(menuId)
-    on click
-      toggle .hidden on #{menuId}
-    end
-    on click from the document
-      if event.target is not me and event.target is not in me
-        add .hidden to #{menuId}
-      end
-    end
-  end
-</script>
-
 <header class="sticky top-0 bg-white border-b border-slate-200 z-30">
   <div class="px-4 sm:px-6 lg:px-8">
       <div class="flex items-center justify-between h-16 -mb-px">
