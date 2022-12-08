@@ -2,12 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from fief.db.types import create_database_connection_parameters
 from fief.dependencies.admin_session import get_admin_session_token
-from fief.dependencies.pagination import PaginatedObjects
-from fief.dependencies.workspace import get_paginated_workspaces
 from fief.dependencies.workspace_creation import get_workspace_creation
 from fief.dependencies.workspace_db import get_workspace_db
-from fief.models import AdminSessionToken, Workspace
-from fief.schemas.generics import PaginatedResults
+from fief.models import AdminSessionToken
 from fief.schemas.workspace import (
     WorkspaceCheckConnection,
     WorkspaceCreate,
@@ -20,21 +17,6 @@ from fief.services.workspace_db import (
 )
 
 router = APIRouter()
-
-
-@router.get(
-    "/", name="workspaces:list", dependencies=[Depends(get_admin_session_token)]
-)
-async def list_workspaces(
-    paginated_workspaces: PaginatedObjects[Workspace] = Depends(
-        get_paginated_workspaces
-    ),
-) -> PaginatedResults[WorkspacePublic]:
-    workspaces, count = paginated_workspaces
-    return PaginatedResults(
-        count=count,
-        results=[WorkspacePublic.from_orm(workspace) for workspace in workspaces],
-    )
 
 
 @router.post(
