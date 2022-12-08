@@ -2,10 +2,12 @@
 
 <script type="text/hyperscript">
   behavior DropdownMenuToggle(menuId)
-    on click toggle .opacity-0 on #{menuId}
+    on click
+      toggle .hidden on #{menuId}
+    end
     on click from the document
-      if event.target is not in me
-        add .opacity-0 to #{menuId}
+      if event.target is not me and event.target is not in me
+        add .hidden to #{menuId}
       end
     end
   end
@@ -47,7 +49,7 @@
                 </button>
                 <div
                     id="workspace-switcher-menu"
-                    class="origin-top-right z-10 absolute top-full right-0 w-56 bg-white focus:outline-none mt-1 transition ease-out duration-200 transform opacity-0"
+                    class="origin-top-right z-10 absolute top-full right-0 w-56 bg-white focus:outline-none mt-1 transition ease-out duration-200 transform hidden"
                 >
                     <ul class="divide-y divide-gray-100 rounded shadow-lg ring-1 ring-black ring-opacity-5">
                       {% for workspace in workspaces %}
@@ -76,7 +78,7 @@
                   </button>
                   <div
                       id="user-menu"
-                      class="origin-top-right z-10 absolute top-full right-0 min-w-44 bg-white border border-slate-200 py-1.5 rounded shadow-lg overflow-hidden mt-1 transition ease-out duration-200 transform opacity-0"
+                      class="origin-top-right z-10 absolute top-full right-0 min-w-44 bg-white border border-slate-200 py-1.5 rounded shadow-lg overflow-hidden mt-1 transition ease-out duration-200 transform hidden"
                   >
                       <div class="pt-0.5 pb-2 px-3 mb-1 border-b border-slate-200 text-sm">
                           <div class="font-medium text-slate-800">{{ user.email }}</div>
