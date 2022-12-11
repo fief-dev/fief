@@ -1,5 +1,8 @@
+import secrets
+
 from fastapi import APIRouter, Depends, Request
 
+from fief.crypto.jwk import generate_jwk
 from fief.apps.admin_htmx.dependencies import BaseContext, get_base_context
 from fief.apps.admin_htmx.forms.client import ClientCreateForm, ClientUpdateForm
 from fief.apps.admin_htmx.responses import HXRedirectResponse
@@ -104,6 +107,7 @@ async def create_client(
 
     return await form_helper.get_response()
 
+
 @router.api_route(
     "/{id:uuid}/edit",
     methods=["GET", "POST"],
@@ -117,7 +121,6 @@ async def update_client(
     context: BaseContext = Depends(get_base_context),
     audit_logger: AuditLogger = Depends(get_audit_logger),
 ):
-    print("FP", client.first_party)
     form_helper = FormHelper(
         ClientUpdateForm,
         "admin/clients/edit.html",
@@ -138,3 +141,24 @@ async def update_client(
         )
 
     return await form_helper.get_response()
+
+
+@router.post(
+    "/{id:uuid}/encryption-key",
+    name="dashboard:clients:encryption_key",
+)
+async def create_encryption_key(
+    client: Client = Depends(get_client_by_id_or_404),
+    repository: ClientRepository = Depends(get_workspace_repository(ClientRepository)),
+    context: BaseContext = Depends(get_base_context),
+    audit_logger: AuditLogger = Depends(get_audit_logger),
+):
+    key = generate_jwk(secrets.token_urlsafe(), "enc")
+    client.encrypt_jwk = key.export_public()
+    await repository.update(client)
+    audit_logger.log_object_write(AuditLogMessage.OBJECT_UPDATED, client)
+
+    return templates.TemplateResponse(
+        "admin/clients/encryption_key.html",
+        {**context, "client": client, "key": key.export(as_dict=True)},
+    )

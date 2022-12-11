@@ -9,8 +9,8 @@ from fief.dependencies.workspace import get_admin_user_workspaces
 from fief.models import Workspace
 
 
-async def get_layout(hx_boosted: bool = Header(False)) -> str:
-    if hx_boosted:
+async def get_layout(hx_request: bool = Header(False)) -> str:
+    if hx_request:
         return "admin/layout_boost.html"
     return "admin/layout.html"
 

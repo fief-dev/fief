@@ -13,6 +13,7 @@
     hx-target="#modal"
     method="POST"
     action="{{ url_for('dashboard:clients:create') }}"
+    _="on fief:closeModal go back"
   >
   {% call modal.header() %}
     {% call modal.title() %}Create Client{% endcall %}

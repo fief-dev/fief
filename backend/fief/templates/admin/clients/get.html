@@ -1,4 +1,4 @@
-{% import "macros/clipboard.html" as clipboard %}
+{% import "macros/buttons.html" as buttons %}
 {% import "macros/icons.html" as icons %}
 
 {% extends "admin/clients/list.html" %}
@@ -16,12 +16,12 @@
     <li class="flex items-center justify-between py-3 border-b border-slate-200">
       <div class="text-sm whitespace-nowrap">ID</div>
       <div class="text-sm font-medium text-slate-800 ml-2 truncate">{{ client.client_id }}</div>
-      {{ clipboard.clipbard_button(client.client_id) }}
+      {{ buttons.clipboard(client.client_id) }}
     </li>
     <li class="flex items-center justify-between py-3 border-b border-slate-200">
       <div class="text-sm whitespace-nowrap">Secret</div>
       <div class="text-sm font-medium text-slate-800 ml-2 truncate">{{ client.client_secret }}</div>
-      {{ clipboard.clipbard_button(client.client_secret) }}
+      {{ buttons.clipboard(client.client_secret) }}
     </li>
   </ul>
 </div>
@@ -43,5 +43,42 @@
   >
     Edit Client
   </a>
+</div>
+<div class="mt-6">
+  <div class="text-sm font-semibold text-slate-800">ID Token Encryption</div>
+  <div class="pb-4 border-b border-slate-200">
+    <div class="flex justify-between text-sm mb-2">
+      <div>
+        {% if client.encrypt_jwk %}
+          Enabled
+        {% else %}
+          Disabled
+        {% endif %}
+      </div>
+    </div>
+    <button
+      type="button"
+      class="btn w-full border-slate-200 hover:border-slate-300"
+      hx-post="{{ url_for('dashboard:clients:encryption_key', id=client.id) }}"
+      hx-trigger="click"
+      hx-target="#modal"
+      _="
+        install OpenModal
+        on htmx:afterOnLoad
+          call htmx.ajax(
+            'GET',
+            '{{ url_for('dashboard:clients:get', id=client.id) }}',
+            '#aside'
+          )
+        end
+      "
+    >
+      {% if client.encrypt_jwk %}
+        Regenerate key
+      {% else %}
+        Generate key
+      {% endif %}
+    </button>
+  </div>
 </div>
 {% endblock %}
