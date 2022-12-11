@@ -5,7 +5,7 @@ from fief.forms import ComboboxSelectField, CSRFBaseForm
 from fief.models import ClientType
 
 
-class ClientCreateForm(CSRFBaseForm):
+class BaseClientForm(CSRFBaseForm):
     name = StringField("Name", validators=[validators.InputRequired()])
     first_party = BooleanField("First-party")
     client_type = SelectField(
@@ -19,8 +19,15 @@ class ClientCreateForm(CSRFBaseForm):
         label="Redirect URIs",
         min_entries=1,
     )
+
+
+class ClientCreateForm(BaseClientForm):
     tenant_id = ComboboxSelectField(
         "Tenant",
         query_endpoint_path="/admin/tenants/",
         validators=[validators.InputRequired(), validators.UUID()],
     )
+
+
+class ClientUpdateForm(BaseClientForm):
+    pass

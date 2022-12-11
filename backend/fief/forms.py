@@ -1,5 +1,5 @@
 import secrets
-from typing import Generic, TypeVar
+from typing import Any, Generic, TypeVar
 
 from fastapi import Request, status
 from starlette.templating import _TemplateResponse
@@ -74,11 +74,13 @@ class FormHelper(Generic[F]):
         template: str,
         *,
         request: Request,
+        object: Any | None = None,
         context: dict | None = None,
     ):
         self.form_class = form_class
         self.template = template
         self.request = request
+        self.object = object
         self.context: dict = {
             "request": request,
             **(context if context is not None else {}),
@@ -91,15 +93,18 @@ class FormHelper(Generic[F]):
         if self._form:
             return self._form
 
+        formdata = None
+        if self.request.method in {"POST", "PUT", "PATCH"}:
+            formdata = await self.request.form()
         self._form = self.form_class(
-            await self.request.form(), meta={"request": self.request}
+            formdata=formdata, obj=self.object, meta={"request": self.request}
         )
         self.context.update({"form": self._form})
         return self._form
 
     async def is_submitted_and_valid(self) -> bool:
         self._form = await self.get_form()
-        if self.request.method == "POST":
+        if self.request.method in {"POST", "PUT", "PATCH"}:
             self._valid = self._form.validate()
             return self._valid
         return False

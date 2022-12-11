@@ -34,11 +34,14 @@
       </li>
     {% endfor %}
   </ul>
-  <button
-    type="button"
+  <a
+    href="{{ url_for('dashboard:clients:update', id=client.id) }}"
     class="btn w-full border-slate-200 hover:border-slate-300"
+    hx-boost="true"
+    hx-target="#modal"
+    _="install OpenModal"
   >
     Edit Client
-  </button>
+  </a>
 </div>
 {% endblock %}
