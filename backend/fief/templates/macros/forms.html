@@ -116,7 +116,7 @@
 {% macro form_field_list_item(item) %}
 <div class="flex mb-2">
   <div class="grow">
-    {{ item(class="form-input w-full") }}
+    {{ item(class="form-input w-full", **kwargs) }}
     {{ form_field_errors(item) }}
   </div>
   <button
@@ -134,13 +134,17 @@
 {% for item in field %}
   {{ form_field_list_item(item) }}
 {% endfor %}
+<template>
+  {{ form_field_list_item(field[0], value='') }}
+</template>
 <button
   type="button"
   class="btn-xs bg-white border-slate-200 hover:border-slate-300 text-slate-600"
-  data-field-template="{{ form_field_list_item(field[0]) | forceescape }}"
   _="
     on click
-      put @data-field-template before me
+      set itemTemplate to previous <template />
+      call itemTemplate.content.firstElementChild.cloneNode(true)
+      put it before me
       for input in <input /> in closest <div /> index i
         set input@id to `{{ field.id }}-$i`
         set input@name to `{{ field.id }}-$i`
