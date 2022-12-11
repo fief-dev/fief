@@ -3,7 +3,7 @@ from fastapi.responses import RedirectResponse
 from fastapi_users.exceptions import InvalidPasswordException, UserAlreadyExists
 from fastapi_users.router import ErrorCode
 
-from fief.apps.auth.forms.base import FormHelper
+from fief.forms import FormHelper
 from fief.apps.auth.forms.register import RF, get_register_form_class
 from fief.dependencies.auth import get_login_session
 from fief.dependencies.authentication_flow import get_authentication_flow
@@ -53,7 +53,7 @@ async def register(
     response: Response
     form_helper = FormHelper(
         register_form_class,
-        "register.html",
+        "auth/register.html",
         request=request,
         context={
             "finalize": registration_session is not None

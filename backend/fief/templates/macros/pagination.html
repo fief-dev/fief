@@ -2,7 +2,7 @@
 
 {% macro pagination(count, skip, limit) %}
 {% set page = skip // limit + 1 %}
-{% set max_page = count // limit %}
+{% set max_page = count / limit | round(method="ceil") %}
 {% set first_index = (page - 1) * limit + 1 %}
 {% set last_index = page * limit %}
 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">

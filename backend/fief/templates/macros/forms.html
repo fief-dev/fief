@@ -1,3 +1,5 @@
+{% import "macros/icons.html" as icons %}
+
 {% macro form_field_label(field) %}
 <label class="block text-sm font-medium mb-1" for="{{ field.id }}">
   {{ _(field.label) }}
@@ -22,17 +24,79 @@
 
 {% macro form_checkbox_field(field) %}
 <label class="block text-sm font-medium mb-1" for="{{ field.id }}">
+  {{ field(class="form-checkbox") }}
   {{ field.label }}
   {% if field.flags.required %}
     <span class="text-rose-500">*</span>
   {% endif %}
-  {{ field(class="form-checkbox") }}
 </label>
 {% endmacro %}
 
 {% macro form_select_field(field) %}
 {{ form_field_label(field) }}
 {{ field(class="form-select w-full") }}
+{% endmacro %}
+
+{% macro form_combobox_select_field(field) %}
+{{ form_field_label(field) }}
+{{ field(id=field.id ~ "hidden") }}
+<input
+  id="{{ field.id }}"
+  type="text"
+  class="form-select w-full"
+  name="{{ field.query_parameter_name }}"
+  hx-get="{{ field.query_endpoint_path }}"
+  hx-trigger="keyup"
+  hx-target="#{{ field.id }}-combobox-results"
+  hx-headers='{"HX-Combobox": true}'
+/>
+<div class="relative">
+  <div
+    id="{{ field.id }}-combobox-results"
+    class="absolute w-full bg-white focus:outline-none mt-1 transition ease-out duration-200 transform"
+    _="
+      init
+        set :inputElement to previous <input[type='hidden'] /> from me
+        set :queryElement to previous <input /> from me
+        hide me
+      end
+      on click in closest <ul > li />
+        set :inputElement.value to target@data-value
+        set :queryElement.value to target@data-label
+        hide me
+      end
+      on keyup or focus from previous <input /> from me
+        show me
+      end
+      on click from the document
+        if target is not me and target is not in me and target is not :queryElement
+          hide me
+        end
+      end
+    "
+  ></div>
+</div>
+{% endmacro %}
+
+{% macro form_combobox_select_field_results(results, value_attr, label_attr, no_result_label) %}
+<ul class="divide-y divide-gray-100 rounded shadow-lg p-2 ring-1 ring-black ring-opacity-5">
+  {% for result in results %}
+    <li
+      class="w-full rounded text-sm hover:bg-slate-100 py-1 px-3 cursor-pointer"
+      data-value="{{ result[value_attr] }}"
+      data-label="{{ result[label_attr] }}"
+    >
+      {{ caller(result) }}
+    </li>
+  {% endfor %}
+  {% if results | length == 0 %}
+    <li
+      class="w-full rounded text-sm hover:bg-slate-100 py-1 px-3 text-primary-500 pointer-events-none"
+    >
+      {{ no_result_label }}
+    </li>
+  {% endif %}
+</ul>
 {% endmacro %}
 
 {% macro form_address_field(field) %}
@@ -49,6 +113,45 @@
 </div>
 {% endmacro %}
 
+{% macro form_field_list_item(item) %}
+<div class="flex mb-2">
+  <div class="grow">
+    {{ item(class="form-input w-full") }}
+    {{ form_field_errors(item) }}
+  </div>
+  <button
+    type="button"
+    class="ml-2"
+    _="on click remove closest <div />"
+  >
+    {{ icons.trash('w-4 h-4') }}
+  </button>
+</div>
+{% endmacro %}
+
+{% macro form_field_list(field) %}
+{{ form_field_label(field) }}
+{% for item in field %}
+  {{ form_field_list_item(item) }}
+{% endfor %}
+<button
+  type="button"
+  class="btn-xs bg-white border-slate-200 hover:border-slate-300 text-slate-600"
+  data-field-template="{{ form_field_list_item(field[0]) | forceescape }}"
+  _="
+    on click
+      put @data-field-template before me
+      for input in <input /> in closest <div /> index i
+        set input@id to `{{ field.id }}-$i`
+        set input@name to `{{ field.id }}-$i`
+      end
+    end
+  "
+>
+  Add
+</button>
+{% endmacro %}
+
 {% macro form_field(field) %}
 <div>
   {% if field.type == "BooleanField" %}
@@ -57,11 +160,19 @@
   {% elif field.type == "SelectField" %}
     {{ form_select_field(field) }}
     {{ form_field_errors(field) }}
+  {% elif field.type == "ComboboxSelectField" %}
+    {{ form_combobox_select_field(field) }}
+    {{ form_field_errors(field) }}
   {% elif field.type == "AddressFormField" %}
     {{ form_address_field(field) }}
+  {% elif field.type == "FieldList" %}
+    {{ form_field_list(field) }}
   {% else %}
     {{ form_standard_field(field) }}
     {{ form_field_errors(field) }}
+  {% endif %}
+  {% if caller %}
+    {{ caller() }}
   {% endif %}
 </div>
 {% endmacro %}

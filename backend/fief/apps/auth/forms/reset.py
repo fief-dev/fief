@@ -1,6 +1,6 @@
 from wtforms import EmailField, HiddenField, PasswordField, validators
 
-from fief.apps.auth.forms.base import CSRFBaseForm
+from fief.forms import CSRFBaseForm
 from fief.locale import gettext_lazy as _
 
 

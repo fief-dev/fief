@@ -1,5 +1,6 @@
 import enum
 import secrets
+import re
 
 from jwcrypto import jwk
 from pydantic import UUID4
@@ -11,6 +12,10 @@ from fief.crypto.jwk import load_jwk
 from fief.models.base import WorkspaceBase
 from fief.models.generics import GUID, CreatedUpdatedAt, UUIDModel
 from fief.models.tenant import Tenant
+
+LOCALHOST_HOST_PATTERN = re.compile(
+    r"([^\.]+\.)?localhost(\d+)?|127\.0\.0\.1", flags=re.IGNORECASE
+)
 
 
 def get_default_redirect_uris() -> list[str]:
@@ -27,6 +32,10 @@ class ClientType(str, enum.Enum):
             ClientType.CONFIDENTIAL: "Confidential",
         }
         return display_names[self]
+
+    @classmethod
+    def get_choices(cls) -> list[tuple[str, str]]:
+        return [(member.value, member.get_display_name()) for member in cls]
 
 
 class Client(UUIDModel, CreatedUpdatedAt, WorkspaceBase):

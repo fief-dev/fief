@@ -10,14 +10,18 @@
   </div>
 
   <div class="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
-    <button
+    <a
+      href="{{ url_for('dashboard:clients:create') }}"
       class="btn bg-primary-500 hover:bg-primary-600 text-white"
+      hx-boost="true"
+      hx-target="#modal"
+      _="install OpenModal"
     >
       {{ icons.plus('w-4 h-4') }}
       <span class="hidden xs:block ml-2">Create Client</span>
-    </button>
+    </a>
   </div>
 
 </div>
-{% include "clients/table.html" %}
+{% include "admin/clients/table.html" %}
 {% endblock %}

@@ -1,15 +1,11 @@
 {% import "macros/clipboard.html" as clipboard %}
 {% import "macros/icons.html" as icons %}
 
-{% extends "clients/list.html" %}
+{% extends "admin/clients/list.html" %}
 
-{% block main %}
-  {% if not aside_only %}
-    {{ super() }}
-  {% endif %}
-{% endblock %}
+{% set open_aside = true %}
 
-{% block aside_content %}
+{% block aside %}
 <div class="text-slate-800 font-semibold text-center mb-6">{{ client.name }}</div>
 <div class="mt-6">
   <ul>
@@ -44,4 +40,5 @@
   >
     Edit Client
   </button>
+</div>
 {% endblock %}

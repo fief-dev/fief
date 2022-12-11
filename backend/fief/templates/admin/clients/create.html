@@ -1,0 +1,34 @@
+{% import "macros/forms.html" as forms %}
+{% import "macros/modal.html" as modal %}
+{% import "macros/icons.html" as icons %}
+
+{% extends "admin/clients/list.html" %}
+
+{% set open_modal = true %}
+
+{% block modal %}
+  <form
+    hx-boost="true"
+    hx-target="#modal"
+    method="POST"
+    action="{{ url_for('dashboard:clients:create') }}"
+  >
+  {% call modal.header() %}
+    {% call modal.title() %}Create Client{% endcall %}
+  {% endcall %}
+  {% call modal.body() %}
+    <div class="space-y-4">
+      {{ forms.form_field(form.name) }}
+      {{ forms.form_field(form.first_party) }}
+      {{ forms.form_field(form.client_type) }}
+      {{ forms.form_field(form.redirect_uris) }}
+      {{ forms.form_field(form.tenant_id) }}
+      {{ forms.form_csrf_token(form) }}
+    </div>
+  {% endcall %}
+  {% call modal.footer() %}
+    <button type="button" class="btn-sm border-slate-200 hover:border-slate-300 text-slate-600" _="install CloseModalButton()">Cancel</button>
+    <button type="submit" class="btn-sm bg-primary-500 hover:bg-primary-600 text-white">Create</button>
+  {% endcall %}
+  </form>
+{% endblock %}

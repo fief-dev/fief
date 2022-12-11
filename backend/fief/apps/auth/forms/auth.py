@@ -1,7 +1,7 @@
 from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 from wtforms import EmailField, PasswordField, SubmitField, validators
 
-from fief.apps.auth.forms.base import CSRFBaseForm
+from fief.forms import CSRFBaseForm
 from fief.locale import gettext_lazy as _
 
 

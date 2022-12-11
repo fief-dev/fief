@@ -1,15 +1,9 @@
-import re
-
 from pydantic import UUID4, AnyUrl, Field, SecretStr, validator
 
 from fief.errors import APIErrorCode
-from fief.models.client import ClientType
+from fief.models.client import ClientType, LOCALHOST_HOST_PATTERN
 from fief.schemas.generics import BaseModel, CreatedUpdatedAt, UUIDSchema
 from fief.schemas.tenant import TenantEmbedded
-
-LOCALHOST_HOST_PATTERN = re.compile(
-    r"([^\.]+\.)?localhost(\d+)?|127\.0\.0\.1", flags=re.IGNORECASE
-)
 
 
 def validate_redirect_uri(url: AnyUrl) -> AnyUrl:

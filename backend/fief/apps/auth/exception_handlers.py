@@ -4,8 +4,8 @@ from fastapi import Request, status
 from fastapi.responses import JSONResponse
 
 from fief.apps.auth.forms.auth import LoginForm
-from fief.apps.auth.forms.base import FormHelper
-from fief.apps.auth.templates import templates
+from fief.forms import FormHelper
+from fief.templates import templates
 from fief.exceptions import (
     AuthorizeException,
     AuthorizeRedirectException,
@@ -21,7 +21,7 @@ exception_handlers: dict[type[Exception], Callable] = {}
 
 async def authorize_exception_handler(request: Request, exc: AuthorizeException):
     return templates.TemplateResponse(
-        "authorize.html",
+        "auth/authorize.html",
         {
             "request": request,
             "error": exc.error.error_description,
@@ -56,12 +56,15 @@ async def login_exception_handler(
     request: Request, exc: LoginException | OAuthException
 ):
     form_helper = FormHelper(
-        LoginForm, "login.html", request=request, context={"tenant": exc.tenant}
+        LoginForm,
+        "auth/login.html",
+        request=request,
+        context={"tenant": exc.tenant},
     )
     form = await form_helper.get_form()
 
     return templates.TemplateResponse(
-        "login.html",
+        "auth/login.html",
         {
             "form": form,
             "request": request,
@@ -91,7 +94,7 @@ exception_handlers[TokenRequestException] = token_request_exception_handler
 
 async def logout_exception_handler(request: Request, exc: LogoutException):
     return templates.TemplateResponse(
-        "logout.html",
+        "auth/logout.html",
         {
             "request": request,
             "error": exc.error.error_description,

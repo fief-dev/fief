@@ -7,7 +7,7 @@ from fastapi_users.exceptions import (
     UserNotExists,
 )
 
-from fief.apps.auth.forms.base import FormHelper
+from fief.forms import FormHelper
 from fief.apps.auth.forms.reset import ForgotPasswordForm, ResetPasswordForm
 from fief.dependencies.auth import get_optional_login_session
 from fief.dependencies.tenant import get_current_tenant
@@ -26,7 +26,7 @@ async def forgot_password(
 ):
     form_helper = FormHelper(
         ForgotPasswordForm,
-        "forgot_password.html",
+        "auth/forgot_password.html",
         request=request,
         context={"tenant": tenant},
     )
@@ -56,7 +56,7 @@ async def reset_password(
 ):
     form_helper = FormHelper(
         ResetPasswordForm,
-        "reset_password.html",
+        "auth/reset_password.html",
         request=request,
         context={"tenant": tenant},
     )

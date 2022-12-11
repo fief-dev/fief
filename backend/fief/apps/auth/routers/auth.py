@@ -3,7 +3,7 @@ from fastapi.responses import RedirectResponse
 from pydantic import AnyUrl
 
 from fief.apps.auth.forms.auth import ConsentForm, LoginForm
-from fief.apps.auth.forms.base import FormHelper
+from fief.forms import FormHelper
 from fief.dependencies.auth import (
     check_unsupported_request_parameter,
     get_authorize_client,
@@ -101,7 +101,7 @@ async def login(
 ):
     form_helper = FormHelper(
         LoginForm,
-        "login.html",
+        "auth/login.html",
         request=request,
         context={"oauth_providers": oauth_providers, "tenant": tenant},
     )
@@ -139,7 +139,7 @@ async def consent(
 ):
     form_helper = FormHelper(
         ConsentForm,
-        "consent.html",
+        "auth/consent.html",
         request=request,
         context={
             "tenant": tenant,

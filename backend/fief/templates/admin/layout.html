@@ -1,29 +1,38 @@
-{% extends "base.html" %}
+{% extends "admin/base.html" %}
 
 {% block body %}
 <div class="flex h-screen overflow-hidden">
-  {% include "sidebar.html" %}
+  {% include "admin/sidebar.html" %}
 
   <div class="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
-    {% include "header.html" %}
+    {% include "admin/header.html" %}
     <main>
       <div class="grid grid-cols-12">
-        <div id="main" class="px-4 sm:px-6 lg:px-8 py-8 col-span-12 {{ 'lg:col-span-9' if aside else '' }}">
+        <div id="main" class="px-4 sm:px-6 lg:px-8 py-8 col-span-12 {{ 'lg:col-span-9' if open_aside else '' }}">
           {% block main %}{% endblock %}
         </div>
-        {% block aside %}
-          <aside id="aside" class="col-span-12 lg:col-span-3 {{ 'hidden' if not aside else '' }}">
-            <div class="lg:sticky lg:top-16 bg-slate-50 lg:overflow-x-hidden lg:overflow-y-auto no-scrollbar lg:shrink-0 border-t lg:border-t-0 lg:border-l border-slate-200">
-              <div class="py-8 px-4 lg:px-8">
-                <div id="aside-content" class="max-w-sm mx-auto lg:max-w-none">
-                  {% block aside_content %}{% endblock %}
-                </div>
+        <aside id="aside-container" class="col-span-12 lg:col-span-3 {{ 'hidden' if not open_aside else '' }}">
+          <div class="lg:sticky lg:top-16 bg-slate-50 lg:overflow-x-hidden lg:overflow-y-auto no-scrollbar lg:shrink-0 border-t lg:border-t-0 lg:border-l border-slate-200">
+            <div class="py-8 px-4 lg:px-8">
+              <div id="aside" class="max-w-sm mx-auto lg:max-w-none">
+                {% block aside %}{% endblock %}
               </div>
             </div>
-          </aside>
-        {% endblock %}
+          </div>
+        </aside>
       </div>
     </main>
+
+    <div id="modal-container" class="fixed inset-0 z-20 overflow-y-auto bg-slate-900 bg-opacity-30 {{ 'hidden' if not open_modal else '' }}">
+      <div class="min-h-screen px-4 text-center flex justify-center items-center">
+        <div
+          id="modal"
+          class="inline-block w-full max-w-md text-left align-middle transition-all transform bg-white rounded shadow-lg"
+        >
+          {% block modal %}{% endblock %}
+        </div>
+      </div>
+    </div>
 
   </div>
 
@@ -34,15 +43,28 @@
   <script type="text/hyperscript">
     behavior OpenAside()
       on htmx:afterOnLoad
-        remove .hidden from #aside
+        remove .hidden from #aside-container
         add .lg:col-span-9 to #main
       end
     end
 
     behavior CloseAside()
       on htmx:afterOnLoad
-        add .hidden to #aside
+        add .hidden to #aside-container
         remove .lg:col-span-9 from #main
+      end
+    end
+
+    behavior OpenModal()
+      on htmx:afterOnLoad
+        remove .hidden from  #modal-container
+      end
+    end
+
+    behavior CloseModalButton()
+      on click
+        add .hidden to #modal-container
+        go back
       end
     end
 
@@ -54,6 +76,12 @@
         if event.target is not me and event.target is not in me
           add .hidden to #{menuId}
         end
+      end
+    end
+
+    on htmx:beforeSwap from document
+      if event.detail.xhr.status == 400
+        set event.detail.shouldSwap to true
       end
     end
   </script>

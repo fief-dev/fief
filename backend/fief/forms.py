@@ -3,10 +3,10 @@ from typing import Generic, TypeVar
 
 from fastapi import Request, status
 from starlette.templating import _TemplateResponse
-from wtforms import Field, Form, validators
+from wtforms import Field, Form, validators, HiddenField
 from wtforms.csrf.core import CSRF
 
-from fief.apps.auth.templates import templates
+from fief.templates import templates
 from fief.locale import get_translations
 from fief.middlewares.csrf import CSRF_ATTRIBUTE_NAME
 from fief.settings import settings
@@ -74,7 +74,7 @@ class FormHelper(Generic[F]):
         template: str,
         *,
         request: Request,
-        context: dict | None = None
+        context: dict | None = None,
     ):
         self.form_class = form_class
         self.template = template
@@ -116,7 +116,7 @@ class FormHelper(Generic[F]):
         error_code: str,
         *,
         fatal: bool = False,
-        status_code: int = status.HTTP_400_BAD_REQUEST
+        status_code: int = status.HTTP_400_BAD_REQUEST,
     ) -> _TemplateResponse:
         self.context.update({"error": error, "fatal_error": fatal})
         return templates.TemplateResponse(
@@ -125,3 +125,16 @@ class FormHelper(Generic[F]):
             status_code=status_code,
             headers={"X-Fief-Error": error_code},
         )
+
+
+class ComboboxSelectField(HiddenField):
+    def __init__(
+        self,
+        *args,
+        query_endpoint_path: str,
+        query_parameter_name: str = "query",
+        **kwargs,
+    ):
+        super().__init__(*args, **kwargs)
+        self.query_endpoint_path = query_endpoint_path
+        self.query_parameter_name = query_parameter_name
