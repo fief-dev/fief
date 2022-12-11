@@ -22,9 +22,9 @@ from wtforms import (
 )
 from wtforms.utils import unset_value
 
-from fief.forms import BaseForm, CSRFBaseForm
 from fief.dependencies.register import get_optional_registration_session
 from fief.dependencies.user_field import get_registration_user_fields
+from fief.forms import BaseForm, CSRFBaseForm
 from fief.locale import gettext_lazy as _
 from fief.models import (
     RegistrationSession,

@@ -3,7 +3,6 @@ from fastapi.responses import RedirectResponse
 from fastapi_users.exceptions import InvalidPasswordException, UserAlreadyExists
 from fastapi_users.router import ErrorCode
 
-from fief.forms import FormHelper
 from fief.apps.auth.forms.register import RF, get_register_form_class
 from fief.dependencies.auth import get_login_session
 from fief.dependencies.authentication_flow import get_authentication_flow
@@ -14,6 +13,7 @@ from fief.dependencies.register import (
 )
 from fief.dependencies.tenant import get_current_tenant
 from fief.exceptions import LoginException
+from fief.forms import FormHelper
 from fief.locale import gettext_lazy as _
 from fief.models import (
     OAuthProvider,

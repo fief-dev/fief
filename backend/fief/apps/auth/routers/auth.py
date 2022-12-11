@@ -3,7 +3,6 @@ from fastapi.responses import RedirectResponse
 from pydantic import AnyUrl
 
 from fief.apps.auth.forms.auth import ConsentForm, LoginForm
-from fief.forms import FormHelper
 from fief.dependencies.auth import (
     check_unsupported_request_parameter,
     get_authorize_client,
@@ -28,6 +27,7 @@ from fief.dependencies.tenant import get_current_tenant
 from fief.dependencies.users import UserManager, get_user_manager
 from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.exceptions import LogoutException
+from fief.forms import FormHelper
 from fief.locale import gettext_lazy as _
 from fief.models import Client, LoginSession, OAuthProvider, Tenant, Workspace
 from fief.models.session_token import SessionToken

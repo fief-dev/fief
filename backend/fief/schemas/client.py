@@ -1,7 +1,7 @@
 from pydantic import UUID4, AnyUrl, Field, SecretStr, validator
 
 from fief.errors import APIErrorCode
-from fief.models.client import ClientType, LOCALHOST_HOST_PATTERN
+from fief.models.client import LOCALHOST_HOST_PATTERN, ClientType
 from fief.schemas.generics import BaseModel, CreatedUpdatedAt, UUIDSchema
 from fief.schemas.tenant import TenantEmbedded
 

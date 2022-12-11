@@ -4,8 +4,6 @@ from fastapi import Request, status
 from fastapi.responses import JSONResponse
 
 from fief.apps.auth.forms.auth import LoginForm
-from fief.forms import FormHelper
-from fief.templates import templates
 from fief.exceptions import (
     AuthorizeException,
     AuthorizeRedirectException,
@@ -14,7 +12,9 @@ from fief.exceptions import (
     OAuthException,
     TokenRequestException,
 )
+from fief.forms import FormHelper
 from fief.services.authentication_flow import AuthenticationFlow
+from fief.templates import templates
 
 exception_handlers: dict[type[Exception], Callable] = {}
 

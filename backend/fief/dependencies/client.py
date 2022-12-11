@@ -3,13 +3,13 @@ from pydantic import UUID4
 from sqlalchemy import select
 
 from fief.dependencies.pagination import (
+    GetPaginatedObjects,
     Ordering,
-    Pagination,
     PaginatedObjects,
+    Pagination,
     get_ordering,
     get_paginated_objects_getter,
     get_pagination,
-    GetPaginatedObjects,
 )
 from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.models import Client

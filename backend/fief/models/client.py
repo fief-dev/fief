@@ -1,6 +1,6 @@
 import enum
-import secrets
 import re
+import secrets
 
 from jwcrypto import jwk
 from pydantic import UUID4

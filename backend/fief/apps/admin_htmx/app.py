@@ -1,12 +1,12 @@
-from fastapi import FastAPI, Depends
-from fastapi.staticfiles import StaticFiles
+from fastapi import Depends, FastAPI
 from fastapi.middleware.gzip import GZipMiddleware
+from fastapi.staticfiles import StaticFiles
 
+from fief.apps.admin_htmx.dependencies import BaseContext, get_base_context
 from fief.apps.admin_htmx.routers.clients import router as clients_router
 from fief.apps.admin_htmx.routers.tenants import router as tenants_router
 from fief.paths import STATIC_DIRECTORY
 from fief.templates import templates
-from fief.apps.admin_htmx.dependencies import BaseContext, get_base_context
 
 app = FastAPI(title="Fief Administration Frontend", openapi_url=None)
 

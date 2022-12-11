@@ -1,6 +1,6 @@
 from collections.abc import Callable, Coroutine
 
-from fastapi import Query, Depends, Header
+from fastapi import Depends, Header, Query
 from sqlalchemy.sql import Select
 
 from fief.repositories.base import BaseRepository, M

@@ -1,6 +1,6 @@
 from fastapi.responses import RedirectResponse
-from starlette.datastructures import URL
 from starlette.background import BackgroundTask
+from starlette.datastructures import URL
 
 
 class HXRedirectResponse(RedirectResponse):

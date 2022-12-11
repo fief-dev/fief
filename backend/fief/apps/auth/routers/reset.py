@@ -7,11 +7,11 @@ from fastapi_users.exceptions import (
     UserNotExists,
 )
 
-from fief.forms import FormHelper
 from fief.apps.auth.forms.reset import ForgotPasswordForm, ResetPasswordForm
 from fief.dependencies.auth import get_optional_login_session
 from fief.dependencies.tenant import get_current_tenant
 from fief.dependencies.users import UserManager, get_user_manager
+from fief.forms import FormHelper
 from fief.locale import gettext_lazy as _
 from fief.models import LoginSession, Tenant
 

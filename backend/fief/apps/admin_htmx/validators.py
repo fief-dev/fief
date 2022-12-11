@@ -1,4 +1,5 @@
 import re
+
 from wtforms import validators
 
 from fief.models.client import LOCALHOST_HOST_PATTERN

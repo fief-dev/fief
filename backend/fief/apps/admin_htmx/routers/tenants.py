@@ -1,21 +1,17 @@
-from fastapi import APIRouter, Depends, Request, status, Header
-from fastapi.responses import RedirectResponse
+from fastapi import APIRouter, Depends, Header
 
-from fief.repositories import ClientRepository, TenantRepository
-from fief.dependencies.logger import get_audit_logger
-from fief.logger import AuditLogger
-from fief.dependencies.workspace_repositories import get_workspace_repository
+from fief.apps.admin_htmx.dependencies import BaseContext, get_base_context
 from fief.dependencies.admin_session import get_admin_session_token
-from fief.dependencies.client import get_paginated_clients, get_client_by_id_or_404
+from fief.dependencies.pagination import (
+    PaginatedObjects,
+    Pagination,
+    RawOrdering,
+    get_pagination,
+    get_raw_ordering,
+)
 from fief.dependencies.tenant import get_paginated_tenants
-from fief.dependencies.pagination import PaginatedObjects
-from fief.dependencies.pagination import RawOrdering, get_raw_ordering
-from fief.models import Client, AuditLogMessage, ClientType, Tenant
+from fief.models import Tenant
 from fief.templates import templates
-from fief.dependencies.pagination import Pagination, get_pagination
-from fief.apps.admin_htmx.dependencies import get_base_context, BaseContext
-from fief.forms import FormHelper
-from fief.apps.admin_htmx.forms.client import ClientCreateForm
 
 router = APIRouter(dependencies=[Depends(get_admin_session_token)])
 

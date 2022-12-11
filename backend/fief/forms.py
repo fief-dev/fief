@@ -3,13 +3,13 @@ from typing import Generic, TypeVar
 
 from fastapi import Request, status
 from starlette.templating import _TemplateResponse
-from wtforms import Field, Form, validators, HiddenField
+from wtforms import Field, Form, HiddenField, validators
 from wtforms.csrf.core import CSRF
 
-from fief.templates import templates
 from fief.locale import get_translations
 from fief.middlewares.csrf import CSRF_ATTRIBUTE_NAME
 from fief.settings import settings
+from fief.templates import templates
 
 
 class CSRFCookieMissingRequest(TypeError):

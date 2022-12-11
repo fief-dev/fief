@@ -1,9 +1,8 @@
-import uuid
-from wtforms import validators, StringField, BooleanField, SelectField, FieldList
+from wtforms import BooleanField, FieldList, SelectField, StringField, validators
 
-from fief.forms import CSRFBaseForm, ComboboxSelectField
-from fief.models import ClientType
 from fief.apps.admin_htmx.validators import RedirectURLValidator
+from fief.forms import ComboboxSelectField, CSRFBaseForm
+from fief.models import ClientType
 
 
 class ClientCreateForm(CSRFBaseForm):
