@@ -1,5 +1,26 @@
 {% extends layout %}
 
 {% block main %}
-Hello!
+<div class="relative bg-slate-200 p-4 sm:p-6 rounded-sm overflow-hidden mb-8 ">
+  <div class="relative">
+    <h1 class="text-2xl md:text-3xl text-slate-800 font-bold mb-1">Welcome to Fief, my lord 👑</h1>
+    <p class="mb-4">You're ready to authenticate your users! Here's some useful links to help you get started:</p>
+    <a
+      class="btn bg-primary-500 hover:bg-primary-600 text-white"
+      href="https://docs.fief.dev"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      Read the documentation
+    </a>
+    <a
+      class="btn bg-white border-slate-200 hover:border-slate-300 text-slate-600 ml-2"
+      href="https://github.com/orgs/fief-dev/discussions"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      Ask questions
+    </a>
+  </div>
+</div>
 {% endblock %}
