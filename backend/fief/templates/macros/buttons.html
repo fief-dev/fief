@@ -1,0 +1,11 @@
+{% import "macros/icons.html" as icons %}
+
+{% macro submit(class) %}
+<button
+  type="submit"
+  class="{{ class }} group bg-primary-500 hover:bg-primary-600 text-white disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed"
+>
+  {{ icons.spinner('hidden group-disabled:block w-4 h-4 shrink-0 mr-2') }}
+  {{ caller() }}
+</button>
+{% endmacro %}

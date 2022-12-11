@@ -84,5 +84,11 @@
         set event.detail.shouldSwap to true
       end
     end
+
+    on every htmx:beforeSend from <form />
+      for submitButton in <button[type='submit'] /> in it
+        toggle @disabled on submitButton until htmx:afterOnLoad
+      end
+    end
   </script>
 {% endblock %}

@@ -1,3 +1,4 @@
+{% import "macros/buttons.html" as buttons %}
 {% import "macros/forms.html" as forms %}
 {% import "macros/modal.html" as modal %}
 {% import "macros/icons.html" as icons %}
@@ -28,7 +29,9 @@
   {% endcall %}
   {% call modal.footer() %}
     <button type="button" class="btn-sm border-slate-200 hover:border-slate-300 text-slate-600" _="install CloseModalButton()">Cancel</button>
-    <button type="submit" class="btn-sm bg-primary-500 hover:bg-primary-600 text-white">Create</button>
+    {% call buttons.submit('btn-sm') %}
+      Create
+    {% endcall %}
   {% endcall %}
   </form>
 {% endblock %}
