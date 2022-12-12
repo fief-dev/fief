@@ -34,7 +34,7 @@ async def get_admin_session_token(
     if admin_session_token is None:
         raise HTTPException(
             status_code=status.HTTP_307_TEMPORARY_REDIRECT,
-            headers={"Location": request.url_for("admin.auth:login")},
+            headers={"Location": request.url_for("dashboard.auth:login")},
         )
     return admin_session_token
 

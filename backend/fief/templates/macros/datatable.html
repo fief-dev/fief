@@ -4,8 +4,7 @@
 {% macro datatable(data, count, skip, limit, ordering, title, headers, columns) %}
 <div class="bg-white shadow-lg rounded-sm border border-slate-200 relative">
   <header class="px-5 py-4">
-    <h2 class="font-semibold text-slate-800">{{ title }} <span class="text-slate-400 font-medium">{{ count }}</span>
-    </h2>
+    <div class="font-semibold text-slate-800">{{ title }} <span class="text-slate-400 font-medium">{{ count }}</span></div>
   </header>
   <div>
     <div class="overflow-x-auto">

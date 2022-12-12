@@ -3,7 +3,7 @@
 {% macro name_column(client) %}
 <a
   class="font-medium text-slate-800 hover:text-slate-900"
-  href="{{ url_for('dashboard:clients:get', id=client.id) }}"
+  href="{{ url_for('dashboard.clients:get', id=client.id) }}"
   hx-boost="true"
   hx-target="#aside"
   _="install OpenAside"

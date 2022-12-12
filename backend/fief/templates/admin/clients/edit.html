@@ -12,7 +12,7 @@
     hx-boost="true"
     hx-target="#modal"
     method="POST"
-    action="{{ url_for('dashboard:clients:update', id=client.id) }}"
+    action="{{ url_for('dashboard.clients:update', id=client.id) }}"
     _="on fief:closeModal go back"
   >
   {% call modal.header() %}

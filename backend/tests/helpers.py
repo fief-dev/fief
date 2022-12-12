@@ -1,7 +1,9 @@
 import json
 from datetime import datetime
 
+import httpx
 import pytest
+from fastapi import status
 from furl import furl
 from jwcrypto import jwk, jwt
 
@@ -10,6 +12,11 @@ from fief.crypto.token import get_token_hash
 from fief.db import AsyncSession
 from fief.models import AuthorizationCode, LoginSession, SessionToken, User
 from fief.repositories import AuthorizationCodeRepository
+
+
+def admin_dashboard_unauthorized_assertions(response: httpx.Response):
+    assert response.status_code == status.HTTP_307_TEMPORARY_REDIRECT
+    assert response.headers["Location"].endswith("/auth/login")
 
 
 async def access_token_assertions(*, access_token: str, jwk: jwk.JWK, user: User):

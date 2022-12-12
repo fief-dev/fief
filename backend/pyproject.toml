@@ -76,7 +76,7 @@ omit = ["fief/alembic/*"]
 
 [tool.pytest.ini_options]
 addopts = "--cov fief/ --cov-report=term-missing"
-markers = ["test_data", "workspace_host", "access_token", "authenticated_admin"]
+markers = ["test_data", "workspace_host", "access_token", "authenticated_admin", "htmx"]
 asyncio_mode = "auto"
 
 [tool.hatch]
@@ -103,6 +103,7 @@ path = "fief/__init__.py"
 [tool.hatch.envs.default]
 dependencies = [
   "asgi-lifespan",
+  "beautifulsoup4",
   "black",
   "coverage[toml]",
   "gevent",

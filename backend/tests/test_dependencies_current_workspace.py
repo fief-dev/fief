@@ -111,9 +111,9 @@ def app() -> FastAPI:
 @pytest.fixture
 @pytest.mark.asyncio
 async def test_client_auth(
-    test_client_auth_generator: HTTPClientGeneratorType, app: FastAPI
+    test_client_generator: HTTPClientGeneratorType, app: FastAPI
 ) -> AsyncGenerator[httpx.AsyncClient, None]:
-    async with test_client_auth_generator(app) as test_client:
+    async with test_client_generator(app) as test_client:
         del app.dependency_overrides[get_current_workspace_session]
         yield test_client
 

@@ -1,11 +1,11 @@
 import secrets
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Request, status
 
-from fief.crypto.jwk import generate_jwk
 from fief.apps.admin_dashboard.dependencies import BaseContext, get_base_context
 from fief.apps.admin_dashboard.forms.client import ClientCreateForm, ClientUpdateForm
 from fief.apps.admin_dashboard.responses import HXRedirectResponse
+from fief.crypto.jwk import generate_jwk
 from fief.dependencies.admin_session import get_admin_session_token
 from fief.dependencies.client import get_client_by_id_or_404, get_paginated_clients
 from fief.dependencies.logger import get_audit_logger
@@ -42,7 +42,7 @@ async def get_list_context(
     }
 
 
-@router.get("/", name="dashboard:clients:list")
+@router.get("/", name="dashboard.clients:list")
 async def list_clients(
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
@@ -52,7 +52,7 @@ async def list_clients(
     )
 
 
-@router.get("/{id:uuid}", name="dashboard:clients:get")
+@router.get("/{id:uuid}", name="dashboard.clients:get")
 async def get_client(
     client: Client = Depends(get_client_by_id_or_404),
     list_context=Depends(get_list_context),
@@ -67,7 +67,7 @@ async def get_client(
 @router.api_route(
     "/create",
     methods=["GET", "POST"],
-    name="dashboard:clients:create",
+    name="dashboard.clients:create",
 )
 async def create_client(
     request: Request,
@@ -102,7 +102,9 @@ async def create_client(
         audit_logger.log_object_write(AuditLogMessage.OBJECT_CREATED, client)
 
         return HXRedirectResponse(
-            request.url_for("dashboard:clients:get", id=client.id)
+            request.url_for("dashboard.clients:get", id=client.id),
+            status_code=status.HTTP_201_CREATED,
+            headers={"X-Fief-Object-Id": str(client.id)},
         )
 
     return await form_helper.get_response()
@@ -111,7 +113,7 @@ async def create_client(
 @router.api_route(
     "/{id:uuid}/edit",
     methods=["GET", "POST"],
-    name="dashboard:clients:update",
+    name="dashboard.clients:update",
 )
 async def update_client(
     request: Request,
@@ -137,7 +139,7 @@ async def update_client(
         audit_logger.log_object_write(AuditLogMessage.OBJECT_UPDATED, client)
 
         return HXRedirectResponse(
-            request.url_for("dashboard:clients:get", id=client.id)
+            request.url_for("dashboard.clients:get", id=client.id)
         )
 
     return await form_helper.get_response()
@@ -145,7 +147,7 @@ async def update_client(
 
 @router.post(
     "/{id:uuid}/encryption-key",
-    name="dashboard:clients:encryption_key",
+    name="dashboard.clients:encryption_key",
 )
 async def create_encryption_key(
     client: Client = Depends(get_client_by_id_or_404),

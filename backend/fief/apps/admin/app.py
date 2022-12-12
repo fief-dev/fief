@@ -2,7 +2,6 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from fief.apps.admin.routers.api_keys import router as api_keys_router
-from fief.apps.admin.routers.auth import router as auth_router
 from fief.apps.admin.routers.clients import router as clients_router
 from fief.apps.admin.routers.email_templates import router as email_templates_router
 from fief.apps.admin.routers.oauth_providers import router as oauth_providers_router
@@ -25,7 +24,6 @@ app.add_middleware(
 )
 
 app.include_router(api_keys_router, prefix="/api-keys", include_in_schema=False)
-app.include_router(auth_router, prefix="/auth", include_in_schema=False)
 app.include_router(clients_router, prefix="/clients", tags=["Clients"])
 app.include_router(
     email_templates_router, prefix="/email-templates", tags=["Email templates"]

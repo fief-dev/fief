@@ -40,9 +40,9 @@ async def another_workspace(
 @pytest.mark.asyncio
 @pytest.mark.workspace_host
 async def test_no_authentication(
-    test_client_admin_generator: HTTPClientGeneratorType, app: FastAPI
+    test_client_generator: HTTPClientGeneratorType, app: FastAPI
 ):
-    async with test_client_admin_generator(app) as test_client:
+    async with test_client_generator(app) as test_client:
         response = await test_client.get("/protected")
 
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
@@ -53,7 +53,7 @@ async def test_no_authentication(
 async def test_admin_session_for_another_workspace(
     main_session: AsyncSession,
     not_existing_uuid: uuid.UUID,
-    test_client_admin_generator: HTTPClientGeneratorType,
+    test_client_generator: HTTPClientGeneratorType,
     another_workspace: Workspace,
     app: FastAPI,
 ):
@@ -70,7 +70,7 @@ async def test_admin_session_for_another_workspace(
     main_session.add(session_token)
     await main_session.commit()
 
-    async with test_client_admin_generator(app) as test_client:
+    async with test_client_generator(app) as test_client:
         cookies = {}
         cookies[settings.fief_admin_session_cookie_name] = token
         response = await test_client.get("/protected", cookies=cookies)
@@ -82,9 +82,9 @@ async def test_admin_session_for_another_workspace(
 @pytest.mark.workspace_host
 @pytest.mark.authenticated_admin(mode="session")
 async def test_valid_admin_session(
-    test_client_admin_generator: HTTPClientGeneratorType, app: FastAPI
+    test_client_generator: HTTPClientGeneratorType, app: FastAPI
 ):
-    async with test_client_admin_generator(app) as test_client:
+    async with test_client_generator(app) as test_client:
         response = await test_client.get("/protected")
         assert response.status_code == status.HTTP_200_OK
 
@@ -93,7 +93,7 @@ async def test_valid_admin_session(
 @pytest.mark.workspace_host
 async def test_admin_api_key_for_another_workspace(
     main_session: AsyncSession,
-    test_client_admin_generator: HTTPClientGeneratorType,
+    test_client_generator: HTTPClientGeneratorType,
     another_workspace: Workspace,
     app: FastAPI,
 ):
@@ -104,7 +104,7 @@ async def test_admin_api_key_for_another_workspace(
     main_session.add(api_key)
     await main_session.commit()
 
-    async with test_client_admin_generator(app) as test_client:
+    async with test_client_generator(app) as test_client:
         headers = {"Authorization": f"Bearer {token}"}
         response = await test_client.get("/protected", headers=headers)
 
@@ -115,8 +115,8 @@ async def test_admin_api_key_for_another_workspace(
 @pytest.mark.workspace_host
 @pytest.mark.authenticated_admin(mode="api_key")
 async def test_valid_admin_api_key(
-    test_client_admin_generator: HTTPClientGeneratorType, app: FastAPI
+    test_client_generator: HTTPClientGeneratorType, app: FastAPI
 ):
-    async with test_client_admin_generator(app) as test_client:
+    async with test_client_generator(app) as test_client:
         response = await test_client.get("/protected")
         assert response.status_code == status.HTTP_200_OK

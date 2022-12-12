@@ -6,21 +6,24 @@ from fastapi import status
 
 from fief.crypto.token import get_token_hash
 from fief.db import AsyncSession
-from fief.models import AdminSessionToken, User
+from fief.models import AdminSessionToken
 from fief.repositories import AdminSessionTokenRepository
 from fief.settings import settings
+from tests.helpers import admin_dashboard_unauthorized_assertions
 
 
 @pytest.mark.asyncio
 class TestAuthLogin:
     async def test_success(
-        self, test_client_admin: httpx.AsyncClient, fief_client_mock: MagicMock
+        self,
+        test_client_admin_dashboard: httpx.AsyncClient,
+        fief_client_mock: MagicMock,
     ):
         fief_client_mock.auth_url.side_effect = AsyncMock(
             return_value="http://localhost/authorize"
         )
 
-        response = await test_client_admin.get("/auth/login")
+        response = await test_client_admin_dashboard.get("/auth/login")
 
         assert response.status_code == status.HTTP_302_FOUND
 
@@ -36,14 +39,14 @@ class TestAuthLogin:
 
 @pytest.mark.asyncio
 class TestAuthCallback:
-    async def test_missing_code(self, test_client_admin: httpx.AsyncClient):
-        response = await test_client_admin.get("/auth/callback")
+    async def test_missing_code(self, test_client_admin_dashboard: httpx.AsyncClient):
+        response = await test_client_admin_dashboard.get("/auth/callback")
 
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
     async def test_success(
         self,
-        test_client_admin: httpx.AsyncClient,
+        test_client_admin_dashboard: httpx.AsyncClient,
         fief_client_mock: MagicMock,
         main_session: AsyncSession,
     ):
@@ -54,7 +57,7 @@ class TestAuthCallback:
             )
         )
 
-        response = await test_client_admin.get(
+        response = await test_client_admin_dashboard.get(
             "/auth/callback", params={"code": "CODE"}
         )
 
@@ -72,36 +75,23 @@ class TestAuthCallback:
         assert session_token.userinfo == {"email": "anne@bretagne.duchy"}
 
 
-@pytest.mark.authenticated_admin(mode="session")
-async def test_auth_userinfo(
-    test_client_admin: httpx.AsyncClient, workspace_admin_user: User
-):
-    response = await test_client_admin.get("/auth/userinfo")
-
-    assert response.status_code == status.HTTP_200_OK
-
-    json = response.json()
-    assert json["sub"] == str(workspace_admin_user.id)
-    assert json["email"] == workspace_admin_user.email
-
-
 @pytest.mark.asyncio
 class TestAuthLogout:
-    async def test_unauthorized(self, test_client_admin: httpx.AsyncClient):
-        response = await test_client_admin.get("/auth/logout")
+    async def test_unauthorized(self, test_client_admin_dashboard: httpx.AsyncClient):
+        response = await test_client_admin_dashboard.get("/auth/logout")
 
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        admin_dashboard_unauthorized_assertions(response)
 
     @pytest.mark.authenticated_admin(mode="session")
     async def test_valid(
         self,
-        test_client_admin: httpx.AsyncClient,
+        test_client_admin_dashboard: httpx.AsyncClient,
         admin_session_token: tuple[AdminSessionToken, str],
         main_session: AsyncSession,
         fief_client_mock: MagicMock,
     ):
         fief_client_mock.base_url = "https://bretagne.fief.dev"
-        response = await test_client_admin.get("/auth/logout")
+        response = await test_client_admin_dashboard.get("/auth/logout")
 
         assert response.status_code == status.HTTP_302_FOUND
 

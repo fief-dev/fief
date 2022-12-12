@@ -2,10 +2,9 @@ import json
 
 from fastapi import APIRouter, Depends, Query, Request, status
 from fastapi.responses import RedirectResponse
-from fief_client import FiefUserInfo
 
 from fief.crypto.token import generate_token
-from fief.dependencies.admin_session import get_admin_session_token, get_userinfo
+from fief.dependencies.admin_session import get_admin_session_token
 from fief.dependencies.fief import FiefAsyncRelativeEndpoints, get_fief
 from fief.dependencies.main_repositories import get_main_repository
 from fief.models import AdminSessionToken
@@ -15,21 +14,21 @@ from fief.settings import settings
 router = APIRouter()
 
 
-@router.get("/login", name="admin.auth:login")
+@router.get("/login", name="dashboard.auth:login")
 async def login(
     request: Request,
     screen: str = Query("login"),
     fief: FiefAsyncRelativeEndpoints = Depends(get_fief),
 ):
     url = await fief.auth_url(
-        redirect_uri=request.url_for("admin.auth:callback"),
+        redirect_uri=request.url_for("dashboard.auth:callback"),
         scope=["openid"],
         extras_params={"screen": screen},
     )
     return RedirectResponse(url=url, status_code=status.HTTP_302_FOUND)
 
 
-@router.get("/callback", name="admin.auth:callback")
+@router.get("/callback", name="dashboard.auth:callback")
 async def callback(
     request: Request,
     code: str = Query(...),
@@ -39,7 +38,7 @@ async def callback(
     ),
 ):
     tokens, userinfo = await fief.auth_callback(
-        code, request.url_for("admin.auth:callback")
+        code, request.url_for("dashboard.auth:callback")
     )
     token, token_hash = generate_token()
     session_token = AdminSessionToken(
@@ -61,12 +60,7 @@ async def callback(
     return response
 
 
-@router.get("/userinfo", name="admin.auth:userinfo")
-async def userinfo(userinfo: FiefUserInfo = Depends(get_userinfo)):
-    return userinfo
-
-
-@router.get("/logout", name="admin.auth:logout")
+@router.get("/logout", name="dashboard.auth:logout")
 async def logout(
     request: Request,
     session_token: AdminSessionToken = Depends(get_admin_session_token),

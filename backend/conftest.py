@@ -3,8 +3,7 @@ import contextlib
 import json
 import secrets
 import uuid
-from collections.abc import AsyncGenerator
-from typing import Any
+from collections.abc import AsyncGenerator, Callable
 from unittest.mock import MagicMock, patch
 
 import asgi_lifespan
@@ -13,7 +12,7 @@ import pytest
 from fastapi import FastAPI
 from sqlalchemy_utils import create_database, drop_database
 
-from fief.apps import admin_app, auth_app
+from fief.apps import admin_app, admin_dashboard_app, auth_app
 from fief.crypto.access_token import generate_access_token
 from fief.crypto.token import generate_token
 from fief.db import AsyncConnection, AsyncEngine, AsyncSession
@@ -307,22 +306,24 @@ async def admin_api_key(
 
 
 @pytest.fixture
-async def authenticated_admin(
+def authenticated_admin(
     request: pytest.FixtureRequest,
     admin_session_token: tuple[AdminSessionToken, str],
     admin_api_key: tuple[AdminAPIKey, str],
-) -> dict[str, Any]:
-    marker = request.node.get_closest_marker("authenticated_admin")
-    headers = {}
-    if marker:
-        mode = marker.kwargs.get("mode", "api_key")
-        if mode == "session":
-            headers[
-                "Cookie"
-            ] = f"{settings.fief_admin_session_cookie_name}={admin_session_token[1]}"
-        elif mode == "api_key":
-            headers["Authorization"] = f"Bearer {admin_api_key[1]}"
-    return headers
+) -> Callable[[httpx.AsyncClient], httpx.AsyncClient]:
+    def _authenticated_admin(client: httpx.AsyncClient) -> httpx.AsyncClient:
+        marker = request.node.get_closest_marker("authenticated_admin")
+        if marker:
+            mode = marker.kwargs.get("mode", "api_key")
+            if mode == "session":
+                client.cookies.set(
+                    settings.fief_admin_session_cookie_name, admin_session_token[1]
+                )
+            elif mode == "api_key":
+                client.headers["Authorization"] = f"Bearer {admin_api_key[1]}"
+        return client
+
+    return _authenticated_admin
 
 
 @pytest.fixture(
@@ -374,49 +375,59 @@ def access_token(
     test_data: TestData,
     tenant_params: TenantParams,
     workspace: Workspace,
-) -> str | None:
-    marker = request.node.get_closest_marker("access_token")
-    if marker:
-        from_tenant_params: bool = marker.kwargs.get("from_tenant_params", False)
-        if from_tenant_params:
-            user = tenant_params.user
-        else:
-            user_alias = marker.kwargs["user"]
-            user = test_data["users"][user_alias]
+) -> Callable[[httpx.AsyncClient], httpx.AsyncClient]:
+    def _access_token(http_client: httpx.AsyncClient) -> httpx.AsyncClient:
+        marker = request.node.get_closest_marker("access_token")
+        if marker:
+            from_tenant_params: bool = marker.kwargs.get("from_tenant_params", False)
+            if from_tenant_params:
+                user = tenant_params.user
+            else:
+                user_alias = marker.kwargs["user"]
+                user = test_data["users"][user_alias]
 
-        user_tenant = user.tenant
-        client = next(
-            client
-            for _, client in test_data["clients"].items()
-            if client.tenant_id == user_tenant.id
-        )
+            user_tenant = user.tenant
+            client = next(
+                client
+                for _, client in test_data["clients"].items()
+                if client.tenant_id == user_tenant.id
+            )
 
-        user_permissions = [
-            permission.permission.codename
-            for permission in test_data["user_permissions"].values()
-        ]
+            user_permissions = [
+                permission.permission.codename
+                for permission in test_data["user_permissions"].values()
+            ]
 
-        return generate_access_token(
-            user_tenant.get_sign_jwk(),
-            user_tenant.get_host(workspace.domain),
-            client,
-            user,
-            ["openid"],
-            user_permissions,
-            3600,
-        )
-    return None
+            access_token = generate_access_token(
+                user_tenant.get_sign_jwk(),
+                user_tenant.get_host(workspace.domain),
+                client,
+                user,
+                ["openid"],
+                user_permissions,
+                3600,
+            )
+            http_client.headers["Authorization"] = f"Bearer {access_token}"
+        return http_client
+
+    return _access_token
 
 
 @pytest.fixture
-async def test_client_admin_generator(
+def csrf_token() -> str:
+    return secrets.token_urlsafe()
+
+
+@pytest.fixture
+async def test_client_generator(
     main_session: AsyncSession,
     workspace_session: AsyncSession,
     workspace_db_mock: MagicMock,
     workspace_creation_mock: MagicMock,
     send_task_mock: MagicMock,
     fief_client_mock: MagicMock,
-    authenticated_admin: dict[str, Any],
+    authenticated_admin: Callable[[httpx.AsyncClient], httpx.AsyncClient],
+    access_token: Callable[[httpx.AsyncClient], httpx.AsyncClient],
     workspace_host: str | None,
 ) -> HTTPClientGeneratorType:
     @contextlib.asynccontextmanager
@@ -434,16 +445,14 @@ async def test_client_admin_generator(
         app.dependency_overrides[get_fief] = lambda: fief_client_mock
         settings.fief_admin_session_cookie_domain = ""
 
-        headers = {**authenticated_admin}
-        if workspace_host is not None:
-            headers["Host"] = workspace_host
-
         async with asgi_lifespan.LifespanManager(app):
             async with httpx.AsyncClient(
-                app=app,
-                base_url="http://api.fief.dev",
-                headers=headers,
+                app=app, base_url="http://api.fief.dev"
             ) as test_client:
+                test_client = authenticated_admin(test_client)
+                test_client = access_token(test_client)
+                if workspace_host is not None:
+                    test_client.headers["Host"] = workspace_host
                 yield test_client
 
     return _test_client_generator
@@ -451,61 +460,44 @@ async def test_client_admin_generator(
 
 @pytest.fixture
 async def test_client_admin(
-    test_client_admin_generator: HTTPClientGeneratorType,
+    test_client_generator: HTTPClientGeneratorType,
 ) -> AsyncGenerator[httpx.AsyncClient, None]:
-    async with test_client_admin_generator(admin_app) as test_client:
+    async with test_client_generator(admin_app) as test_client:
         yield test_client
 
 
+@pytest.fixture(params=[False, True], ids=["Without HTMX", "With HTMX"])
+def htmx(request: pytest.FixtureRequest):
+    def _htmx(client: httpx.AsyncClient) -> httpx.AsyncClient:
+        if request.param:
+            client.headers["HX-Request"] = "true"
+            marker = request.node.get_closest_marker("htmx")
+            if marker:
+                target: str = marker.kwargs["target"]
+                client.headers["HX-Target"] = target
+        return client
+
+    return _htmx
+
+
 @pytest.fixture
-async def test_client_auth_generator(
-    main_session: AsyncSession,
-    workspace_session: AsyncSession,
-    workspace_db_mock: MagicMock,
-    workspace_creation_mock: MagicMock,
-    send_task_mock: MagicMock,
-    workspace_host: str | None,
-    access_token: str | None,
-) -> HTTPClientGeneratorType:
-    @contextlib.asynccontextmanager
-    async def _test_client_generator(app: FastAPI):
-        app.dependency_overrides = {}
-        app.dependency_overrides[get_main_async_session] = lambda: main_session
-        app.dependency_overrides[
-            get_current_workspace_session
-        ] = lambda: workspace_session
-        app.dependency_overrides[get_workspace_db] = lambda: workspace_db_mock
-        app.dependency_overrides[
-            get_workspace_creation
-        ] = lambda: workspace_creation_mock
-        app.dependency_overrides[get_send_task] = lambda: send_task_mock
-
-        headers = {}
-        if workspace_host is not None:
-            headers["Host"] = workspace_host
-        if access_token is not None:
-            headers["Authorization"] = f"Bearer {access_token}"
-
-        async with asgi_lifespan.LifespanManager(app):
-            async with httpx.AsyncClient(
-                app=app, base_url="http://api.fief.dev", headers=headers
-            ) as test_client:
-                yield test_client
-
-    return _test_client_generator
+async def test_client_admin_dashboard(
+    test_client_generator: HTTPClientGeneratorType,
+    htmx: Callable[[httpx.AsyncClient], httpx.AsyncClient],
+    csrf_token: str,
+) -> AsyncGenerator[httpx.AsyncClient, None]:
+    async with test_client_generator(admin_dashboard_app) as test_client:
+        test_client.cookies.set(settings.csrf_cookie_name, csrf_token)
+        test_client = htmx(test_client)
+        yield test_client
 
 
 @pytest.fixture
 async def test_client_auth(
-    test_client_auth_generator: HTTPClientGeneratorType,
+    test_client_generator: HTTPClientGeneratorType,
 ) -> AsyncGenerator[httpx.AsyncClient, None]:
-    async with test_client_auth_generator(auth_app) as test_client:
+    async with test_client_generator(auth_app) as test_client:
         yield test_client
-
-
-@pytest.fixture
-def csrf_token() -> str:
-    return secrets.token_urlsafe()
 
 
 @pytest.fixture

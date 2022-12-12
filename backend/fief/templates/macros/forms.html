@@ -12,7 +12,7 @@
 {% macro form_field_errors(field) %}
   {% if field.errors %}
       {% for error in field.errors %}
-        <div class="text-xs mt-1 text-red-500">{{ error | e }}</div>
+        <div class="text-xs mt-1 text-red-500" data-form-error>{{ error | e }}</div>
       {% endfor %}
     {% endif %}
 {% endmacro %}
