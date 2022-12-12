@@ -1,0 +1,18 @@
+{% import "macros/alerts.html" as alerts %}
+{% import "macros/buttons.html" as buttons %}
+{% import "macros/modal.html" as modal %}
+{% import "macros/icons.html" as icons %}
+
+{% extends "admin/api_keys/list.html" %}
+
+{% set open_modal = true %}
+
+{% block modal %}
+{{
+  modal.delete_modal(
+    "Delete the API Key \"" ~ api_key.name ~ "\"?",
+    "If you delete this key, every applications using this key won't be able to access the API anymore.",
+    url_for("dashboard.api_keys:delete", id=api_key.id),
+  )
+}}
+{% endblock %}

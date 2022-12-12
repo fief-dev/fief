@@ -64,11 +64,7 @@ async def get_client(
     )
 
 
-@router.api_route(
-    "/create",
-    methods=["GET", "POST"],
-    name="dashboard.clients:create",
-)
+@router.api_route("/create", methods=["GET", "POST"], name="dashboard.clients:create")
 async def create_client(
     request: Request,
     repository: ClientRepository = Depends(get_workspace_repository(ClientRepository)),

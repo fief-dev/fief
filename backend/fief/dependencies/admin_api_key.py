@@ -7,11 +7,12 @@ from fief.crypto.token import get_token_hash
 from fief.dependencies.current_workspace import get_current_workspace
 from fief.dependencies.main_repositories import get_main_repository
 from fief.dependencies.pagination import (
+    GetPaginatedObjects,
     Ordering,
     PaginatedObjects,
     Pagination,
     get_ordering,
-    get_paginated_objects,
+    get_paginated_objects_getter,
     get_pagination,
 )
 from fief.models import AdminAPIKey, Workspace
@@ -38,6 +39,9 @@ async def get_paginated_api_keys(
     ordering: Ordering = Depends(get_ordering),
     repository: AdminAPIKeyRepository = Depends(
         get_main_repository(AdminAPIKeyRepository)
+    ),
+    get_paginated_objects: GetPaginatedObjects[AdminAPIKey] = Depends(
+        get_paginated_objects_getter
     ),
     current_workspace: Workspace = Depends(get_current_workspace),
 ) -> PaginatedObjects[AdminAPIKey]:

@@ -1,5 +1,4 @@
 from fief.schemas import (
-    admin_api_key,
     auth,
     client,
     email_template,
@@ -19,7 +18,6 @@ from fief.schemas import (
 
 __all__ = [
     "workspace",
-    "admin_api_key",
     "auth",
     "client",
     "email_template",
