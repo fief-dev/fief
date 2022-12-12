@@ -1,6 +1,6 @@
 from wtforms import BooleanField, FieldList, SelectField, StringField, validators
 
-from fief.apps.admin_htmx.validators import RedirectURLValidator
+from fief.apps.admin_dashboard.validators import RedirectURLValidator
 from fief.forms import ComboboxSelectField, CSRFBaseForm
 from fief.models import ClientType
 

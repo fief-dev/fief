@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, Header
 
-from fief.apps.admin_htmx.dependencies import BaseContext, get_base_context
+from fief.apps.admin_dashboard.dependencies import BaseContext, get_base_context
 from fief.dependencies.admin_session import get_admin_session_token
 from fief.dependencies.pagination import (
     PaginatedObjects,

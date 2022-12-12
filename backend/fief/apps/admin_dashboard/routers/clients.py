@@ -3,9 +3,9 @@ import secrets
 from fastapi import APIRouter, Depends, Request
 
 from fief.crypto.jwk import generate_jwk
-from fief.apps.admin_htmx.dependencies import BaseContext, get_base_context
-from fief.apps.admin_htmx.forms.client import ClientCreateForm, ClientUpdateForm
-from fief.apps.admin_htmx.responses import HXRedirectResponse
+from fief.apps.admin_dashboard.dependencies import BaseContext, get_base_context
+from fief.apps.admin_dashboard.forms.client import ClientCreateForm, ClientUpdateForm
+from fief.apps.admin_dashboard.responses import HXRedirectResponse
 from fief.dependencies.admin_session import get_admin_session_token
 from fief.dependencies.client import get_client_by_id_or_404, get_paginated_clients
 from fief.dependencies.logger import get_audit_logger
