@@ -1,0 +1,57 @@
+{% import "macros/buttons.html" as buttons %}
+{% import "macros/icons.html" as icons %}
+{% import "macros/datatable.html" as datatable %}
+
+{% macro name_column(tenant) %}
+<a
+  class="font-medium text-slate-800 hover:text-slate-900"
+  href="{{ url_for('dashboard.tenants:get', id=tenant.id) }}"
+  hx-boost="true"
+  hx-target="#aside"
+  _="install OpenAside"
+>
+  {{ tenant.name }}
+</a>
+{% if tenant.default %}
+  <div class="inline-flex font-medium rounded-full text-center ml-2 px-2.5 py-0.5 bg-green-100 text-green-600">
+    Default
+  </div>
+{% endif %}
+{% endmacro %}
+
+{% macro base_url_column(tenant) %}
+{% set base_url = tenant.get_host(current_workspace.domain) %}
+<div class="flex items-center">
+  {{ base_url }}
+  {{ buttons.clipboard(base_url) }}
+</div>
+{% endmacro %}
+
+{% macro registration_allowed_column(tenant) %}
+{% if tenant.registration_allowed %}
+  {{ icons.check('w-4 h-4') }}
+{% else %}
+  {{ icons.x_mark('w-4 h-4') }}
+{% endif %}
+{% endmacro %}
+
+{{
+  datatable.datatable(
+    tenants,
+    count,
+    skip,
+    limit,
+    ordering,
+    "Tenants",
+    [
+      { "title": "Name", "ordering": "name" },
+      { "title": "Base URL" },
+      { "title": "Registration allowed", "ordering": "registration_allowed" },
+    ],
+    [
+      name_column,
+      base_url_column,
+      registration_allowed_column,
+    ],
+  )
+}}

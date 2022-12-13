@@ -10,7 +10,7 @@
     <div class="overflow-x-auto">
       <table class="table-auto w-full">
         <thead class="text-xs font-semibold uppercase text-slate-500 bg-slate-50 border-t border-b border-slate-200">
-          <tr>
+          <tr hx-boost="true" hx-target="#main">
             {% for header in headers %}
               <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap font-semibold text-left">
                 {% if header.ordering %}

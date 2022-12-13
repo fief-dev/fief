@@ -4,10 +4,12 @@ from sqlalchemy import select
 
 from fief import schemas
 from fief.dependencies.pagination import (
+    GetPaginatedObjects,
     Ordering,
+    PaginatedObjects,
     Pagination,
     get_ordering,
-    get_paginated_objects,
+    get_paginated_objects_getter,
     get_pagination,
 )
 from fief.dependencies.workspace_repositories import get_workspace_repository
@@ -51,7 +53,10 @@ async def get_paginated_tenants(
     pagination: Pagination = Depends(get_pagination),
     ordering: Ordering = Depends(get_ordering),
     repository: TenantRepository = Depends(get_workspace_repository(TenantRepository)),
-) -> tuple[list[Tenant], int]:
+    get_paginated_objects: GetPaginatedObjects[Tenant] = Depends(
+        get_paginated_objects_getter
+    ),
+) -> PaginatedObjects[Tenant]:
     statement = select(Tenant)
 
     if query is not None:
