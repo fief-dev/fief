@@ -9,7 +9,6 @@ from fief.apps.admin.routers.roles import router as roles_router
 from fief.apps.admin.routers.tenants import router as tenants_router
 from fief.apps.admin.routers.user_fields import router as user_fields_router
 from fief.apps.admin.routers.users import router as users_router
-from fief.apps.admin.routers.workspaces import router as workspaces_router
 from fief.settings import settings
 
 app = FastAPI(title="Fief Administration API")
@@ -34,6 +33,5 @@ app.include_router(roles_router, prefix="/roles", tags=["Roles"])
 app.include_router(tenants_router, prefix="/tenants", tags=["Tenants"])
 app.include_router(users_router, prefix="/users", tags=["Users"])
 app.include_router(user_fields_router, prefix="/user-fields", tags=["User fields"])
-app.include_router(workspaces_router, prefix="/workspaces", include_in_schema=False)
 
 __all__ = ["app"]

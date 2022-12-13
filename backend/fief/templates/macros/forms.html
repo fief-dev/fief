@@ -19,12 +19,12 @@
 
 {% macro form_standard_field(field) %}
 {{ form_field_label(field) }}
-{{ field(class="form-input w-full") }}
+{{ field(class="form-input w-full", **kwargs) }}
 {% endmacro %}
 
 {% macro form_checkbox_field(field) %}
 <label class="block text-sm font-medium mb-1" for="{{ field.id }}">
-  {{ field(class="form-checkbox") }}
+  {{ field(class="form-checkbox", **kwargs) }}
   {{ field.label }}
   {% if field.flags.required %}
     <span class="text-rose-500">*</span>
@@ -34,7 +34,7 @@
 
 {% macro form_select_field(field) %}
 {{ form_field_label(field) }}
-{{ field(class="form-select w-full") }}
+{{ field(class="form-select w-full", **kwargs) }}
 {% endmacro %}
 
 {% macro form_combobox_select_field(field) %}
@@ -159,20 +159,20 @@
 {% macro form_field(field) %}
 <div>
   {% if field.type == "BooleanField" %}
-    {{ form_checkbox_field(field) }}
+    {{ form_checkbox_field(field, **kwargs) }}
     {{ form_field_errors(field) }}
   {% elif field.type == "SelectField" %}
-    {{ form_select_field(field) }}
+    {{ form_select_field(field, **kwargs) }}
     {{ form_field_errors(field) }}
   {% elif field.type == "ComboboxSelectField" %}
-    {{ form_combobox_select_field(field) }}
+    {{ form_combobox_select_field(field, **kwargs) }}
     {{ form_field_errors(field) }}
   {% elif field.type == "AddressFormField" %}
-    {{ form_address_field(field) }}
+    {{ form_address_field(field, **kwargs) }}
   {% elif field.type == "FieldList" %}
-    {{ form_field_list(field) }}
+    {{ form_field_list(field, **kwargs) }}
   {% else %}
-    {{ form_standard_field(field) }}
+    {{ form_standard_field(field, **kwargs) }}
     {{ form_field_errors(field) }}
   {% endif %}
   {% if caller %}

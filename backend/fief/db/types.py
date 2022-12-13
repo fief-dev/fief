@@ -11,6 +11,22 @@ class DatabaseType(str, Enum):
     MYSQL = "MYSQL"
     SQLITE = "SQLITE"
 
+    def get_display_name(self):
+        display_names = {
+            DatabaseType.POSTGRESQL: "PostgreSQL",
+            DatabaseType.MYSQL: "MySQL",
+            DatabaseType.SQLITE: "SQLite",
+        }
+        return display_names[self]
+
+    @classmethod
+    def get_choices(cls) -> list[tuple[str, str]]:
+        return [
+            (member.value, member.get_display_name())
+            for member in cls
+            if member != DatabaseType.SQLITE
+        ]
+
 
 class PostreSQLSSLMode(str, Enum):
     DISABLE = "disable"
@@ -20,6 +36,21 @@ class PostreSQLSSLMode(str, Enum):
     VERIFY_CA = "verify-ca"
     VERIFY_FULL = "verify-full"
 
+    def get_display_name(self):
+        display_names = {
+            PostreSQLSSLMode.DISABLE: "Disabled",
+            PostreSQLSSLMode.ALLOW: "Allow",
+            PostreSQLSSLMode.PREFER: "Prefer",
+            PostreSQLSSLMode.REQUIRE: "Require",
+            PostreSQLSSLMode.VERIFY_CA: "Verify CA",
+            PostreSQLSSLMode.VERIFY_FULL: "Verify Full",
+        }
+        return display_names[self]
+
+    @classmethod
+    def get_choices(cls) -> list[tuple[str, str]]:
+        return [(member.value, member.get_display_name()) for member in cls]
+
 
 class MySQLSSLMode(str, Enum):
     DISABLED = "DISABLED"
@@ -28,12 +59,34 @@ class MySQLSSLMode(str, Enum):
     VERIFY_CA = "VERIFY_CA"
     VERIFY_IDENTITY = "VERIFY_IDENTITY"
 
+    def get_display_name(self):
+        display_names = {
+            MySQLSSLMode.DISABLED: "Disabled",
+            MySQLSSLMode.PREFERRED: "Preferred",
+            MySQLSSLMode.REQUIRED: "Required",
+            MySQLSSLMode.VERIFY_CA: "Verify CA",
+            MySQLSSLMode.VERIFY_IDENTITY: "Verify Identity",
+        }
+        return display_names[self]
+
+    @classmethod
+    def get_choices(cls) -> list[tuple[str, str]]:
+        return [(member.value, member.get_display_name()) for member in cls]
+
 
 SSLMode = Union[PostreSQLSSLMode, MySQLSSLMode]
 
 SSL_MODES: dict[DatabaseType, type[SSLMode]] = {
     DatabaseType.POSTGRESQL: PostreSQLSSLMode,
     DatabaseType.MYSQL: MySQLSSLMode,
+}
+
+UNSAFE_SSL_MODES = {
+    PostreSQLSSLMode.DISABLE,
+    PostreSQLSSLMode.ALLOW,
+    PostreSQLSSLMode.PREFER,
+    MySQLSSLMode.DISABLED,
+    MySQLSSLMode.PREFERRED,
 }
 
 SYNC_DRIVERS: dict[DatabaseType, str] = {

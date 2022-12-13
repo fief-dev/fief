@@ -183,9 +183,7 @@ class TestWorkspaceCreationCreate:
             test_data["clients"]["default_tenant"].id
         )
         assert client is not None
-        assert (
-            f"http://{workspace.domain}/admin/api/auth/callback" in client.redirect_uris
-        )
+        assert f"http://{workspace.domain}/admin/auth/callback" in client.redirect_uris
 
     async def test_default_parameters(
         self,

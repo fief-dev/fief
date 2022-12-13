@@ -131,7 +131,7 @@ class WorkspaceCreation:
             fief_client = await get_main_fief_client()
 
             localhost_domain = LOCALHOST_HOST_PATTERN.match(workspace.domain)
-            redirect_uri = f"{'http' if localhost_domain else 'https'}://{workspace.domain}/admin/api/auth/callback"
+            redirect_uri = f"{'http' if localhost_domain else 'https'}://{workspace.domain}/admin/auth/callback"
             fief_client.redirect_uris = fief_client.redirect_uris + [redirect_uri]
 
             await client_repository.update(fief_client)

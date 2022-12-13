@@ -75,12 +75,14 @@ class FormHelper(Generic[F]):
         *,
         request: Request,
         object: Any | None = None,
+        data: Any | None = None,
         context: dict | None = None,
     ):
         self.form_class = form_class
         self.template = template
         self.request = request
         self.object = object
+        self.data = data
         self.context: dict = {
             "request": request,
             **(context if context is not None else {}),
@@ -97,7 +99,10 @@ class FormHelper(Generic[F]):
         if self.request.method in {"POST", "PUT", "PATCH"}:
             formdata = await self.request.form()
         self._form = self.form_class(
-            formdata=formdata, obj=self.object, meta={"request": self.request}
+            formdata=formdata,
+            obj=self.object,
+            data=self.data,
+            meta={"request": self.request},
         )
         self.context.update({"form": self._form})
         return self._form

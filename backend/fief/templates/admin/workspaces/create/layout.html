@@ -1,0 +1,65 @@
+{% extends "admin/base.html" %}
+
+{% block body %}
+<main class="bg-white">
+
+  <div class="fixed bottom-0 right-0 hidden md:block w-1/4 -z-1">
+    <img src="{{ url_for('admin_dashboard:static', path='illustrations/castle.svg') }}" alt="Fief Castle" />
+  </div>
+
+  <div class="relative flex bg-fixed bg-repeat-x bg-bottom" style="background-image: url('{{ url_for('admin_dashboard:static', path='illustrations/grass.svg') }}')">
+    <div class="w-full">
+      <div class="min-h-screen h-full flex flex-col after:flex-1">
+
+        <div class="flex-1">
+          <div class="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
+            <img src="{{ url_for('admin_dashboard:static', path='fief-logo-red.svg') }}" alt="Fief" class="w-[60px]" />
+          </div>
+
+          <div class="px-4 pt-12 pb-8">
+            <div class="max-w-md mx-auto w-full">
+              <div class="relative">
+                <div class="absolute left-0 top-1/2 -mt-px w-full h-0.5 bg-slate-200" aria-hidden="true"></div>
+                <ul class="relative flex justify-between w-full">
+                  {% for step in range(steps) %}
+                    <li>
+                      <span
+                        class="flex items-center justify-center w-6 h-6 rounded-full text-xs font-semibold {{ 'bg-primary text-white' if step <= active else 'bg-slate-100'}}"
+                      >
+                        {{ step + 1 }}
+                      </span>
+                    </li>
+                  {% endfor %}
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="px-4 py-8">
+          <div id="main" class="max-w-md mx-auto">
+            {% block main %}{% endblock %}
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</main>
+{% endblock %}
+
+{% block hyperscripts %}
+  <script type="text/hyperscript">
+    on htmx:beforeSwap from document
+      if event.detail.xhr.status == 400
+        set event.detail.shouldSwap to true
+      end
+    end
+
+    on every htmx:beforeSend from <form />
+      for submitButton in <button[type='submit'] /> in it
+        toggle @disabled on submitButton until htmx:afterOnLoad
+      end
+    end
+  </script>
+{% endblock %}

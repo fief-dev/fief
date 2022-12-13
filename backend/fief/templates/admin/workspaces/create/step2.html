@@ -1,0 +1,51 @@
+{% import "macros/forms.html" as forms %}
+{% import "macros/icons.html" as icons %}
+
+{% extends layout %}
+
+{% block main %}
+<h1 class="text-3xl text-slate-800 font-bold mb-6">Where do you want to store your data?</h1>
+<form
+  method="POST"
+  action="{{ url_for('dashboard.workspaces:create.step2') }}"
+>
+  <div class="sm:flex space-y-3 sm:space-y-0 sm:space-x-4 mb-8">
+    <label class="flex-1 relative block cursor-pointer">
+      <input
+        type="radio"
+        class="peer sr-only"
+        value="cloud"
+        name="{{ form.database.name }}"
+        id="{{ form.database.name }}"
+      />
+      <div class="h-full text-center bg-white px-4 py-6 rounded border border-slate-200 hover:border-slate-300 shadow-sm duration-150 ease-in-out">
+        {{ icons.cloud("inline-flex w-10 h-10 shrink-0 text-primary fill-current mb-2") }}
+        <div class="font-medium text-slate-800 mb-1">Fief's cloud database</div>
+        <div class="text-sm">Your data will be stored securely on our infrastructure.</div>
+      </div>
+      <div class="absolute inset-0 border-2 border-transparent peer-checked:border-primary-400 rounded pointer-events-none" aria-hidden="true"></div>
+    </label>
+    <label class="flex-1 relative block cursor-pointer">
+      <input
+        type="radio"
+        class="peer sr-only"
+        value="custom"
+        name="{{ form.database.name }}"
+        id="{{ form.database.name }}"
+      />
+      <div class="h-full text-center bg-white px-4 py-6 rounded border border-slate-200 hover:border-slate-300 shadow-sm duration-150 ease-in-out">
+        {{ icons.circle_stack("inline-flex w-10 h-10 shrink-0 text-primary fill-current mb-2") }}
+        <div class="font-medium text-slate-800 mb-1">My own database</div>
+        <div class="text-sm">Fief will connect to your own database to store your data.</div>
+      </div>
+      <div class="absolute inset-0 border-2 border-transparent peer-checked:border-primary-400 rounded pointer-events-none" aria-hidden="true"></div>
+    </label>
+    {{ forms.form_field_errors(form.database) }}
+    {{ forms.form_csrf_token(form) }}
+  </div>
+  <div class="flex items-center justify-between">
+    <a href="{{ url_for('dashboard.workspaces:create.step1') }}" class="text-sm underline hover:no-underline">&lt;- Back</a>
+    <button type="submit" class="btn bg-primary-500 hover:bg-primary-600 text-white ml-auto">Next -&gt;</button>
+  </div>
+</form>
+{% endblock %}

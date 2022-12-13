@@ -94,8 +94,8 @@ async def create_main_fief_workspace() -> Workspace:
             default_client_secret=settings.fief_client_secret,
             default_encryption_key=settings.fief_encryption_key,
             default_redirect_uris=[
-                f"http://{settings.fief_domain}/admin/api/auth/callback",
-                f"https://{settings.fief_domain}/admin/api/auth/callback",
+                f"http://{settings.fief_domain}/admin/auth/callback",
+                f"https://{settings.fief_domain}/admin/auth/callback",
                 "http://localhost:8000/docs/oauth2-redirect",
             ],
         )

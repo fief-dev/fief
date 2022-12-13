@@ -47,6 +47,14 @@
                         </a>
                       </li>
                       {% endfor %}
+                      <li class="w-full px-1 py-1">
+                        <a href="{{ url_for('dashboard.workspaces:create') }}" class="block rounded text-sm hover:bg-slate-100 p-2">
+                          <div class="flex justify-between items-center w-full font-medium text-slate-800">
+                            Create new workspace
+                            {{ icons.plus('w-4 h-4') }}
+                          </div>
+                        </a>
+                      </li>
                     </ul>
                 </div>
               </div>

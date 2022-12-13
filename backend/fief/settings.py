@@ -70,6 +70,11 @@ class Settings(BaseSettings):
     csrf_cookie_name: str = "fief_csrftoken"
     csrf_cookie_secure: bool = True
 
+    session_data_cookie_name: str = "fief_session_data"
+    session_data_cookie_domain: str = ""
+    session_data_cookie_secure: bool = True
+    session_data_cookie_lifetime_seconds: int | None = None
+
     login_session_cookie_name: str = "fief_login_session"
     login_session_cookie_domain: str = ""
     login_session_cookie_secure: bool = True

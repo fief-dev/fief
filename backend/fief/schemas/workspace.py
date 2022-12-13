@@ -2,7 +2,6 @@ from pydantic import BaseModel, root_validator, validator
 
 from fief.db.types import SSL_MODES, DatabaseType
 from fief.errors import APIErrorCode
-from fief.schemas.generics import UUIDSchema
 
 
 def validate_all_database_settings(cls, values):
@@ -51,23 +50,6 @@ def validate_ssl_mode(ssl_mode, values):
     return ssl_mode
 
 
-class WorkspaceCheckConnection(BaseModel):
-    database_type: DatabaseType
-    database_host: str
-    database_port: int
-    database_username: str
-    database_password: str
-    database_name: str
-    database_ssl_mode: str | None
-
-    _validate_all_database_settings = root_validator(allow_reuse=True)(
-        validate_all_database_settings
-    )
-    _validate_ssl_mode = validator("database_ssl_mode", allow_reuse=True)(
-        validate_ssl_mode
-    )
-
-
 class WorkspaceCreate(BaseModel):
     name: str
     database_type: DatabaseType | None
@@ -84,22 +66,3 @@ class WorkspaceCreate(BaseModel):
     _validate_ssl_mode = validator("database_ssl_mode", allow_reuse=True)(
         validate_ssl_mode
     )
-
-
-class BaseWorkspace(UUIDSchema):
-    name: str
-    domain: str
-
-
-class Workspace(BaseWorkspace):
-    database_type: DatabaseType | None
-    database_host: str | None
-    database_port: int | None
-    database_username: str | None
-    database_password: str | None
-    database_name: str | None
-    database_ssl_mode: str | None
-
-
-class WorkspacePublic(BaseWorkspace):
-    pass
