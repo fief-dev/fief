@@ -4,6 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 
 from fief.apps.admin_dashboard.dependencies import BaseContext, get_base_context
+from fief.apps.admin_dashboard.exception_handlers import exception_handlers
 from fief.apps.admin_dashboard.routers.api_keys import router as api_keys_router
 from fief.apps.admin_dashboard.routers.auth import router as auth_router
 from fief.apps.admin_dashboard.routers.clients import router as clients_router
@@ -34,6 +35,9 @@ app.include_router(workspaces_router, prefix="/workspaces")
 app.mount(
     "/static", StaticFiles(directory=STATIC_DIRECTORY), name="admin_dashboard:static"
 )
+
+for (exc, handler) in exception_handlers.items():
+    app.add_exception_handler(exc, handler)
 
 
 @app.get("/")
