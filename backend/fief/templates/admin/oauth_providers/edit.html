@@ -1,0 +1,40 @@
+{% import "macros/buttons.html" as buttons %}
+{% import "macros/forms.html" as forms %}
+{% import "macros/modal.html" as modal %}
+{% import "macros/icons.html" as icons %}
+
+{% extends "admin/oauth_providers/list.html" %}
+
+{% set open_modal = true %}
+
+{% block modal %}
+  <form
+    hx-boost="true"
+    hx-target="#modal"
+    method="POST"
+    action="{{ url_for('dashboard.oauth_providers:update', id=oauth_provider.id) }}"
+    _="on fief:closeModal go back"
+  >
+  {% call modal.header() %}
+    {% call modal.title() %}Edit OAuth Provider {{ oauth_provider.get_display_name() }}{% endcall %}
+  {% endcall %}
+  {% call modal.body() %}
+    <div class="space-y-4">
+      {{ forms.form_field(form.name) }}
+      {% if form.openid_configuration_endpoint %}
+        {{ forms.form_field(form.openid_configuration_endpoint) }}
+      {% endif %}
+      {{ forms.form_field(form.client_id) }}
+      {{ forms.form_field(form.client_secret) }}
+      {{ forms.form_field(form.scopes) }}
+      {{ forms.form_csrf_token(form) }}
+    </div>
+  {% endcall %}
+  {% call modal.footer() %}
+    <button type="button" class="btn-sm border-slate-200 hover:border-slate-300 text-slate-600" _="install CloseModalButton()">Cancel</button>
+    {% call buttons.submit('btn-sm') %}
+      Update
+    {% endcall %}
+  {% endcall %}
+  </form>
+{% endblock %}

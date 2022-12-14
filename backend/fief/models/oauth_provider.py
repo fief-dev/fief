@@ -21,3 +21,9 @@ class OAuthProvider(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
     scopes: list[str] = Column(JSON, nullable=False, default=list)
     name: str | None = Column(String(length=255), nullable=True)
     openid_configuration_endpoint: str | None = Column(Text, nullable=True)
+
+    def get_provider_display_name(self) -> str:
+        return AvailableOAuthProvider[self.provider].get_display_name()
+
+    def get_display_name(self) -> str:
+        return f"{self.get_provider_display_name()}{f' ({self.name})' if self.name else ''}"

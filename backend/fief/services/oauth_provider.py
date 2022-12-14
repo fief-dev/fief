@@ -27,6 +27,15 @@ class AvailableOAuthProvider(str, Enum):
     REDDIT = "REDDIT"
     OPENID = "OPENID"
 
+    def get_display_name(self) -> str:
+        if self == AvailableOAuthProvider.OPENID:
+            return "OpenID Connect"
+        return getattr(OAUTH_PROVIDERS[self], "display_name", "")
+
+    @classmethod
+    def get_choices(cls) -> list[tuple[str, str]]:
+        return [(member.value, member.get_display_name()) for member in cls]
+
 
 OAUTH_PROVIDERS: dict[AvailableOAuthProvider, type[BaseOAuth2]] = {
     AvailableOAuthProvider.DISCORD: DiscordOAuth2,

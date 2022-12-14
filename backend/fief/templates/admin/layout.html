@@ -25,13 +25,13 @@
 
   <div class="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
     {% include "admin/header.html" %}
-    <main>
-      <div class="grid grid-cols-12">
+    <main class="flex flex-col grow">
+      <div class="grid grid-cols-12 h-full">
         <div id="main" class="px-4 sm:px-6 lg:px-8 py-8 col-span-12 {{ 'lg:col-span-9' if open_aside else '' }}">
           {% block main %}{% endblock %}
         </div>
-        <aside id="aside-container" class="col-span-12 lg:col-span-3 {{ 'hidden' if not open_aside else '' }}">
-          <div class="lg:sticky lg:top-16 bg-slate-50 lg:overflow-x-hidden lg:overflow-y-auto no-scrollbar lg:shrink-0 border-t lg:border-t-0 lg:border-l border-slate-200">
+        <aside id="aside-container" class="h-full col-span-12 lg:col-span-3 {{ 'hidden' if not open_aside else '' }}">
+          <div class="lg:sticky lg:top-16 bg-slate-50 lg:overflow-x-hidden lg:overflow-y-auto no-scrollbar lg:shrink-0 border-t lg:border-t-0 lg:border-l border-slate-200 h-full">
             <div class="py-8 px-4 lg:px-8">
               <div id="aside" class="max-w-sm mx-auto lg:max-w-none">
                 {% block aside %}{% endblock %}

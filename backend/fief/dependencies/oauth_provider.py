@@ -3,10 +3,12 @@ from pydantic import UUID4
 from sqlalchemy import select
 
 from fief.dependencies.pagination import (
+    GetPaginatedObjects,
     Ordering,
+    PaginatedObjects,
     Pagination,
     get_ordering,
-    get_paginated_objects,
+    get_paginated_objects_getter,
     get_pagination,
 )
 from fief.dependencies.workspace_repositories import get_workspace_repository
@@ -20,7 +22,10 @@ async def get_paginated_oauth_providers(
     repository: OAuthProviderRepository = Depends(
         get_workspace_repository(OAuthProviderRepository)
     ),
-) -> tuple[list[OAuthProvider], int]:
+    get_paginated_objects: GetPaginatedObjects[OAuthProvider] = Depends(
+        get_paginated_objects_getter
+    ),
+) -> PaginatedObjects[OAuthProvider]:
     statement = select(OAuthProvider)
     return await get_paginated_objects(statement, pagination, ordering, repository)
 

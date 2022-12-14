@@ -115,6 +115,7 @@ class FormHelper(Generic[F]):
         return False
 
     async def get_response(self) -> _TemplateResponse:
+        await self.get_form()
         status_code = status.HTTP_200_OK if self._valid else status.HTTP_400_BAD_REQUEST
         return templates.TemplateResponse(
             self.template, self.context, status_code=status_code

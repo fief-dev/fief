@@ -1,0 +1,38 @@
+{% import "macros/buttons.html" as buttons %}
+{% import "macros/icons.html" as icons %}
+{% import "macros/datatable.html" as datatable %}
+
+{% macro provider_column(oauth_provider) %}
+<a
+  class="font-medium text-slate-800 hover:text-slate-900"
+  href="{{ url_for('dashboard.oauth_providers:get', id=oauth_provider.id) }}"
+  hx-boost="true"
+  hx-target="#aside"
+  _="install OpenAside"
+>
+  {{ oauth_provider.get_provider_display_name() }}
+</a>
+{% endmacro %}
+
+{% macro name_column(oauth_provider) %}
+{{ oauth_provider.name }}
+{% endmacro %}
+
+{{
+  datatable.datatable(
+    oauth_providers,
+    count,
+    skip,
+    limit,
+    ordering,
+    "OAuth Providers",
+    [
+      { "title": "Provider", "ordering": "provider" },
+      { "title": "Name", "ordering": "name" },
+    ],
+    [
+      provider_column,
+      name_column,
+    ],
+  )
+}}

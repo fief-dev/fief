@@ -135,7 +135,17 @@
   {{ form_field_list_item(item) }}
 {% endfor %}
 <template>
-  {{ form_field_list_item(field[0], value='') }}
+  {%
+    set field_template = field.unbound_field.bind(
+      form=None,
+      name=field.short_name ~ field._separator ~ "X",
+      prefix=field._prefix,
+      id=field.id ~ field._separator ~ "X",
+      _meta=field.meta,
+      translations=field._translations,
+    )
+  %}
+  {{ form_field_list_item(field_template, value='') }}
 </template>
 <button
   type="button"
