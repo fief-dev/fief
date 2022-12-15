@@ -1,0 +1,34 @@
+{% import "macros/buttons.html" as buttons %}
+{% import "macros/icons.html" as icons %}
+
+{% extends "admin/user_fields/list.html" %}
+
+{% set open_aside = true %}
+
+{% block aside %}
+<h2 class="text-slate-800 font-semibold text-center mb-6">{{ user_field.name }}</h2>
+<div class="mt-6">
+</div>
+<div class="mt-6">
+  <a
+    href="{{ url_for('dashboard.user_fields:update', id=user_field.id) }}"
+    class="btn w-full border-slate-200 hover:border-slate-300"
+    hx-boost="true"
+    hx-target="#modal"
+    _="install OpenModal"
+  >
+    Edit User Field
+  </a>
+</div>
+<div class="mt-6">
+  <a
+    href="{{ url_for('dashboard.user_fields:delete', id=user_field.id) }}"
+    class="btn w-full bg-red-500 hover:bg-red-600 text-white"
+    hx-boost="true"
+    hx-target="#modal"
+    _="install OpenModal"
+  >
+    Delete User Field
+  </a>
+</div>
+{% endblock %}

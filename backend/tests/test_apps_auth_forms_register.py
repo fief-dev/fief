@@ -7,7 +7,6 @@ from fief.apps.auth.forms.register import (
     CountryField,
     PhoneNumberField,
     RegisterFormBase,
-    TimezoneField,
     UserFieldType,
     get_register_form_class,
 )
@@ -53,7 +52,7 @@ class TestCountryField:
     class CountryForm(Form):
         country = CountryField()
 
-    @pytest.mark.parametrize("country", ["", "XX", "ZZ"])
+    @pytest.mark.parametrize("country", ["XX", "ZZ"])
     def test_invalid(self, country: str):
         form = TestCountryField.CountryForm(FormData({"country": country}))
         assert form.validate() is False
@@ -98,6 +97,7 @@ class TestAddressFormField:
     def test_invalid(self, data: dict[str, str], nb_errors: int):
         form = TestAddressFormField.AddressForm(FormData(data))
         assert form.validate() is False
+        print(form.errors)
         assert len(form.address.errors) == nb_errors
 
     def test_valid(self):
@@ -119,23 +119,6 @@ class TestAddressFormField:
         assert form.address.city.data == "Nantes"
         assert form.address.state.data is None
         assert form.address.country.data == "FR"
-
-
-class TestTimezoneField:
-    class TimezoneForm(Form):
-        timezone = TimezoneField()
-
-    @pytest.mark.parametrize("timezone", ["Europe/Nantes", "US/Paris"])
-    def test_invalid(self, timezone: str):
-        form = TestTimezoneField.TimezoneForm(FormData({"timezone": timezone}))
-        assert form.validate() is False
-        assert len(form.timezone.errors) == 1
-
-    @pytest.mark.parametrize("timezone", ["Europe/Paris", "US/Eastern"])
-    def test_valid(self, timezone: str):
-        form = TestTimezoneField.TimezoneForm(FormData({"timezone": timezone}))
-        assert form.validate() is True
-        assert form.timezone.data == timezone
 
 
 @pytest.mark.asyncio

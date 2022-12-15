@@ -1,0 +1,31 @@
+{% import "macros/icons.html" as icons %}
+
+{% extends layout %}
+
+{% block javascripts_modules %}
+<script src="https://unpkg.com/slugify@1.6.5/slugify.js"></script>
+{% endblock %}
+
+{% block main %}
+<div class="sm:flex sm:justify-between sm:items-center mb-8">
+
+  <div class="mb-4 sm:mb-0">
+    <h1 class="text-2xl md:text-3xl text-slate-800 font-bold">User fields</h1>
+  </div>
+
+  <div class="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
+    <a
+      href="{{ url_for('dashboard.user_fields:create') }}"
+      class="btn bg-primary-500 hover:bg-primary-600 text-white"
+      hx-boost="true"
+      hx-target="#modal"
+      _="install OpenModal"
+    >
+      {{ icons.plus('w-4 h-4') }}
+      <span class="hidden xs:block ml-2">Create User field</span>
+    </a>
+  </div>
+
+</div>
+{% include "admin/user_fields/table.html" %}
+{% endblock %}

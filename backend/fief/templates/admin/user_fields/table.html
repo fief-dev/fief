@@ -1,0 +1,44 @@
+{% import "macros/buttons.html" as buttons %}
+{% import "macros/icons.html" as icons %}
+{% import "macros/datatable.html" as datatable %}
+
+{% macro name_column(user_field) %}
+<a
+  class="font-medium text-slate-800 hover:text-slate-900"
+  href="{{ url_for('dashboard.user_fields:get', id=user_field.id) }}"
+  hx-boost="true"
+  hx-target="#aside"
+  _="install OpenAside"
+>
+  {{ user_field.name }}
+</a>
+{% endmacro %}
+
+{% macro slug_column(user_field) %}
+{{ user_field.slug }}
+{% endmacro %}
+
+{% macro type_column(user_field) %}
+{{ user_field.get_type_display_name() }}
+{% endmacro %}
+
+{{
+  datatable.datatable(
+    user_fields,
+    count,
+    skip,
+    limit,
+    ordering,
+    "User fields",
+    [
+      { "title": "Name", "ordering": "name" },
+      { "title": "Slug", "ordering": "slug" },
+      { "title": "Type", "ordering": "type" },
+    ],
+    [
+      name_column,
+      slug_column,
+      type_column,
+    ],
+  )
+}}

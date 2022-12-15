@@ -21,7 +21,7 @@ from fief.models.role import Role, RolePermission
 from fief.models.session_token import SessionToken
 from fief.models.tenant import Tenant
 from fief.models.user import User
-from fief.models.user_field import UserField, UserFieldType
+from fief.models.user_field import UserField, UserFieldConfiguration, UserFieldType
 from fief.models.user_field_value import UserFieldValue
 from fief.models.user_permission import UserPermission
 from fief.models.user_role import UserRole
@@ -58,6 +58,7 @@ __all__ = [
     "Tenant",
     "User",
     "UserField",
+    "UserFieldConfiguration",
     "UserFieldType",
     "UserFieldValue",
     "UserPermission",

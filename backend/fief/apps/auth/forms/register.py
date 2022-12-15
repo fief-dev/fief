@@ -4,7 +4,6 @@ from typing import TypeVar
 
 import phonenumbers
 import pycountry
-import pytz
 from fastapi import Depends
 from wtforms import (
     BooleanField,
@@ -24,7 +23,7 @@ from wtforms.utils import unset_value
 
 from fief.dependencies.register import get_optional_registration_session
 from fief.dependencies.user_field import get_registration_user_fields
-from fief.forms import BaseForm, CSRFBaseForm
+from fief.forms import BaseForm, CSRFBaseForm, TimezoneField
 from fief.locale import gettext_lazy as _
 from fief.models import (
     RegistrationSession,
@@ -67,7 +66,9 @@ class PhoneNumberField(TelField):
 class CountryField(SelectField):
     def __init__(self, *args, **kwargs):
         countries = sorted(pycountry.countries, key=lambda c: c.name)
-        choices = [(country.alpha_2, country.name) for country in countries]
+        choices = [("", "")] + [
+            (country.alpha_2, country.name) for country in countries
+        ]
         super().__init__(*args, choices=choices, **kwargs)
 
 
@@ -87,7 +88,7 @@ class AddressForm(BaseForm):
     state = StringField(
         _("State"), validators=[validators.Optional()], filters=[empty_string_to_none]
     )
-    country = CountryField(_("Country", validators=[validators.InputRequired()]))
+    country = CountryField(_("Country"), validators=[validators.InputRequired()])
 
     def validate(self, extra_validators=None):
         if self.data is None and not self.required:
@@ -106,12 +107,6 @@ class AddressFormField(FormField):
     def __init__(self, *args, required: bool = True, **kwargs):
         form_class = functools.partial(AddressForm, required=required)
         super().__init__(form_class, separator=".", *args, **kwargs)
-
-
-class TimezoneField(SelectField):
-    def __init__(self, *args, **kwargs):
-        choices = sorted(pytz.common_timezones)
-        super().__init__(*args, choices=choices, **kwargs)
 
 
 class PasswordFieldForm(BaseForm):

@@ -23,6 +23,24 @@ class UserFieldType(str, Enum):
     ADDRESS = "ADDRESS"
     TIMEZONE = "TIMEZONE"
 
+    def get_display_name(self):
+        display_names = {
+            UserFieldType.STRING: "String",
+            UserFieldType.INTEGER: "Integer",
+            UserFieldType.BOOLEAN: "Boolean",
+            UserFieldType.DATE: "Date",
+            UserFieldType.DATETIME: "Date & Time",
+            UserFieldType.CHOICE: "Choice",
+            UserFieldType.PHONE_NUMBER: "Phone number",
+            UserFieldType.ADDRESS: "Address",
+            UserFieldType.TIMEZONE: "Timezone",
+        }
+        return display_names[self]
+
+    @classmethod
+    def get_choices(cls) -> list[tuple[str, str]]:
+        return [(member.value, member.get_display_name()) for member in cls]
+
 
 class UserFieldConfiguration(TypedDict):
     choices: list[tuple[str, str]] | None
@@ -49,3 +67,6 @@ class UserField(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
 
     def get_default(self) -> Any | None:
         return self.configuration["default"]
+
+    def get_type_display_name(self) -> str:
+        return UserFieldType[self.type].get_display_name()

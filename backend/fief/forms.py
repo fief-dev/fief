@@ -1,9 +1,10 @@
 import secrets
 from typing import Any, Generic, TypeVar
 
+import pytz
 from fastapi import Request, status
 from starlette.templating import _TemplateResponse
-from wtforms import Field, Form, HiddenField, validators
+from wtforms import Field, Form, HiddenField, SelectField, validators
 from wtforms.csrf.core import CSRF
 
 from fief.locale import get_translations
@@ -149,3 +150,9 @@ class ComboboxSelectField(HiddenField):
         super().__init__(*args, **kwargs)
         self.query_endpoint_path = query_endpoint_path
         self.query_parameter_name = query_parameter_name
+
+
+class TimezoneField(SelectField):
+    def __init__(self, *args, **kwargs):
+        choices = [""] + sorted(pytz.common_timezones)
+        super().__init__(*args, choices=choices, **kwargs)

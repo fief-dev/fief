@@ -114,11 +114,20 @@
 {% endmacro %}
 
 {% macro form_field_list_item(item) %}
-<div class="flex mb-2">
-  <div class="grow">
-    {{ item(class="form-input w-full", **kwargs) }}
-    {{ form_field_errors(item) }}
-  </div>
+<div class="flex gap-2 mb-2 item-group">
+  {% if item is iterable %}
+    {% for sub_field in item %}
+      <div class="grow">
+        {{ sub_field(class="form-input w-full", **kwargs) }}
+        {{ form_field_errors(sub_field) }}
+      </div>
+    {% endfor %}
+  {% else %}
+    <div class="grow">
+      {{ item(class="form-input w-full", **kwargs) }}
+      {{ form_field_errors(item) }}
+    </div>
+  {% endif %}
   <button
     type="button"
     class="ml-2"
@@ -132,20 +141,13 @@
 {% macro form_field_list(field) %}
 {{ form_field_label(field) }}
 {% for item in field %}
-  {{ form_field_list_item(item) }}
+  {{ form_field_list_item(item, **kwargs) }}
 {% endfor %}
 <template>
   {%
-    set field_template = field.unbound_field.bind(
-      form=None,
-      name=field.short_name ~ field._separator ~ "X",
-      prefix=field._prefix,
-      id=field.id ~ field._separator ~ "X",
-      _meta=field.meta,
-      translations=field._translations,
-    )
+    set field_template = field.append_entry()
   %}
-  {{ form_field_list_item(field_template, value='') }}
+  {{ form_field_list_item(field_template, value='', **kwargs) }}
 </template>
 <button
   type="button"
@@ -155,9 +157,16 @@
       set itemTemplate to previous <template />
       call itemTemplate.content.firstElementChild.cloneNode(true)
       put it before me
-      for input in <input /> in closest <div /> index i
-        set input@id to `{{ field.id }}-$i`
-        set input@name to `{{ field.id }}-$i`
+      htmx.process(it)
+      for itemGroup in <div .item-group /> in closest <div /> index i
+        for input in <input /> in itemGroup
+          set input_id to input@id
+          js(input_id, i)
+            return input_id.replace(/\d+/, i)
+          end
+          set input@id to it
+          set input@name to it
+        end
       end
     end
   "
