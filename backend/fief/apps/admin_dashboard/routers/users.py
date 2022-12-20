@@ -9,8 +9,13 @@ from fief.apps.admin_dashboard.dependencies import (
     DatatableQueryParametersGetter,
     get_base_context,
 )
-from fief.apps.admin_dashboard.forms.user import UserCreateForm, UserUpdateForm
+from fief.apps.admin_dashboard.forms.user import (
+    UserAccessTokenForm,
+    UserCreateForm,
+    UserUpdateForm,
+)
 from fief.apps.admin_dashboard.responses import HXRedirectResponse
+from fief.crypto.access_token import generate_access_token
 from fief.crypto.password import password_helper
 from fief.db import AsyncSession
 from fief.dependencies.admin_session import get_admin_session_token
@@ -20,6 +25,10 @@ from fief.dependencies.current_workspace import (
 )
 from fief.dependencies.logger import get_audit_logger
 from fief.dependencies.pagination import PaginatedObjects
+from fief.dependencies.permission import (
+    UserPermissionsGetter,
+    get_user_permissions_getter,
+)
 from fief.dependencies.tasks import get_send_task
 from fief.dependencies.user_field import get_user_fields
 from fief.dependencies.users import (
@@ -35,7 +44,8 @@ from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.forms import FormHelper
 from fief.logger import AuditLogger
 from fief.models import AuditLogMessage, User, UserField, Workspace
-from fief.repositories import TenantRepository
+from fief.repositories import ClientRepository, TenantRepository
+from fief.settings import settings
 from fief.tasks import SendTask
 from fief.templates import templates
 
@@ -220,5 +230,76 @@ async def update_user(
             return await form_helper.get_error_response(e.reason, "invalid_password")
 
         return HXRedirectResponse(request.url_for("dashboard.users:get", id=user.id))
+
+    return await form_helper.get_response()
+
+
+@router.api_route(
+    "/{id:uuid}/access-token",
+    methods=["GET", "POST"],
+    name="dashboard.users:access_token",
+)
+async def create_user_access_token(
+    request: Request,
+    user: User = Depends(get_user_by_id_or_404),
+    get_user_permissions: UserPermissionsGetter = Depends(get_user_permissions_getter),
+    client_repository: ClientRepository = Depends(
+        get_workspace_repository(ClientRepository)
+    ),
+    workspace: Workspace = Depends(get_current_workspace),
+    list_context=Depends(get_list_context),
+    context: BaseContext = Depends(get_base_context),
+    audit_logger: AuditLogger = Depends(get_audit_logger),
+):
+    form_helper = FormHelper(
+        UserAccessTokenForm,
+        "admin/users/access_token.html",
+        request=request,
+        context={**context, **list_context, "user": user},
+    )
+    form = await form_helper.get_form()
+    form.client_id.query_endpoint_path = f"/admin/clients?tenant={user.tenant_id}"
+
+    if await form_helper.is_submitted_and_valid():
+        data = form.data
+        tenant = user.tenant
+
+        client = await client_repository.get_by_id(data["client_id"])
+        if client is None or client.tenant_id != tenant.id:
+            form.client_id.errors.append("Unknown client.")
+            return await form_helper.get_error_response(
+                "Unknown client.",
+                "unknown_client",
+            )
+
+        tenant_host = tenant.get_host(workspace.domain)
+        permissions = await get_user_permissions(user)
+
+        access_token = generate_access_token(
+            user.tenant.get_sign_jwk(),
+            tenant_host,
+            client,
+            user,
+            data["scopes"],
+            permissions,
+            settings.access_id_token_lifetime_seconds,
+        )
+
+        audit_logger(
+            AuditLogMessage.USER_TOKEN_GENERATED_BY_ADMIN,
+            subject_user_id=user.id,
+            scope=data["scopes"],
+        )
+
+        return templates.TemplateResponse(
+            "admin/users/access_token_result.html",
+            {
+                **context,
+                **list_context,
+                "user": user,
+                "access_token": access_token,
+                "expires_in": settings.access_id_token_lifetime_seconds,
+            },
+        )
 
     return await form_helper.get_response()

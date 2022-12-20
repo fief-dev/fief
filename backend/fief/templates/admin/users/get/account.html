@@ -24,7 +24,7 @@
 </div>
 <div class="mt-6 space-y-4">
   <a
-    href="{{ url_for('dashboard.users:update', id=user.id) }}"
+    href="{{ url_for('dashboard.users:access_token', id=user.id) }}"
     class="btn w-full btn bg-primary-500 hover:bg-primary-600 text-white"
     hx-boost="true"
     hx-target="#modal"

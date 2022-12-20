@@ -1,6 +1,6 @@
 import secrets
 
-from fastapi import APIRouter, Depends, Request, status
+from fastapi import APIRouter, Depends, Header, Request, status
 
 from fief.apps.admin_dashboard.dependencies import (
     BaseContext,
@@ -53,14 +53,19 @@ async def get_list_context(
     }
 
 
+async def get_list_template(hx_combobox: bool = Header(False)) -> str:
+    if hx_combobox:
+        return "admin/clients/list_combobox.html"
+    return "admin/clients/list.html"
+
+
 @router.get("/", name="dashboard.clients:list")
 async def list_clients(
+    template: str = Depends(get_list_template),
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
 ):
-    return templates.TemplateResponse(
-        "admin/clients/list.html", {**context, **list_context}
-    )
+    return templates.TemplateResponse(template, {**context, **list_context})
 
 
 @router.get("/{id:uuid}", name="dashboard.clients:get")

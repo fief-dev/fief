@@ -18,6 +18,7 @@ from fief.repositories import ClientRepository
 
 async def get_paginated_clients(
     query: str | None = Query(None),
+    tenant: UUID4 | None = Query(None),
     pagination: Pagination = Depends(get_pagination),
     ordering: Ordering = Depends(get_ordering),
     repository: ClientRepository = Depends(get_workspace_repository(ClientRepository)),
@@ -29,6 +30,9 @@ async def get_paginated_clients(
 
     if query is not None:
         statement = statement.where(Client.name.ilike(f"%{query}%"))
+
+    if tenant is not None:
+        statement = statement.where(Client.tenant_id == tenant)
 
     return await get_paginated_objects(statement, pagination, ordering, repository)
 

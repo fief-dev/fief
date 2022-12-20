@@ -1,4 +1,13 @@
-from wtforms import EmailField, Form, FormField, PasswordField, validators, widgets
+from wtforms import (
+    EmailField,
+    FieldList,
+    Form,
+    FormField,
+    PasswordField,
+    StringField,
+    validators,
+    widgets,
+)
 
 from fief.forms import (
     ComboboxSelectField,
@@ -48,4 +57,17 @@ class UserUpdateForm(BaseUserForm):
         "Password",
         filters=(empty_string_to_none,),
         widget=widgets.PasswordInput(hide_value=False),
+    )
+
+
+class UserAccessTokenForm(CSRFBaseForm):
+    client_id = ComboboxSelectField(
+        "Client",
+        query_endpoint_path="/admin/clients/",
+        validators=[validators.InputRequired(), validators.UUID()],
+    )
+    scopes = FieldList(
+        StringField(validators=[validators.InputRequired()]),
+        label="Scopes",
+        default=["openid"],
     )

@@ -1,0 +1,28 @@
+{% import "macros/alerts.html" as alerts %}
+{% import "macros/buttons.html" as buttons %}
+{% import "macros/forms.html" as forms %}
+{% import "macros/modal.html" as modal %}
+{% import "macros/icons.html" as icons %}
+
+{% extends "admin/users/list.html" %}
+
+{% set open_modal = true %}
+
+{% block modal %}
+  {% call modal.header() %}
+    {% call modal.title() %}Create an access token{% endcall %}
+  {% endcall %}
+  {% call modal.body() %}
+    {% call alerts.warning() %}
+    Treat this access token with extreme care: it gives access to a user account. Don't save it in a file and don't share it online.
+    {% endcall %}
+    <div class="flex justify-end my-2">
+      {{ buttons.clipboard(access_token | trim) }}
+      </div>
+    <pre class="relative overflow-scroll p-1 bg-slate-100 rounded border border-slate-300">{{ access_token | trim }}</pre>
+    <div class="text-justify text-xs mt-1">It will expire in {{ expires_in }} seconds.</div>
+  {% endcall %}
+  {% call modal.footer() %}
+    <button type="button" class="btn-sm border-slate-200 hover:border-slate-300 text-slate-600" _="install CloseModalButton()">Close</button>
+  {% endcall %}
+{% endblock %}

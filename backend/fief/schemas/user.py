@@ -52,17 +52,6 @@ class UserUpdate(GenericModel, Generic[UF], schemas.BaseUserUpdate):
     fields: UF | None = Field(exclude=True)
 
 
-class CreateAccessToken(BaseModel):
-    client_id: UUID4
-    scopes: list[str]
-
-
-class AccessTokenResponse(BaseModel):
-    access_token: str
-    token_type: str = Field("bearer", regex="bearer")
-    expires_in: int
-
-
 class UserEmailContext(schemas.BaseUser, CreatedUpdatedAt):
     tenant_id: UUID4
     fields: dict[

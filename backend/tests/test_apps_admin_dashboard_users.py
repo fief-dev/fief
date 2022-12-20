@@ -332,3 +332,109 @@ class TestUpdateUser:
         assert updated_user.fields["last_seen"] == datetime.datetime(
             2022, 1, 1, 12, 37, tzinfo=datetime.timezone.utc
         )
+
+
+@pytest.mark.asyncio
+@pytest.mark.workspace_host
+class TestCreateUserAccessToken:
+    async def test_unauthorized(
+        self, test_client_admin_dashboard: httpx.AsyncClient, test_data: TestData
+    ):
+        user = test_data["users"]["regular"]
+        response = await test_client_admin_dashboard.post(
+            f"/users/{user.id}/access-token", data={}
+        )
+
+        admin_dashboard_unauthorized_assertions(response)
+
+    @pytest.mark.authenticated_admin(mode="session")
+    @pytest.mark.htmx(target="modal")
+    async def test_not_existing(
+        self,
+        test_client_admin_dashboard: httpx.AsyncClient,
+        not_existing_uuid: uuid.UUID,
+    ):
+        response = await test_client_admin_dashboard.post(
+            f"/users/{not_existing_uuid}/access-token", data={}
+        )
+
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    @pytest.mark.authenticated_admin(mode="session")
+    @pytest.mark.htmx(target="modal")
+    async def test_valid_get(
+        self, test_client_admin_dashboard: httpx.AsyncClient, test_data: TestData
+    ):
+        user = test_data["users"]["regular"]
+        response = await test_client_admin_dashboard.get(
+            f"/users/{user.id}/access-token"
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+
+    @pytest.mark.authenticated_admin(mode="session")
+    @pytest.mark.htmx(target="modal")
+    async def test_unknown_client(
+        self,
+        test_client_admin_dashboard: httpx.AsyncClient,
+        test_data: TestData,
+        not_existing_uuid: uuid.UUID,
+        csrf_token: str,
+    ):
+        user = test_data["users"]["regular"]
+        response = await test_client_admin_dashboard.post(
+            f"/users/{user.id}/access-token",
+            data={
+                "client_id": str(not_existing_uuid),
+                "scopes-0": "openid",
+                "csrf_token": csrf_token,
+            },
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.headers["X-Fief-Error"] == "unknown_client"
+
+    @pytest.mark.authenticated_admin(mode="session")
+    @pytest.mark.htmx(target="modal")
+    async def test_client_not_in_user_tenant(
+        self,
+        test_client_admin_dashboard: httpx.AsyncClient,
+        test_data: TestData,
+        csrf_token: str,
+    ):
+        user = test_data["users"]["regular"]
+        response = await test_client_admin_dashboard.post(
+            f"/users/{user.id}/access-token",
+            data={
+                "client_id": str(test_data["clients"]["secondary_tenant"].id),
+                "scopes-0": "openid",
+                "csrf_token": csrf_token,
+            },
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.headers["X-Fief-Error"] == "unknown_client"
+
+    @pytest.mark.authenticated_admin(mode="session")
+    @pytest.mark.htmx(target="modal")
+    async def test_valid(
+        self,
+        test_client_admin_dashboard: httpx.AsyncClient,
+        test_data: TestData,
+        csrf_token: str,
+    ):
+        user = test_data["users"]["regular"]
+        response = await test_client_admin_dashboard.post(
+            f"/users/{user.id}/access-token",
+            data={
+                "client_id": str(test_data["clients"]["default_tenant"].id),
+                "scopes-0": "openid",
+                "csrf_token": csrf_token,
+            },
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+
+        html = BeautifulSoup(response.text, features="html.parser")
+        access_token = html.find("pre").text
+        assert access_token is not None

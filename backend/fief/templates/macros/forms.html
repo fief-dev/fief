@@ -46,9 +46,10 @@
   class="form-select w-full"
   name="{{ field.query_parameter_name }}"
   hx-get="{{ field.query_endpoint_path }}"
-  hx-trigger="keyup"
+  hx-trigger="keyup,focus"
   hx-target="#{{ field.id }}-combobox-results"
   hx-headers='{"HX-Combobox": true}'
+  autocomplete="off"
 />
 <div class="relative">
   <div

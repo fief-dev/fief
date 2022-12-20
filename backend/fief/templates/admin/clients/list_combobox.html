@@ -1,0 +1,5 @@
+{% import "macros/forms.html" as forms %}
+
+{% call(client) forms.form_combobox_select_field_results(clients, "id", "name", "No client is matching your query.") %}
+  {{ client.name }}
+{% endcall %}
