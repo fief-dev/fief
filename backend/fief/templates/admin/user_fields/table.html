@@ -26,19 +26,8 @@
   datatable.datatable(
     user_fields,
     count,
-    skip,
-    limit,
-    ordering,
+    datatable_query_parameters,
     "User fields",
-    [
-      { "title": "Name", "ordering": "name" },
-      { "title": "Slug", "ordering": "slug" },
-      { "title": "Type", "ordering": "type" },
-    ],
-    [
-      name_column,
-      slug_column,
-      type_column,
-    ],
+    columns | map("get_column_macro") | list,
   )
 }}

@@ -1,6 +1,8 @@
 {% import "macros/icons.html" as icons %}
 
-{% macro pagination(count, skip, limit) %}
+{% macro pagination(count, query_parameters) %}
+{% set skip = query_parameters.skip %}
+{% set limit = query_parameters.limit %}
 {% set page = skip // limit + 1 %}
 {% set max_page = count / limit | round(method="ceil") %}
 {% set first_index = (page - 1) * limit + 1 %}
@@ -10,7 +12,7 @@
     <ul class="flex justify-center" hx-boost="true" hx-target="#main">
       <li class="ml-3 first:ml-0">
         <a
-          href="?skip={{ skip - limit }}&limit={{ limit }}"
+          href="?{{ query_parameters.set_pagination(limit=limit, skip=skip - limit) }}"
           class="flex items-center {{ 'btn bg-white border-slate-200 text-slate-300 cursor-not-allowed pointer-events-none' if page == 1 else 'btn bg-white border-slate-200 hover:border-slate-300 text-primary-500' }}"
           {{ 'disabled' if page == 1 else '' }}
         >
@@ -20,7 +22,7 @@
       </li>
       <li class="ml-3 first:ml-0">
         <a
-          href="?skip={{ skip + limit }}&limit={{ limit }}"
+          href="?{{ query_parameters.set_pagination(limit=limit, skip=skip + limit) }}"
           class="flex items-center disabled:pointer-events-none {{ 'btn bg-white border-slate-200 text-slate-300 cursor-not-allowed pointer-events-none' if page >= max_page else 'btn bg-white border-slate-200 hover:border-slate-300 text-primary-500' }}"
           {{ 'disabled' if page >= max_page else '' }}
         >

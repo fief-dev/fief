@@ -12,6 +12,14 @@ if TYPE_CHECKING:
     from fief.models.user_field_value import UserFieldValue
 
 
+class UserFieldNotChoice(TypeError):
+    pass
+
+
+class UserFieldChoiceNotExistingValue(ValueError):
+    pass
+
+
 class UserFieldType(str, Enum):
     STRING = "STRING"
     INTEGER = "INTEGER"
@@ -70,3 +78,11 @@ class UserField(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
 
     def get_type_display_name(self) -> str:
         return UserFieldType[self.type].get_display_name()
+
+    def get_choice_label(self, value: str) -> str:
+        if self.type != UserFieldType.CHOICE:
+            raise UserFieldNotChoice()
+        for (value, label) in self.configuration["choices"] or []:
+            if value == value:
+                return label
+        raise UserFieldChoiceNotExistingValue()

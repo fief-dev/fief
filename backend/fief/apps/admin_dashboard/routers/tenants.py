@@ -1,17 +1,17 @@
 from fastapi import APIRouter, Depends, Header, Request, status
 
-from fief.apps.admin_dashboard.dependencies import BaseContext, get_base_context
+from fief.apps.admin_dashboard.dependencies import (
+    BaseContext,
+    DatatableColumn,
+    DatatableQueryParameters,
+    DatatableQueryParametersGetter,
+    get_base_context,
+)
 from fief.apps.admin_dashboard.forms.tenant import TenantCreateForm, TenantUpdateForm
 from fief.apps.admin_dashboard.responses import HXRedirectResponse
 from fief.dependencies.admin_session import get_admin_session_token
 from fief.dependencies.logger import get_audit_logger
-from fief.dependencies.pagination import (
-    PaginatedObjects,
-    Pagination,
-    RawOrdering,
-    get_pagination,
-    get_raw_ordering,
-)
+from fief.dependencies.pagination import PaginatedObjects
 from fief.dependencies.tenant import get_paginated_tenants, get_tenant_by_id_or_404
 from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.forms import FormHelper
@@ -23,19 +23,32 @@ from fief.templates import templates
 router = APIRouter(dependencies=[Depends(get_admin_session_token)])
 
 
+async def get_columns() -> list[DatatableColumn]:
+    return [
+        DatatableColumn("Name", "name", "name_column", ordering="name"),
+        DatatableColumn("Base URL", "base_url", "base_url_column"),
+        DatatableColumn(
+            "Registration allowed",
+            "registration_allowed",
+            "registration_allowed_column",
+            ordering="registration_allowed",
+        ),
+    ]
+
+
 async def get_list_context(
-    pagination: Pagination = Depends(get_pagination),
-    raw_ordering: RawOrdering = Depends(get_raw_ordering),
+    columns: list[DatatableColumn] = Depends(get_columns),
+    datatable_query_parameters: DatatableQueryParameters = Depends(
+        DatatableQueryParametersGetter(["name", "base_url", "registration_allowed"])
+    ),
     paginated_tenants: PaginatedObjects[Tenant] = Depends(get_paginated_tenants),
 ):
     tenants, count = paginated_tenants
-    limit, skip = pagination
     return {
         "tenants": tenants,
         "count": count,
-        "limit": limit,
-        "skip": skip,
-        "ordering": raw_ordering,
+        "datatable_query_parameters": datatable_query_parameters,
+        "columns": columns,
     }
 
 

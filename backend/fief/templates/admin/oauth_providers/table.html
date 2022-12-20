@@ -22,17 +22,8 @@
   datatable.datatable(
     oauth_providers,
     count,
-    skip,
-    limit,
-    ordering,
+    datatable_query_parameters,
     "OAuth Providers",
-    [
-      { "title": "Provider", "ordering": "provider" },
-      { "title": "Name", "ordering": "name" },
-    ],
-    [
-      provider_column,
-      name_column,
-    ],
+    columns | map("get_column_macro") | list,
   )
 }}

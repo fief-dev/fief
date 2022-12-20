@@ -39,19 +39,8 @@
   datatable.datatable(
     tenants,
     count,
-    skip,
-    limit,
-    ordering,
+    datatable_query_parameters,
     "Tenants",
-    [
-      { "title": "Name", "ordering": "name" },
-      { "title": "Base URL" },
-      { "title": "Registration allowed", "ordering": "registration_allowed" },
-    ],
-    [
-      name_column,
-      base_url_column,
-      registration_allowed_column,
-    ],
+    columns | map("get_column_macro") | list,
   )
 }}

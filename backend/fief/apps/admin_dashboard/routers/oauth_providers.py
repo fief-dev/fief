@@ -1,6 +1,12 @@
 from fastapi import APIRouter, Depends, Header, Request, status
 
-from fief.apps.admin_dashboard.dependencies import BaseContext, get_base_context
+from fief.apps.admin_dashboard.dependencies import (
+    BaseContext,
+    DatatableColumn,
+    DatatableQueryParameters,
+    DatatableQueryParametersGetter,
+    get_base_context,
+)
 from fief.apps.admin_dashboard.forms.oauth_provider import (
     OAuthProviderCreateForm,
     OAuthProviderUpdateForm,
@@ -12,13 +18,7 @@ from fief.dependencies.oauth_provider import (
     get_oauth_provider_by_id_or_404,
     get_paginated_oauth_providers,
 )
-from fief.dependencies.pagination import (
-    PaginatedObjects,
-    Pagination,
-    RawOrdering,
-    get_pagination,
-    get_raw_ordering,
-)
+from fief.dependencies.pagination import PaginatedObjects
 from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.forms import FormHelper
 from fief.logger import AuditLogger
@@ -29,21 +29,28 @@ from fief.templates import templates
 router = APIRouter(dependencies=[Depends(get_admin_session_token)])
 
 
+async def get_columns() -> list[DatatableColumn]:
+    return [
+        DatatableColumn("Provider", "provider", "provider_column", ordering="provider"),
+        DatatableColumn("Name", "name", "name_column", ordering="name"),
+    ]
+
+
 async def get_list_context(
-    pagination: Pagination = Depends(get_pagination),
-    raw_ordering: RawOrdering = Depends(get_raw_ordering),
+    columns: list[DatatableColumn] = Depends(get_columns),
+    datatable_query_parameters: DatatableQueryParameters = Depends(
+        DatatableQueryParametersGetter(["provider", "name"])
+    ),
     paginated_oauth_providers: PaginatedObjects[OAuthProvider] = Depends(
         get_paginated_oauth_providers
     ),
 ):
     oauth_providers, count = paginated_oauth_providers
-    limit, skip = pagination
     return {
         "oauth_providers": oauth_providers,
         "count": count,
-        "limit": limit,
-        "skip": skip,
-        "ordering": raw_ordering,
+        "datatable_query_parameters": datatable_query_parameters,
+        "columns": columns,
     }
 
 

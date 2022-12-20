@@ -1,10 +1,17 @@
-from typing import TypedDict
+import urllib.parse
+from typing import Any, Literal, TypedDict
 
-from fastapi import Depends, Header, Request
+from fastapi import Depends, Header, Query, Request
 from fief_client import FiefUserInfo
 
 from fief.dependencies.admin_session import get_userinfo
 from fief.dependencies.current_workspace import get_current_workspace
+from fief.dependencies.pagination import (
+    Ordering,
+    Pagination,
+    get_ordering,
+    get_pagination,
+)
 from fief.dependencies.workspace import get_admin_user_workspaces
 from fief.models import Workspace
 
@@ -40,3 +47,98 @@ async def get_base_context(
         "current_workspace": current_workspace,
         "workspaces": workspaces,
     }
+
+
+class DatatableColumn:
+    def __init__(
+        self,
+        title: str,
+        slug: str,
+        renderer_macro: str,
+        *,
+        ordering: str | None = None,
+        renderer_macro_kwargs: dict[str, Any] | None = None,
+    ) -> None:
+        self.title = title
+        self.slug = slug
+        self.ordering = ordering
+        self.renderer_macro = renderer_macro
+        self.renderer_macro_kwargs = (
+            renderer_macro_kwargs if renderer_macro_kwargs is not None else {}
+        )
+
+
+class DatatableQueryParameters:
+    def __init__(
+        self,
+        pagination: Pagination,
+        ordering: Ordering,
+        columns: list[str],
+    ) -> None:
+        limit, skip = pagination
+        self.limit = limit
+        self.skip = skip
+        self.ordering = ordering
+        self.columns = columns
+
+    def is_ordered(self, field: str, way: Literal["asc", "desc"] = "asc") -> bool:
+        field_accessor = field.split(".")
+        for (ordered_field, is_desc) in self.ordering:
+            if ordered_field == field_accessor:
+                return (way == "asc" and is_desc is False) or (
+                    way == "desc" and is_desc is True
+                )
+        return False
+
+    def set_pagination(self, *, limit: int, skip: int) -> "DatatableQueryParameters":
+        return DatatableQueryParameters((limit, skip), self.ordering, self.columns)
+
+    def toggle_field_ordering(self, field: str) -> "DatatableQueryParameters":
+        field_accessor = field.split(".")
+        if self.is_ordered(field, "asc"):
+            updated_ordering = [(field_accessor, True)]
+        elif self.is_ordered(field, "desc"):
+            updated_ordering = []
+        else:
+            updated_ordering = [(field_accessor, False)]
+        return DatatableQueryParameters(
+            (self.limit, self.skip), updated_ordering, self.columns
+        )
+
+    def toggle_column(self, column: str) -> "DatatableQueryParameters":
+        columns = self.columns
+        if column in columns:
+            columns = [c for c in columns if c != column]
+        else:
+            columns = columns + [column]
+        return DatatableQueryParameters((self.limit, self.skip), self.ordering, columns)
+
+    def __str__(self) -> str:
+        ordering_params = [
+            f"-{'.'.join(field)}" if is_desc else ".".join(field)
+            for (field, is_desc) in self.ordering
+        ]
+        params = {
+            "limit": self.limit,
+            "skip": self.skip,
+            "ordering": ",".join(ordering_params),
+        }
+        if self.columns:
+            params["columns"] = ",".join(self.columns)
+        return urllib.parse.urlencode(params)
+
+
+class DatatableQueryParametersGetter:
+    def __init__(self, default_columns: list[str]) -> None:
+        self.default_columns = default_columns
+
+    def __call__(
+        self,
+        pagination: Pagination = Depends(get_pagination),
+        ordering: Ordering = Depends(get_ordering),
+        columns: str | None = Query(None),
+    ) -> DatatableQueryParameters:
+        columns_list = self.default_columns
+        if columns is not None:
+            columns_list = columns.lower().split(",")
+        return DatatableQueryParameters(pagination, ordering, columns_list)

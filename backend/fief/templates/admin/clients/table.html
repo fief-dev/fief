@@ -33,21 +33,8 @@
   datatable.datatable(
     clients,
     count,
-    skip,
-    limit,
-    ordering,
+    datatable_query_parameters,
     "Clients",
-    [
-      { "title": "Name", "ordering": "name" },
-      { "title": "Type", "ordering": "client_type" },
-      { "title": "Tenant", "ordering": "tenant.name" },
-      { "title": "Client ID", "ordering": "client_id" },
-    ],
-    [
-      name_column,
-      type_column,
-      tenant_column,
-      client_id_column,
-    ],
+    columns | map("get_column_macro") | list,
   )
 }}

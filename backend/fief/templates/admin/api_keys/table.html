@@ -26,19 +26,8 @@
   datatable.datatable(
     api_keys,
     count,
-    skip,
-    limit,
-    ordering,
+    datatable_query_parameters,
     "API Keys",
-    [
-      { "title": "Name", "ordering": "name" },
-      { "title": "Created at", "ordering": "created_at" },
-      { "title": "Actions" },
-    ],
-    [
-      name_column,
-      created_at_column,
-      actions_column,
-    ],
+    columns | map("get_column_macro") | list,
   )
 }}

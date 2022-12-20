@@ -1,6 +1,12 @@
 from fastapi import APIRouter, Depends, Request, status
 
-from fief.apps.admin_dashboard.dependencies import BaseContext, get_base_context
+from fief.apps.admin_dashboard.dependencies import (
+    BaseContext,
+    DatatableColumn,
+    DatatableQueryParameters,
+    DatatableQueryParametersGetter,
+    get_base_context,
+)
 from fief.apps.admin_dashboard.forms.api_key import APIKeyCreateForm
 from fief.apps.admin_dashboard.responses import HXRedirectResponse
 from fief.crypto.token import generate_token
@@ -12,13 +18,7 @@ from fief.dependencies.admin_session import get_admin_session_token
 from fief.dependencies.current_workspace import get_current_workspace
 from fief.dependencies.logger import get_audit_logger
 from fief.dependencies.main_repositories import get_main_repository
-from fief.dependencies.pagination import (
-    PaginatedObjects,
-    Pagination,
-    RawOrdering,
-    get_pagination,
-    get_raw_ordering,
-)
+from fief.dependencies.pagination import PaginatedObjects
 from fief.forms import FormHelper
 from fief.logger import AuditLogger
 from fief.models import AdminAPIKey, AuditLogMessage, Workspace
@@ -28,19 +28,29 @@ from fief.templates import templates
 router = APIRouter(dependencies=[Depends(get_admin_session_token)])
 
 
+async def get_columns() -> list[DatatableColumn]:
+    return [
+        DatatableColumn("Name", "name", "name_column", ordering="name"),
+        DatatableColumn(
+            "Created at", "created_at", "created_at_column", ordering="created_at"
+        ),
+        DatatableColumn("Actions", "actions", "actions_column"),
+    ]
+
+
 async def get_list_context(
-    pagination: Pagination = Depends(get_pagination),
-    raw_ordering: RawOrdering = Depends(get_raw_ordering),
+    columns: list[DatatableColumn] = Depends(get_columns),
+    datatable_query_parameters: DatatableQueryParameters = Depends(
+        DatatableQueryParametersGetter(["name", "created_at", "actions"])
+    ),
     paginated_api_keys: PaginatedObjects[AdminAPIKey] = Depends(get_paginated_api_keys),
 ):
     api_keys, count = paginated_api_keys
-    limit, skip = pagination
     return {
         "api_keys": api_keys,
         "count": count,
-        "limit": limit,
-        "skip": skip,
-        "ordering": raw_ordering,
+        "datatable_query_parameters": datatable_query_parameters,
+        "columns": columns,
     }
 
 

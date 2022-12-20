@@ -2,20 +2,20 @@ import secrets
 
 from fastapi import APIRouter, Depends, Request, status
 
-from fief.apps.admin_dashboard.dependencies import BaseContext, get_base_context
+from fief.apps.admin_dashboard.dependencies import (
+    BaseContext,
+    DatatableColumn,
+    DatatableQueryParameters,
+    DatatableQueryParametersGetter,
+    get_base_context,
+)
 from fief.apps.admin_dashboard.forms.client import ClientCreateForm, ClientUpdateForm
 from fief.apps.admin_dashboard.responses import HXRedirectResponse
 from fief.crypto.jwk import generate_jwk
 from fief.dependencies.admin_session import get_admin_session_token
 from fief.dependencies.client import get_client_by_id_or_404, get_paginated_clients
 from fief.dependencies.logger import get_audit_logger
-from fief.dependencies.pagination import (
-    PaginatedObjects,
-    Pagination,
-    RawOrdering,
-    get_pagination,
-    get_raw_ordering,
-)
+from fief.dependencies.pagination import PaginatedObjects
 from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.forms import FormHelper
 from fief.logger import AuditLogger
@@ -26,19 +26,30 @@ from fief.templates import templates
 router = APIRouter(dependencies=[Depends(get_admin_session_token)])
 
 
+async def get_columns() -> list[DatatableColumn]:
+    return [
+        DatatableColumn("Name", "name", "name_column", ordering="name"),
+        DatatableColumn("Type", "type", "type_column", ordering="client_type"),
+        DatatableColumn("Tenant", "tenant", "tenant_column", ordering="tenant.name"),
+        DatatableColumn(
+            "Client ID", "client_id", "client_id_column", ordering="client_id"
+        ),
+    ]
+
+
 async def get_list_context(
-    pagination: Pagination = Depends(get_pagination),
-    raw_ordering: RawOrdering = Depends(get_raw_ordering),
+    columns: list[DatatableColumn] = Depends(get_columns),
+    datatable_query_parameters: DatatableQueryParameters = Depends(
+        DatatableQueryParametersGetter(["name", "type", "tenant", "client_id"])
+    ),
     paginated_clients: PaginatedObjects[Client] = Depends(get_paginated_clients),
 ):
     clients, count = paginated_clients
-    limit, skip = pagination
     return {
         "clients": clients,
         "count": count,
-        "limit": limit,
-        "skip": skip,
-        "ordering": raw_ordering,
+        "datatable_query_parameters": datatable_query_parameters,
+        "columns": columns,
     }
 
 

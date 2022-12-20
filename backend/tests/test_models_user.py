@@ -9,7 +9,7 @@ from tests.data import TestData
 async def test_fields(test_data: TestData):
     user = test_data["users"]["regular"]
     assert user.fields == {
-        "gender": "female",
+        "gender": "F",
         "given_name": "Anne",
         "phone_number": "+33642424242",
         "phone_number_verified": True,
@@ -36,7 +36,7 @@ async def test_get_claims(test_data: TestData):
         "is_superuser": False,
         "is_verified": False,
         "fields": {
-            "gender": "female",
+            "gender": "F",
             "given_name": "Anne",
             "phone_number": "+33642424242",
             "phone_number_verified": True,

@@ -1,0 +1,31 @@
+{% import "macros/buttons.html" as buttons %}
+{% import "macros/icons.html" as icons %}
+
+{% extends "admin/users/list.html" %}
+
+{% set open_aside = true %}
+
+{% macro tab_header(title, route, active) %}
+<li class="mr-6 last:mr-0 first:pl-4 sm:first:pl-6 lg:first:pl-8 last:pr-4 sm:last:pr-6 lg:last:pr-8">
+  <a
+    href="{{ url_for(route, id=user.id) }}"
+    class="block pb-3 whitespace-nowrap {{ 'text-primary-500 border-primary-500 border-b-2' if active else 'text-slate-500 hover:text-slate-600' }}"
+  >
+    {{ title }}
+  </a>
+</li>
+{% endmacro %}
+
+{% block aside %}
+<h2 class="text-slate-800 font-semibold text-center mb-6">{{ user.email }}</h2>
+<div class="relative mb-8">
+  <div class="absolute bottom-0 w-full h-px bg-slate-200" aria-hidden="true"></div>
+  <ul class="relative text-sm font-medium flex flex-nowrap -mx-4 sm:-mx-6 lg:-mx-8 overflow-x-scroll no-scrollbar">
+    {{ tab_header("Account", route="dashboard.users:get", active=tab == "account") }}
+    {{ tab_header("Roles", route="dashboard.users:get", active=tab == "roles") }}
+    {{ tab_header("Permissions", route="dashboard.users:get", active=tab == "permissions") }}
+    {{ tab_header("OAuth", route="dashboard.users:get", active=tab == "oauth") }}
+  </ul>
+</div>
+{% block tab %}{% endblock %}
+{% endblock %}

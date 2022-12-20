@@ -1,6 +1,12 @@
 from fastapi import APIRouter, Depends, Header, Request, status
 
-from fief.apps.admin_dashboard.dependencies import BaseContext, get_base_context
+from fief.apps.admin_dashboard.dependencies import (
+    BaseContext,
+    DatatableColumn,
+    DatatableQueryParameters,
+    DatatableQueryParametersGetter,
+    get_base_context,
+)
 from fief.apps.admin_dashboard.forms.user_field import (
     UserFieldConfigurationBase,
     UserFieldCreateForm,
@@ -9,13 +15,7 @@ from fief.apps.admin_dashboard.forms.user_field import (
 from fief.apps.admin_dashboard.responses import HXRedirectResponse
 from fief.dependencies.admin_session import get_admin_session_token
 from fief.dependencies.logger import get_audit_logger
-from fief.dependencies.pagination import (
-    PaginatedObjects,
-    Pagination,
-    RawOrdering,
-    get_pagination,
-    get_raw_ordering,
-)
+from fief.dependencies.pagination import PaginatedObjects
 from fief.dependencies.user_field import (
     get_paginated_user_fields,
     get_user_field_by_id_or_404,
@@ -30,21 +30,29 @@ from fief.templates import templates
 router = APIRouter(dependencies=[Depends(get_admin_session_token)])
 
 
+async def get_columns() -> list[DatatableColumn]:
+    return [
+        DatatableColumn("Name", "name", "name_column", ordering="name"),
+        DatatableColumn("Slug", "slug", "slug_column", ordering="slug"),
+        DatatableColumn("Type", "type", "type_column", ordering="type"),
+    ]
+
+
 async def get_list_context(
-    pagination: Pagination = Depends(get_pagination),
-    raw_ordering: RawOrdering = Depends(get_raw_ordering),
+    columns: list[DatatableColumn] = Depends(get_columns),
+    datatable_query_parameters: DatatableQueryParameters = Depends(
+        DatatableQueryParametersGetter(["name", "slug", "type"])
+    ),
     paginated_user_fields: PaginatedObjects[OAuthProvider] = Depends(
         get_paginated_user_fields
     ),
 ):
     user_fields, count = paginated_user_fields
-    limit, skip = pagination
     return {
         "user_fields": user_fields,
         "count": count,
-        "limit": limit,
-        "skip": skip,
-        "ordering": raw_ordering,
+        "datatable_query_parameters": datatable_query_parameters,
+        "columns": columns,
     }
 
 

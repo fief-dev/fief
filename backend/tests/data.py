@@ -284,7 +284,7 @@ user_field_values: ModelMapping[UserFieldValue] = {
         user_field=user_fields["given_name"],
     ),
     "regular_gender": UserFieldValue(
-        value_string="female",
+        value_string="F",
         user=users["regular"],
         user_field=user_fields["gender"],
     ),
