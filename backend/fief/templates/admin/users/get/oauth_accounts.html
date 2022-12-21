@@ -1,0 +1,31 @@
+{% import "macros/forms.html" as forms %}
+{% import "macros/icons.html" as icons %}
+
+
+{% extends "admin/users/get/base.html" %}
+
+{% block tab %}
+<table id="user-oauth-accounts-table" class="table-fixed w-full">
+  <thead class="text-xs uppercase text-slate-400">
+    <tr class="flex flex-wrap md:table-row md:flex-no-wrap">
+      <th class="w-full block md:w-auto md:table-cell py-2 font-semibold text-left">Provider</th>
+      <th class="w-full block md:w-auto md:table-cell py-2 font-semibold text-left">Last used</th>
+    </tr>
+  </thead>
+  <tbody class="text-sm">
+    {% if oauth_accounts | length == 0 %}
+      <tr class="flex flex-wrap md:table-row md:flex-no-wrap border-b border-slate-200 py-2 md:py-0 bg-slate-100">
+        <td colSpan="2" class="text-center">No OAuth account associated to this user</td>
+      </tr>
+    {% endif %}
+    {% for oauth_account in oauth_accounts %}
+      <tr class="flex flex-wrap md:table-row md:flex-no-wrap border-b border-slate-200 py-2 md:py-0">
+        <td class="w-full block md:w-auto md:table-cell py-0.5 md:py-2">{{ oauth_account.oauth_provider.get_provider_display_name() }}</td>
+        <td class="w-full block md:w-auto md:table-cell py-0.5 md:py-2 text-right">
+          {{ oauth_account.updated_at.strftime('%x %X') }}
+        </td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

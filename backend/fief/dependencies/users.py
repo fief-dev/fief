@@ -359,6 +359,16 @@ async def get_paginated_user_permissions(
     )
 
 
+async def get_user_permissions(
+    user: User = Depends(get_user_by_id_or_404),
+    user_permission_repository: UserPermissionRepository = Depends(
+        get_workspace_repository(UserPermissionRepository)
+    ),
+) -> list[UserPermission]:
+    statement = user_permission_repository.get_by_user_statement(user.id)
+    return await user_permission_repository.list(statement)
+
+
 async def get_paginated_user_roles(
     pagination: Pagination = Depends(get_pagination),
     ordering: Ordering = Depends(get_ordering),
@@ -401,6 +411,16 @@ async def get_paginated_user_oauth_accounts(
     return await get_paginated_objects(
         statement, pagination, ordering, oauth_account_repository
     )
+
+
+async def get_user_oauth_accounts(
+    user: User = Depends(get_user_by_id_or_404),
+    oauth_account_repository: OAuthAccountRepository = Depends(
+        get_workspace_repository(OAuthAccountRepository)
+    ),
+) -> list[OAuthAccount]:
+    statement = oauth_account_repository.get_by_user_statement(user.id)
+    return await oauth_account_repository.list(statement)
 
 
 async def get_user_db_from_user(

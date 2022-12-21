@@ -11,6 +11,7 @@ from fief.apps.admin_dashboard.dependencies import (
     get_base_context,
 )
 from fief.apps.admin_dashboard.forms.user import (
+    CreateUserPermissionForm,
     CreateUserRoleForm,
     UserAccessTokenForm,
     UserCreateForm,
@@ -41,16 +42,28 @@ from fief.dependencies.users import (
     get_paginated_users,
     get_user_by_id_or_404,
     get_user_manager_from_user,
+    get_user_oauth_accounts,
+    get_user_permissions,
     get_user_roles,
 )
 from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.forms import FormHelper
 from fief.logger import AuditLogger
-from fief.models import AuditLogMessage, User, UserField, UserRole, Workspace
+from fief.models import (
+    AuditLogMessage,
+    OAuthAccount,
+    User,
+    UserField,
+    UserPermission,
+    UserRole,
+    Workspace,
+)
 from fief.repositories import (
     ClientRepository,
+    PermissionRepository,
     RoleRepository,
     TenantRepository,
+    UserPermissionRepository,
     UserRoleRepository,
 )
 from fief.settings import settings
@@ -313,6 +326,114 @@ async def create_user_access_token(
 
 
 @router.api_route(
+    "/{id:uuid}/permissions",
+    methods=["GET", "POST"],
+    name="dashboard.users:permissions",
+)
+async def user_permissions(
+    request: Request,
+    user: User = Depends(get_user_by_id_or_404),
+    user_permissions: list[UserPermission] = Depends(get_user_permissions),
+    list_context=Depends(get_list_context),
+    context: BaseContext = Depends(get_base_context),
+    permission_repository: PermissionRepository = Depends(
+        get_workspace_repository(PermissionRepository)
+    ),
+    user_permission_repository: UserPermissionRepository = Depends(
+        get_workspace_repository(UserPermissionRepository)
+    ),
+    audit_logger: AuditLogger = Depends(get_audit_logger),
+):
+    form_helper = FormHelper(
+        CreateUserPermissionForm,
+        "admin/users/get/permissions.html",
+        request=request,
+        context={
+            **context,
+            **list_context,
+            "user": user,
+            "user_permissions": user_permissions,
+            "tab": "permissions",
+        },
+    )
+
+    if await form_helper.is_submitted_and_valid():
+        form = await form_helper.get_form()
+        permission_id = form.data["permission_id"]
+
+        permission = await permission_repository.get_by_id(permission_id)
+        if permission is None:
+            form.permission_id.errors.append("Unknown permission.")
+            return await form_helper.get_error_response(
+                "Unknown permission.", "unknown_permission"
+            )
+
+        existing_user_permission = (
+            await user_permission_repository.get_by_permission_and_user(
+                user.id, permission_id, direct_only=True
+            )
+        )
+        if existing_user_permission is not None:
+            form.permission_id.errors.append(
+                "This permission is already granted to this user."
+            )
+            return await form_helper.get_error_response(
+                "This permission is already granted to this user.",
+                "already_added_permission",
+            )
+
+        user_permission = UserPermission(user_id=user.id, permission_id=permission_id)
+        await user_permission_repository.create(user_permission)
+        audit_logger.log_object_write(
+            AuditLogMessage.OBJECT_CREATED,
+            user_permission,
+            subject_user_id=user.id,
+            permission_id=str(permission.id),
+        )
+
+        return HXRedirectResponse(
+            request.url_for("dashboard.users:permissions", id=user.id),
+            status_code=status.HTTP_201_CREATED,
+            headers={"X-Fief-Object-Id": str(user_permission.id)},
+        )
+
+    return await form_helper.get_response()
+
+
+@router.delete(
+    "/{id:uuid}/permissions/{permission_id:uuid}",
+    name="dashboard.users:delete_permission",
+)
+async def delete_user_permission(
+    request: Request,
+    permission_id: UUID4,
+    user: User = Depends(get_user_by_id_or_404),
+    user_permission_repository: UserPermissionRepository = Depends(
+        get_workspace_repository(UserPermissionRepository)
+    ),
+    audit_logger: AuditLogger = Depends(get_audit_logger),
+):
+    user_permission = await user_permission_repository.get_by_permission_and_user(
+        user.id, permission_id, direct_only=True
+    )
+    if user_permission is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+
+    await user_permission_repository.delete(user_permission)
+    audit_logger.log_object_write(
+        AuditLogMessage.OBJECT_DELETED,
+        user_permission,
+        subject_user_id=user.id,
+        permission_id=str(permission_id),
+    )
+
+    return HXRedirectResponse(
+        request.url_for("dashboard.users:permissions", id=user.id),
+        status_code=status.HTTP_204_NO_CONTENT,
+    )
+
+
+@router.api_route(
     "/{id:uuid}/roles", methods=["GET", "POST"], name="dashboard.users:roles"
 )
 async def user_roles(
@@ -411,4 +532,23 @@ async def delete_user_role(
     return HXRedirectResponse(
         request.url_for("dashboard.users:roles", id=user.id),
         status_code=status.HTTP_204_NO_CONTENT,
+    )
+
+
+@router.get("/{id:uuid}/oauth-accounts", name="dashboard.users:oauth_accounts")
+async def user_oauth_accounts(
+    user: User = Depends(get_user_by_id_or_404),
+    oauth_accounts: list[OAuthAccount] = Depends(get_user_oauth_accounts),
+    list_context=Depends(get_list_context),
+    context: BaseContext = Depends(get_base_context),
+):
+    return templates.TemplateResponse(
+        "admin/users/get/oauth_accounts.html",
+        {
+            **context,
+            **list_context,
+            "user": user,
+            "oauth_accounts": oauth_accounts,
+            "tab": "oauth",
+        },
     )

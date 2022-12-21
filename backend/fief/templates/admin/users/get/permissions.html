@@ -1,0 +1,63 @@
+{% import "macros/forms.html" as forms %}
+{% import "macros/icons.html" as icons %}
+
+
+{% extends "admin/users/get/base.html" %}
+
+{% block tab %}
+<form
+  hx-boost="true"
+  hx-target="#aside"
+  method="POST"
+  action="{{ url_for('dashboard.users:permissions', id=user.id) }}"
+  _="on fief:closeModal go back"
+  class="space-y-4"
+>
+  {{ forms.form_field(form.permission_id) }}
+  {{ forms.form_csrf_token(form) }}
+  <div class="flex justify-end">
+    {% call buttons.submit('btn-sm') %}
+      Add
+    {% endcall %}
+  </div>
+</form>
+<table id="user-permissions-table" class="table-fixed w-full">
+  <thead class="text-xs uppercase text-slate-400">
+    <tr class="flex flex-wrap md:table-row md:flex-no-wrap">
+      <th class="w-full block md:w-auto md:table-cell py-2 font-semibold text-left">Codename</th>
+      <th class="w-full block md:w-auto md:table-cell py-2 font-semibold text-left">From role</th>
+      <th class="w-full block md:w-auto md:table-cell py-2 font-semibold text-left"></th>
+    </tr>
+  </thead>
+  <tbody class="text-sm">
+    {% if user_permissions | length == 0 %}
+      <tr class="flex flex-wrap md:table-row md:flex-no-wrap border-b border-slate-200 py-2 md:py-0 bg-slate-100">
+        <td colSpan="2" class="text-center">No permission granted yet</td>
+      </tr>
+    {% endif %}
+    {% for user_permission in user_permissions %}
+      <tr class="flex flex-wrap md:table-row md:flex-no-wrap border-b border-slate-200 py-2 md:py-0 {{ 'italic' if user_permission.from_role else '' }}">
+        <td class="w-full block md:w-auto md:table-cell py-0.5 md:py-2">{{ user_permission.permission.codename }}</td>
+        <td class="w-full block md:w-auto md:table-cell py-0.5 md:py-2">
+          {% if user_permission.from_role %}
+            {{ user_permission.from_role.name }}
+          {% else %}
+            —
+          {% endif %}
+        </td>
+        <td class="w-full block md:w-auto md:table-cell py-0.5 md:py-2 text-right">
+          {% if not user_permission.from_role %}
+            <button
+              type="button"
+              hx-delete="{{ url_for('dashboard.users:delete_permission', id=user.id, permission_id=user_permission.permission_id) }}"
+              hx-targer="#aside"
+            >
+              {{ icons.trash('w-4 h-4') }}
+            </button>
+          {% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

@@ -9,7 +9,11 @@ from fastapi import status
 
 from fief.db import AsyncSession
 from fief.models import Workspace
-from fief.repositories import UserRepository, UserRoleRepository
+from fief.repositories import (
+    UserPermissionRepository,
+    UserRepository,
+    UserRoleRepository,
+)
 from fief.tasks import on_after_register, on_user_role_created, on_user_role_deleted
 from tests.data import TestData
 from tests.helpers import admin_dashboard_unauthorized_assertions
@@ -442,6 +446,183 @@ class TestCreateUserAccessToken:
 
 @pytest.mark.asyncio
 @pytest.mark.workspace_host
+class TestUserPermissions:
+    async def test_unauthorized(
+        self, test_client_admin_dashboard: httpx.AsyncClient, test_data: TestData
+    ):
+        response = await test_client_admin_dashboard.get(
+            f"/users/{test_data['users']['regular'].id}/permissions"
+        )
+
+        admin_dashboard_unauthorized_assertions(response)
+
+    @pytest.mark.authenticated_admin(mode="session")
+    async def test_not_existing(
+        self,
+        test_client_admin_dashboard: httpx.AsyncClient,
+        not_existing_uuid: uuid.UUID,
+    ):
+        response = await test_client_admin_dashboard.get(
+            f"/users/{not_existing_uuid}/permissions"
+        )
+
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    @pytest.mark.authenticated_admin(mode="session")
+    @pytest.mark.htmx(target="aside")
+    async def test_valid(
+        self, test_client_admin_dashboard: httpx.AsyncClient, test_data: TestData
+    ):
+        user = test_data["users"]["regular"]
+        response = await test_client_admin_dashboard.get(
+            f"/users/{user.id}/permissions"
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+
+        html = BeautifulSoup(response.text, features="html.parser")
+        rows = (
+            html.find("table", id="user-permissions-table").find("tbody").find_all("tr")
+        )
+        assert len(rows) == len(
+            [
+                user_role
+                for user_role in test_data["user_permissions"].values()
+                if user_role.user_id == user.id
+            ]
+        )
+
+    @pytest.mark.authenticated_admin(mode="session")
+    @pytest.mark.htmx(target="aside")
+    async def test_create_permission_unknown(
+        self,
+        test_client_admin_dashboard: httpx.AsyncClient,
+        test_data: TestData,
+        not_existing_uuid: uuid.UUID,
+        csrf_token: str,
+    ):
+        user = test_data["users"]["regular"]
+        response = await test_client_admin_dashboard.post(
+            f"/users/{user.id}/permissions",
+            data={"permission_id": str(not_existing_uuid), "csrf_token": csrf_token},
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.headers["X-Fief-Error"] == "unknown_permission"
+
+    @pytest.mark.authenticated_admin(mode="session")
+    @pytest.mark.htmx(target="aside")
+    async def test_create_permission_already_added(
+        self,
+        test_client_admin_dashboard: httpx.AsyncClient,
+        test_data: TestData,
+        csrf_token: str,
+    ):
+        permission = test_data["permissions"]["castles:delete"]
+        user = test_data["users"]["regular"]
+        response = await test_client_admin_dashboard.post(
+            f"/users/{user.id}/permissions",
+            data={"permission_id": str(permission.id), "csrf_token": csrf_token},
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.headers["X-Fief-Error"] == "already_added_permission"
+
+    @pytest.mark.parametrize("permission_alias", ["castles:create", "castles:read"])
+    @pytest.mark.authenticated_admin(mode="session")
+    @pytest.mark.htmx(target="aside")
+    async def test_create_permission_valid(
+        self,
+        permission_alias: str,
+        test_client_admin_dashboard: httpx.AsyncClient,
+        test_data: TestData,
+        csrf_token: str,
+        workspace_session: AsyncSession,
+    ):
+        permission = test_data["permissions"][permission_alias]
+        user = test_data["users"]["regular"]
+        response = await test_client_admin_dashboard.post(
+            f"/users/{user.id}/permissions",
+            data={"permission_id": str(permission.id), "csrf_token": csrf_token},
+        )
+
+        assert response.status_code == status.HTTP_201_CREATED
+
+        user_permission_repository = UserPermissionRepository(workspace_session)
+        user_permissions = await user_permission_repository.list(
+            user_permission_repository.get_by_user_statement(user.id, direct_only=True)
+        )
+        assert len(user_permissions) == 2
+        assert permission.id in [
+            user_permission.permission_id for user_permission in user_permissions
+        ]
+
+
+@pytest.mark.asyncio
+@pytest.mark.workspace_host
+class TestDeleteUserPermission:
+    async def test_unauthorized(
+        self, test_client_admin_dashboard: httpx.AsyncClient, test_data: TestData
+    ):
+        user = test_data["users"]["regular"]
+        permission = test_data["permissions"]["castles:delete"]
+        response = await test_client_admin_dashboard.delete(
+            f"/users/{user.id}/permissions/{permission.id}"
+        )
+
+        admin_dashboard_unauthorized_assertions(response)
+
+    @pytest.mark.authenticated_admin(mode="session")
+    async def test_not_existing_user(
+        self,
+        test_client_admin_dashboard: httpx.AsyncClient,
+        not_existing_uuid: uuid.UUID,
+        test_data: TestData,
+    ):
+        permission = test_data["permissions"]["castles:delete"]
+        response = await test_client_admin_dashboard.delete(
+            f"/users/{not_existing_uuid}/permissions/{permission.id}"
+        )
+
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    @pytest.mark.authenticated_admin(mode="session")
+    async def test_not_added_permission(
+        self, test_client_admin_dashboard: httpx.AsyncClient, test_data: TestData
+    ):
+        user = test_data["users"]["regular"]
+        permission = test_data["permissions"]["castles:create"]
+        response = await test_client_admin_dashboard.delete(
+            f"/users/{user.id}/permissions/{permission.id}"
+        )
+
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    @pytest.mark.authenticated_admin(mode="session")
+    @pytest.mark.htmx(target="aside")
+    async def test_valid(
+        self,
+        test_client_admin_dashboard: httpx.AsyncClient,
+        test_data: TestData,
+        workspace_session: AsyncSession,
+    ):
+        permission = test_data["permissions"]["castles:delete"]
+        user = test_data["users"]["regular"]
+        response = await test_client_admin_dashboard.delete(
+            f"/users/{user.id}/permissions/{permission.id}"
+        )
+
+        assert response.status_code == status.HTTP_204_NO_CONTENT
+
+        user_permission_repository = UserPermissionRepository(workspace_session)
+        user_permissions = await user_permission_repository.list(
+            user_permission_repository.get_by_user_statement(user.id, direct_only=True)
+        )
+        assert len(user_permissions) == 0
+
+
+@pytest.mark.asyncio
+@pytest.mark.workspace_host
 class TestUserRoles:
     async def test_unauthorized(
         self, test_client_admin_dashboard: httpx.AsyncClient, test_data: TestData
@@ -618,4 +799,55 @@ class TestDeleteUserRole:
 
         send_task_mock.assert_called_once_with(
             on_user_role_deleted, str(user.id), str(role.id), str(workspace.id)
+        )
+
+
+@pytest.mark.asyncio
+@pytest.mark.workspace_host
+class TestUserOAuthAccounts:
+    async def test_unauthorized(
+        self, test_client_admin_dashboard: httpx.AsyncClient, test_data: TestData
+    ):
+        response = await test_client_admin_dashboard.get(
+            f"/users/{test_data['users']['regular'].id}/oauth-accounts"
+        )
+
+        admin_dashboard_unauthorized_assertions(response)
+
+    @pytest.mark.authenticated_admin(mode="session")
+    async def test_not_existing(
+        self,
+        test_client_admin_dashboard: httpx.AsyncClient,
+        not_existing_uuid: uuid.UUID,
+    ):
+        response = await test_client_admin_dashboard.get(
+            f"/users/{not_existing_uuid}/oauth-accounts"
+        )
+
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    @pytest.mark.authenticated_admin(mode="session")
+    @pytest.mark.htmx(target="aside")
+    async def test_valid(
+        self, test_client_admin_dashboard: httpx.AsyncClient, test_data: TestData
+    ):
+        user = test_data["users"]["regular"]
+        response = await test_client_admin_dashboard.get(
+            f"/users/{user.id}/oauth-accounts"
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+
+        html = BeautifulSoup(response.text, features="html.parser")
+        rows = (
+            html.find("table", id="user-oauth-accounts-table")
+            .find("tbody")
+            .find_all("tr")
+        )
+        assert len(rows) == len(
+            [
+                oauth_account
+                for oauth_account in test_data["oauth_accounts"].values()
+                if oauth_account.user_id == user.id
+            ]
         )
