@@ -9,8 +9,8 @@ from fastapi import status
 
 from fief.db import AsyncSession
 from fief.models import Workspace
-from fief.repositories import UserRepository
-from fief.tasks import on_after_register
+from fief.repositories import UserRepository, UserRoleRepository
+from fief.tasks import on_after_register, on_user_role_created, on_user_role_deleted
 from tests.data import TestData
 from tests.helpers import admin_dashboard_unauthorized_assertions
 
@@ -438,3 +438,184 @@ class TestCreateUserAccessToken:
         html = BeautifulSoup(response.text, features="html.parser")
         access_token = html.find("pre").text
         assert access_token is not None
+
+
+@pytest.mark.asyncio
+@pytest.mark.workspace_host
+class TestUserRoles:
+    async def test_unauthorized(
+        self, test_client_admin_dashboard: httpx.AsyncClient, test_data: TestData
+    ):
+        response = await test_client_admin_dashboard.get(
+            f"/users/{test_data['users']['regular'].id}/roles"
+        )
+
+        admin_dashboard_unauthorized_assertions(response)
+
+    @pytest.mark.authenticated_admin(mode="session")
+    async def test_not_existing(
+        self,
+        test_client_admin_dashboard: httpx.AsyncClient,
+        not_existing_uuid: uuid.UUID,
+    ):
+        response = await test_client_admin_dashboard.get(
+            f"/users/{not_existing_uuid}/roles"
+        )
+
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    @pytest.mark.authenticated_admin(mode="session")
+    @pytest.mark.htmx(target="aside")
+    async def test_valid(
+        self, test_client_admin_dashboard: httpx.AsyncClient, test_data: TestData
+    ):
+        user = test_data["users"]["regular"]
+        response = await test_client_admin_dashboard.get(f"/users/{user.id}/roles")
+
+        assert response.status_code == status.HTTP_200_OK
+
+        html = BeautifulSoup(response.text, features="html.parser")
+        rows = html.find("table", id="user-roles-table").find("tbody").find_all("tr")
+        assert len(rows) == len(
+            [
+                user_role
+                for user_role in test_data["user_roles"].values()
+                if user_role.user_id == user.id
+            ]
+        )
+
+    @pytest.mark.authenticated_admin(mode="session")
+    @pytest.mark.htmx(target="aside")
+    async def test_create_role_unknown(
+        self,
+        test_client_admin_dashboard: httpx.AsyncClient,
+        test_data: TestData,
+        not_existing_uuid: uuid.UUID,
+        csrf_token: str,
+    ):
+        user = test_data["users"]["regular"]
+        response = await test_client_admin_dashboard.post(
+            f"/users/{user.id}/roles",
+            data={"role_id": str(not_existing_uuid), "csrf_token": csrf_token},
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.headers["X-Fief-Error"] == "unknown_role"
+
+    @pytest.mark.authenticated_admin(mode="session")
+    @pytest.mark.htmx(target="aside")
+    async def test_create_role_already_added(
+        self,
+        test_client_admin_dashboard: httpx.AsyncClient,
+        test_data: TestData,
+        csrf_token: str,
+    ):
+        role = test_data["roles"]["castles_visitor"]
+        user = test_data["users"]["regular"]
+        response = await test_client_admin_dashboard.post(
+            f"/users/{user.id}/roles",
+            data={"role_id": str(role.id), "csrf_token": csrf_token},
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.headers["X-Fief-Error"] == "already_added_role"
+
+    @pytest.mark.authenticated_admin(mode="session")
+    @pytest.mark.htmx(target="aside")
+    async def test_create_role_valid(
+        self,
+        test_client_admin_dashboard: httpx.AsyncClient,
+        test_data: TestData,
+        csrf_token: str,
+        workspace: Workspace,
+        workspace_session: AsyncSession,
+        send_task_mock: MagicMock,
+    ):
+        role = test_data["roles"]["castles_manager"]
+        user = test_data["users"]["regular"]
+        response = await test_client_admin_dashboard.post(
+            f"/users/{user.id}/roles",
+            data={"role_id": str(role.id), "csrf_token": csrf_token},
+        )
+
+        assert response.status_code == status.HTTP_201_CREATED
+
+        user_role_repository = UserRoleRepository(workspace_session)
+        user_roles = await user_role_repository.list(
+            user_role_repository.get_by_user_statement(user.id)
+        )
+        assert len(user_roles) == 2
+        assert role.id in [user_role.role_id for user_role in user_roles]
+
+        send_task_mock.assert_called_once_with(
+            on_user_role_created, str(user.id), str(role.id), str(workspace.id)
+        )
+
+
+@pytest.mark.asyncio
+@pytest.mark.workspace_host
+class TestDeleteUserRole:
+    async def test_unauthorized(
+        self, test_client_admin_dashboard: httpx.AsyncClient, test_data: TestData
+    ):
+        user = test_data["users"]["regular"]
+        role = test_data["roles"]["castles_visitor"]
+        response = await test_client_admin_dashboard.delete(
+            f"/users/{user.id}/roles/{role.id}"
+        )
+
+        admin_dashboard_unauthorized_assertions(response)
+
+    @pytest.mark.authenticated_admin(mode="session")
+    async def test_not_existing_user(
+        self,
+        test_client_admin_dashboard: httpx.AsyncClient,
+        not_existing_uuid: uuid.UUID,
+        test_data: TestData,
+    ):
+        role = test_data["roles"]["castles_visitor"]
+        response = await test_client_admin_dashboard.delete(
+            f"/users/{not_existing_uuid}/roles/{role.id}"
+        )
+
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    @pytest.mark.authenticated_admin(mode="session")
+    async def test_not_added_role(
+        self, test_client_admin_dashboard: httpx.AsyncClient, test_data: TestData
+    ):
+        user = test_data["users"]["regular"]
+        role = test_data["roles"]["castles_manager"]
+        response = await test_client_admin_dashboard.delete(
+            f"/users/{user.id}/roles/{role.id}"
+        )
+
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    @pytest.mark.authenticated_admin(mode="session")
+    @pytest.mark.htmx(target="aside")
+    async def test_valid(
+        self,
+        test_client_admin_dashboard: httpx.AsyncClient,
+        test_data: TestData,
+        workspace: Workspace,
+        workspace_session: AsyncSession,
+        send_task_mock: MagicMock,
+    ):
+        user = test_data["users"]["regular"]
+        role = test_data["roles"]["castles_visitor"]
+        response = await test_client_admin_dashboard.delete(
+            f"/users/{user.id}/roles/{role.id}"
+        )
+
+        assert response.status_code == status.HTTP_204_NO_CONTENT
+
+        user_role_repository = UserRoleRepository(workspace_session)
+        user_roles = await user_role_repository.list(
+            user_role_repository.get_by_user_statement(user.id)
+        )
+        assert len(user_roles) == 0
+
+        send_task_mock.assert_called_once_with(
+            on_user_role_deleted, str(user.id), str(role.id), str(workspace.id)
+        )

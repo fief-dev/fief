@@ -1,0 +1,5 @@
+{% import "macros/forms.html" as forms %}
+
+{% call(role) forms.form_combobox_select_field_results(roles, "id", "name", "No role is matching your query.") %}
+  {{ role.name }}
+{% endcall %}

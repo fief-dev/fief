@@ -22,7 +22,7 @@
   <div class="absolute bottom-0 w-full h-px bg-slate-200" aria-hidden="true"></div>
   <ul class="relative text-sm font-medium flex flex-nowrap -mx-4 sm:-mx-6 lg:-mx-8 overflow-x-scroll no-scrollbar">
     {{ tab_header("Account", route="dashboard.users:get", active=tab == "account") }}
-    {{ tab_header("Roles", route="dashboard.users:get", active=tab == "roles") }}
+    {{ tab_header("Roles", route="dashboard.users:roles", active=tab == "roles") }}
     {{ tab_header("Permissions", route="dashboard.users:get", active=tab == "permissions") }}
     {{ tab_header("OAuth", route="dashboard.users:get", active=tab == "oauth") }}
   </ul>

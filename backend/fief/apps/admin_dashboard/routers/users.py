@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Depends, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi_users.exceptions import InvalidPasswordException, UserAlreadyExists
+from pydantic import UUID4
 
-from fief import schemas
+from fief import schemas, tasks
 from fief.apps.admin_dashboard.dependencies import (
     BaseContext,
     DatatableColumn,
@@ -10,6 +11,7 @@ from fief.apps.admin_dashboard.dependencies import (
     get_base_context,
 )
 from fief.apps.admin_dashboard.forms.user import (
+    CreateUserRoleForm,
     UserAccessTokenForm,
     UserCreateForm,
     UserUpdateForm,
@@ -39,12 +41,18 @@ from fief.dependencies.users import (
     get_paginated_users,
     get_user_by_id_or_404,
     get_user_manager_from_user,
+    get_user_roles,
 )
 from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.forms import FormHelper
 from fief.logger import AuditLogger
-from fief.models import AuditLogMessage, User, UserField, Workspace
-from fief.repositories import ClientRepository, TenantRepository
+from fief.models import AuditLogMessage, User, UserField, UserRole, Workspace
+from fief.repositories import (
+    ClientRepository,
+    RoleRepository,
+    TenantRepository,
+    UserRoleRepository,
+)
 from fief.settings import settings
 from fief.tasks import SendTask
 from fief.templates import templates
@@ -268,8 +276,7 @@ async def create_user_access_token(
         if client is None or client.tenant_id != tenant.id:
             form.client_id.errors.append("Unknown client.")
             return await form_helper.get_error_response(
-                "Unknown client.",
-                "unknown_client",
+                "Unknown client.", "unknown_client"
             )
 
         tenant_host = tenant.get_host(workspace.domain)
@@ -303,3 +310,105 @@ async def create_user_access_token(
         )
 
     return await form_helper.get_response()
+
+
+@router.api_route(
+    "/{id:uuid}/roles", methods=["GET", "POST"], name="dashboard.users:roles"
+)
+async def user_roles(
+    request: Request,
+    user: User = Depends(get_user_by_id_or_404),
+    user_roles: list[UserRole] = Depends(get_user_roles),
+    list_context=Depends(get_list_context),
+    context: BaseContext = Depends(get_base_context),
+    role_repository: RoleRepository = Depends(get_workspace_repository(RoleRepository)),
+    user_role_repository: UserRoleRepository = Depends(
+        get_workspace_repository(UserRoleRepository)
+    ),
+    workspace: Workspace = Depends(get_current_workspace),
+    send_task: SendTask = Depends(get_send_task),
+    audit_logger: AuditLogger = Depends(get_audit_logger),
+):
+    form_helper = FormHelper(
+        CreateUserRoleForm,
+        "admin/users/get/roles.html",
+        request=request,
+        context={
+            **context,
+            **list_context,
+            "user": user,
+            "user_roles": user_roles,
+            "tab": "roles",
+        },
+    )
+
+    if await form_helper.is_submitted_and_valid():
+        form = await form_helper.get_form()
+        role_id = form.data["role_id"]
+
+        role = await role_repository.get_by_id(role_id)
+        if role is None:
+            form.role_id.errors.append("Unknown role.")
+            return await form_helper.get_error_response("Unknown role.", "unknown_role")
+
+        existing_user_role = await user_role_repository.get_by_role_and_user(
+            user.id, role_id
+        )
+        if existing_user_role is not None:
+            form.role_id.errors.append("This role is already granted to this user.")
+            return await form_helper.get_error_response(
+                "This role is already granted to this user.", "already_added_role"
+            )
+
+        user_role = UserRole(user_id=user.id, role_id=role_id)
+        await user_role_repository.create(user_role)
+        audit_logger.log_object_write(
+            AuditLogMessage.OBJECT_CREATED,
+            user_role,
+            subject_user_id=user.id,
+            role_id=str(role.id),
+        )
+
+        send_task(
+            tasks.on_user_role_created, str(user.id), str(role.id), str(workspace.id)
+        )
+
+        return HXRedirectResponse(
+            request.url_for("dashboard.users:roles", id=user.id),
+            status_code=status.HTTP_201_CREATED,
+            headers={"X-Fief-Object-Id": str(user_role.id)},
+        )
+
+    return await form_helper.get_response()
+
+
+@router.delete("/{id:uuid}/roles/{role_id:uuid}", name="dashboard.users:delete_role")
+async def delete_user_role(
+    request: Request,
+    role_id: UUID4,
+    user: User = Depends(get_user_by_id_or_404),
+    user_role_repository: UserRoleRepository = Depends(
+        get_workspace_repository(UserRoleRepository)
+    ),
+    workspace: Workspace = Depends(get_current_workspace),
+    send_task: SendTask = Depends(get_send_task),
+    audit_logger: AuditLogger = Depends(get_audit_logger),
+):
+    user_role = await user_role_repository.get_by_role_and_user(user.id, role_id)
+    if user_role is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+
+    await user_role_repository.delete(user_role)
+    audit_logger.log_object_write(
+        AuditLogMessage.OBJECT_DELETED,
+        user_role,
+        subject_user_id=user.id,
+        role_id=str(role_id),
+    )
+
+    send_task(tasks.on_user_role_deleted, str(user.id), str(role_id), str(workspace.id))
+
+    return HXRedirectResponse(
+        request.url_for("dashboard.users:roles", id=user.id),
+        status_code=status.HTTP_204_NO_CONTENT,
+    )

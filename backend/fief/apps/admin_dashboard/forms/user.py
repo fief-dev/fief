@@ -71,3 +71,11 @@ class UserAccessTokenForm(CSRFBaseForm):
         label="Scopes",
         default=["openid"],
     )
+
+
+class CreateUserRoleForm(CSRFBaseForm):
+    role_id = ComboboxSelectField(
+        "Add new role",
+        query_endpoint_path="/admin/roles/",
+        validators=[validators.InputRequired(), validators.UUID()],
+    )

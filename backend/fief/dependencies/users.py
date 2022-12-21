@@ -376,6 +376,16 @@ async def get_paginated_user_roles(
     )
 
 
+async def get_user_roles(
+    user: User = Depends(get_user_by_id_or_404),
+    user_role_repository: UserRoleRepository = Depends(
+        get_workspace_repository(UserRoleRepository)
+    ),
+) -> list[UserRole]:
+    statement = user_role_repository.get_by_user_statement(user.id)
+    return await user_role_repository.list(statement)
+
+
 async def get_paginated_user_oauth_accounts(
     pagination: Pagination = Depends(get_pagination),
     ordering: Ordering = Depends(get_ordering),
