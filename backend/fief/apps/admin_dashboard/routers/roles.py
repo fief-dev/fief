@@ -7,18 +7,20 @@ from fief.apps.admin_dashboard.dependencies import (
     DatatableQueryParametersGetter,
     get_base_context,
 )
-from fief.apps.admin_dashboard.forms.tenant import TenantCreateForm, TenantUpdateForm
+from fief.apps.admin_dashboard.forms.role import RoleCreateForm, RoleUpdateForm
 from fief.apps.admin_dashboard.responses import HXRedirectResponse
 from fief.dependencies.admin_session import get_admin_session_token
+from fief.dependencies.current_workspace import get_current_workspace
 from fief.dependencies.logger import get_audit_logger
 from fief.dependencies.pagination import PaginatedObjects
-from fief.dependencies.role import get_paginated_roles
-from fief.dependencies.tenant import get_tenant_by_id_or_404
+from fief.dependencies.role import get_paginated_roles, get_role_by_id_or_404
+from fief.dependencies.tasks import get_send_task
 from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.forms import FormHelper
 from fief.logger import AuditLogger
-from fief.models import AuditLogMessage, Client, Role, Tenant
-from fief.repositories import ClientRepository, TenantRepository
+from fief.models import AuditLogMessage, Role, Workspace
+from fief.repositories import PermissionRepository, RoleRepository
+from fief.tasks import SendTask, on_role_updated
 from fief.templates import templates
 
 router = APIRouter(dependencies=[Depends(get_admin_session_token)])
@@ -67,32 +69,32 @@ async def list_roles(
     return templates.TemplateResponse(template, {**context, **list_context})
 
 
-@router.get("/{id:uuid}", name="dashboard.tenants:get")
-async def get_tenant(
-    tenant: Tenant = Depends(get_tenant_by_id_or_404),
+@router.get("/{id:uuid}", name="dashboard.roles:get")
+async def get_role(
+    role: Role = Depends(get_role_by_id_or_404),
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
 ):
     return templates.TemplateResponse(
-        "admin/tenants/get.html",
-        {**context, **list_context, "tenant": tenant},
+        "admin/roles/get.html",
+        {**context, **list_context, "role": role},
     )
 
 
-@router.api_route("/create", methods=["GET", "POST"], name="dashboard.tenants:create")
-async def create_tenant(
+@router.api_route("/create", methods=["GET", "POST"], name="dashboard.roles:create")
+async def create_role(
     request: Request,
-    repository: TenantRepository = Depends(get_workspace_repository(TenantRepository)),
-    client_repository: ClientRepository = Depends(
-        get_workspace_repository(ClientRepository)
+    repository: RoleRepository = Depends(get_workspace_repository(RoleRepository)),
+    permission_repository: PermissionRepository = Depends(
+        get_workspace_repository(PermissionRepository)
     ),
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
     audit_logger: AuditLogger = Depends(get_audit_logger),
 ):
     form_helper = FormHelper(
-        TenantCreateForm,
-        "admin/tenants/create.html",
+        RoleCreateForm,
+        "admin/roles/create.html",
         request=request,
         context={**context, **list_context},
     )
@@ -100,25 +102,25 @@ async def create_tenant(
     if await form_helper.is_submitted_and_valid():
         form = await form_helper.get_form()
 
-        tenant = Tenant()
-        form.populate_obj(tenant)
-        tenant.slug = await repository.get_available_slug(tenant.name)
-        tenant = await repository.create(tenant)
-        audit_logger.log_object_write(AuditLogMessage.OBJECT_CREATED, tenant)
+        role = Role()
+        form.populate_obj(role)
+        role.permissions = []
+        for permission_id in form.data["permissions"]:
+            permission = await permission_repository.get_by_id(permission_id)
+            if permission is None:
+                form.permissions.errors.append("Unknown permission.")
+                return await form_helper.get_error_response(
+                    "Unknown permission.", "unknown_permission"
+                )
+            role.permissions.append(permission)
 
-        client = Client(
-            name=f"{tenant.name}'s client",
-            first_party=True,
-            tenant=tenant,
-            redirect_uris=["http://localhost:8000/docs/oauth2-redirect"],
-        )
-        await client_repository.create(client)
-        audit_logger.log_object_write(AuditLogMessage.OBJECT_CREATED, client)
+        role = await repository.create(role)
+        audit_logger.log_object_write(AuditLogMessage.OBJECT_CREATED, role)
 
         return HXRedirectResponse(
-            request.url_for("dashboard.tenants:get", id=tenant.id),
+            request.url_for("dashboard.roles:get", id=role.id),
             status_code=status.HTTP_201_CREATED,
-            headers={"X-Fief-Object-Id": str(tenant.id)},
+            headers={"X-Fief-Object-Id": str(role.id)},
         )
 
     return await form_helper.get_response()
@@ -127,33 +129,91 @@ async def create_tenant(
 @router.api_route(
     "/{id:uuid}/edit",
     methods=["GET", "POST"],
-    name="dashboard.tenants:update",
+    name="dashboard.roles:update",
 )
-async def update_tenant(
+async def update_role(
     request: Request,
-    tenant: Tenant = Depends(get_tenant_by_id_or_404),
-    repository: TenantRepository = Depends(get_workspace_repository(TenantRepository)),
+    role: Role = Depends(get_role_by_id_or_404),
+    repository: RoleRepository = Depends(get_workspace_repository(RoleRepository)),
+    permission_repository: PermissionRepository = Depends(
+        get_workspace_repository(PermissionRepository)
+    ),
+    list_context=Depends(get_list_context),
+    context: BaseContext = Depends(get_base_context),
+    send_task: SendTask = Depends(get_send_task),
+    workspace: Workspace = Depends(get_current_workspace),
+    audit_logger: AuditLogger = Depends(get_audit_logger),
+):
+    form_helper = FormHelper(
+        RoleUpdateForm,
+        "admin/roles/edit.html",
+        object=role,
+        request=request,
+        context={**context, **list_context, "role": role},
+    )
+    form = await form_helper.get_form()
+    form.permissions.choices = [
+        (permission.id, permission.codename) for permission in role.permissions
+    ]
+
+    if await form_helper.is_submitted_and_valid():
+        old_permissions = {permission.id for permission in role.permissions}
+
+        role.permissions = []
+        for permission_id in form.data["permissions"]:
+            permission = await permission_repository.get_by_id(permission_id)
+            if permission is None:
+                form.permissions.errors.append("Unknown permission.")
+                return await form_helper.get_error_response(
+                    "Unknown permission.", "unknown_permission"
+                )
+            role.permissions.append(permission)
+        new_permissions = {permission.id for permission in role.permissions}
+
+        del form.permissions
+        form.populate_obj(role)
+
+        await repository.update(role)
+        audit_logger.log_object_write(AuditLogMessage.OBJECT_UPDATED, role)
+
+        added_permissions = new_permissions - old_permissions
+        deleted_permissions = old_permissions - new_permissions
+        send_task(
+            on_role_updated,
+            str(role.id),
+            list(map(str, added_permissions)),
+            list(map(str, deleted_permissions)),
+            str(workspace.id),
+        )
+
+        return HXRedirectResponse(request.url_for("dashboard.roles:get", id=role.id))
+
+    return await form_helper.get_response()
+
+
+@router.api_route(
+    "/{id:uuid}/delete",
+    methods=["GET", "DELETE"],
+    name="dashboard.roles:delete",
+)
+async def delete_role(
+    request: Request,
+    role: Role = Depends(get_role_by_id_or_404),
+    repository: RoleRepository = Depends(get_workspace_repository(RoleRepository)),
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
     audit_logger: AuditLogger = Depends(get_audit_logger),
 ):
-    form_helper = FormHelper(
-        TenantUpdateForm,
-        "admin/tenants/edit.html",
-        object=tenant,
-        request=request,
-        context={**context, **list_context, "tenant": tenant},
-    )
-
-    if await form_helper.is_submitted_and_valid():
-        form = await form_helper.get_form()
-        form.populate_obj(tenant)
-
-        await repository.update(tenant)
-        audit_logger.log_object_write(AuditLogMessage.OBJECT_UPDATED, tenant)
+    if request.method == "DELETE":
+        await repository.delete(role)
+        audit_logger.log_object_write(AuditLogMessage.OBJECT_DELETED, role)
 
         return HXRedirectResponse(
-            request.url_for("dashboard.tenants:get", id=tenant.id)
+            request.url_for("dashboard.roles:list"),
+            status_code=status.HTTP_204_NO_CONTENT,
         )
-
-    return await form_helper.get_response()
+    else:
+        return templates.TemplateResponse(
+            "admin/roles/delete.html",
+            {**context, **list_context, "role": role},
+        )

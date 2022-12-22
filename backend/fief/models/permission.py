@@ -11,4 +11,4 @@ class Permission(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
     codename: str = Column(String(length=255), nullable=False, unique=True)
 
     def __repr__(self) -> str:
-        return f"Permission(id={self.id}, name={self.name}, codename={self.codename}"
+        return f"Permission(id={self.id}, name={self.name}, codename={self.codename})"

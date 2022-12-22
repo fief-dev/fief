@@ -19,6 +19,7 @@ from wtforms import (
     IntegerField,
     PasswordField,
     SelectField,
+    SelectMultipleField,
     StringField,
     TelField,
     validators,
@@ -171,6 +172,49 @@ class ComboboxSelectField(HiddenField):
         super().__init__(*args, **kwargs)
         self.query_endpoint_path = query_endpoint_path
         self.query_parameter_name = query_parameter_name
+
+
+class ComboboxSelectMultipleField(SelectMultipleField):
+    def __init__(
+        self,
+        *args,
+        query_endpoint_path: str,
+        query_parameter_name: str = "query",
+        value_attr: str = "id",
+        label_attr: str = "name",
+        **kwargs,
+    ):
+        super().__init__(*args, **kwargs)
+        self.query_endpoint_path = query_endpoint_path
+        self.query_parameter_name = query_parameter_name
+        self.value_attr = value_attr
+        self.label_attr = label_attr
+
+    def _choices_generator(self, choices):
+        if choices:
+            if isinstance(choices[0], (list, tuple)):
+                _choices = choices
+            else:
+                _choices = zip(choices, choices)
+        else:
+            _choices = []
+
+        data_values = []
+        for item in self.data or []:
+            try:
+                data_values.append(getattr(item, self.value_attr))
+            except AttributeError:
+                pass
+
+        for value, label in _choices:
+            selected = value in data_values
+            yield (value, label, selected)
+
+    def process_data(self, value):
+        try:
+            self.data = list(value)
+        except (ValueError, TypeError):
+            self.data = None
 
 
 class TimezoneField(SelectField):

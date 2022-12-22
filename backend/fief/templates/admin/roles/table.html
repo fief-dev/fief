@@ -1,0 +1,31 @@
+{% import "macros/datatable.html" as datatable %}
+
+{% macro name_column(role) %}
+<a
+  class="font-medium text-slate-800 hover:text-slate-900"
+  href="{{ url_for('dashboard.roles:get', id=role.id) }}"
+  hx-boost="true"
+  hx-target="#aside"
+  _="install OpenAside"
+>
+  {{ role.name }}
+</a>
+{% endmacro %}
+
+{% macro granted_by_default_column(role) %}
+{% if role.granted_by_default %}
+  {{ icons.check('w-4 h-4') }}
+{% else %}
+  {{ icons.x_mark('w-4 h-4') }}
+{% endif %}
+{% endmacro %}
+
+{{
+  datatable.datatable(
+    roles,
+    count,
+    datatable_query_parameters,
+    "Roles",
+    columns | map("get_column_macro") | list,
+  )
+}}

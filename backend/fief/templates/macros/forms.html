@@ -79,6 +79,85 @@
 </div>
 {% endmacro %}
 
+{% macro form_combobox_select_multiple_field_item(value, label) %}
+<li class="flex" data-value="{{ value }}">
+  <label class="grow block text-sm mb-1">{{ label }}</label>
+  <button
+    type="button"
+    class="ml-2"
+    _="
+      on click
+        set itemElement to closest <li />
+        remove <option[value=`${itemElement@data-value}`] /> from previous <select /> from me
+        remove itemElement
+      end
+    "
+  >
+    {{ icons.trash('w-4 h-4') }}
+  </button>
+</li>
+{% endmacro %}
+
+{% macro form_combobox_select_multiple_field(field) %}
+{{ form_field_label(field) }}
+{{ field(id=field.id ~ "hidden", class="hidden") }}
+<template>
+  {{ form_combobox_select_multiple_field_item('', '') }}
+</template>
+<ul class="mb-2">
+  {% for item in field.data or [] %}
+    {{ form_combobox_select_multiple_field_item(item[field.value_attr], item[field.label_attr]) }}
+  {% endfor %}
+</ul>
+<input
+  id="{{ field.id }}"
+  type="text"
+  class="form-select w-full"
+  name="{{ field.query_parameter_name }}"
+  hx-get="{{ field.query_endpoint_path }}"
+  hx-trigger="keyup,focus"
+  hx-target="#{{ field.id }}-combobox-results"
+  hx-headers='{"HX-Combobox": true}'
+  autocomplete="off"
+/>
+<div class="relative">
+  <div
+    id="{{ field.id }}-combobox-results"
+    class="absolute w-full bg-white focus:outline-none mt-1 transition ease-out duration-200 transform"
+    _="
+      init
+        set :inputElement to previous <select /> from me
+        set :selectedListElement to previous <ul /> from me
+        set :queryElement to previous <input /> from me
+        hide me
+      end
+      on click in closest <ul > li />
+        set selectedOption to <option[value=`${target@data-value}`] /> in :inputElement
+        if no selectedOption
+          append `<option value='${target@data-value}' selected>${target@data-label}</option>` to :inputElement
+
+          set itemTemplate to previous <template />
+          call itemTemplate.content.firstElementChild.cloneNode(true)
+          put target@data-label into first <label /> in it
+          set it@data-value to target@data-value
+          put it at the end of :selectedListElement
+
+          set :queryElement.value to ''
+        end
+      end
+      on keyup or focus from previous <input /> from me
+        show me
+      end
+      on click from the document
+        if target is not me and target is not in me and target is not :queryElement
+          hide me
+        end
+      end
+    "
+  ></div>
+</div>
+{% endmacro %}
+
 {% macro form_combobox_select_field_results(results, value_attr, label_attr, no_result_label) %}
 <ul class="divide-y divide-gray-100 rounded shadow-lg p-2 ring-1 ring-black ring-opacity-5">
   {% for result in results %}
@@ -186,6 +265,9 @@
     {{ form_field_errors(field) }}
   {% elif field.type == "ComboboxSelectField" %}
     {{ form_combobox_select_field(field, **kwargs) }}
+    {{ form_field_errors(field) }}
+  {% elif field.type == "ComboboxSelectMultipleField" %}
+    {{ form_combobox_select_multiple_field(field, **kwargs) }}
     {{ form_field_errors(field) }}
   {% elif field.type == "AddressFormField" %}
     {{ form_address_field(field, **kwargs) }}
