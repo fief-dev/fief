@@ -176,8 +176,8 @@
 </button>
 {% endmacro %}
 
-{% macro form_field(field) %}
-<div>
+{% macro form_field(field, class) %}
+<div class="{{ class }}">
   {% if field.type == "BooleanField" %}
     {{ form_checkbox_field(field, **kwargs) }}
     {{ form_field_errors(field) }}

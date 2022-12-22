@@ -7,18 +7,20 @@ from fief.apps.admin_dashboard.dependencies import (
     DatatableQueryParametersGetter,
     get_base_context,
 )
-from fief.apps.admin_dashboard.forms.tenant import TenantCreateForm, TenantUpdateForm
+from fief.apps.admin_dashboard.forms.permission import PermissionCreateForm
 from fief.apps.admin_dashboard.responses import HXRedirectResponse
 from fief.dependencies.admin_session import get_admin_session_token
 from fief.dependencies.logger import get_audit_logger
 from fief.dependencies.pagination import PaginatedObjects
-from fief.dependencies.permission import get_paginated_permissions
-from fief.dependencies.tenant import get_tenant_by_id_or_404
+from fief.dependencies.permission import (
+    get_paginated_permissions,
+    get_permission_by_id_or_404,
+)
 from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.forms import FormHelper
 from fief.logger import AuditLogger
-from fief.models import AuditLogMessage, Client, Permission, Tenant
-from fief.repositories import ClientRepository, TenantRepository
+from fief.models import AuditLogMessage, Permission
+from fief.repositories import PermissionRepository
 from fief.templates import templates
 
 router = APIRouter(dependencies=[Depends(get_admin_session_token)])
@@ -56,102 +58,80 @@ async def get_list_template(hx_combobox: bool = Header(False)) -> str:
     return "admin/permissions/list.html"
 
 
-@router.get("/", name="dashboard.permissions:list")
-async def list_permissions(
+async def get_form_helper(
+    request: Request,
     template: str = Depends(get_list_template),
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
-):
-    return templates.TemplateResponse(template, {**context, **list_context})
-
-
-@router.get("/{id:uuid}", name="dashboard.tenants:get")
-async def get_tenant(
-    tenant: Tenant = Depends(get_tenant_by_id_or_404),
-    list_context=Depends(get_list_context),
-    context: BaseContext = Depends(get_base_context),
-):
-    return templates.TemplateResponse(
-        "admin/tenants/get.html",
-        {**context, **list_context, "tenant": tenant},
-    )
-
-
-@router.api_route("/create", methods=["GET", "POST"], name="dashboard.tenants:create")
-async def create_tenant(
-    request: Request,
-    repository: TenantRepository = Depends(get_workspace_repository(TenantRepository)),
-    client_repository: ClientRepository = Depends(
-        get_workspace_repository(ClientRepository)
-    ),
-    list_context=Depends(get_list_context),
-    context: BaseContext = Depends(get_base_context),
-    audit_logger: AuditLogger = Depends(get_audit_logger),
-):
+) -> FormHelper[PermissionCreateForm]:
     form_helper = FormHelper(
-        TenantCreateForm,
-        "admin/tenants/create.html",
+        PermissionCreateForm,
+        template,
         request=request,
         context={**context, **list_context},
     )
+    await form_helper.get_form()
+    return form_helper
 
+
+@router.api_route("/", methods=["GET", "POST"], name="dashboard.permissions:list")
+async def list_permissions(
+    request: Request,
+    form_helper: FormHelper[PermissionCreateForm] = Depends(get_form_helper),
+    repository: PermissionRepository = Depends(
+        get_workspace_repository(PermissionRepository)
+    ),
+    audit_logger: AuditLogger = Depends(get_audit_logger),
+):
     if await form_helper.is_submitted_and_valid():
         form = await form_helper.get_form()
 
-        tenant = Tenant()
-        form.populate_obj(tenant)
-        tenant.slug = await repository.get_available_slug(tenant.name)
-        tenant = await repository.create(tenant)
-        audit_logger.log_object_write(AuditLogMessage.OBJECT_CREATED, tenant)
+        existing_permission = await repository.get_by_codename(form.data["codename"])
+        if existing_permission is not None:
+            form.codename.errors.append(
+                "A permission already exists with this codename. A codename must be unique within your workspace."
+            )
+            return await form_helper.get_error_response(
+                "A permission already exists with this codename. A codename must be unique within your workspace.",
+                "permission_codename_already_exists",
+            )
 
-        client = Client(
-            name=f"{tenant.name}'s client",
-            first_party=True,
-            tenant=tenant,
-            redirect_uris=["http://localhost:8000/docs/oauth2-redirect"],
-        )
-        await client_repository.create(client)
-        audit_logger.log_object_write(AuditLogMessage.OBJECT_CREATED, client)
+        permission = Permission()
+        form.populate_obj(permission)
+        permission = await repository.create(permission)
+        audit_logger.log_object_write(AuditLogMessage.OBJECT_CREATED, permission)
 
         return HXRedirectResponse(
-            request.url_for("dashboard.tenants:get", id=tenant.id),
+            request.url_for("dashboard.permissions:list"),
             status_code=status.HTTP_201_CREATED,
-            headers={"X-Fief-Object-Id": str(tenant.id)},
+            headers={"X-Fief-Object-Id": str(permission.id)},
         )
 
     return await form_helper.get_response()
 
 
 @router.api_route(
-    "/{id:uuid}/edit",
-    methods=["GET", "POST"],
-    name="dashboard.tenants:update",
+    "/{id:uuid}/delete", methods=["GET", "DELETE"], name="dashboard.permissions:delete"
 )
-async def update_tenant(
+async def delete_permission(
     request: Request,
-    tenant: Tenant = Depends(get_tenant_by_id_or_404),
-    repository: TenantRepository = Depends(get_workspace_repository(TenantRepository)),
-    list_context=Depends(get_list_context),
-    context: BaseContext = Depends(get_base_context),
+    form_helper: FormHelper[PermissionCreateForm] = Depends(get_form_helper),
+    permission: Permission = Depends(get_permission_by_id_or_404),
+    repository: PermissionRepository = Depends(
+        get_workspace_repository(PermissionRepository)
+    ),
     audit_logger: AuditLogger = Depends(get_audit_logger),
 ):
-    form_helper = FormHelper(
-        TenantUpdateForm,
-        "admin/tenants/edit.html",
-        object=tenant,
-        request=request,
-        context={**context, **list_context, "tenant": tenant},
-    )
-
-    if await form_helper.is_submitted_and_valid():
-        form = await form_helper.get_form()
-        form.populate_obj(tenant)
-
-        await repository.update(tenant)
-        audit_logger.log_object_write(AuditLogMessage.OBJECT_UPDATED, tenant)
+    if request.method == "DELETE":
+        await repository.delete(permission)
+        audit_logger.log_object_write(AuditLogMessage.OBJECT_DELETED, permission)
 
         return HXRedirectResponse(
-            request.url_for("dashboard.tenants:get", id=tenant.id)
+            request.url_for("dashboard.permissions:list"),
+            status_code=status.HTTP_204_NO_CONTENT,
         )
-
-    return await form_helper.get_response()
+    else:
+        return templates.TemplateResponse(
+            "admin/permissions/delete.html",
+            {**form_helper.context, "permission": permission},
+        )
