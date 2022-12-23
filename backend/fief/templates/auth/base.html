@@ -5,7 +5,7 @@
       <title>{% block head_title %}{% endblock %} - {{ tenant.name if tenant is defined else "Fief" }}</title>
       <meta name="viewport" content="width=device-width, initial-scale=1">
       <link rel="icon" href="{{ url_path_for('auth:static', path='/favicon.svg') }}" />
-      <link href="{{ url_path_for('auth:static', path='/output.css') }}" rel="stylesheet">
+      <link href="{{ url_path_for('auth:static', path='/auth.css') }}" rel="stylesheet">
     {% endblock %}
   </head>
   <body class="font-inter antialiased bg-gray-100 text-gray-600">

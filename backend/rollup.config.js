@@ -1,10 +1,13 @@
+const { babel } = require('@rollup/plugin-babel');
+const { nodeResolve } = require('@rollup/plugin-node-resolve');
+const terser = require('@rollup/plugin-terser');
+const postcss = require('rollup-plugin-postcss');
+const autoprefixer = require('autoprefixer');
+const tailwindcss = require('tailwindcss');
 const colors = require('tailwindcss/colors');
 const plugin = require('tailwindcss/plugin');
 
-module.exports = {
-  content: [
-    './fief/templates/**/*.html',
-  ],
+const tailwindConfig = {
   theme: {
     extend: {
       boxShadow: {
@@ -82,4 +85,72 @@ module.exports = {
       });
     }),
   ],
-};
+}
+
+module.exports = [
+  {
+    input: '../styles/globals.scss',
+    output: {
+      file: './fief/static/admin.css'
+    },
+    plugins: [
+      postcss({
+        plugins: [
+          tailwindcss({
+            config: {
+              ...tailwindConfig,
+              content: [
+                './fief/templates/admin/**/*.html',
+                './fief/templates/macros/**/*.html',
+              ],
+            },
+          }),
+          autoprefixer(),
+        ],
+        extract: true,
+        minimize: true,
+      }),
+    ],
+  },
+  {
+    input: '../styles/globals.scss',
+    output: {
+      file: './fief/static/auth.css'
+    },
+    plugins: [
+      postcss({
+        plugins: [
+          tailwindcss({
+            config: {
+              ...tailwindConfig,
+              content: [
+                './fief/templates/auth/**/*.html',
+                './fief/templates/macros/**/*.html',
+              ],
+            },
+          }),
+          autoprefixer(),
+        ],
+        extract: true,
+        minimize: true,
+      }),
+    ],
+  },
+  {
+    input: './js/code-editor.mjs',
+    output: {
+      file: './fief/static/code-editor.bundle.js',
+      format: 'iife',
+    },
+    plugins: [
+      nodeResolve(),
+      babel({
+        babelHelpers: 'runtime',
+        plugins: [
+          ['@babel/plugin-transform-runtime', { useESModules: false }]
+        ],
+      }),
+      terser(),
+    ],
+  },
+];

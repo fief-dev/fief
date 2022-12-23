@@ -11,7 +11,7 @@ class DatabaseType(str, Enum):
     MYSQL = "MYSQL"
     SQLITE = "SQLITE"
 
-    def get_display_name(self):
+    def get_display_name(self) -> str:
         display_names = {
             DatabaseType.POSTGRESQL: "PostgreSQL",
             DatabaseType.MYSQL: "MySQL",
@@ -36,7 +36,7 @@ class PostreSQLSSLMode(str, Enum):
     VERIFY_CA = "verify-ca"
     VERIFY_FULL = "verify-full"
 
-    def get_display_name(self):
+    def get_display_name(self) -> str:
         display_names = {
             PostreSQLSSLMode.DISABLE: "Disabled",
             PostreSQLSSLMode.ALLOW: "Allow",
@@ -59,7 +59,7 @@ class MySQLSSLMode(str, Enum):
     VERIFY_CA = "VERIFY_CA"
     VERIFY_IDENTITY = "VERIFY_IDENTITY"
 
-    def get_display_name(self):
+    def get_display_name(self) -> str:
         display_names = {
             MySQLSSLMode.DISABLED: "Disabled",
             MySQLSSLMode.PREFERRED: "Preferred",

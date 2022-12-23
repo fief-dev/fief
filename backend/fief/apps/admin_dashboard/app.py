@@ -8,6 +8,9 @@ from fief.apps.admin_dashboard.exception_handlers import exception_handlers
 from fief.apps.admin_dashboard.routers.api_keys import router as api_keys_router
 from fief.apps.admin_dashboard.routers.auth import router as auth_router
 from fief.apps.admin_dashboard.routers.clients import router as clients_router
+from fief.apps.admin_dashboard.routers.email_templates import (
+    router as email_templates_router,
+)
 from fief.apps.admin_dashboard.routers.oauth_providers import (
     router as oauth_providers_router,
 )
@@ -37,6 +40,7 @@ app.add_middleware(
 app.include_router(api_keys_router, prefix="/api-keys")
 app.include_router(auth_router, prefix="/auth")
 app.include_router(clients_router, prefix="/clients")
+app.include_router(email_templates_router, prefix="/email-templates")
 app.include_router(oauth_providers_router, prefix="/oauth-providers")
 app.include_router(permissions_router, prefix="/permissions")
 app.include_router(roles_router, prefix="/roles")

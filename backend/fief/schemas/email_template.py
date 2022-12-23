@@ -15,14 +15,3 @@ class EmailTemplateBase(UUIDSchema, CreatedUpdatedAt):
 
 class EmailTemplate(EmailTemplateBase):
     pass
-
-
-class EmailTemplatePreviewInput(BaseModel):
-    type: EmailTemplateType
-    subject: str
-    content: str
-
-
-class EmailTemplatePreviewResult(BaseModel):
-    subject: str
-    content: str

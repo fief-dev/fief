@@ -122,5 +122,6 @@ ENV/
 node_modules/
 
 # Generated files
-backend/fief/static/output.css
 backend/fief/static/frontend/
+backend/fief/static/*.js
+backend/fief/static/*.css

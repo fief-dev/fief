@@ -11,3 +11,6 @@ class EmailTemplate(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
     type: EmailTemplateType = Column(String(length=255), nullable=False, unique=True)
     subject: str = Column(Text, nullable=False)
     content: str = Column(Text, nullable=False)
+
+    def get_type_display_name(self) -> str:
+        return EmailTemplateType[self.type].get_display_name()

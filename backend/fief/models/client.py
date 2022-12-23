@@ -26,7 +26,7 @@ class ClientType(str, enum.Enum):
     PUBLIC = "public"
     CONFIDENTIAL = "confidential"
 
-    def get_display_name(self):
+    def get_display_name(self) -> str:
         display_names = {
             ClientType.PUBLIC: "Public",
             ClientType.CONFIDENTIAL: "Confidential",

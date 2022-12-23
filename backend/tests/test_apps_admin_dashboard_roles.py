@@ -194,6 +194,25 @@ class TestUpdateRole:
 
     @pytest.mark.authenticated_admin(mode="session")
     @pytest.mark.htmx(target="modal")
+    async def test_invalid(
+        self,
+        test_client_admin_dashboard: httpx.AsyncClient,
+        test_data: TestData,
+        not_existing_uuid: uuid.UUID,
+        csrf_token: str,
+    ):
+        role = test_data["roles"]["castles_visitor"]
+        response = await test_client_admin_dashboard.post(
+            f"/roles/{role.id}/edit",
+            data={
+                "csrf_token": csrf_token,
+            },
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    @pytest.mark.authenticated_admin(mode="session")
+    @pytest.mark.htmx(target="modal")
     async def test_not_existing_permission(
         self,
         test_client_admin_dashboard: httpx.AsyncClient,

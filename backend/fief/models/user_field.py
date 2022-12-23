@@ -31,7 +31,7 @@ class UserFieldType(str, Enum):
     ADDRESS = "ADDRESS"
     TIMEZONE = "TIMEZONE"
 
-    def get_display_name(self):
+    def get_display_name(self) -> str:
         display_names = {
             UserFieldType.STRING: "String",
             UserFieldType.INTEGER: "Integer",

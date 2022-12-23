@@ -1,0 +1,99 @@
+{% import "macros/buttons.html" as buttons %}
+{% import "macros/forms.html" as forms %}
+{% import "macros/icons.html" as icons %}
+
+{% macro preview() %}
+<div id="preview">
+  <input
+    class="form-input w-full border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed mb-4"
+    disabled
+    type="text"
+    value="{{ subject_preview }}"
+  />
+  <div style="height: 75vh; overflow: auto">
+    <iframe class="h-full w-full" title="Preview" srcdoc="{{ content_preview }}"></iframe>
+  </div>
+</div>
+{% endmacro %}
+
+{% if hx_target == "preview" %}
+  {{ preview () }}
+{% endif %}
+
+{% extends layout %}
+
+{% block javascripts_modules %}
+<script src="{{ url_for('admin_dashboard:static', path='/code-editor.bundle.js') }}"></script>
+{% endblock %}
+
+{% block main %}
+<form
+  hx-boost="true"
+  hx-target="#main"
+  method="POST"
+  action="{{ url_for('dashboard.email_templates:update', id=email_template.id) }}"
+  _="on fief:closeModal go back"
+>
+  <div class="sm:flex sm:justify-between sm:items-center mb-8">
+
+    <div class="mb-4 sm:mb-0">
+      <h1 class="text-2xl md:text-3xl text-slate-800 font-bold">Edit {{ email_template.get_type_display_name() }} template</h1>
+    </div>
+
+    <div class="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
+      <a
+        href="{{ url_for('dashboard.email_templates:list') }}"
+        class="btn border-slate-200 hover:border-slate-300 text-slate-600"
+      >
+        {{ icons.arrow_left('w-4 h-4') }}
+        <span class="hidden sm:block ml-2">Back</span>
+      </a>
+      {% call buttons.submit('btn') %}
+        {{ icons.check('w-4 h-4') }}
+        <span class="hidden sm:block ml-2">Update</span>
+      {% endcall %}
+    </div>
+
+  </div>
+  <div class="grid grid-cols-2 gap-4">
+      <div id="editor">
+        {{
+          form.subject(
+            class="form-input w-full mb-4",
+            **{
+              "hx-post": url_for('dashboard.email_templates:update', id=email_template.id) ~ "?preview=true",
+              "hx-trigger": "keyup changed delay:1s",
+              "hx-target": "#preview",
+            },
+          )
+        }}
+        {{
+          form.content(
+            class="hidden",
+            **{
+              "hx-post": url_for('dashboard.email_templates:update', id=email_template.id) ~ "?preview=true",
+              "hx-trigger": "change changed delay:1s",
+              "hx-target": "#preview",
+            },
+          )
+        }}
+        <div
+          style="height: 75vh; overflow: auto"
+          _="
+            def onChange(value)
+              set #{{ form.content.id }}.textContent to value
+              log value
+              send change to #{{ form.content.id }}
+            end
+            on load
+              call fief.createCodeEditor(me, #{{ form.content.id }}.textContent, onChange)
+            end
+          "
+        >
+        </div>
+        {{ forms.form_csrf_token(form) }}
+      </div>
+      {{ preview() }}
+  </div>
+</form>
+{% endblock %}
