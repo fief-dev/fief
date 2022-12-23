@@ -17,15 +17,21 @@
     {% endif %}
 {% endmacro %}
 
+{% macro form_field_description(field) %}
+  {% if field.description %}
+    <div class="text-justify text-xs mt-1">{{ field.description }}</div>
+  {% endif %}
+{% endmacro %}
+
 {% macro form_standard_field(field) %}
 {{ form_field_label(field) }}
 {{ field(class="form-input w-full", **kwargs) }}
 {% endmacro %}
 
 {% macro form_checkbox_field(field) %}
-<label class="block text-sm font-medium mb-1" for="{{ field.id }}">
+<label class="flex items-center text-sm font-medium" for="{{ field.id }}">
   {{ field(class="form-checkbox", **kwargs) }}
-  {{ field.label }}
+  <span  class="ml-2">{{ field.label }}</span>
   {% if field.flags.required %}
     <span class="text-rose-500">*</span>
   {% endif %}
@@ -277,9 +283,7 @@
     {{ form_standard_field(field, **kwargs) }}
     {{ form_field_errors(field) }}
   {% endif %}
-  {% if caller %}
-    {{ caller() }}
-  {% endif %}
+  {{ form_field_description(field) }}
 </div>
 {% endmacro %}
 

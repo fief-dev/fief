@@ -63,6 +63,7 @@ class UserUpdateForm(BaseUserForm):
 class UserAccessTokenForm(CSRFBaseForm):
     client_id = ComboboxSelectField(
         "Client",
+        description="The access token will be tied to this client.",
         query_endpoint_path="/admin/clients/",
         validators=[validators.InputRequired(), validators.UUID()],
     )

@@ -20,10 +20,7 @@
   {% endcall %}
   {% call modal.body() %}
     <div class="space-y-4">
-      <div>
-        {{ forms.form_field(form.client_id) }}
-        <div class="text-justify text-xs mt-1">The access token will be tied to this client.</div>
-      </div>
+      {{ forms.form_field(form.client_id) }}
       {{ forms.form_field(form.scopes) }}
       {{ forms.form_csrf_token(form) }}
     </div>

@@ -5,7 +5,10 @@ from fief.forms import ComboboxSelectMultipleField, CSRFBaseForm
 
 class BaseRoleForm(CSRFBaseForm):
     name = StringField("Name", validators=[validators.InputRequired()])
-    granted_by_default = BooleanField("Granted by default")
+    granted_by_default = BooleanField(
+        "Granted by default",
+        description="When enabled, the role will automatically be assigned to users when they register.",
+    )
     permissions = ComboboxSelectMultipleField(
         "Permissions",
         query_endpoint_path="/admin/permissions/",
