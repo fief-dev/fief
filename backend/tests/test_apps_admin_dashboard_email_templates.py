@@ -15,7 +15,9 @@ from tests.helpers import admin_dashboard_unauthorized_assertions
 @pytest.mark.workspace_host
 class TestListEmailTemplates:
     async def test_unauthorized(self, test_client_admin_dashboard: httpx.AsyncClient):
-        response = await test_client_admin_dashboard.get("/email-templates/")
+        response = await test_client_admin_dashboard.get(
+            "/customization/email-templates/"
+        )
 
         admin_dashboard_unauthorized_assertions(response)
 
@@ -24,7 +26,9 @@ class TestListEmailTemplates:
     async def test_valid(
         self, test_client_admin_dashboard: httpx.AsyncClient, test_data: TestData
     ):
-        response = await test_client_admin_dashboard.get("/email-templates/")
+        response = await test_client_admin_dashboard.get(
+            "/customization/email-templates/"
+        )
 
         assert response.status_code == status.HTTP_200_OK
 
@@ -40,7 +44,7 @@ class TestUpdateEmailTemplate:
         self, test_client_admin_dashboard: httpx.AsyncClient, test_data: TestData
     ):
         response = await test_client_admin_dashboard.get(
-            f"/email-templates/{test_data['email_templates']['welcome'].id}/edit"
+            f"/customization/email-templates/{test_data['email_templates']['welcome'].id}/edit"
         )
 
         admin_dashboard_unauthorized_assertions(response)
@@ -52,7 +56,7 @@ class TestUpdateEmailTemplate:
         not_existing_uuid: uuid.UUID,
     ):
         response = await test_client_admin_dashboard.get(
-            f"/email-templates/{not_existing_uuid}/edit"
+            f"/customization/email-templates/{not_existing_uuid}/edit"
         )
 
         assert response.status_code == status.HTTP_404_NOT_FOUND
@@ -64,7 +68,7 @@ class TestUpdateEmailTemplate:
     ):
         email_template = test_data["email_templates"]["welcome"]
         response = await test_client_admin_dashboard.get(
-            f"/email-templates/{email_template.id}/edit"
+            f"/customization/email-templates/{email_template.id}/edit"
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -110,7 +114,7 @@ class TestUpdateEmailTemplate:
     ):
         email_template = test_data["email_templates"][alias]
         response = await test_client_admin_dashboard.post(
-            f"/email-templates/{email_template.id}/edit",
+            f"/customization/email-templates/{email_template.id}/edit",
             params={"preview": True},
             data={
                 "subject": subject_input,
@@ -140,7 +144,7 @@ class TestUpdateEmailTemplate:
     ):
         email_template = test_data["email_templates"]["welcome"]
         response = await test_client_admin_dashboard.post(
-            f"/email-templates/{email_template.id}/edit",
+            f"/customization/email-templates/{email_template.id}/edit",
             data={
                 "subject": "UPDATED_SUBJECT",
                 "content": "UPDATED_CONTENT",

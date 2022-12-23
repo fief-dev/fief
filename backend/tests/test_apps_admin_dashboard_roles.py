@@ -18,7 +18,7 @@ from tests.helpers import admin_dashboard_unauthorized_assertions
 @pytest.mark.workspace_host
 class TestListRoles:
     async def test_unauthorized(self, test_client_admin_dashboard: httpx.AsyncClient):
-        response = await test_client_admin_dashboard.get("/roles/")
+        response = await test_client_admin_dashboard.get("/access-control/roles/")
 
         admin_dashboard_unauthorized_assertions(response)
 
@@ -27,7 +27,8 @@ class TestListRoles:
         self, test_client_admin_dashboard: httpx.AsyncClient, test_data: TestData
     ):
         response = await test_client_admin_dashboard.get(
-            "/roles/", headers={"HX-Request": "true", "HX-Combobox": "true"}
+            "/access-control/roles/",
+            headers={"HX-Request": "true", "HX-Combobox": "true"},
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -41,7 +42,7 @@ class TestListRoles:
     async def test_valid(
         self, test_client_admin_dashboard: httpx.AsyncClient, test_data: TestData
     ):
-        response = await test_client_admin_dashboard.get("/roles/")
+        response = await test_client_admin_dashboard.get("/access-control/roles/")
 
         assert response.status_code == status.HTTP_200_OK
 
@@ -57,7 +58,7 @@ class TestGetRole:
         self, test_client_admin_dashboard: httpx.AsyncClient, test_data: TestData
     ):
         response = await test_client_admin_dashboard.get(
-            f"/roles/{test_data['roles']['castles_visitor'].id}"
+            f"/access-control/roles/{test_data['roles']['castles_visitor'].id}"
         )
 
         admin_dashboard_unauthorized_assertions(response)
@@ -68,7 +69,9 @@ class TestGetRole:
         test_client_admin_dashboard: httpx.AsyncClient,
         not_existing_uuid: uuid.UUID,
     ):
-        response = await test_client_admin_dashboard.get(f"/roles/{not_existing_uuid}")
+        response = await test_client_admin_dashboard.get(
+            f"/access-control/roles/{not_existing_uuid}"
+        )
 
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
@@ -78,7 +81,9 @@ class TestGetRole:
         self, test_client_admin_dashboard: httpx.AsyncClient, test_data: TestData
     ):
         role = test_data["roles"]["castles_visitor"]
-        response = await test_client_admin_dashboard.get(f"/roles/{role.id}")
+        response = await test_client_admin_dashboard.get(
+            f"/access-control/roles/{role.id}"
+        )
 
         assert response.status_code == status.HTTP_200_OK
 
@@ -91,7 +96,9 @@ class TestGetRole:
 @pytest.mark.workspace_host
 class TestCreateRole:
     async def test_unauthorized(self, test_client_admin_dashboard: httpx.AsyncClient):
-        response = await test_client_admin_dashboard.post("/roles/create", data={})
+        response = await test_client_admin_dashboard.post(
+            "/access-control/roles/create", data={}
+        )
 
         admin_dashboard_unauthorized_assertions(response)
 
@@ -101,7 +108,7 @@ class TestCreateRole:
         self, test_client_admin_dashboard: httpx.AsyncClient, csrf_token: str
     ):
         response = await test_client_admin_dashboard.post(
-            "/roles/create",
+            "/access-control/roles/create",
             data={"csrf_token": csrf_token},
         )
 
@@ -116,7 +123,7 @@ class TestCreateRole:
         csrf_token: str,
     ):
         response = await test_client_admin_dashboard.post(
-            "/roles/create",
+            "/access-control/roles/create",
             data={
                 "name": "New role",
                 "granted_by_default": False,
@@ -138,7 +145,7 @@ class TestCreateRole:
         workspace_session: AsyncSession,
     ):
         response = await test_client_admin_dashboard.post(
-            "/roles/create",
+            "/access-control/roles/create",
             data={
                 "name": "New role",
                 "granted_by_default": False,
@@ -174,7 +181,7 @@ class TestUpdateRole:
     ):
         role = test_data["roles"]["castles_visitor"]
         response = await test_client_admin_dashboard.post(
-            f"/roles/{role.id}/edit", data={}
+            f"/access-control/roles/{role.id}/edit", data={}
         )
 
         admin_dashboard_unauthorized_assertions(response)
@@ -187,7 +194,7 @@ class TestUpdateRole:
         not_existing_uuid: uuid.UUID,
     ):
         response = await test_client_admin_dashboard.post(
-            f"/roles/{not_existing_uuid}/edit", data={}
+            f"/access-control/roles/{not_existing_uuid}/edit", data={}
         )
 
         assert response.status_code == status.HTTP_404_NOT_FOUND
@@ -198,12 +205,11 @@ class TestUpdateRole:
         self,
         test_client_admin_dashboard: httpx.AsyncClient,
         test_data: TestData,
-        not_existing_uuid: uuid.UUID,
         csrf_token: str,
     ):
         role = test_data["roles"]["castles_visitor"]
         response = await test_client_admin_dashboard.post(
-            f"/roles/{role.id}/edit",
+            f"/access-control/roles/{role.id}/edit",
             data={
                 "csrf_token": csrf_token,
             },
@@ -222,7 +228,7 @@ class TestUpdateRole:
     ):
         role = test_data["roles"]["castles_visitor"]
         response = await test_client_admin_dashboard.post(
-            f"/roles/{role.id}/edit",
+            f"/access-control/roles/{role.id}/edit",
             data={
                 "name": "Updated name",
                 "granted_by_default": False,
@@ -247,7 +253,7 @@ class TestUpdateRole:
     ):
         role = test_data["roles"]["castles_visitor"]
         response = await test_client_admin_dashboard.post(
-            f"/roles/{role.id}/edit",
+            f"/access-control/roles/{role.id}/edit",
             data={
                 "name": "Updated name",
                 "granted_by_default": True,
@@ -291,7 +297,9 @@ class TestDeleteRole:
         self, test_client_admin_dashboard: httpx.AsyncClient, test_data: TestData
     ):
         role = test_data["roles"]["castles_visitor"]
-        response = await test_client_admin_dashboard.delete(f"/roles/{role.id}/delete")
+        response = await test_client_admin_dashboard.delete(
+            f"/access-control/roles/{role.id}/delete"
+        )
 
         admin_dashboard_unauthorized_assertions(response)
 
@@ -303,7 +311,7 @@ class TestDeleteRole:
         not_existing_uuid: uuid.UUID,
     ):
         response = await test_client_admin_dashboard.delete(
-            f"/roles/{not_existing_uuid}/delete"
+            f"/access-control/roles/{not_existing_uuid}/delete"
         )
 
         assert response.status_code == status.HTTP_404_NOT_FOUND
@@ -317,14 +325,18 @@ class TestDeleteRole:
         workspace: Workspace,
     ):
         role = test_data["roles"]["castles_visitor"]
-        response = await test_client_admin_dashboard.get(f"/roles/{role.id}/delete")
+        response = await test_client_admin_dashboard.get(
+            f"/access-control/roles/{role.id}/delete"
+        )
 
         assert response.status_code == status.HTTP_200_OK
 
         html = BeautifulSoup(response.text, features="html.parser")
         submit_button = html.find(
             "button",
-            attrs={"hx-delete": f"http://{workspace.domain}/roles/{role.id}/delete"},
+            attrs={
+                "hx-delete": f"http://{workspace.domain}/access-control/roles/{role.id}/delete"
+            },
         )
         assert submit_button is not None
 
@@ -336,6 +348,8 @@ class TestDeleteRole:
         test_data: TestData,
     ):
         role = test_data["roles"]["castles_visitor"]
-        response = await test_client_admin_dashboard.delete(f"/roles/{role.id}/delete")
+        response = await test_client_admin_dashboard.delete(
+            f"/access-control/roles/{role.id}/delete"
+        )
 
         assert response.status_code == status.HTTP_204_NO_CONTENT

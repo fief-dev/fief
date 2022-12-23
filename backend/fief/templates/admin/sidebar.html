@@ -13,12 +13,14 @@
   end
 
   def isPrefixPath(baseHref, current)
+    log current
+    log baseHref
     return current.startsWith(baseHref)
   end
 
   behavior CheckActive(checkFn, href, activeClasses, inactiveClasses)
     on load or htmx:pushedIntoHistory from the document
-      if checkFn(href, window.location.pathname)
+      if checkFn(href, window.location.href)
         if activeClasses exists
           for class in activeClasses
             add .{class} to me
@@ -44,15 +46,15 @@
   end
 </script>
 
-{% macro menu_item(title, href, icon) %}
+{% macro menu_item(title, href, icon, check_fn = 'isPrefixPath') %}
 <li
   class="px-3 py-2 rounded-sm mb-0.5 last:mb-0"
-  _="install CheckActive(checkFn: isExactPath, href: '{{ href }}', activeClasses: ['bg-slate-900'])"
+  _="install CheckActive(checkFn: {{ check_fn }}, href: '{{ href }}', activeClasses: ['bg-slate-900'])"
 >
   <a
     class="block text-slate-200 hover:text-white truncate transition duration-150"
     href="{{ href }}"
-    _="install CheckActive(checkFn: isExactPath, href: '{{ href }}', activeClasses: ['hover:text-slate-200'])"
+    _="install CheckActive(checkFn: {{ check_fn }}, href: '{{ href }}', activeClasses: ['hover:text-slate-200'])"
   >
     <div class="flex items-center">
       {{ icon | safe }}
@@ -67,7 +69,7 @@
   <a
     class="block transition duration-150 truncate"
     href="{{ href }}"
-    _="install CheckActive(checkFn: isExactPath, href: '{{ href }}', activeClasses: ['text-primary-500'], inactiveClasses: ['text-slate-400', 'hover:text-slate-200'])"
+    _="install CheckActive(checkFn: isPrefixPath, href: '{{ href }}', activeClasses: ['text-primary-500'], inactiveClasses: ['text-slate-400', 'hover:text-slate-200'])"
   >
       <span class="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">{{ title }}</span>
   </a>
@@ -133,8 +135,8 @@
             </svg>
           </button>
           <!-- Logo -->
-          <a class="block" href="/admin/">
-            <img src="{{ url_for('admin_dashboard:static', path='fief-logo-red.svg') }}" alt="Fief" class="w-[60px]" />
+          <a class="block" href="{{ url_for('dashboard:index') }}">
+            <img src="{{ url_for('dashboard:static', path='fief-logo-red.svg') }}" alt="Fief" class="w-[60px]" />
           </a>
       </div>
 
@@ -144,70 +146,71 @@
                   {{
                     menu_item(
                       "Dashboard",
-                      "/admin/",
+                      url_for('dashboard:index'),
                       '<svg xmlns="http://www.w3.org/2000/svg" class="shrink-0 h-6 w-6" viewBox="0 0 48 48"><g class="nc-icon-wrapper"><path d="M24,6A22.994,22.994,0,0,0,4.728,41.546,1,1,0,0,0,5.565,42h36.87a1,1,0,0,0,.837-.454A22.994,22.994,0,0,0,24,6Z" class="fill-current text-slate-500"></path><path d="M39.495,37a.986.986,0,0,1-.411-.089,1,1,0,0,1-.5-1.323A16,16,0,1,0,8,29a15.873,15.873,0,0,0,1.415,6.588,1,1,0,1,1-1.822.824A18,18,0,1,1,42,29a17.859,17.859,0,0,1-1.593,7.412A1,1,0,0,1,39.495,37Z" class="fill-current text-slate-600"></path><path d="M8.505,37a1,1,0,0,1-.912-.588,18.012,18.012,0,0,1,3.658-20.118,1,1,0,0,1,1.416,1.412A16.014,16.014,0,0,0,9.415,35.588a1,1,0,0,1-.5,1.323A.986.986,0,0,1,8.505,37Z" class="fill-current text-slate-400"></path><path d="M26.121,31.121a3,3,0,0,1-4.243,0c-.8-.8-10.552-13.1-11.662-14.5a1,1,0,0,1,1.405-1.4c1.4,1.11,13.7,10.862,14.5,11.663A3,3,0,0,1,26.121,31.121Z" class="fill-current text-slate-400"></path></g></svg>',
+                      check_fn="isExactPath"
                     )
                   }}
                   {{
                     menu_item(
                       "Tenants",
-                      "/admin/tenants/",
+                      url_for('dashboard.tenants:list'),
                       '<svg xmlns="http://www.w3.org/2000/svg" class="shrink-0 h-6 w-6" viewBox="0 0 48 48"><g class="nc-icon-wrapper"><path d="M32.874,10.405a.99.99,0,0,0-.353-.369l-8-4.889a1,1,0,0,0-1.042,0l-8,4.889a.99.99,0,0,0-.353.369L24,15.828Z" class="fill-current text-slate-400"></path><path d="M15.126,10.405a1,1,0,0,0-.126.484v8.878a1,1,0,0,0,.479.853l8,4.889a1,1,0,0,0,.521.147V15.828Z" class="fill-current text-slate-500"></path><path d="M32.874,10.405a1,1,0,0,1,.126.484v8.878a1,1,0,0,1-.479.853l-8,4.889a1,1,0,0,1-.521.147V15.828Z" class="fill-current text-slate-600"></path><path d="M47.874,19.589a.99.99,0,0,0-.353-.369l-8-4.889a1,1,0,0,0-1.042,0l-8,4.889a.99.99,0,0,0-.353.369L39,25.013Z" class="fill-current text-slate-400"></path><path d="M30.126,19.589a1,1,0,0,0-.126.485v8.878a1,1,0,0,0,.479.853l8,4.889a1,1,0,0,0,.521.147V25.013Z" class="fill-current text-slate-500"></path><path d="M47.874,19.589a1,1,0,0,1,.126.485v8.878a1,1,0,0,1-.479.853l-8,4.889a1,1,0,0,1-.521.147V25.013Z" class="fill-current text-slate-600"></path><path d="M17.874,19.589a.99.99,0,0,0-.353-.369l-8-4.889a1,1,0,0,0-1.042,0l-8,4.889a.99.99,0,0,0-.353.369L9,25.013Z" class="fill-current text-slate-400"></path><path d="M.126,19.589A1,1,0,0,0,0,20.074v8.878a1,1,0,0,0,.479.853l8,4.889A1,1,0,0,0,9,34.841V25.013Z" class="fill-current text-slate-500"></path><path d="M17.874,19.589a1,1,0,0,1,.126.485v8.878a1,1,0,0,1-.479.853l-8,4.889A1,1,0,0,1,9,34.841V25.013Z" class="fill-current text-slate-600"></path><path d="M32.874,29.577a.99.99,0,0,0-.353-.369l-8-4.889a1,1,0,0,0-1.042,0l-8,4.889a.99.99,0,0,0-.353.369L24,35Z" class="fill-current text-slate-400"></path><path d="M15.126,29.577a1,1,0,0,0-.126.484v8.878a1,1,0,0,0,.479.853l8,4.889a1,1,0,0,0,.521.147V35Z" class="fill-current text-slate-500"></path><path d="M32.874,29.577a1,1,0,0,1,.126.484v8.878a1,1,0,0,1-.479.853l-8,4.889a1,1,0,0,1-.521.147V35Z" class="fill-current text-slate-600"></path></g></svg>',
                     )
                   }}
                   {{
                     menu_item(
                       "Clients",
-                      "/admin/clients/",
+                      url_for('dashboard.clients:list'),
                       '<svg xmlns="http://www.w3.org/2000/svg" class="shrink-0 h-6 w-6" viewBox="0 0 48 48"><g class="nc-icon-wrapper"><path d="M45.5,32.131l-21-12a1,1,0,0,0-.992,0l-21,12A1,1,0,0,0,2.137,33.5a.986.986,0,0,0,.371.371l21,12a1,1,0,0,0,.992,0l21-12a1,1,0,0,0,0-1.736Z" class="fill-current text-slate-600"></path><path d="M45.5,23.132l-21-12a1,1,0,0,0-.992,0l-21,12a1,1,0,0,0,0,1.736l21,12a1,1,0,0,0,.992,0l21-12a1,1,0,0,0,.371-1.365A.986.986,0,0,0,45.5,23.132Z" class="fill-current text-slate-500"></path><path d="M45.5,14.132l-21-12a1,1,0,0,0-.992,0l-21,12a1,1,0,0,0,0,1.736l21,12a1,1,0,0,0,.992,0l21-12a1,1,0,0,0,0-1.736Z" class="fill-current text-slate-400"></path></g></svg>',
                     )
                   }}
                   {{
                     menu_item(
                       "OAuth Providers",
-                      "/admin/oauth-providers/",
+                      url_for('dashboard.oauth_providers:list'),
                       '<svg xmlns="http://www.w3.org/2000/svg" class="shrink-0 h-6 w-6" viewBox="0 0 48 48"><title>app store</title><g class="nc-icon-wrapper"><rect x="3" y="3" width="17" height="17" rx="3" class="fill-current text-slate-600"></rect><path d="M46.138,9.419,38.581,1.862a2.945,2.945,0,0,0-4.162,0L26.862,9.419a2.943,2.943,0,0,0,0,4.162l7.557,7.557a2.948,2.948,0,0,0,4.162,0l7.557-7.557a2.943,2.943,0,0,0,0-4.162Z" class="fill-current text-slate-400"></path><rect x="28" y="28" width="17" height="17" rx="3" class="fill-current text-slate-600"></rect><rect x="3" y="28" width="17" height="17" rx="3" class="fill-current text-slate-600"></rect></g></svg>',
                     )
                   }}
                   {{
                     menu_item(
                       "Users",
-                      "/admin/users/",
+                      url_for('dashboard.users:list'),
                       '<svg xmlns="http://www.w3.org/2000/svg" class="shrink-0 h-6 w-6" viewBox="0 0 48 48"><g class="nc-icon-wrapper"><path d="M43.25,37.8,30,32V22H18V32l-.125.062L4.754,37.8A4.985,4.985,0,0,0,2,42.009V45a1,1,0,0,0,1,1H45a1,1,0,0,0,1-1V42.009A4.979,4.979,0,0,0,43.25,37.8Z" class="fill-current text-slate-600"></path><path d="M24,28A11.013,11.013,0,0,1,13,17V13a11,11,0,0,1,22,0v4A11.013,11.013,0,0,1,24,28Z" class="fill-current text-slate-400"></path></g></svg>',
                     )
                   }}
                   {{
                     menu_item(
                       "User fields",
-                      "/admin/user-fields/",
+                      url_for('dashboard.user_fields:list'),
                       '<svg xmlns="http://www.w3.org/2000/svg" class="shrink-0 h-6 w-6" viewBox="0 0 48 48"><title>tag</title><g class="nc-icon-wrapper"><path d="M44.536,24.121,22.708,2.293A1,1,0,0,0,22,2H3A1,1,0,0,0,2,3V22a1,1,0,0,0,.293.707L24.122,44.535a5.006,5.006,0,0,0,7.071,0L44.536,31.192A5,5,0,0,0,44.536,24.121ZM14,18a4,4,0,1,1,4-4A4,4,0,0,1,14,18Z" class="fill-current text-slate-400"></path><path d="M14,19a5,5,0,1,1,5-5A5.006,5.006,0,0,1,14,19Zm0-8a3,3,0,1,0,3,3A3,3,0,0,0,14,11Z" class="fill-current text-slate-600"></path></g></svg>',
                     )
                   }}
                   {{
                     submenu_item(
                       "Access control",
-                      "/admin/access-control",
+                      request.base_url ~ "admin/access-control",
                       '<svg xmlns="http://www.w3.org/2000/svg" class="shrink-0 h-6 w-6" viewBox="0 0 48 48"><title>lock</title><g class="nc-icon-wrapper"><path d="M36,26H32V13a8,8,0,0,0-16,0V26H12V13a12,12,0,0,1,24,0Z" class="fill-current text-slate-500"></path><path d="M40,20H8a3,3,0,0,0-3,3V44a3,3,0,0,0,3,3H40a3,3,0,0,0,3-3V23A3,3,0,0,0,40,20Z" class="fill-current text-slate-400"></path><path d="M28,31a4,4,0,1,0-6,3.445V40a1,1,0,0,0,1,1h2a1,1,0,0,0,1-1V34.445A3.982,3.982,0,0,0,28,31Z" class="fill-current text-slate-600"></path></g></svg>',
                       [
-                        {"title": "Permissions", "href": "/admin/permissions/"},
-                        {"title": "Roles", "href": "/admin/roles/"},
+                        {"title": "Permissions", "href": url_for('dashboard.permissions:list') },
+                        {"title": "Roles", "href": url_for('dashboard.roles:list') },
                       ]
                     )
                   }}
                   {{
                     submenu_item(
                       "Customization",
-                      "/admin/customization",
+                      request.base_url ~ "admin/customization",
                       '<svg xmlns="http://www.w3.org/2000/svg" class="shrink-0 h-6 w-6" viewBox="0 0 48 48"><title>geometry</title><g class="nc-icon-wrapper"><circle cx="37" cy="16" r="10" class="fill-current text-slate-400"></circle><rect x="10" y="27" width="18" height="18" rx="1" class="fill-current text-slate-500"></rect><path d="M22.87,20.493a1,1,0,0,0-.013-1.008l-9-15a1.04,1.04,0,0,0-1.714,0l-9,15A1,1,0,0,0,4,21H22A1,1,0,0,0,22.87,20.493Z" class="fill-current text-slate-600"></path></g></svg>',
                       [
-                        {"title": "Email templates", "href": "/admin/email-templates/"},
+                        {"title": "Email templates", "href": url_for('dashboard.email_templates:list') },
                       ]
                     )
                   }}
                   {{
                     menu_item(
                       "API Keys",
-                      "/admin/api-keys/",
+                      url_for('dashboard.api_keys:list'),
                       '<svg xmlns="http://www.w3.org/2000/svg" class="shrink-0 h-6 w-6" viewBox="0 0 48 48"><g class="nc-icon-wrapper"><path d="M38,23a1,1,0,0,1-.707-.293l-6-6a1,1,0,0,1,0-1.414l8-8a1,1,0,0,1,1.414,0l6,6a1,1,0,0,1,0,1.414l-2,2a1,1,0,0,1-1.414,0L41,14.414,38.414,17l2.293,2.293a1,1,0,0,1,0,1.414l-2,2A1,1,0,0,1,38,23Z" class="fill-current text-slate-600"></path><path d="M44.061,3.939a1.5,1.5,0,0,0-2.122,0L17.923,27.956a10.027,10.027,0,1,0,2.121,2.121L44.061,6.061A1.5,1.5,0,0,0,44.061,3.939ZM12,43a7,7,0,1,1,4.914-11.978c.011.012.014.027.025.039s.027.014.039.025A6.995,6.995,0,0,1,12,43Z" class="fill-current text-slate-400"></path></g></svg>',
                     )
                   }}

@@ -16,7 +16,7 @@ from tests.helpers import admin_dashboard_unauthorized_assertions
 @pytest.mark.workspace_host
 class TestListPermissions:
     async def test_unauthorized(self, test_client_admin_dashboard: httpx.AsyncClient):
-        response = await test_client_admin_dashboard.get("/permissions/")
+        response = await test_client_admin_dashboard.get("/access-control/permissions/")
 
         admin_dashboard_unauthorized_assertions(response)
 
@@ -25,7 +25,8 @@ class TestListPermissions:
         self, test_client_admin_dashboard: httpx.AsyncClient, test_data: TestData
     ):
         response = await test_client_admin_dashboard.get(
-            "/permissions/", headers={"HX-Request": "true", "HX-Combobox": "true"}
+            "/access-control/permissions/",
+            headers={"HX-Request": "true", "HX-Combobox": "true"},
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -39,7 +40,7 @@ class TestListPermissions:
     async def test_valid(
         self, test_client_admin_dashboard: httpx.AsyncClient, test_data: TestData
     ):
-        response = await test_client_admin_dashboard.get("/permissions/")
+        response = await test_client_admin_dashboard.get("/access-control/permissions/")
 
         assert response.status_code == status.HTTP_200_OK
 
@@ -53,7 +54,7 @@ class TestListPermissions:
         self, test_client_admin_dashboard: httpx.AsyncClient, csrf_token: str
     ):
         response = await test_client_admin_dashboard.post(
-            "/permissions/",
+            "/access-control/permissions/",
             data={"csrf_token": csrf_token},
         )
 
@@ -65,7 +66,7 @@ class TestListPermissions:
         self, test_client_admin_dashboard: httpx.AsyncClient, csrf_token: str
     ):
         response = await test_client_admin_dashboard.post(
-            "/permissions/",
+            "/access-control/permissions/",
             data={
                 "name": "New permission",
                 "codename": "castles:create",
@@ -85,7 +86,7 @@ class TestListPermissions:
         workspace_session: AsyncSession,
     ):
         response = await test_client_admin_dashboard.post(
-            "/permissions/",
+            "/access-control/permissions/",
             data={
                 "name": "New permission",
                 "codename": "new_permission",
@@ -112,7 +113,7 @@ class TestDeletePermission:
     ):
         permission = test_data["permissions"]["castles:create"]
         response = await test_client_admin_dashboard.delete(
-            f"/permissions/{permission.id}/delete"
+            f"/access-control/permissions/{permission.id}/delete"
         )
 
         admin_dashboard_unauthorized_assertions(response)
@@ -125,7 +126,7 @@ class TestDeletePermission:
         not_existing_uuid: uuid.UUID,
     ):
         response = await test_client_admin_dashboard.delete(
-            f"/permissions/{not_existing_uuid}/delete"
+            f"/access-control/permissions/{not_existing_uuid}/delete"
         )
 
         assert response.status_code == status.HTTP_404_NOT_FOUND
@@ -140,7 +141,7 @@ class TestDeletePermission:
     ):
         permission = test_data["permissions"]["castles:create"]
         response = await test_client_admin_dashboard.get(
-            f"/permissions/{permission.id}/delete"
+            f"/access-control/permissions/{permission.id}/delete"
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -149,7 +150,7 @@ class TestDeletePermission:
         submit_button = html.find(
             "button",
             attrs={
-                "hx-delete": f"http://{workspace.domain}/permissions/{permission.id}/delete"
+                "hx-delete": f"http://{workspace.domain}/access-control/permissions/{permission.id}/delete"
             },
         )
         assert submit_button is not None
@@ -163,7 +164,7 @@ class TestDeletePermission:
     ):
         permission = test_data["permissions"]["castles:create"]
         response = await test_client_admin_dashboard.delete(
-            f"/permissions/{permission.id}/delete"
+            f"/access-control/permissions/{permission.id}/delete"
         )
 
         assert response.status_code == status.HTTP_204_NO_CONTENT

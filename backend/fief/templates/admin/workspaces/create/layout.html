@@ -4,16 +4,16 @@
 <main class="bg-white">
 
   <div class="fixed bottom-0 right-0 hidden md:block w-1/4 -z-1">
-    <img src="{{ url_for('admin_dashboard:static', path='illustrations/castle.svg') }}" alt="Fief Castle" />
+    <img src="{{ url_for('dashboard:static', path='illustrations/castle.svg') }}" alt="Fief Castle" />
   </div>
 
-  <div class="relative flex bg-fixed bg-repeat-x bg-bottom" style="background-image: url('{{ url_for('admin_dashboard:static', path='illustrations/grass.svg') }}')">
+  <div class="relative flex bg-fixed bg-repeat-x bg-bottom" style="background-image: url('{{ url_for('dashboard:static', path='illustrations/grass.svg') }}')">
     <div class="w-full">
       <div class="min-h-screen h-full flex flex-col after:flex-1">
 
         <div class="flex-1">
           <div class="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
-            <img src="{{ url_for('admin_dashboard:static', path='fief-logo-red.svg') }}" alt="Fief" class="w-[60px]" />
+            <img src="{{ url_for('dashboard:static', path='fief-logo-red.svg') }}" alt="Fief" class="w-[60px]" />
           </div>
 
           <div class="px-4 pt-12 pb-8">

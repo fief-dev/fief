@@ -37,26 +37,24 @@ app.add_middleware(
     https_only=settings.session_data_cookie_secure,
 )
 
+app.include_router(permissions_router, prefix="/access-control/permissions")
+app.include_router(roles_router, prefix="/access-control/roles")
 app.include_router(api_keys_router, prefix="/api-keys")
 app.include_router(auth_router, prefix="/auth")
 app.include_router(clients_router, prefix="/clients")
-app.include_router(email_templates_router, prefix="/email-templates")
+app.include_router(email_templates_router, prefix="/customization/email-templates")
 app.include_router(oauth_providers_router, prefix="/oauth-providers")
-app.include_router(permissions_router, prefix="/permissions")
-app.include_router(roles_router, prefix="/roles")
 app.include_router(tenants_router, prefix="/tenants")
 app.include_router(user_fields_router, prefix="/user-fields")
 app.include_router(users_router, prefix="/users")
 app.include_router(workspaces_router, prefix="/workspaces")
-app.mount(
-    "/static", StaticFiles(directory=STATIC_DIRECTORY), name="admin_dashboard:static"
-)
+app.mount("/static", StaticFiles(directory=STATIC_DIRECTORY), name="dashboard:static")
 
 for (exc, handler) in exception_handlers.items():
     app.add_exception_handler(exc, handler)
 
 
-@app.get("/")
+@app.get("/", name="dashboard:index")
 async def index(context: BaseContext = Depends(get_base_context)):
     return templates.TemplateResponse("admin/index.html", {**context})
 
