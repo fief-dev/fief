@@ -116,12 +116,10 @@ ENV/
 # SQLite databases
 *.db
 /db
-/backend/db
 
 # node_modules
 node_modules/
 
 # Generated files
-backend/fief/static/frontend/
-backend/fief/static/*.js
-backend/fief/static/*.css
+fief/static/*.js
+fief/static/*.css

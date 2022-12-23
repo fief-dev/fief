@@ -145,7 +145,7 @@ authors = [
   { name = "François Voron", email = "contact@fief.dev" }
 ]
 description = "Users and authentication management SaaS"
-readme = "../README.md"
+readme = "README.md"
 classifiers = [
     "Intended Audience :: Developers",
     "Programming Language :: Python :: 3.10",

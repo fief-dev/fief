@@ -304,7 +304,7 @@ def run_server(
         True, help="Create the main Fief user before starting if needed."
     ),
 ):
-    """Run the Fief backend server."""
+    """Run the Fief server."""
     if migrate:
         migrate_main()
         migrate_workspaces()
