@@ -6,10 +6,12 @@ from pydantic import UUID4
 from sqlalchemy import select
 
 from fief.dependencies.pagination import (
+    GetPaginatedObjects,
     Ordering,
+    PaginatedObjects,
     Pagination,
     get_ordering,
-    get_paginated_objects,
+    get_paginated_objects_getter,
     get_pagination,
 )
 from fief.dependencies.workspace_repositories import get_workspace_repository
@@ -24,7 +26,10 @@ async def get_paginated_permissions(
     repository: PermissionRepository = Depends(
         get_workspace_repository(PermissionRepository)
     ),
-) -> tuple[list[Permission], int]:
+    get_paginated_objects: GetPaginatedObjects[Permission] = Depends(
+        get_paginated_objects_getter
+    ),
+) -> PaginatedObjects[Permission]:
     statement = select(Permission)
 
     if query is not None:

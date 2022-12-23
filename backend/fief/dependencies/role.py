@@ -3,10 +3,12 @@ from pydantic import UUID4
 from sqlalchemy import select
 
 from fief.dependencies.pagination import (
+    GetPaginatedObjects,
     Ordering,
+    PaginatedObjects,
     Pagination,
     get_ordering,
-    get_paginated_objects,
+    get_paginated_objects_getter,
     get_pagination,
 )
 from fief.dependencies.workspace_repositories import get_workspace_repository
@@ -19,7 +21,10 @@ async def get_paginated_roles(
     pagination: Pagination = Depends(get_pagination),
     ordering: Ordering = Depends(get_ordering),
     repository: RoleRepository = Depends(get_workspace_repository(RoleRepository)),
-) -> tuple[list[Role], int]:
+    get_paginated_objects: GetPaginatedObjects[Role] = Depends(
+        get_paginated_objects_getter
+    ),
+) -> PaginatedObjects[Role]:
     statement = select(Role)
 
     if query is not None:

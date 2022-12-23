@@ -6,10 +6,12 @@ from pydantic import UUID4, ValidationError, create_model, validator
 from sqlalchemy import select
 
 from fief.dependencies.pagination import (
+    GetPaginatedObjects,
     Ordering,
+    PaginatedObjects,
     Pagination,
     get_ordering,
-    get_paginated_objects,
+    get_paginated_objects_getter,
     get_pagination,
 )
 from fief.dependencies.workspace_repositories import get_workspace_repository
@@ -36,7 +38,10 @@ async def get_paginated_user_fields(
     repository: UserFieldRepository = Depends(
         get_workspace_repository(UserFieldRepository)
     ),
-) -> tuple[list[UserField], int]:
+    get_paginated_objects: GetPaginatedObjects[UserField] = Depends(
+        get_paginated_objects_getter
+    ),
+) -> PaginatedObjects[UserField]:
     statement = select(UserField)
     return await get_paginated_objects(statement, pagination, ordering, repository)
 
