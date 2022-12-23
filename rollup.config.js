@@ -89,7 +89,7 @@ const tailwindConfig = {
 
 module.exports = [
   {
-    input: '../styles/globals.scss',
+    input: './styles/globals.scss',
     output: {
       file: './fief/static/admin.css'
     },
@@ -113,7 +113,7 @@ module.exports = [
     ],
   },
   {
-    input: '../styles/globals.scss',
+    input: './styles/globals.scss',
     output: {
       file: './fief/static/auth.css'
     },

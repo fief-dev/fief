@@ -122,6 +122,7 @@ dependencies = [
 [tool.hatch.envs.default.scripts]
 test = "pytest {args}"
 test-cov-xml = "pytest --cov fief/ --cov-report=xml"
+
 lint = [
   "black . ",
   "ruff --fix .",
@@ -134,6 +135,60 @@ lint-check = [
   "mypy fief/",
   "tryceratops fief/",
 ]
+
+"translations.add" = [
+  "mkdir -p fief/locale/{args}/LC_MESSAGES",
+  "touch fief/locale/{args}/LC_MESSAGES/messages.po",
+  "hatch run translations:update",
+]
+"translations.update" = [
+  "pybabel extract --mapping babel.cfg --output-file=fief/locale/messages.pot .",
+  "pybabel update --domain=messages --input-file=fief/locale/messages.pot --output-dir=fief/locale",
+]
+"translations.compile" = [
+  "pybabel compile --domain=messages --directory=fief/locale",
+]
+
+"static.build" = "npm run build"
+
+"migrations.main.create" = [
+  "hatch run dev.db.start",
+  "alembic -c fief/alembic.ini -n main revision --autogenerate -m '{args}'",
+]
+"migrations.main.migrate" = [
+  "hatch run dev.db.start",
+  "alembic -c fief/alembic.ini -n main upgrade head",
+]
+"migrations.workspace.create" = [
+  "hatch run dev.db.start",
+  "alembic -c fief/alembic.ini -n workspace revision --autogenerate -m '{args}'",
+]
+"migrations.workspace.migrate" = [
+  "hatch run dev.db.start",
+  "alembic -c fief/alembic.ini -n workspace upgrade head",
+]
+
+"dev.db.create" = [
+  "docker volume create fief-dev-db",
+  "docker run -p 5432:5432 --name fief-dev-db -e PGDATA=/var/lib/postgresql/data/pgdata -e POSTGRES_USER=fief -e POSTGRES_PASSWORD=fiefpassword -v fief-dev-db:/var/lib/postgresql/data -d postgres:14-alpine",
+]
+"dev.db.start" = "docker start fief-dev-db"
+"dev.redis.create" = "docker run -d -p 6379:6379 --name fief-dev-redis redis:alpine"
+"dev.redis.start" = "docker start fief-dev-redis"
+"dev.server.start" = [
+  "hatch run dev.db.start",
+  "hatch run dev.redis.start",
+  "hatch run translations.compile",
+  "hatch run static.build",
+  "uvicorn --host 0.0.0.0 --port 8000 fief.app:app"
+]
+"dev.server.watch" = "watchexec -r --exts po,py,html,mjs -- hatch run dev.server.start"
+"dev.worker.start" = [
+  "hatch run dev.db.start",
+  "hatch run dev.redis.start",
+  "dramatiq fief.worker -p 1 -t 1 -f fief.scheduler:schedule",
+]
+"dev.worker.watch" = "watchexec -r --exts po,py,html,mjs -- hatch run dev.worker.start"
 
 [build-system]
 requires = ["hatchling", "hatch-regex-commit"]

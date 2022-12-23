@@ -118,8 +118,8 @@ jobs:
       - name: Compile translations and build assets
         shell: bash
         run: |
-          hatch run pybabel compile --domain=messages --directory=fief/locale
-          npm run build
+          hatch run translations.compile
+          hatch run static.build
       - name: Build and publish on PyPI
         env:
           HATCH_INDEX_USER: ${{ secrets.HATCH_INDEX_USER }}
