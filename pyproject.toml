@@ -91,6 +91,11 @@ include = [
   "/fief/templates",
   "/fief/services/email_template/templates",
 ]
+artifacts = [
+  "/fief/static/**/*.js",
+  "/fief/static/**/*.css",
+  "/fief/locale/**/*.mo",
+]
 
 [tool.hatch.metadata]
 allow-direct-references = true
