@@ -144,7 +144,7 @@ lint-check = [
 "translations.add" = [
   "mkdir -p fief/locale/{args}/LC_MESSAGES",
   "touch fief/locale/{args}/LC_MESSAGES/messages.po",
-  "hatch run translations:update",
+  "hatch run translations.update",
 ]
 "translations.update" = [
   "pybabel extract --mapping babel.cfg --output-file=fief/locale/messages.pot .",
