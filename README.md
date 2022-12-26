@@ -14,7 +14,7 @@
 ## Contributing
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-11-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-12-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 All contributions to improve the project are welcome! In particular, bug and documentation fixes are really appreciated.
@@ -42,6 +42,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
       <td align="center"><a href="https://github.com/WilliamMayor"><img src="https://avatars.githubusercontent.com/u/403126?v=4?s=100" width="100px;" alt="William Mayor"/><br /><sub><b>William Mayor</b></sub></a><br /><a href="https://github.com/fief-dev/fief/commits?author=WilliamMayor" title="Code">💻</a></td>
       <td align="center"><a href="http://ruipoliveira.github.io/"><img src="https://avatars.githubusercontent.com/u/10942886?v=4?s=100" width="100px;" alt="Rui Oliveira"/><br /><sub><b>Rui Oliveira</b></sub></a><br /><a href="#translation-ruipoliveira" title="Translation">🌍</a> <a href="https://github.com/fief-dev/fief/commits?author=ruipoliveira" title="Code">💻</a></td>
       <td align="center"><a href="https://jimscope.is-a.dev"><img src="https://avatars.githubusercontent.com/u/27647007?v=4?s=100" width="100px;" alt="Jimmy Angel Pérez Díaz"/><br /><sub><b>Jimmy Angel Pérez Díaz</b></sub></a><br /><a href="#translation-JimScope" title="Translation">🌍</a></td>
+      <td align="center"><a href="https://pasteman.dev/"><img src="https://avatars.githubusercontent.com/u/5132385?v=4?s=100" width="100px;" alt="Michał Rosiak"/><br /><sub><b>Michał Rosiak</b></sub></a><br /><a href="#translation-michaldev" title="Translation">🌍</a></td>
     </tr>
   </tbody>
 </table>
