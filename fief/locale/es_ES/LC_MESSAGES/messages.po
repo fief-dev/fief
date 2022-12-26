@@ -1,274 +1,294 @@
+
 msgid ""
 msgstr ""
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
-"X-Generator: POEditor.com\n"
-"Project-Id-Version: Fief\n"
+"Project-Id-Version:  Fief\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2022-12-26 10:54+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: es\n"
+"Language-Team: es <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.11.0\n"
 
-#: fief/templates/login.html:7
-msgid "Welcome back!"
-msgstr "¡Bienvenido de nuevo!"
+#: fief/forms.py:64
+msgid "CSRF failed."
+msgstr "CSRF falló."
 
-#: fief/apps/auth/forms/auth.py:10 fief/apps/auth/forms/register.py:122
-#: fief/apps/auth/forms/reset.py:9
-msgid "Email address"
-msgstr "Email"
+#: fief/forms.py:250
+msgid "The country code is missing."
+msgstr "Falta el código del país."
 
-#: fief/apps/auth/forms/auth.py:12 fief/apps/auth/forms/register.py:117
+#: fief/forms.py:252
+msgid "This phone number is invalid."
+msgstr "Este número de teléfono no es válido."
+
+#: fief/forms.py:270
+msgid "Address line 1"
+msgstr "Línea de dirección 1"
+
+#: fief/forms.py:272
+msgid "Address line 2"
+msgstr "Línea de dirección 2"
+
+#: fief/forms.py:276
+msgid "Postal code"
+msgstr "Código postal"
+
+#: fief/forms.py:277
+msgid "City"
+msgstr "Ciudad"
+
+#: fief/forms.py:279
+msgid "State"
+msgstr "Estado o Provincia"
+
+#: fief/forms.py:281
+msgid "Country"
+msgstr "País"
+
+#: fief/apps/auth/forms/auth.py:12 fief/forms.py:303
 msgid "Password"
 msgstr "Contraseña"
 
-#: fief/templates/login.html:5 fief/templates/login.html:20
-msgid "Sign in"
-msgstr "Registrarse"
+#: fief/apps/admin_dashboard/validators.py:22
+msgid "Invalid URL."
+msgstr ""
 
-#: fief/apps/auth/routers/auth.py:117
-msgid "Invalid email or password"
-msgstr "Email o contraseña no válidos"
-
-#: fief/apps/auth/routers/register.py:84
-msgid "A user with the same email address already exists."
-msgstr "Ya existe un usuario con esta misma Email."
-
-#. This is an system error message.
-#: fief/dependencies/auth.py:76
-msgid "response_type is missing"
-msgstr "error interno: falta \"response_type\""
-
-#: fief/dependencies/auth.py:35
-msgid "client_id is missing"
-msgstr "error interno: falta \"client_id\""
-
-#: fief/dependencies/auth.py:41
-msgid "Unknown client"
-msgstr "Cliente desconocido"
-
-#: fief/apps/auth/routers/auth.py:221 fief/dependencies/auth.py:52
-msgid "redirect_uri is missing"
-msgstr "error interno: falta  \"redirect_uri\""
-
-#: fief/dependencies/auth.py:144
-msgid "scope is missing"
-msgstr "error interno: \"scope is missing\""
-
-#: fief/dependencies/auth.py:155
-msgid "scope should contain \"openid\""
-msgstr "error interno: \"scope should contain openid\""
-
-#: fief/dependencies/auth.py:202
-msgid "screen should either be \"login\" or \"register\""
-msgstr "la pantalla debe ser \"login\" o \"register\""
-
-#: fief/dependencies/auth.py:276
-msgid "Invalid login session"
-msgstr "Sesión de Ingresso (Login) no válida"
-
-#: fief/dependencies/users.py:101
-msgid "The password should be at least 8 characters."
-msgstr "La contraseña debe tener al menos 8 caracteres."
-
-#: fief/templates/authorize.html:3 fief/templates/authorize.html:5
-msgid "Authorize"
-msgstr "Autorizar"
-
-#: fief/templates/register.html:40
-msgid "I already have an account"
-msgstr "Ya tengo una cuenta"
-
-#: fief/templates/login.html:40 fief/templates/register.html:9
-#: fief/templates/register.html:17 fief/templates/register.html:42
-msgid "Sign up"
-msgstr "Inscribirse"
-
-#: fief/apps/auth/routers/auth.py:198
-msgid "The user denied access to their data."
-msgstr "El usuario negó el acceso a sus datos."
-
-#: fief/dependencies/auth.py:175
-msgid "prompt should either be \"none\", \"login\" or \"register\""
-msgstr "El prompt debe ser \"none\", \"login\" o \"register\""
-
-#: fief/dependencies/auth.py:184
-msgid "User is not logged in"
-msgstr "El usuario no ha iniciado sesión"
-
-#: fief/dependencies/auth.py:318
-msgid "User consent is required for this scope"
-msgstr "Se requiere el consentimiento del usuario para este ámbito"
-
-#: fief/templates/consent.html:5
-msgid "Consent"
-msgstr "Consente"
-
-#: fief/templates/consent.html:7
-msgid "%(name)s wants to access your account"
-msgstr "%(name)s quiere acceder a tu cuenta"
-
-#: fief/templates/consent.html:12
-msgid "This will allow %(name)s to:"
-msgstr "Esto permitirá que %(name)s:"
-
-#: fief/apps/auth/forms/auth.py:25
-msgid "Deny"
-msgstr "Negar"
+#: fief/apps/auth/forms/auth.py:10 fief/apps/auth/forms/register.py:15
+#: fief/apps/auth/forms/reset.py:9
+msgid "Email address"
+msgstr "Email"
 
 #: fief/apps/auth/forms/auth.py:24
 msgid "Allow"
 msgstr "Permitir"
 
-#: fief/apps/auth/routers/reset.py:44
-msgid "Check your inbox! If an account associated with this email address exists in our system, you'll receive a link to reset your password."
-msgstr "¡Revisa tu correo electrónico! Si existe una cuenta asociada con esta dirección de correo electrónico en nuestro sistema, recibirá un enlace para cambiar su contraseña."
-
-#: fief/apps/auth/routers/reset.py:70
-msgid "The reset password token is missing."
-msgstr "Falta el token de cambio de contraseña."
-
-#: fief/apps/auth/routers/reset.py:82
-msgid "The reset password token is invalid or expired."
-msgstr "El token de cambio de contraseña no es válido o ha caducado."
-
-#: fief/templates/forgot_password.html:5 fief/templates/forgot_password.html:7
-msgid "Forgot password"
-msgstr "Contraseña olvidada"
-
-#: fief/templates/forgot_password.html:17
-msgid "I remember my password"
-msgstr "Recuerdo mi contraseña"
-
-#: fief/templates/forgot_password.html:19
-msgid "Send me a reset link"
-msgstr "Envíame un enlace para cambiarla"
-
-#: fief/templates/login.html:18
-msgid "I forgot my password"
-msgstr "Olvidé mi contraseña"
-
-#: fief/templates/reset_password.html:5 fief/templates/reset_password.html:7
-msgid "Reset password"
-msgstr "Cambiar contraseña"
+#: fief/apps/auth/forms/auth.py:25
+msgid "Deny"
+msgstr "Negar"
 
 #: fief/apps/auth/forms/reset.py:14
 msgid "New password"
 msgstr "Nueva contraseña"
 
-#: fief/templates/reset_password.html:18
-msgid "Reset my password"
-msgstr "Cambiar mi contraseña"
+#: fief/apps/auth/routers/auth.py:114
+msgid "Invalid email or password"
+msgstr "Email o contraseña no válidos"
 
-#: fief/dependencies/auth.py:58
-msgid "redirect_uri is not authorized for this client"
-msgstr "redirect_uri no está autorizado para este cliente"
+#: fief/apps/auth/routers/auth.py:195
+msgid "The user denied access to their data."
+msgstr "El usuario negó el acceso a sus datos."
 
-#: fief/dependencies/auth.py:108
-msgid "request parameter is not supported"
-msgstr "el request contiene parámetro de solicitud incompatible"
+#: fief/apps/auth/routers/auth.py:218 fief/dependencies/auth.py:51
+msgid "redirect_uri is missing"
+msgstr "error interno: falta  \"redirect_uri\""
 
-#: fief/dependencies/auth.py:225
-msgid "Unsupported code_challenge_method"
-msgstr "code_challenge_method no suportado"
-
-#: fief/apps/auth/forms/register.py:62
-msgid "This phone number is invalid."
-msgstr "Este número de teléfono no es válido."
-
-#: fief/apps/auth/forms/register.py:60
-msgid "The country code is missing."
-msgstr "Falta el código del país."
-
-#: fief/dependencies/auth.py:84
-msgid "response_type is invalid"
-msgstr "response_type no es válido\n"
-""
-
-#: fief/dependencies/auth.py:126
-msgid "nonce parameter is required for this response_type"
-msgstr "este tipo de respuesta requiere un parámetro"
-
-#: fief/templates/auth_layout.html:46
-msgid "Powered and secured by"
-msgstr "Motorizado e protegido por"
-
-#: fief/templates/login.html:39
-msgid "Don't have an account?"
-msgstr "¿No tienes una cuenta?"
-
-#: fief/templates/logout.html:3 fief/templates/logout.html:5
-msgid "Sign out"
-msgstr "Desconectar"
-
-#: fief/apps/auth/forms/register.py:78
-msgid "Address line 1"
-msgstr "Línea de dirección 1"
-
-#: fief/apps/auth/forms/register.py:80
-msgid "Address line 2"
-msgstr "Línea de dirección 2"
-
-#: fief/apps/auth/forms/register.py:84
-msgid "Postal code"
-msgstr "Código postal"
-
-#: fief/apps/auth/forms/register.py:85
-msgid "City"
-msgstr "Ciudad"
-
-#: fief/apps/auth/forms/register.py:87
-msgid "State"
-msgstr "Estado o Provincia"
-
-#: fief/apps/auth/forms/register.py:89
-msgid "Country"
-msgstr "País"
-
-#: fief/apps/auth/forms/base.py:41
-msgid "CSRF failed."
-msgstr "CSRF falló."
-
-#: fief/apps/auth/routers/oauth.py:95
+#: fief/apps/auth/routers/oauth.py:94
 msgid "Missing authorization code."
 msgstr ""
 
-#: fief/apps/auth/routers/oauth.py:107
+#: fief/apps/auth/routers/oauth.py:106
 msgid "Invalid OAuth session."
 msgstr ""
 
-#: fief/apps/auth/routers/oauth.py:123
+#: fief/apps/auth/routers/oauth.py:122
 msgid "An error occurred while getting the access token."
 msgstr ""
 
-#: fief/apps/auth/routers/oauth.py:148
+#: fief/apps/auth/routers/oauth.py:147
 msgid "Your account is inactive."
 msgstr ""
 
-#: fief/dependencies/oauth.py:31
+#: fief/apps/auth/routers/register.py:49
+msgid "Registration is disabled"
+msgstr ""
+
+#: fief/apps/auth/routers/register.py:81
+msgid "A user with the same email address already exists."
+msgstr "Ya existe un usuario con esta misma Email."
+
+#: fief/apps/auth/routers/reset.py:42
+msgid ""
+"Check your inbox! If an account associated with this email address exists"
+" in our system, you'll receive a link to reset your password."
+msgstr ""
+"¡Revisa tu correo electrónico! Si existe una cuenta asociada con esta "
+"dirección de correo electrónico en nuestro sistema, recibirá un enlace "
+"para cambiar su contraseña."
+
+#: fief/apps/auth/routers/reset.py:68
+msgid "The reset password token is missing."
+msgstr "Falta el token de cambio de contraseña."
+
+#: fief/apps/auth/routers/reset.py:80
+msgid "The reset password token is invalid or expired."
+msgstr "El token de cambio de contraseña no es válido o ha caducado."
+
+#: fief/dependencies/auth.py:34
+msgid "client_id is missing"
+msgstr "error interno: falta \"client_id\""
+
+#: fief/dependencies/auth.py:40
+msgid "Unknown client"
+msgstr "Cliente desconocido"
+
+#: fief/dependencies/auth.py:57
+msgid "redirect_uri is not authorized for this client"
+msgstr "redirect_uri no está autorizado para este cliente"
+
+#: fief/dependencies/auth.py:75
+msgid "response_type is missing"
+msgstr "error interno: falta \"response_type\""
+
+#: fief/dependencies/auth.py:83
+msgid "response_type is invalid"
+msgstr "response_type no es válido\n"
+
+#: fief/dependencies/auth.py:107
+msgid "request parameter is not supported"
+msgstr "el request contiene parámetro de solicitud incompatible"
+
+#: fief/dependencies/auth.py:125
+msgid "nonce parameter is required for this response_type"
+msgstr "este tipo de respuesta requiere un parámetro"
+
+#: fief/dependencies/auth.py:143
+msgid "scope is missing"
+msgstr "error interno: \"scope is missing\""
+
+#: fief/dependencies/auth.py:154
+msgid "scope should contain \"openid\""
+msgstr "error interno: \"scope should contain openid\""
+
+#: fief/dependencies/auth.py:174
+msgid "prompt should either be \"none\", \"login\" or \"register\""
+msgstr "El prompt debe ser \"none\", \"login\" o \"register\""
+
+#: fief/dependencies/auth.py:183
+msgid "User is not logged in"
+msgstr "El usuario no ha iniciado sesión"
+
+#: fief/dependencies/auth.py:201
+msgid "screen should either be \"login\" or \"register\""
+msgstr "la pantalla debe ser \"login\" o \"register\""
+
+#: fief/dependencies/auth.py:224
+msgid "Unsupported code_challenge_method"
+msgstr "code_challenge_method no suportado"
+
+#: fief/dependencies/auth.py:275
+msgid "Invalid login session"
+msgstr "Sesión de Ingresso (Login) no válida"
+
+#: fief/dependencies/auth.py:317
+msgid "User consent is required for this scope"
+msgstr "Se requiere el consentimiento del usuario para este ámbito"
+
+#: fief/dependencies/oauth.py:29
 msgid "Unknown tenant"
 msgstr ""
 
-#: fief/dependencies/oauth.py:66
+#: fief/dependencies/oauth.py:63
 msgid "Invalid login session."
 msgstr ""
 
-#: fief/dependencies/oauth.py:85
+#: fief/dependencies/oauth.py:82
 msgid "Unknown OAuth provider"
 msgstr ""
 
-#: fief/templates/login.html:31
+#: fief/dependencies/users.py:102
+msgid "The password should be at least 8 characters."
+msgstr "La contraseña debe tener al menos 8 caracteres."
+
+#: fief/templates/auth/auth_layout.html:46
+msgid "Powered and secured by"
+msgstr "Motorizado e protegido por"
+
+#: fief/templates/auth/authorize.html:3 fief/templates/auth/authorize.html:5
+msgid "Authorize"
+msgstr "Autorizar"
+
+#: fief/templates/auth/consent.html:5
+msgid "Consent"
+msgstr "Consente"
+
+#: fief/templates/auth/consent.html:7
+#, python-format
+msgid "%(name)s wants to access your account"
+msgstr "%(name)s quiere acceder a tu cuenta"
+
+#: fief/templates/auth/consent.html:12
+#, python-format
+msgid "This will allow %(name)s to:"
+msgstr "Esto permitirá que %(name)s:"
+
+#: fief/templates/auth/forgot_password.html:5
+#: fief/templates/auth/forgot_password.html:7
+msgid "Forgot password"
+msgstr "Contraseña olvidada"
+
+#: fief/templates/auth/forgot_password.html:17
+msgid "I remember my password"
+msgstr "Recuerdo mi contraseña"
+
+#: fief/templates/auth/forgot_password.html:19
+msgid "Send me a reset link"
+msgstr "Envíame un enlace para cambiarla"
+
+#: fief/templates/auth/login.html:5 fief/templates/auth/login.html:20
+msgid "Sign in"
+msgstr "Registrarse"
+
+#: fief/templates/auth/login.html:7
+msgid "Welcome back!"
+msgstr "¡Bienvenido de nuevo!"
+
+#: fief/templates/auth/login.html:18
+msgid "I forgot my password"
+msgstr "Olvidé mi contraseña"
+
+#: fief/templates/auth/login.html:31
+#, python-format
 msgid "Sign in with %(provider)s"
 msgstr ""
 
-#: fief/templates/register.html:7 fief/templates/register.html:15
-#: fief/templates/register.html:35
+#: fief/templates/auth/login.html:39
+msgid "Don't have an account?"
+msgstr "¿No tienes una cuenta?"
+
+#: fief/templates/auth/login.html:40 fief/templates/auth/register.html:9
+#: fief/templates/auth/register.html:17 fief/templates/auth/register.html:42
+msgid "Sign up"
+msgstr "Inscribirse"
+
+#: fief/templates/auth/logout.html:3 fief/templates/auth/logout.html:5
+msgid "Sign out"
+msgstr "Desconectar"
+
+#: fief/templates/auth/register.html:7 fief/templates/auth/register.html:15
+#: fief/templates/auth/register.html:35
 msgid "Finalize sign up"
 msgstr ""
 
-#: fief/templates/register.html:54
+#: fief/templates/auth/register.html:40
+msgid "I already have an account"
+msgstr "Ya tengo una cuenta"
+
+#: fief/templates/auth/register.html:54
+#, python-format
 msgid "Sign up with %(provider)s"
 msgstr ""
 
-#: fief/apps/auth/routers/register.py:52
-msgid "Registration is disabled"
-msgstr ""
+#: fief/templates/auth/reset_password.html:5
+#: fief/templates/auth/reset_password.html:7
+msgid "Reset password"
+msgstr "Cambiar contraseña"
+
+#: fief/templates/auth/reset_password.html:18
+msgid "Reset my password"
+msgstr "Cambiar mi contraseña"
 
