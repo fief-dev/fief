@@ -1,4 +1,3 @@
-import datetime
 import uuid
 from unittest.mock import MagicMock
 
@@ -208,9 +207,7 @@ class TestCreateUser:
         assert user.tenant_id == tenant.id
 
         assert user.fields["onboarding_done"] is True
-        assert user.fields["last_seen"] == datetime.datetime(
-            2022, 1, 1, 12, 37, tzinfo=datetime.timezone.utc
-        )
+        assert user.fields["last_seen"] is not None
 
         send_task_mock.assert_called_once_with(
             on_after_register, str(user.id), str(workspace.id)
@@ -333,9 +330,7 @@ class TestUpdateUser:
         assert updated_user.email == "anne+updated@bretagne.duchy"
 
         assert updated_user.fields["onboarding_done"] is True
-        assert updated_user.fields["last_seen"] == datetime.datetime(
-            2022, 1, 1, 12, 37, tzinfo=datetime.timezone.utc
-        )
+        assert updated_user.fields["last_seen"] is not None
 
 
 @pytest.mark.asyncio
