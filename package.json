@@ -5,6 +5,7 @@
     "build": "rollup -c rollup.config.js"
   },
   "dependencies": {
+    "@babel/core": "^7.20.7",
     "@babel/plugin-transform-runtime": "^7.19.6",
     "@babel/runtime": "^7.20.7",
     "@codemirror/lang-html": "^6.4.0",
