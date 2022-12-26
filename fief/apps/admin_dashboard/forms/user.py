@@ -77,7 +77,7 @@ class UserAccessTokenForm(CSRFBaseForm):
 class CreateUserPermissionForm(CSRFBaseForm):
     permission_id = ComboboxSelectField(
         "Add new permission",
-        query_endpoint_path="/admin/permissions/",
+        query_endpoint_path="/admin/access-control/permissions/",
         validators=[validators.InputRequired(), validators.UUID()],
     )
 
@@ -85,6 +85,6 @@ class CreateUserPermissionForm(CSRFBaseForm):
 class CreateUserRoleForm(CSRFBaseForm):
     role_id = ComboboxSelectField(
         "Add new role",
-        query_endpoint_path="/admin/roles/",
+        query_endpoint_path="/admin/access-control/roles/",
         validators=[validators.InputRequired(), validators.UUID()],
     )

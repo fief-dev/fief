@@ -11,7 +11,7 @@ class BaseRoleForm(CSRFBaseForm):
     )
     permissions = ComboboxSelectMultipleField(
         "Permissions",
-        query_endpoint_path="/admin/permissions/",
+        query_endpoint_path="/admin/access-control/permissions/",
         label_attr="codename",
         validators=[validators.InputRequired()],
         choices=[],
