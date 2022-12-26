@@ -19,7 +19,7 @@ class RedirectURLValidator(validators.Regexp):
     def __call__(self, form, field):
         message = self.message
         if message is None:
-            message = field.gettext("Invalid URL.")
+            message = "Invalid URL."
 
         match = super().__call__(form, field, message)
         scheme = match.group("scheme")

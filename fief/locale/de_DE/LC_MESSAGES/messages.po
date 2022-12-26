@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  Fief\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2022-12-26 10:54+0100\n"
+"POT-Creation-Date: 2022-12-26 10:56+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: de\n"
@@ -53,10 +53,6 @@ msgstr "Land"
 #: fief/apps/auth/forms/auth.py:12 fief/forms.py:303
 msgid "Password"
 msgstr "Passwort"
-
-#: fief/apps/admin_dashboard/validators.py:22
-msgid "Invalid URL."
-msgstr ""
 
 #: fief/apps/auth/forms/auth.py:10 fief/apps/auth/forms/register.py:15
 #: fief/apps/auth/forms/reset.py:9
@@ -298,4 +294,7 @@ msgstr "Passwort wiederherstellen"
 #: fief/templates/auth/reset_password.html:18
 msgid "Reset my password"
 msgstr "Setze mein Passwort zurück"
+
+#~ msgid "Invalid URL."
+#~ msgstr ""
 
