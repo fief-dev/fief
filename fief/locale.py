@@ -54,4 +54,4 @@ def gettext(string: str, domain: str | None = None, **variables):
 
 
 def gettext_lazy(string: str, domain: str | None = None, **variables):
-    return support.LazyProxy(gettext, string, domain, **variables)
+    return support.LazyProxy(gettext, string, domain, **variables, enable_cache=False)
