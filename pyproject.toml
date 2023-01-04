@@ -158,7 +158,7 @@ lint-check = [
 
 "migrations.main.create" = [
   "hatch run dev.db.start",
-  "alembic -c fief/alembic.ini -n main revision --autogenerate -m '{args}'",
+  "alembic -c fief/alembic.ini -n main revision --autogenerate -m {args}",
 ]
 "migrations.main.migrate" = [
   "hatch run dev.db.start",
@@ -166,7 +166,7 @@ lint-check = [
 ]
 "migrations.workspace.create" = [
   "hatch run dev.db.start",
-  "alembic -c fief/alembic.ini -n workspace revision --autogenerate -m '{args}'",
+  "alembic -c fief/alembic.ini -n workspace revision --autogenerate -m {args}",
 ]
 "migrations.workspace.migrate" = [
   "hatch run dev.db.start",

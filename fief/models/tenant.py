@@ -2,12 +2,15 @@ from typing import Any
 
 from fastapi import Request
 from jwcrypto import jwk
-from sqlalchemy import Boolean, Column, String, Text
+from pydantic import UUID4
+from sqlalchemy import Boolean, Column, ForeignKey, String, Text
+from sqlalchemy.orm import relationship
 from starlette.routing import Router
 
 from fief.crypto.jwk import generate_signature_jwk_string, load_jwk
 from fief.models.base import WorkspaceBase
-from fief.models.generics import CreatedUpdatedAt, UUIDModel
+from fief.models.generics import GUID, CreatedUpdatedAt, UUIDModel
+from fief.models.theme import Theme
 
 
 class Tenant(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
@@ -18,6 +21,11 @@ class Tenant(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
     default: bool = Column(Boolean, default=False, nullable=False)
     sign_jwk: str = Column(Text, nullable=False, default=generate_signature_jwk_string)
     registration_allowed: bool = Column(Boolean, default=True, nullable=False)
+
+    theme_id: UUID4 | None = Column(
+        GUID, ForeignKey(Theme.id, ondelete="SET NULL"), nullable=True
+    )
+    theme: Theme | None = relationship("Theme")
 
     def __repr__(self) -> str:
         return f"Tenant(id={self.id}, name={self.name}, slug={self.slug}, default={self.default})"

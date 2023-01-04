@@ -20,6 +20,7 @@ from fief.models.registration_session import (
 from fief.models.role import Role, RolePermission
 from fief.models.session_token import SessionToken
 from fief.models.tenant import Tenant
+from fief.models.theme import Theme
 from fief.models.user import User
 from fief.models.user_field import UserField, UserFieldConfiguration, UserFieldType
 from fief.models.user_field_value import UserFieldValue
@@ -53,6 +54,7 @@ __all__ = [
     "Role",
     "RolePermission",
     "SessionToken",
+    "Theme",
     "M",
     "M_UUID",
     "Tenant",
