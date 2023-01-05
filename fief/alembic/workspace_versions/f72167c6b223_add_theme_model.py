@@ -57,13 +57,33 @@ def upgrade():
     op.create_index(
         op.f("ix_fief_themes_updated_at"), "fief_themes", ["updated_at"], unique=False
     )
-    op.add_column(
-        "fief_tenants",
-        sa.Column("theme_id", fief.models.generics.GUID(), nullable=True),
-    )
-    op.create_foreign_key(
-        None, "fief_tenants", "fief_themes", ["theme_id"], ["id"], ondelete="SET NULL"
-    )
+
+    connection = op.get_bind()
+    if connection.dialect.name == "sqlite":
+        with op.batch_alter_table("fief_tenants") as batch_op:
+            batch_op.add_column(
+                sa.Column("theme_id", fief.models.generics.GUID(), nullable=True),
+            )
+            batch_op.create_foreign_key(
+                "fief_tenants_theme_id_fkey",
+                referent_table="fief_themes",
+                local_cols=["theme_id"],
+                remote_cols=["id"],
+                ondelete="SET NULL",
+            )
+    else:
+        op.add_column(
+            "fief_tenants",
+            sa.Column("theme_id", fief.models.generics.GUID(), nullable=True),
+        )
+        op.create_foreign_key(
+            "fief_tenants_theme_id_fkey",
+            "fief_tenants",
+            "fief_themes",
+            ["theme_id"],
+            ["id"],
+            ondelete="SET NULL",
+        )
 
     # ### end Alembic commands ###
 
