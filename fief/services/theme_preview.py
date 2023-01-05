@@ -1,5 +1,3 @@
-from typing import Type
-
 from fastapi import Request
 
 from fief.apps.auth.forms.auth import LoginForm
@@ -51,7 +49,7 @@ class ThemePreview:
         registration_user_fields = (
             await self.user_field_repository.get_registration_fields()
         )
-        register_form_class: Type[RegisterFormBase] = await get_register_form_class(
+        register_form_class: type[RegisterFormBase] = await get_register_form_class(
             registration_user_fields, None
         )
         oauth_providers = await self.oauth_provider_repository.all()

@@ -106,6 +106,7 @@ commit_extra_args = ["-e"]
 path = "fief/__init__.py"
 
 [tool.hatch.envs.default]
+python = "3.11"
 dependencies = [
   "asgi-lifespan",
   "beautifulsoup4",
@@ -208,11 +209,11 @@ description = "Users and authentication management SaaS"
 readme = "README.md"
 classifiers = [
     "Intended Audience :: Developers",
-    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3 :: Only",
 ]
 dynamic = ["version"]
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 dependencies = [
     "aiomysql ==0.1.1",
     "aiosqlite ==0.17.0",
