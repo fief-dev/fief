@@ -45,7 +45,7 @@ class UserCreateForm(BaseUserForm):
         validators=[validators.InputRequired()],
         widget=widgets.PasswordInput(hide_value=False),
     )
-    tenant_id = ComboboxSelectField(
+    tenant = ComboboxSelectField(
         "Tenant",
         query_endpoint_path="/admin/tenants/",
         validators=[validators.InputRequired(), validators.UUID()],
@@ -61,7 +61,7 @@ class UserUpdateForm(BaseUserForm):
 
 
 class UserAccessTokenForm(CSRFBaseForm):
-    client_id = ComboboxSelectField(
+    client = ComboboxSelectField(
         "Client",
         description="The access token will be tied to this client.",
         query_endpoint_path="/admin/clients/",
@@ -75,7 +75,7 @@ class UserAccessTokenForm(CSRFBaseForm):
 
 
 class CreateUserPermissionForm(CSRFBaseForm):
-    permission_id = ComboboxSelectField(
+    permission = ComboboxSelectField(
         "Add new permission",
         query_endpoint_path="/admin/access-control/permissions/",
         validators=[validators.InputRequired(), validators.UUID()],
@@ -83,7 +83,7 @@ class CreateUserPermissionForm(CSRFBaseForm):
 
 
 class CreateUserRoleForm(CSRFBaseForm):
-    role_id = ComboboxSelectField(
+    role = ComboboxSelectField(
         "Add new role",
         query_endpoint_path="/admin/access-control/roles/",
         validators=[validators.InputRequired(), validators.UUID()],

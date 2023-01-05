@@ -98,7 +98,7 @@ class TestCreateUser:
             data={
                 "email": "louis@bretagne.duchy",
                 "password": "hermine1",
-                "tenant_id": str(not_existing_uuid),
+                "tenant": str(not_existing_uuid),
                 "csrf_token": csrf_token,
             },
         )
@@ -120,7 +120,7 @@ class TestCreateUser:
             data={
                 "email": "anne@bretagne.duchy",
                 "password": "hermine1",
-                "tenant_id": str(tenant.id),
+                "tenant": str(tenant.id),
                 "csrf_token": csrf_token,
             },
         )
@@ -142,7 +142,7 @@ class TestCreateUser:
             data={
                 "email": "louis@bretagne.duchy",
                 "password": "h",
-                "tenant_id": str(tenant.id),
+                "tenant": str(tenant.id),
                 "csrf_token": csrf_token,
             },
         )
@@ -164,7 +164,7 @@ class TestCreateUser:
             data={
                 "email": "louis@bretagne.duchy",
                 "password": "hermine1",
-                "tenant_id": str(tenant.id),
+                "tenant": str(tenant.id),
                 "fields-last_seen": "INVALID_VALUE",
                 "csrf_token": csrf_token,
             },
@@ -189,7 +189,7 @@ class TestCreateUser:
             data={
                 "email": "louis@bretagne.duchy",
                 "password": "hermine1",
-                "tenant_id": str(tenant.id),
+                "tenant": str(tenant.id),
                 "fields-onboarding_done": True,
                 "fields-last_seen": "2022-01-01 13:37:00",
                 "csrf_token": csrf_token,
@@ -384,7 +384,7 @@ class TestCreateUserAccessToken:
         response = await test_client_admin_dashboard.post(
             f"/users/{user.id}/access-token",
             data={
-                "client_id": str(not_existing_uuid),
+                "client": str(not_existing_uuid),
                 "scopes-0": "openid",
                 "csrf_token": csrf_token,
             },
@@ -405,7 +405,7 @@ class TestCreateUserAccessToken:
         response = await test_client_admin_dashboard.post(
             f"/users/{user.id}/access-token",
             data={
-                "client_id": str(test_data["clients"]["secondary_tenant"].id),
+                "client": str(test_data["clients"]["secondary_tenant"].id),
                 "scopes-0": "openid",
                 "csrf_token": csrf_token,
             },
@@ -426,7 +426,7 @@ class TestCreateUserAccessToken:
         response = await test_client_admin_dashboard.post(
             f"/users/{user.id}/access-token",
             data={
-                "client_id": str(test_data["clients"]["default_tenant"].id),
+                "client": str(test_data["clients"]["default_tenant"].id),
                 "scopes-0": "openid",
                 "csrf_token": csrf_token,
             },
@@ -499,7 +499,7 @@ class TestUserPermissions:
         user = test_data["users"]["regular"]
         response = await test_client_admin_dashboard.post(
             f"/users/{user.id}/permissions",
-            data={"permission_id": str(not_existing_uuid), "csrf_token": csrf_token},
+            data={"permission": str(not_existing_uuid), "csrf_token": csrf_token},
         )
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
@@ -517,7 +517,7 @@ class TestUserPermissions:
         user = test_data["users"]["regular"]
         response = await test_client_admin_dashboard.post(
             f"/users/{user.id}/permissions",
-            data={"permission_id": str(permission.id), "csrf_token": csrf_token},
+            data={"permission": str(permission.id), "csrf_token": csrf_token},
         )
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
@@ -538,7 +538,7 @@ class TestUserPermissions:
         user = test_data["users"]["regular"]
         response = await test_client_admin_dashboard.post(
             f"/users/{user.id}/permissions",
-            data={"permission_id": str(permission.id), "csrf_token": csrf_token},
+            data={"permission": str(permission.id), "csrf_token": csrf_token},
         )
 
         assert response.status_code == status.HTTP_201_CREATED
@@ -672,7 +672,7 @@ class TestUserRoles:
         user = test_data["users"]["regular"]
         response = await test_client_admin_dashboard.post(
             f"/users/{user.id}/roles",
-            data={"role_id": str(not_existing_uuid), "csrf_token": csrf_token},
+            data={"role": str(not_existing_uuid), "csrf_token": csrf_token},
         )
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
@@ -690,7 +690,7 @@ class TestUserRoles:
         user = test_data["users"]["regular"]
         response = await test_client_admin_dashboard.post(
             f"/users/{user.id}/roles",
-            data={"role_id": str(role.id), "csrf_token": csrf_token},
+            data={"role": str(role.id), "csrf_token": csrf_token},
         )
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
@@ -711,7 +711,7 @@ class TestUserRoles:
         user = test_data["users"]["regular"]
         response = await test_client_admin_dashboard.post(
             f"/users/{user.id}/roles",
-            data={"role_id": str(role.id), "csrf_token": csrf_token},
+            data={"role": str(role.id), "csrf_token": csrf_token},
         )
 
         assert response.status_code == status.HTTP_201_CREATED

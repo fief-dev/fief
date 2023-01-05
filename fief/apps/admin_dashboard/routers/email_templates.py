@@ -83,7 +83,6 @@ async def update_email_template(
         get_workspace_repository(EmailTemplateRepository)
     ),
     session: AsyncSession = Depends(get_current_workspace_session),
-    list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
     audit_logger: AuditLogger = Depends(get_audit_logger),
 ):
@@ -92,7 +91,7 @@ async def update_email_template(
         "admin/email_templates/edit.html",
         object=email_template,
         request=request,
-        context={**context, **list_context, "email_template": email_template},
+        context={**context, "email_template": email_template},
     )
 
     context_class = EMAIL_TEMPLATE_CONTEXT_CLASS_MAP[email_template.type]

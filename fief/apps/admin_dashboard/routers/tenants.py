@@ -17,7 +17,7 @@ from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.forms import FormHelper
 from fief.logger import AuditLogger
 from fief.models import AuditLogMessage, Client, Tenant
-from fief.repositories import ClientRepository, TenantRepository
+from fief.repositories import ClientRepository, TenantRepository, ThemeRepository
 from fief.templates import templates
 
 router = APIRouter(dependencies=[Depends(get_admin_session_token)])
@@ -86,6 +86,9 @@ async def create_tenant(
     client_repository: ClientRepository = Depends(
         get_workspace_repository(ClientRepository)
     ),
+    theme_repository: ThemeRepository = Depends(
+        get_workspace_repository(ThemeRepository)
+    ),
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
     audit_logger: AuditLogger = Depends(get_audit_logger),
@@ -99,6 +102,16 @@ async def create_tenant(
 
     if await form_helper.is_submitted_and_valid():
         form = await form_helper.get_form()
+
+        theme_id = form.data["theme"]
+        if theme_id is not None:
+            theme = await theme_repository.get_by_id(theme_id)
+            if theme is None:
+                form.theme.errors.append("Unknown theme.")
+                return await form_helper.get_error_response(
+                    "Unknown theme.", "unknown_theme"
+                )
+            form.theme.data = theme
 
         tenant = Tenant()
         form.populate_obj(tenant)
@@ -133,6 +146,9 @@ async def update_tenant(
     request: Request,
     tenant: Tenant = Depends(get_tenant_by_id_or_404),
     repository: TenantRepository = Depends(get_workspace_repository(TenantRepository)),
+    theme_repository: ThemeRepository = Depends(
+        get_workspace_repository(ThemeRepository)
+    ),
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
     audit_logger: AuditLogger = Depends(get_audit_logger),
@@ -147,6 +163,17 @@ async def update_tenant(
 
     if await form_helper.is_submitted_and_valid():
         form = await form_helper.get_form()
+
+        theme_id = form.data["theme"]
+        if theme_id is not None:
+            theme = await theme_repository.get_by_id(theme_id)
+            if theme is None:
+                form.theme.errors.append("Unknown theme.")
+                return await form_helper.get_error_response(
+                    "Unknown theme.", "unknown_theme"
+                )
+            form.theme.data = theme
+
         form.populate_obj(tenant)
 
         await repository.update(tenant)

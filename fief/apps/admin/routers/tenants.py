@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, HTTPException, status
 
 from fief import schemas
 from fief.dependencies.admin_authentication import is_authenticated_admin
@@ -6,9 +6,10 @@ from fief.dependencies.logger import get_audit_logger
 from fief.dependencies.pagination import PaginatedObjects
 from fief.dependencies.tenant import get_paginated_tenants, get_tenant_by_id_or_404
 from fief.dependencies.workspace_repositories import get_workspace_repository
+from fief.errors import APIErrorCode
 from fief.logger import AuditLogger
 from fief.models import AuditLogMessage, Client, Tenant
-from fief.repositories import ClientRepository, TenantRepository
+from fief.repositories import ClientRepository, TenantRepository, ThemeRepository
 from fief.schemas.generics import PaginatedResults
 
 router = APIRouter(dependencies=[Depends(is_authenticated_admin)])
@@ -39,8 +40,19 @@ async def create_tenant(
     client_repository: ClientRepository = Depends(
         get_workspace_repository(ClientRepository)
     ),
+    theme_repository: ThemeRepository = Depends(
+        get_workspace_repository(ThemeRepository)
+    ),
     audit_logger: AuditLogger = Depends(get_audit_logger),
 ) -> schemas.tenant.Tenant:
+    if tenant_create.theme_id is not None:
+        theme = await theme_repository.get_by_id(tenant_create.theme_id)
+        if theme is None:
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST,
+                detail=APIErrorCode.TENANT_CREATE_NOT_EXISTING_THEME,
+            )
+
     slug = await repository.get_available_slug(tenant_create.name)
     tenant = Tenant(**tenant_create.dict(), slug=slug)
     tenant = await repository.create(tenant)
@@ -63,8 +75,19 @@ async def update_tenant(
     tenant_update: schemas.tenant.TenantUpdate,
     tenant: Tenant = Depends(get_tenant_by_id_or_404),
     repository: TenantRepository = Depends(get_workspace_repository(TenantRepository)),
+    theme_repository: ThemeRepository = Depends(
+        get_workspace_repository(ThemeRepository)
+    ),
     audit_logger: AuditLogger = Depends(get_audit_logger),
 ) -> schemas.tenant.Tenant:
+    if tenant_update.theme_id is not None:
+        theme = await theme_repository.get_by_id(tenant_update.theme_id)
+        if theme is None:
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST,
+                detail=APIErrorCode.TENANT_UPDATE_NOT_EXISTING_THEME,
+            )
+
     tenant_update_dict = tenant_update.dict(exclude_unset=True)
     for field, value in tenant_update_dict.items():
         setattr(tenant, field, value)

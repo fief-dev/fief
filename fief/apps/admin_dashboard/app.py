@@ -17,6 +17,7 @@ from fief.apps.admin_dashboard.routers.oauth_providers import (
 from fief.apps.admin_dashboard.routers.permissions import router as permissions_router
 from fief.apps.admin_dashboard.routers.roles import router as roles_router
 from fief.apps.admin_dashboard.routers.tenants import router as tenants_router
+from fief.apps.admin_dashboard.routers.themes import router as themes_router
 from fief.apps.admin_dashboard.routers.user_fields import router as user_fields_router
 from fief.apps.admin_dashboard.routers.users import router as users_router
 from fief.apps.admin_dashboard.routers.workspaces import router as workspaces_router
@@ -43,6 +44,7 @@ app.include_router(api_keys_router, prefix="/api-keys")
 app.include_router(auth_router, prefix="/auth")
 app.include_router(clients_router, prefix="/clients")
 app.include_router(email_templates_router, prefix="/customization/email-templates")
+app.include_router(themes_router, prefix="/customization/themes")
 app.include_router(oauth_providers_router, prefix="/oauth-providers")
 app.include_router(tenants_router, prefix="/tenants")
 app.include_router(user_fields_router, prefix="/user-fields")

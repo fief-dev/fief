@@ -7,10 +7,8 @@ Create Date: 2023-01-04 10:42:08.479094
 """
 import sqlalchemy as sa
 from alembic import op
-from sqlalchemy.orm import Session
 
 import fief
-from fief.models import Theme
 
 # revision identifiers, used by Alembic.
 revision = "f72167c6b223"
@@ -66,12 +64,6 @@ def upgrade():
     op.create_foreign_key(
         None, "fief_tenants", "fief_themes", ["theme_id"], ["id"], ondelete="SET NULL"
     )
-
-    # Insert default theme
-    session = Session(bind=op.get_bind())
-    default_theme = Theme.build_default()
-    session.add(default_theme)
-    session.commit()
 
     # ### end Alembic commands ###
 

@@ -3,7 +3,7 @@
 {% import "macros/modal.html" as modal %}
 {% import "macros/icons.html" as icons %}
 
-{% extends "admin/tenants/list.html" %}
+{% extends "admin/themes/list.html" %}
 
 {% set open_modal = true %}
 
@@ -12,17 +12,15 @@
     hx-boost="true"
     hx-target="#modal"
     method="POST"
-    action="{{ url_for('dashboard.tenants:create') }}"
+    action="{{ url_for('dashboard.themes:create') }}"
     _="on fief:closeModal go back"
   >
   {% call modal.header() %}
-    {% call modal.title() %}Create Tenant{% endcall %}
+    {% call modal.title() %}Create Theme{% endcall %}
   {% endcall %}
   {% call modal.body() %}
     <div class="space-y-4">
       {{ forms.form_field(form.name) }}
-      {{ forms.form_field(form.registration_allowed) }}
-      {{ forms.form_field(form.theme) }}
       {{ forms.form_csrf_token(form) }}
     </div>
   {% endcall %}

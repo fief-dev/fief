@@ -1,0 +1,42 @@
+{% import "macros/datatable.html" as datatable %}
+{% import "macros/icons.html" as icons %}
+
+{% macro name_column(theme) %}
+{{ theme.name }}
+{% endmacro %}
+
+{% macro default_column(theme) %}
+{% if theme.default %}
+  {{ icons.check('w-4 h-4') }}
+{% else %}
+  {{ icons.x_mark('w-4 h-4') }}
+{% endif %}
+{% endmacro %}
+
+{% macro actions_column(theme) %}
+<div class="flex justify-end">
+  <a
+    class="btn-xs bg-red-500 hover:bg-red-600 text-white"
+    href="{{ url_for('dashboard.themes:update', id=theme.id) }}"
+  >
+    Update
+  </a>
+  <button
+    class="ml-2 btn-xs bg-red-500 hover:bg-red-600 text-white disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed"
+    hx-post="{{ url_for('dashboard.themes:default', id=theme.id) }}"
+    {{ 'disabled' if theme.default }}
+  >
+    Set as default
+  </button>
+</div>
+{% endmacro %}
+
+{{
+  datatable.datatable(
+    themes,
+    count,
+    datatable_query_parameters,
+    "Themes",
+    columns | map("get_column_macro") | list,
+  )
+}}

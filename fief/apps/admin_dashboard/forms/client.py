@@ -22,7 +22,7 @@ class BaseClientForm(CSRFBaseForm):
 
 
 class ClientCreateForm(BaseClientForm):
-    tenant_id = ComboboxSelectField(
+    tenant = ComboboxSelectField(
         "Tenant",
         query_endpoint_path="/admin/tenants/",
         validators=[validators.InputRequired(), validators.UUID()],

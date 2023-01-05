@@ -110,7 +110,7 @@ class TestCreateClient:
                 "name": "New client",
                 "first_party": True,
                 "client_type": "confidential",
-                "tenant_id": str(tenant.id),
+                "tenant": str(tenant.id),
                 "csrf_token": csrf_token,
             },
         )
@@ -133,7 +133,7 @@ class TestCreateClient:
                 "first_party": True,
                 "client_type": "confidential",
                 "redirect_uris-0": "http://nantes.city/callback",
-                "tenant_id": str(tenant.id),
+                "tenant": str(tenant.id),
                 "csrf_token": csrf_token,
             },
         )
@@ -155,7 +155,7 @@ class TestCreateClient:
                 "first_party": True,
                 "client_type": "confidential",
                 "redirect_uris-0": "https://nantes.city/callback",
-                "tenant_id": str(not_existing_uuid),
+                "tenant": str(not_existing_uuid),
                 "csrf_token": csrf_token,
             },
         )
@@ -192,7 +192,7 @@ class TestCreateClient:
                 **{
                     f"redirect_uris-{i}": value for i, value in enumerate(redirect_uris)
                 },
-                "tenant_id": str(tenant.id),
+                "tenant": str(tenant.id),
                 "csrf_token": csrf_token,
             },
         )
@@ -249,7 +249,7 @@ class TestUpdateClient:
                 "first_party": client.first_party,
                 "client_type": client.client_type.value,
                 "redirect_uris-0": "http://nantes.city/callback",
-                "tenant_id": str(client.tenant_id),
+                "tenant": str(client.tenant_id),
                 "csrf_token": csrf_token,
             },
         )
@@ -276,7 +276,7 @@ class TestUpdateClient:
                     f"redirect_uris-{i}": value
                     for i, value in enumerate(client.redirect_uris)
                 },
-                "tenant_id": str(test_data["tenants"]["secondary"].id),
+                "tenant": str(test_data["tenants"]["secondary"].id),
                 "csrf_token": csrf_token,
             },
         )
@@ -308,7 +308,7 @@ class TestUpdateClient:
                     f"redirect_uris-{i}": value
                     for i, value in enumerate(client.redirect_uris)
                 },
-                "tenant_id": str(client.tenant_id),
+                "tenant": str(client.tenant_id),
                 "csrf_token": csrf_token,
             },
         )

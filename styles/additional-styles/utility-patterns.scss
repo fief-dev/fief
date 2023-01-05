@@ -88,6 +88,10 @@ input[type="search"]::-webkit-search-results-decoration {
     @apply placeholder-gray-400;
 }
 
+.form-input[type="color"] {
+    @apply h-12;
+}
+
 .form-select {
     @apply pr-10;
 }

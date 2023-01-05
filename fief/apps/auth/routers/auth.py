@@ -136,6 +136,7 @@ async def consent(
     prompt: str | None = Depends(get_consent_prompt),
     needs_consent: bool = Depends(get_needs_consent),
     tenant: Tenant = Depends(get_current_tenant),
+    theme: Theme = Depends(get_current_theme),
     workspace: Workspace = Depends(get_current_workspace),
     authentication_flow: AuthenticationFlow = Depends(get_authentication_flow),
 ):
@@ -145,6 +146,7 @@ async def consent(
         request=request,
         context={
             "tenant": tenant,
+            "theme": theme,
             "client": login_session.client,
             "scopes": login_session.scope,
         },

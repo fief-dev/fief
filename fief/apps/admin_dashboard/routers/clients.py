@@ -101,12 +101,13 @@ async def create_client(
     if await form_helper.is_submitted_and_valid():
         form = await form_helper.get_form()
 
-        tenant = await tenant_repository.get_by_id(form.data["tenant_id"])
+        tenant = await tenant_repository.get_by_id(form.data["tenant"])
         if tenant is None:
-            form.tenant_id.errors.append("Unknown tenant.")
+            form.tenant.errors.append("Unknown tenant.")
             return await form_helper.get_error_response(
                 "Unknown tenant.", "unknown_tenant"
             )
+        form.tenant.data = tenant
 
         client = Client()
         form.populate_obj(client)

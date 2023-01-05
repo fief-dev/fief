@@ -167,11 +167,23 @@ class ComboboxSelectField(HiddenField):
         *args,
         query_endpoint_path: str,
         query_parameter_name: str = "query",
+        value_attr: str = "id",
+        label_attr: str = "name",
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
         self.query_endpoint_path = query_endpoint_path
         self.query_parameter_name = query_parameter_name
+        self.value_attr = value_attr
+        self.label_attr = label_attr
+
+    def _value(self):
+        if self.data is not None:
+            try:
+                return getattr(self.data, self.value_attr)
+            except AttributeError:
+                pass
+        return ""
 
 
 class ComboboxSelectMultipleField(SelectMultipleField):

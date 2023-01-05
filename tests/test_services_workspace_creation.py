@@ -14,6 +14,7 @@ from fief.repositories import (
     ClientRepository,
     EmailTemplateRepository,
     TenantRepository,
+    ThemeRepository,
     WorkspaceRepository,
     WorkspaceUserRepository,
 )
@@ -148,6 +149,10 @@ class TestWorkspaceCreationCreate:
             email_templates = await email_template_repository.all()
 
             assert len(email_templates) == 3
+
+            theme_repository = ThemeRepository(session)
+            theme = await theme_repository.get_default()
+            assert theme is not None
 
     async def test_user_id(
         self,

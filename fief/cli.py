@@ -125,6 +125,36 @@ def init_email_templates():
                 typer.secho("Failed!", fg="red", err=True)
 
 
+@workspaces.command("init-themes")
+def init_themes():
+    """Ensure themes are initialized in each workspace."""
+    from fief.models import Workspace
+    from fief.services.theme import init_workspace_default_theme
+
+    settings = get_settings()
+
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
+    url, connect_args = settings.get_database_connection_parameters(False)
+    engine = create_engine(url, connect_args=connect_args)
+    Session = sessionmaker(engine)
+    with Session() as session:
+        workspace_db = WorkspaceDatabase()
+        latest_revision = workspace_db.get_latest_revision()
+        workspaces = select(Workspace).where(
+            Workspace.alembic_revision == latest_revision
+        )
+        for [workspace] in session.execute(workspaces):
+            assert isinstance(workspace, Workspace)
+            typer.secho(f"Checking {workspace.name}... ", bold=True, nl=False)
+            try:
+                loop.run_until_complete(init_workspace_default_theme(workspace))
+                typer.secho("Done!")
+            except (ConnectionError, DBAPIError):
+                typer.secho("Failed!", fg="red", err=True)
+
+
 @workspaces.command("create-main")
 def create_main_workspace():
     """Create a main Fief workspace following the environment settings."""

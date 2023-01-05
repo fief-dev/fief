@@ -12,6 +12,7 @@ from fief.dependencies.register import (
     get_registration_flow,
 )
 from fief.dependencies.tenant import get_current_tenant
+from fief.dependencies.theme import get_current_theme
 from fief.exceptions import LoginException
 from fief.forms import FormHelper
 from fief.locale import gettext_lazy as _
@@ -20,6 +21,7 @@ from fief.models import (
     RegistrationSession,
     RegistrationSessionFlow,
     Tenant,
+    Theme,
 )
 from fief.schemas.auth import LoginError
 from fief.services.authentication_flow import AuthenticationFlow
@@ -43,6 +45,7 @@ async def register(
     | None = Depends(get_optional_registration_session),
     oauth_providers: list[OAuthProvider] | None = Depends(get_oauth_providers),
     tenant: Tenant = Depends(get_current_tenant),
+    theme: Theme = Depends(get_current_theme),
 ):
     if not tenant.registration_allowed:
         raise LoginException(
@@ -60,6 +63,7 @@ async def register(
             and registration_session.flow != RegistrationSessionFlow.PASSWORD,
             "oauth_providers": oauth_providers,
             "tenant": tenant,
+            "theme": theme,
         },
     )
     form = await form_helper.get_form()

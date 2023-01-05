@@ -27,6 +27,7 @@ from fief.models import (
     Role,
     SessionToken,
     Tenant,
+    Theme,
     User,
     UserField,
     UserFieldType,
@@ -66,6 +67,7 @@ class TestData(TypedDict):
     user_permissions: ModelMapping[UserPermission]
     user_roles: ModelMapping[UserRole]
     email_templates: ModelMapping[EmailTemplate]
+    themes: ModelMapping[Theme]
 
 
 tenants: ModelMapping[Tenant] = {
@@ -745,6 +747,26 @@ email_templates: ModelMapping[EmailTemplate] = {
     ),
 }
 
+themes: ModelMapping[Theme] = {
+    "default": Theme.build_default(),
+    "custom": Theme(
+        name="Default",
+        default=False,
+        primary_color="#f43f5e",
+        primary_color_hover="#e11d48",
+        primary_color_light="#fda4af",
+        input_color="#1e293b",
+        input_color_background="#ffffff",
+        light_color="#e2e8f0",
+        light_color_hover="#cbd5e1",
+        text_color="#475569",
+        accent_color="#1e293b",
+        background_color="#ffffff",
+        font_size=16,
+        font_family="'Inter', sans-serif",
+    ),
+}
+
 data_mapping: TestData = {
     "tenants": tenants,
     "clients": clients,
@@ -765,6 +787,7 @@ data_mapping: TestData = {
     "user_permissions": user_permissions,
     "user_roles": user_roles,
     "email_templates": email_templates,
+    "themes": themes,
 }
 
 __all__ = [

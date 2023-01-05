@@ -25,6 +25,16 @@
         {% endif %}
       </div>
     </li>
+    <li class="flex items-center justify-between py-3 border-b border-slate-200">
+      <div class="text-sm whitespace-nowrap">UI Theme</div>
+      <div class="text-sm font-medium text-slate-800 ml-2 truncate">
+        {% if tenant.theme %}
+          {{ tenant.theme.name }}
+        {% else %}
+          <span class="italic">Default</span>
+        {% endif %}
+      </div>
+    </li>
   </ul>
 </div>
 <div class="mt-6">

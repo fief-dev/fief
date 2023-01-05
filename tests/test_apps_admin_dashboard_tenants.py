@@ -110,18 +110,47 @@ class TestCreateTenant:
 
     @pytest.mark.authenticated_admin(mode="session")
     @pytest.mark.htmx(target="modal")
-    async def test_valid(
+    async def test_unknown_theme(
         self,
         test_client_admin_dashboard: httpx.AsyncClient,
-        test_data: TestData,
         csrf_token: str,
-        workspace_session: AsyncSession,
+        not_existing_uuid: uuid.UUID,
     ):
         response = await test_client_admin_dashboard.post(
             "/tenants/create",
             data={
                 "name": "Tertiary",
                 "registration_allowed": True,
+                "theme": not_existing_uuid,
+                "csrf_token": csrf_token,
+            },
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.headers["X-Fief-Error"] == "unknown_theme"
+
+    @pytest.mark.parametrize("theme_alias", [None, "custom"])
+    @pytest.mark.authenticated_admin(mode="session")
+    @pytest.mark.htmx(target="modal")
+    async def test_valid(
+        self,
+        theme_alias: str | None,
+        test_client_admin_dashboard: httpx.AsyncClient,
+        test_data: TestData,
+        csrf_token: str,
+        workspace_session: AsyncSession,
+    ):
+        theme_id: str | None = (
+            str(test_data["themes"][theme_alias].id)
+            if theme_alias is not None
+            else None
+        )
+        response = await test_client_admin_dashboard.post(
+            "/tenants/create",
+            data={
+                "name": "Tertiary",
+                "registration_allowed": True,
+                "theme": theme_id,
                 "csrf_token": csrf_token,
             },
         )
@@ -137,6 +166,10 @@ class TestCreateTenant:
         assert tenant.registration_allowed is True
         assert tenant.slug == "tertiary"
         assert tenant.default is False
+        if theme_id is None:
+            assert tenant.theme_id is None
+        else:
+            assert tenant.theme_id == uuid.UUID(theme_id)
 
         client_repository = ClientRepository(workspace_session)
         clients = await client_repository.list(
@@ -195,12 +228,12 @@ class TestUpdateTenant:
 
     @pytest.mark.authenticated_admin(mode="session")
     @pytest.mark.htmx(target="modal")
-    async def test_valid(
+    async def test_unknown_theme(
         self,
         test_client_admin_dashboard: httpx.AsyncClient,
         test_data: TestData,
+        not_existing_uuid: uuid.UUID,
         csrf_token: str,
-        workspace_session: AsyncSession,
     ):
         tenant = test_data["tenants"]["default"]
         response = await test_client_admin_dashboard.post(
@@ -208,6 +241,37 @@ class TestUpdateTenant:
             data={
                 "name": "Updated name",
                 "registration_allowed": tenant.registration_allowed,
+                "theme": not_existing_uuid,
+                "csrf_token": csrf_token,
+            },
+        )
+        assert response.headers["X-Fief-Error"] == "unknown_theme"
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    @pytest.mark.parametrize("theme_alias", [None, "custom"])
+    @pytest.mark.authenticated_admin(mode="session")
+    @pytest.mark.htmx(target="modal")
+    async def test_valid(
+        self,
+        theme_alias: str | None,
+        test_client_admin_dashboard: httpx.AsyncClient,
+        test_data: TestData,
+        csrf_token: str,
+        workspace_session: AsyncSession,
+    ):
+        theme_id: str | None = (
+            str(test_data["themes"][theme_alias].id)
+            if theme_alias is not None
+            else None
+        )
+        tenant = test_data["tenants"]["default"]
+        response = await test_client_admin_dashboard.post(
+            f"/tenants/{tenant.id}/edit",
+            data={
+                "name": "Updated name",
+                "registration_allowed": tenant.registration_allowed,
+                "theme": theme_id,
                 "csrf_token": csrf_token,
             },
         )
@@ -218,3 +282,7 @@ class TestUpdateTenant:
         updated_tenant = await tenant_repository.get_by_id(tenant.id)
         assert updated_tenant is not None
         assert updated_tenant.name == "Updated name"
+        if theme_id is None:
+            assert updated_tenant.theme_id is None
+        else:
+            assert updated_tenant.theme_id == uuid.UUID(theme_id)

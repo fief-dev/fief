@@ -6,6 +6,7 @@ from fastapi import status
 from sqlalchemy import select
 
 from fief.db import AsyncSession
+from fief.errors import APIErrorCode
 from fief.models import Client
 from fief.repositories import ClientRepository
 from tests.data import TestData
@@ -36,11 +37,7 @@ class TestListTenants:
         [("default", 1), ("de", 1), ("SECONDARY", 1), ("unknown", 0)],
     )
     async def test_query_filter(
-        self,
-        query: str,
-        nb_results: int,
-        test_client_admin: httpx.AsyncClient,
-        test_data: TestData,
+        self, query: str, nb_results: int, test_client_admin: httpx.AsyncClient
     ):
         response = await test_client_admin.get("/tenants/", params={"query": query})
 
@@ -92,6 +89,41 @@ class TestCreateTenant:
         assert json["slug"] != "secondary"
         assert json["slug"].startswith("secondary")
 
+    @pytest.mark.authenticated_admin
+    async def test_unknown_theme(
+        self, test_client_admin: httpx.AsyncClient, not_existing_uuid: uuid.UUID
+    ):
+        response = await test_client_admin.post(
+            "/tenants/",
+            json={"name": "Tertiary", "theme_id": str(not_existing_uuid)},
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        json = response.json()
+        assert json["detail"] == APIErrorCode.TENANT_CREATE_NOT_EXISTING_THEME
+
+    @pytest.mark.parametrize("theme_alias", [None, "custom"])
+    @pytest.mark.authenticated_admin
+    async def test_valid_theme(
+        self,
+        theme_alias: str | None,
+        test_client_admin: httpx.AsyncClient,
+        test_data: TestData,
+    ):
+        theme_id: str | None = (
+            str(test_data["themes"][theme_alias].id)
+            if theme_alias is not None
+            else None
+        )
+        response = await test_client_admin.post(
+            "/tenants/",
+            json={"name": "Tertiary", "theme_id": theme_id},
+        )
+
+        assert response.status_code == status.HTTP_201_CREATED
+        json = response.json()
+        assert json["theme_id"] == theme_id
+
 
 @pytest.mark.asyncio
 @pytest.mark.workspace_host
@@ -128,3 +160,43 @@ class TestUpdateTenant:
 
         json = response.json()
         assert json["name"] == "Updated name"
+
+    @pytest.mark.authenticated_admin
+    async def test_unknown_theme(
+        self,
+        test_client_admin: httpx.AsyncClient,
+        test_data: TestData,
+        not_existing_uuid: uuid.UUID,
+    ):
+        tenant = test_data["tenants"]["default"]
+        response = await test_client_admin.patch(
+            f"/tenants/{tenant.id}",
+            json={"theme_id": str(not_existing_uuid)},
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        json = response.json()
+        assert json["detail"] == APIErrorCode.TENANT_UPDATE_NOT_EXISTING_THEME
+
+    @pytest.mark.parametrize("theme_alias", [None, "custom"])
+    @pytest.mark.authenticated_admin
+    async def test_valid_theme(
+        self,
+        theme_alias: str | None,
+        test_client_admin: httpx.AsyncClient,
+        test_data: TestData,
+    ):
+        theme_id: str | None = (
+            str(test_data["themes"][theme_alias].id)
+            if theme_alias is not None
+            else None
+        )
+        tenant = test_data["tenants"]["default"]
+        response = await test_client_admin.patch(
+            f"/tenants/{tenant.id}",
+            json={"theme_id": theme_id},
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+        json = response.json()
+        assert json["theme_id"] == theme_id

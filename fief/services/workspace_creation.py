@@ -8,12 +8,14 @@ from fief.repositories import (
     ClientRepository,
     EmailTemplateRepository,
     TenantRepository,
+    ThemeRepository,
     WorkspaceRepository,
     WorkspaceUserRepository,
 )
 from fief.schemas.workspace import WorkspaceCreate
 from fief.services.email_template.initializer import EmailTemplateInitializer
 from fief.services.main_workspace import get_main_fief_client, get_main_fief_workspace
+from fief.services.theme import init_default_theme
 from fief.services.workspace_db import (
     WorkspaceDatabase,
     WorkspaceDatabaseConnectionError,
@@ -113,6 +115,9 @@ class WorkspaceCreation:
                 email_template_repository
             )
             await email_template_initializer.init_templates()
+
+            theme_repository = ThemeRepository(session)
+            await init_default_theme(theme_repository)
 
             await session.commit()
 

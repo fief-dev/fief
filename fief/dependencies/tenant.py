@@ -1,6 +1,7 @@
 from fastapi import Depends, HTTPException, Query, status
 from pydantic import UUID4
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 
 from fief import schemas
 from fief.dependencies.pagination import (
@@ -69,7 +70,7 @@ async def get_tenant_by_id_or_404(
     id: UUID4,
     repository: TenantRepository = Depends(get_workspace_repository(TenantRepository)),
 ) -> Tenant:
-    tenant = await repository.get_by_id(id)
+    tenant = await repository.get_by_id(id, (selectinload(Tenant.theme),))
 
     if tenant is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)

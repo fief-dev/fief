@@ -46,17 +46,37 @@
 {% macro form_combobox_select_field(field) %}
 {{ form_field_label(field) }}
 {{ field(id=field.id ~ "hidden") }}
-<input
-  id="{{ field.id }}"
-  type="text"
-  class="form-select w-full"
-  name="{{ field.query_parameter_name }}"
-  hx-get="{{ field.query_endpoint_path }}"
-  hx-trigger="keyup,focus"
-  hx-target="#{{ field.id }}-combobox-results"
-  hx-headers='{"HX-Combobox": true}'
-  autocomplete="off"
-/>
+<div class="flex">
+  <input
+    id="{{ field.id }}"
+    type="text"
+    class="form-select w-full pr-9"
+    name="{{ field.query_parameter_name }}"
+    hx-get="{{ field.query_endpoint_path }}"
+    hx-trigger="keyup,focus"
+    hx-target="#{{ field.id }}-combobox-results"
+    hx-headers='{"HX-Combobox": true}'
+    autocomplete="off"
+    value="{{ field.data[field.label_attr] }}"
+  />
+  {% if not field.flags.required %}
+    <button
+      type="button"
+      _="
+        init
+          set :inputElement to previous <input[type='hidden'] /> from me
+          set :queryElement to previous <input /> from me
+        end
+        on click
+          set :inputElement.value to ''
+          set :queryElement.value to ''
+        end
+      "
+    >
+      {{ icons.x_mark("w-4 h-4 fill-current text-slate-400 group-hover:text-slate-500 ml-2") }}
+    </button>
+  {% endif %}
+</div>
 <div class="relative">
   <div
     id="{{ field.id }}-combobox-results"

@@ -20,7 +20,7 @@
   {% endcall %}
   {% call modal.body() %}
     <div class="space-y-4">
-      {{ forms.form_field(form.client_id) }}
+      {{ forms.form_field(form.client) }}
       {{ forms.form_field(form.scopes) }}
       {{ forms.form_csrf_token(form) }}
     </div>

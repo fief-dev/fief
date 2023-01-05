@@ -23,6 +23,7 @@ from fief.dependencies.current_workspace import get_current_workspace_session
 from fief.dependencies.db import get_main_async_session
 from fief.dependencies.fief import FiefAsyncRelativeEndpoints, get_fief
 from fief.dependencies.tasks import get_send_task
+from fief.dependencies.theme import get_theme_preview
 from fief.dependencies.workspace_creation import get_workspace_creation
 from fief.dependencies.workspace_db import get_workspace_db
 from fief.models import (
@@ -33,6 +34,7 @@ from fief.models import (
     Workspace,
     WorkspaceUser,
 )
+from fief.services.theme_preview import ThemePreview
 from fief.services.workspace_creation import WorkspaceCreation
 from fief.services.workspace_db import WorkspaceDatabase
 from fief.settings import settings
@@ -239,6 +241,11 @@ async def send_task_mock() -> MagicMock:
 
 
 @pytest.fixture
+async def theme_preview_mock() -> MagicMock:
+    return MagicMock(spec=ThemePreview)
+
+
+@pytest.fixture
 def smtplib_mock() -> MagicMock:
     with patch("smtplib.SMTP", autospec=True) as mock:
         yield mock
@@ -426,6 +433,7 @@ async def test_client_generator(
     workspace_creation_mock: MagicMock,
     send_task_mock: MagicMock,
     fief_client_mock: MagicMock,
+    theme_preview_mock: MagicMock,
     authenticated_admin: Callable[[httpx.AsyncClient], httpx.AsyncClient],
     access_token: Callable[[httpx.AsyncClient], httpx.AsyncClient],
     workspace_host: str | None,
@@ -443,6 +451,7 @@ async def test_client_generator(
         ] = lambda: workspace_creation_mock
         app.dependency_overrides[get_send_task] = lambda: send_task_mock
         app.dependency_overrides[get_fief] = lambda: fief_client_mock
+        app.dependency_overrides[get_theme_preview] = lambda: theme_preview_mock
         settings.fief_admin_session_cookie_domain = ""
 
         async with asgi_lifespan.LifespanManager(app):

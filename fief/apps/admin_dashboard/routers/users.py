@@ -159,9 +159,9 @@ async def create_user(
     if await form_helper.is_submitted_and_valid():
         form = await form_helper.get_form()
 
-        tenant = await tenant_repository.get_by_id(form.data["tenant_id"])
+        tenant = await tenant_repository.get_by_id(form.data["tenant"])
         if tenant is None:
-            form.tenant_id.errors.append("Unknown tenant.")
+            form.tenant.errors.append("Unknown tenant.")
             return await form_helper.get_error_response(
                 "Unknown tenant.", "unknown_tenant"
             )
@@ -170,7 +170,7 @@ async def create_user(
         user_manager = UserManager(
             user_db, password_helper, workspace, tenant, send_task, audit_logger
         )
-        user_create = user_create_internal_model(**form.data)
+        user_create = user_create_internal_model(**form.data, tenant_id=tenant.id)
 
         try:
             user = await user_manager.create_with_fields(
@@ -279,18 +279,19 @@ async def create_user_access_token(
         context={**context, **list_context, "user": user},
     )
     form = await form_helper.get_form()
-    form.client_id.query_endpoint_path = f"/admin/clients?tenant={user.tenant_id}"
+    form.client.query_endpoint_path = f"/admin/clients?tenant={user.tenant_id}"
 
     if await form_helper.is_submitted_and_valid():
         data = form.data
         tenant = user.tenant
 
-        client = await client_repository.get_by_id(data["client_id"])
+        client = await client_repository.get_by_id(data["client"])
         if client is None or client.tenant_id != tenant.id:
-            form.client_id.errors.append("Unknown client.")
+            form.client.errors.append("Unknown client.")
             return await form_helper.get_error_response(
                 "Unknown client.", "unknown_client"
             )
+        form.client.data = client
 
         tenant_host = tenant.get_host(workspace.domain)
         permissions = await get_user_permissions(user)
@@ -359,11 +360,11 @@ async def user_permissions(
 
     if await form_helper.is_submitted_and_valid():
         form = await form_helper.get_form()
-        permission_id = form.data["permission_id"]
+        permission_id = form.data["permission"]
 
         permission = await permission_repository.get_by_id(permission_id)
         if permission is None:
-            form.permission_id.errors.append("Unknown permission.")
+            form.permission.errors.append("Unknown permission.")
             return await form_helper.get_error_response(
                 "Unknown permission.", "unknown_permission"
             )
@@ -374,7 +375,7 @@ async def user_permissions(
             )
         )
         if existing_user_permission is not None:
-            form.permission_id.errors.append(
+            form.permission.errors.append(
                 "This permission is already granted to this user."
             )
             return await form_helper.get_error_response(
@@ -465,18 +466,18 @@ async def user_roles(
 
     if await form_helper.is_submitted_and_valid():
         form = await form_helper.get_form()
-        role_id = form.data["role_id"]
+        role_id = form.data["role"]
 
         role = await role_repository.get_by_id(role_id)
         if role is None:
-            form.role_id.errors.append("Unknown role.")
+            form.role.errors.append("Unknown role.")
             return await form_helper.get_error_response("Unknown role.", "unknown_role")
 
         existing_user_role = await user_role_repository.get_by_role_and_user(
             user.id, role_id
         )
         if existing_user_role is not None:
-            form.role_id.errors.append("This role is already granted to this user.")
+            form.role.errors.append("This role is already granted to this user.")
             return await form_helper.get_error_response(
                 "This role is already granted to this user.", "already_added_role"
             )
