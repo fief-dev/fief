@@ -110,6 +110,23 @@ class TestCreateTenant:
 
     @pytest.mark.authenticated_admin(mode="session")
     @pytest.mark.htmx(target="modal")
+    async def test_invalid_logo_url(
+        self, test_client_admin_dashboard: httpx.AsyncClient, csrf_token: str
+    ):
+        response = await test_client_admin_dashboard.post(
+            "/tenants/create",
+            data={
+                "name": "Tertiary",
+                "registration_allowed": True,
+                "logo_url": "INVALID_URL",
+                "csrf_token": csrf_token,
+            },
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    @pytest.mark.authenticated_admin(mode="session")
+    @pytest.mark.htmx(target="modal")
     async def test_unknown_theme(
         self,
         test_client_admin_dashboard: httpx.AsyncClient,
@@ -151,6 +168,7 @@ class TestCreateTenant:
                 "name": "Tertiary",
                 "registration_allowed": True,
                 "theme": theme_id,
+                "logo_url": "https://bretagne.duchy/logo.svg",
                 "csrf_token": csrf_token,
             },
         )
@@ -166,6 +184,7 @@ class TestCreateTenant:
         assert tenant.registration_allowed is True
         assert tenant.slug == "tertiary"
         assert tenant.default is False
+        assert tenant.logo_url == "https://bretagne.duchy/logo.svg"
         if theme_id is None:
             assert tenant.theme_id is None
         else:
@@ -228,6 +247,27 @@ class TestUpdateTenant:
 
     @pytest.mark.authenticated_admin(mode="session")
     @pytest.mark.htmx(target="modal")
+    async def test_invalid_logo_url(
+        self,
+        test_client_admin_dashboard: httpx.AsyncClient,
+        test_data: TestData,
+        csrf_token: str,
+    ):
+        tenant = test_data["tenants"]["default"]
+        response = await test_client_admin_dashboard.post(
+            f"/tenants/{tenant.id}/edit",
+            data={
+                "name": "Updated name",
+                "registration_allowed": tenant.registration_allowed,
+                "logo_url": "INVALID_URL",
+                "csrf_token": csrf_token,
+            },
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    @pytest.mark.authenticated_admin(mode="session")
+    @pytest.mark.htmx(target="modal")
     async def test_unknown_theme(
         self,
         test_client_admin_dashboard: httpx.AsyncClient,
@@ -245,9 +285,9 @@ class TestUpdateTenant:
                 "csrf_token": csrf_token,
             },
         )
-        assert response.headers["X-Fief-Error"] == "unknown_theme"
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.headers["X-Fief-Error"] == "unknown_theme"
 
     @pytest.mark.parametrize("theme_alias", [None, "custom"])
     @pytest.mark.authenticated_admin(mode="session")
@@ -271,6 +311,7 @@ class TestUpdateTenant:
             data={
                 "name": "Updated name",
                 "registration_allowed": tenant.registration_allowed,
+                "logo_url": "https://bretagne.duchy/logo.svg",
                 "theme": theme_id,
                 "csrf_token": csrf_token,
             },
@@ -282,6 +323,7 @@ class TestUpdateTenant:
         updated_tenant = await tenant_repository.get_by_id(tenant.id)
         assert updated_tenant is not None
         assert updated_tenant.name == "Updated name"
+        assert updated_tenant.logo_url == "https://bretagne.duchy/logo.svg"
         if theme_id is None:
             assert updated_tenant.theme_id is None
         else:

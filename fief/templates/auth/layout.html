@@ -6,8 +6,12 @@
       <div class="w-full">
         <div class="min-h-screen h-full flex flex flex-col after:flex-1">
           <div class="flex-1">
-            <div class="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
-              <span class="text-3xl text-accent font-bold">{{ tenant.name }}</span>
+            <div class="flex items-center justify-between h-16 py-2 px-4 sm:px-6 lg:px-8">
+              {% if tenant.logo_url %}
+                <img src="{{ tenant.logo_url }}" alt="{{ tenant.name }}" class="max-h-full max-w-[100px]" />
+              {% else %}
+                <span class="text-3xl text-accent font-bold">{{ tenant.name }}</span>
+              {% endif %}
             </div>
           </div>
 

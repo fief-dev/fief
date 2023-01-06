@@ -27,6 +27,8 @@ class Tenant(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
     )
     theme: Theme | None = relationship("Theme")
 
+    logo_url: str | None = Column(String(length=512), default=None, nullable=True)
+
     def __repr__(self) -> str:
         return f"Tenant(id={self.id}, name={self.name}, slug={self.slug}, default={self.default})"
 

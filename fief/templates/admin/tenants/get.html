@@ -26,6 +26,16 @@
       </div>
     </li>
     <li class="flex items-center justify-between py-3 border-b border-slate-200">
+      <div class="text-sm whitespace-nowrap">Logo</div>
+      <div class="text-sm font-medium text-slate-800 ml-2 truncate">
+        {% if tenant.logo_url %}
+          <img src="{{ tenant.logo_url }}" alt="{{ tenant.name }}" class="object-contain h-4" />
+        {% else %}
+          —
+        {% endif %}
+      </div>
+    </li>
+    <li class="flex items-center justify-between py-3 border-b border-slate-200">
       <div class="text-sm whitespace-nowrap">UI Theme</div>
       <div class="text-sm font-medium text-slate-800 ml-2 truncate">
         {% if tenant.theme %}

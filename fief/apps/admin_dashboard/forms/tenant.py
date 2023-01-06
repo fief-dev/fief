@@ -1,4 +1,4 @@
-from wtforms import BooleanField, StringField, validators
+from wtforms import BooleanField, StringField, URLField, validators
 
 from fief.forms import ComboboxSelectField, CSRFBaseForm, empty_string_to_none
 
@@ -6,6 +6,12 @@ from fief.forms import ComboboxSelectField, CSRFBaseForm, empty_string_to_none
 class BaseTenantForm(CSRFBaseForm):
     name = StringField("Name", validators=[validators.InputRequired()])
     registration_allowed = BooleanField("Registration allowed", default=True)
+    logo_url = URLField(
+        "Logo URL",
+        validators=[validators.Optional(), validators.URL(require_tld=False)],
+        filters=[empty_string_to_none],
+        description="It will be shown on the top left of authentication pages.",
+    )
     theme = ComboboxSelectField(
         "UI Theme",
         query_endpoint_path="/admin/customization/themes/",
