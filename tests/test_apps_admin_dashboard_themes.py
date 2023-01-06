@@ -21,6 +21,21 @@ class TestListThemes:
         admin_dashboard_unauthorized_assertions(response)
 
     @pytest.mark.authenticated_admin(mode="session")
+    async def test_combobox(
+        self, test_client_admin_dashboard: httpx.AsyncClient, test_data: TestData
+    ):
+        response = await test_client_admin_dashboard.get(
+            "/customization/themes/",
+            headers={"HX-Request": "true", "HX-Combobox": "true"},
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+
+        html = BeautifulSoup(response.text, features="html.parser")
+        items = html.find_all("li")
+        assert len(items) == len(test_data["themes"])
+
+    @pytest.mark.authenticated_admin(mode="session")
     @pytest.mark.htmx(target="main")
     async def test_valid(
         self, test_client_admin_dashboard: httpx.AsyncClient, test_data: TestData
