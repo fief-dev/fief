@@ -3,13 +3,26 @@ from typing import Any
 
 import asgi_babel
 import wtforms.i18n
+from asgi_tools import Request
 from babel import Locale, support
 
 from fief.paths import LOCALE_DIRECTORY
+from fief.settings import settings
 
 Translations = support.Translations
 
-BabelMiddleware = asgi_babel.BabelMiddleware
+
+async def select_locale(request: Request) -> str | None:
+    user_locale_cookie = request.cookies.get(settings.user_locale_cookie_name)
+    if user_locale_cookie is not None:
+        return user_locale_cookie
+    return await asgi_babel.select_locale_by_request(request)
+
+
+class BabelMiddleware(asgi_babel.BabelMiddleware):
+    def __post_init__(self):
+        self.locale_selector = select_locale
+        return super().__post_init__()
 
 
 def get_babel_middleware_kwargs() -> Mapping[str, Any]:
@@ -34,7 +47,8 @@ def get_translations(
         return support.NullTranslations()
 
     domain = domain or BABEL.domain
-    if (domain, locale.language) not in BABEL.translations:
+    locale_code = str(locale)
+    if (domain, locale_code) not in BABEL.translations:
         translations = None
         for path in reversed(BABEL.locales_dirs):
             trans = support.Translations.load(path, locales=locale, domain=domain)
@@ -43,9 +57,9 @@ def get_translations(
             else:
                 translations = trans
 
-        BABEL.translations[(domain, locale.language)] = translations
+        BABEL.translations[(domain, locale_code)] = translations
 
-    return BABEL.translations[(domain, locale.language)]
+    return BABEL.translations[(domain, locale_code)]
 
 
 def gettext(string: str, domain: str | None = None, **variables):

@@ -75,6 +75,11 @@ class Settings(BaseSettings):
     session_data_cookie_secure: bool = True
     session_data_cookie_lifetime_seconds: int | None = None
 
+    user_locale_cookie_name: str = "fief_locale"
+    user_locale_cookie_domain: str = ""
+    user_locale_cookie_secure: bool = True
+    user_locale_lifetime_seconds: int = 86400 * 30
+
     login_session_cookie_name: str = "fief_login_session"
     login_session_cookie_domain: str = ""
     login_session_cookie_secure: bool = True

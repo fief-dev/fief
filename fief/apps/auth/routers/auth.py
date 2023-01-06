@@ -58,6 +58,7 @@ async def authorize(
     | None = Depends(get_authorize_code_challenge),
     nonce: str | None = Depends(get_nonce),
     state: str | None = Query(None),
+    lang: str | None = Query(None),
     authentication_flow: AuthenticationFlow = Depends(get_authentication_flow),
     has_valid_session_token: bool = Depends(has_valid_session_token),
 ):
@@ -82,6 +83,16 @@ async def authorize(
         code_challenge_tuple=code_challenge_tuple,
         client=client,
     )
+
+    if lang is not None:
+        response.set_cookie(
+            settings.user_locale_cookie_name,
+            lang,
+            max_age=settings.user_locale_lifetime_seconds,
+            domain=settings.session_cookie_domain,
+            secure=settings.session_cookie_secure,
+            httponly=True,
+        )
 
     return response
 

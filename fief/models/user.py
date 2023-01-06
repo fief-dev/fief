@@ -1,12 +1,10 @@
 from typing import TYPE_CHECKING, Any, Optional
 
-from babel import Locale
 from pydantic import UUID4
 from sqlalchemy import Boolean, Column, ForeignKey, String
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.schema import UniqueConstraint
 
-from fief.locale import Translations, get_translations
 from fief.models.base import WorkspaceBase
 from fief.models.generics import GUID, CreatedUpdatedAt, UUIDModel
 from fief.models.tenant import Tenant
@@ -51,9 +49,6 @@ class User(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
             user_field_value.get_slug_and_value()
             for user_field_value in self.user_field_values
         )
-
-    def get_translations(self) -> Translations:
-        return get_translations(locale=Locale.parse("en_US"))
 
     def get_user_field_value(self, user_field: UserField) -> Optional["UserFieldValue"]:
         for user_field_value in self.user_field_values:

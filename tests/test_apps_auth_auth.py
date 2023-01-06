@@ -392,6 +392,27 @@ class TestAuthAuthorize:
         else:
             assert login_session.response_mode == "fragment"
 
+    async def test_set_locale_by_query(
+        self, tenant_params: TenantParams, test_client_auth: httpx.AsyncClient
+    ):
+        params = {
+            "lang": "fr_FR",
+            "response_type": "code",
+            "client_id": tenant_params.client.client_id,
+            "redirect_uri": "https://nantes.city/callback",
+            "scope": "openid",
+        }
+
+        cookies = {}
+        cookies[settings.session_cookie_name] = tenant_params.session_token_token[0]
+
+        response = await test_client_auth.get(
+            f"{tenant_params.path_prefix}/authorize", params=params, cookies=cookies
+        )
+
+        assert response.status_code == status.HTTP_302_FOUND
+        assert response.cookies[settings.user_locale_cookie_name] == "fr_FR"
+
 
 @pytest.mark.asyncio
 @pytest.mark.workspace_host
