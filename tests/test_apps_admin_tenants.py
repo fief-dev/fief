@@ -55,17 +55,24 @@ class TestCreateTenant:
 
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
+    @pytest.mark.parametrize("logo_url", [None, "https://bretagne.duchy/logo.svg"])
     @pytest.mark.authenticated_admin
     async def test_valid(
-        self, test_client_admin: httpx.AsyncClient, workspace_session: AsyncSession
+        self,
+        logo_url: str | None,
+        test_client_admin: httpx.AsyncClient,
+        workspace_session: AsyncSession,
     ):
-        response = await test_client_admin.post("/tenants/", json={"name": "Tertiary"})
+        response = await test_client_admin.post(
+            "/tenants/", json={"name": "Tertiary", "logo_url": logo_url}
+        )
 
         assert response.status_code == status.HTTP_201_CREATED
 
         json = response.json()
         assert json["name"] == "Tertiary"
         assert json["slug"] == "tertiary"
+        assert json["logo_url"] == logo_url
         assert json["default"] is False
 
         client_repository = ClientRepository(workspace_session)
@@ -146,20 +153,25 @@ class TestUpdateTenant:
 
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
+    @pytest.mark.parametrize("logo_url", [None, "https://bretagne.duchy/logo.svg"])
     @pytest.mark.authenticated_admin
     async def test_valid(
-        self, test_client_admin: httpx.AsyncClient, test_data: TestData
+        self,
+        logo_url: str | None,
+        test_client_admin: httpx.AsyncClient,
+        test_data: TestData,
     ):
         tenant = test_data["tenants"]["default"]
         response = await test_client_admin.patch(
             f"/tenants/{tenant.id}",
-            json={"name": "Updated name"},
+            json={"name": "Updated name", "logo_url": logo_url},
         )
 
         assert response.status_code == status.HTTP_200_OK
 
         json = response.json()
         assert json["name"] == "Updated name"
+        assert json["logo_url"] == logo_url
 
     @pytest.mark.authenticated_admin
     async def test_unknown_theme(
