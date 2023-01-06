@@ -1,4 +1,5 @@
 from fastapi import APIRouter, FastAPI
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from fief.apps.auth.exception_handlers import exception_handlers
@@ -12,6 +13,7 @@ from fief.apps.auth.routers.well_known import router as well_known_router
 from fief.locale import BabelMiddleware, get_babel_middleware_kwargs
 from fief.middlewares.cors import CORSMiddlewarePath
 from fief.middlewares.csrf import CSRFCookieSetterMiddleware
+from fief.middlewares.security_headers import SecurityHeadersMiddleware
 from fief.paths import STATIC_DIRECTORY
 
 
@@ -31,7 +33,9 @@ tenant_router = include_routers(APIRouter(prefix="/{tenant_slug}"))
 
 
 app = FastAPI(title="Fief Authentication API")
+app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(CSRFCookieSetterMiddleware)
+app.add_middleware(GZipMiddleware)
 app.add_middleware(
     CORSMiddlewarePath,
     path_regex=r"^/api|^/\.well-known",

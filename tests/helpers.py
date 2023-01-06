@@ -28,6 +28,15 @@ async def access_token_assertions(*, access_token: str, jwk: jwk.JWK, user: User
     assert "permissions" in access_token_claims
 
 
+def security_headers_assertions(response: httpx.Response):
+    headers = response.headers
+    assert headers["content-security-policy"] == "frame-ancestors 'self'"
+    assert headers["x-frame-options"] == "SAMEORIGIN"
+    assert headers["referrer-policy"] == "strict-origin-when-cross-origin"
+    assert headers["x-content-type-options"] == "nosniff"
+    assert headers["permissions-policy"] == "geolocation=() camera=(), microphone=()"
+
+
 async def id_token_assertions(
     *,
     id_token: str,

@@ -22,12 +22,14 @@ from fief.apps.admin_dashboard.routers.user_fields import router as user_fields_
 from fief.apps.admin_dashboard.routers.users import router as users_router
 from fief.apps.admin_dashboard.routers.workspaces import router as workspaces_router
 from fief.middlewares.csrf import CSRFCookieSetterMiddleware
+from fief.middlewares.security_headers import SecurityHeadersMiddleware
 from fief.paths import STATIC_DIRECTORY
 from fief.settings import settings
 from fief.templates import templates
 
 app = FastAPI(title="Fief Administration Dashboard", openapi_url=None)
 
+app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(CSRFCookieSetterMiddleware)
 app.add_middleware(GZipMiddleware)
 app.add_middleware(

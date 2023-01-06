@@ -9,6 +9,7 @@ from fief.apps.admin.routers.roles import router as roles_router
 from fief.apps.admin.routers.tenants import router as tenants_router
 from fief.apps.admin.routers.user_fields import router as user_fields_router
 from fief.apps.admin.routers.users import router as users_router
+from fief.middlewares.security_headers import SecurityHeadersMiddleware
 from fief.settings import settings
 
 app = FastAPI(title="Fief Administration API")
@@ -20,6 +21,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(SecurityHeadersMiddleware)
 
 app.include_router(clients_router, prefix="/clients", tags=["Clients"])
 app.include_router(
