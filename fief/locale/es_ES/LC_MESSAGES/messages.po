@@ -189,7 +189,7 @@ msgstr "response_type no es válido\n"
 msgid "nonce parameter is required for this response_type"
 msgstr "este tipo de respuesta requiere un parámetro"
 
-#: fief/templates/auth/auth_layout.html:46
+#: fief/templates/auth/layout.html:46
 msgid "Powered and secured by"
 msgstr "Motorizado e protegido por"
 

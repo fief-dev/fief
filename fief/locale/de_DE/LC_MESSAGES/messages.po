@@ -192,7 +192,7 @@ msgstr "response_type ist ungültig"
 msgid "nonce parameter is required for this response_type"
 msgstr "Für diesen response_type wird der Parameter nonce benötigt"
 
-#: fief/templates/auth/auth_layout.html:46
+#: fief/templates/auth/layout.html:46
 msgid "Powered and secured by"
 msgstr "Betrieben und geschützt von"
 

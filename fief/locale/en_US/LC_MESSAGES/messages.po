@@ -187,7 +187,7 @@ msgstr "response_type is invalid"
 msgid "nonce parameter is required for this response_type"
 msgstr "nonce parameter is required for this response_type"
 
-#: fief/templates/auth/auth_layout.html:46
+#: fief/templates/auth/layout.html:46
 msgid "Powered and secured by"
 msgstr "Powered and secured by"
 
