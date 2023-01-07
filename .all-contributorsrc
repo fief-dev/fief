@@ -116,6 +116,15 @@
       "contributions": [
         "translation"
       ]
+    },
+    {
+      "login": "olimcc",
+      "name": "olimcc",
+      "avatar_url": "https://avatars.githubusercontent.com/u/842983?v=4",
+      "profile": "http://www.olimcc.com",
+      "contributions": [
+        "security"
+      ]
     }
   ],
   "contributorsPerLine": 7,
