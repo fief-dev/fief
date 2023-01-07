@@ -125,6 +125,15 @@
       "contributions": [
         "security"
       ]
+    },
+    {
+      "login": "jhamman",
+      "name": "Joe Hamman",
+      "avatar_url": "https://avatars.githubusercontent.com/u/2443309?v=4",
+      "profile": "http://joehamman.com",
+      "contributions": [
+        "security"
+      ]
     }
   ],
   "contributorsPerLine": 7,
