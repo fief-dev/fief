@@ -44,6 +44,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
       <td align="center"><a href="https://jimscope.is-a.dev"><img src="https://avatars.githubusercontent.com/u/27647007?v=4?s=100" width="100px;" alt="Jimmy Angel Pérez Díaz"/><br /><sub><b>Jimmy Angel Pérez Díaz</b></sub></a><br /><a href="#translation-JimScope" title="Translation">🌍</a></td>
       <td align="center"><a href="https://pasteman.dev/"><img src="https://avatars.githubusercontent.com/u/5132385?v=4?s=100" width="100px;" alt="Michał Rosiak"/><br /><sub><b>Michał Rosiak</b></sub></a><br /><a href="#translation-michaldev" title="Translation">🌍</a></td>
       <td align="center"><a href="http://joehamman.com"><img src="https://avatars.githubusercontent.com/u/2443309?v=4?s=100" width="100px;" alt="Joe Hamman"/><br /><sub><b>Joe Hamman</b></sub></a><br /><a href="#security-jhamman" title="Security">🛡️</a></td>
+      <td align="center"><a href="http://www.olimcc.com"><img src="https://avatars.githubusercontent.com/u/842983?v=4?s=100" width="100px;" alt="olimcc"/><br /><sub><b>olimcc</b></sub></a><br /><a href="#security-olimcc" title="Security">🛡️</a></td>
     </tr>
   </tbody>
 </table>

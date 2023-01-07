@@ -118,6 +118,15 @@
       ]
     },
     {
+      "login": "olimcc",
+      "name": "olimcc",
+      "avatar_url": "https://avatars.githubusercontent.com/u/842983?v=4",
+      "profile": "http://www.olimcc.com",
+      "contributions": [
+        "security"
+      ]
+    },
+    {
       "login": "jhamman",
       "name": "Joe Hamman",
       "avatar_url": "https://avatars.githubusercontent.com/u/2443309?v=4",
