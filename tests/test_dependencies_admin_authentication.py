@@ -7,7 +7,10 @@ from fastapi import Depends, FastAPI, status
 
 from fief.crypto.token import generate_token
 from fief.db import AsyncSession
-from fief.dependencies.admin_authentication import is_authenticated_admin
+from fief.dependencies.admin_authentication import (
+    is_authenticated_admin_api,
+    is_authenticated_admin_session,
+)
 from fief.models import AdminAPIKey, AdminSessionToken, Workspace, WorkspaceUser
 from fief.settings import settings
 from tests.types import HTTPClientGeneratorType
@@ -17,8 +20,18 @@ from tests.types import HTTPClientGeneratorType
 def app() -> FastAPI:
     app = FastAPI()
 
-    @app.get("/protected", dependencies=[Depends(is_authenticated_admin)])
-    async def protected():
+    @app.get("/login", name="dashboard.auth:login")
+    async def login():
+        return "Ok"
+
+    @app.get("/protected-api", dependencies=[Depends(is_authenticated_admin_api)])
+    async def protected_api():
+        return "Ok"
+
+    @app.get(
+        "/protected-session", dependencies=[Depends(is_authenticated_admin_session)]
+    )
+    async def protected_session():
         return "Ok"
 
     return app
@@ -43,9 +56,11 @@ async def test_no_authentication(
     test_client_generator: HTTPClientGeneratorType, app: FastAPI
 ):
     async with test_client_generator(app) as test_client:
-        response = await test_client.get("/protected")
-
+        response = await test_client.get("/protected-api")
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+        response = await test_client.get("/protected-session")
+        assert response.status_code == status.HTTP_307_TEMPORARY_REDIRECT
 
 
 @pytest.mark.asyncio
@@ -73,9 +88,9 @@ async def test_admin_session_for_another_workspace(
     async with test_client_generator(app) as test_client:
         cookies = {}
         cookies[settings.fief_admin_session_cookie_name] = token
-        response = await test_client.get("/protected", cookies=cookies)
+        response = await test_client.get("/protected-session", cookies=cookies)
 
-        assert response.status_code == status.HTTP_403_FORBIDDEN
+        assert response.status_code == status.HTTP_307_TEMPORARY_REDIRECT
 
 
 @pytest.mark.asyncio
@@ -85,7 +100,7 @@ async def test_valid_admin_session(
     test_client_generator: HTTPClientGeneratorType, app: FastAPI
 ):
     async with test_client_generator(app) as test_client:
-        response = await test_client.get("/protected")
+        response = await test_client.get("/protected-session")
         assert response.status_code == status.HTTP_200_OK
 
 
@@ -106,8 +121,7 @@ async def test_admin_api_key_for_another_workspace(
 
     async with test_client_generator(app) as test_client:
         headers = {"Authorization": f"Bearer {token}"}
-        response = await test_client.get("/protected", headers=headers)
-
+        response = await test_client.get("/protected-api", headers=headers)
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
 
@@ -118,5 +132,5 @@ async def test_valid_admin_api_key(
     test_client_generator: HTTPClientGeneratorType, app: FastAPI
 ):
     async with test_client_generator(app) as test_client:
-        response = await test_client.get("/protected")
+        response = await test_client.get("/protected-api")
         assert response.status_code == status.HTTP_200_OK

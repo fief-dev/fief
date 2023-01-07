@@ -12,7 +12,7 @@ from fief.apps.admin_dashboard.dependencies import (
 from fief.apps.admin_dashboard.forms.client import ClientCreateForm, ClientUpdateForm
 from fief.apps.admin_dashboard.responses import HXRedirectResponse
 from fief.crypto.jwk import generate_jwk
-from fief.dependencies.admin_session import get_admin_session_token
+from fief.dependencies.admin_authentication import is_authenticated_admin_session
 from fief.dependencies.client import get_client_by_id_or_404, get_paginated_clients
 from fief.dependencies.logger import get_audit_logger
 from fief.dependencies.pagination import PaginatedObjects
@@ -23,7 +23,7 @@ from fief.models import AuditLogMessage, Client
 from fief.repositories import ClientRepository, TenantRepository
 from fief.templates import templates
 
-router = APIRouter(dependencies=[Depends(get_admin_session_token)])
+router = APIRouter(dependencies=[Depends(is_authenticated_admin_session)])
 
 
 async def get_columns() -> list[DatatableColumn]:

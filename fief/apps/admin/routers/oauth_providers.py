@@ -8,7 +8,7 @@ from httpx_oauth.oauth2 import RefreshTokenError, RefreshTokenNotSupportedError
 from pydantic import UUID4, ValidationError
 
 from fief import schemas
-from fief.dependencies.admin_authentication import is_authenticated_admin
+from fief.dependencies.admin_authentication import is_authenticated_admin_api
 from fief.dependencies.logger import get_audit_logger
 from fief.dependencies.oauth_provider import (
     get_oauth_provider_by_id_or_404,
@@ -25,7 +25,7 @@ from fief.repositories import OAuthAccountRepository, OAuthProviderRepository
 from fief.schemas.generics import PaginatedResults
 from fief.services.oauth_provider import get_oauth_provider_service
 
-router = APIRouter(dependencies=[Depends(is_authenticated_admin)])
+router = APIRouter(dependencies=[Depends(is_authenticated_admin_api)])
 
 
 @router.get(

@@ -21,7 +21,7 @@ from fief.apps.admin_dashboard.responses import HXRedirectResponse
 from fief.crypto.access_token import generate_access_token
 from fief.crypto.password import password_helper
 from fief.db import AsyncSession
-from fief.dependencies.admin_session import get_admin_session_token
+from fief.dependencies.admin_authentication import is_authenticated_admin_session
 from fief.dependencies.current_workspace import (
     get_current_workspace,
     get_current_workspace_session,
@@ -70,7 +70,7 @@ from fief.settings import settings
 from fief.tasks import SendTask
 from fief.templates import templates
 
-router = APIRouter(dependencies=[Depends(get_admin_session_token)])
+router = APIRouter(dependencies=[Depends(is_authenticated_admin_session)])
 
 
 async def get_columns(

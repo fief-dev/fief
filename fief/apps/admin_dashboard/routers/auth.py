@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, Query, Request, status
 from fastapi.responses import RedirectResponse
 
 from fief.crypto.token import generate_token
+from fief.dependencies.admin_authentication import is_authenticated_admin_session
 from fief.dependencies.admin_session import get_admin_session_token
 from fief.dependencies.fief import FiefAsyncRelativeEndpoints, get_fief
 from fief.dependencies.main_repositories import get_main_repository
@@ -60,7 +61,11 @@ async def callback(
     return response
 
 
-@router.get("/logout", name="dashboard.auth:logout")
+@router.get(
+    "/logout",
+    name="dashboard.auth:logout",
+    dependencies=[Depends(is_authenticated_admin_session)],
+)
 async def logout(
     request: Request,
     session_token: AdminSessionToken = Depends(get_admin_session_token),

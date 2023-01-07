@@ -14,7 +14,7 @@ from fief.dependencies.admin_api_key import (
     get_api_key_by_id_or_404,
     get_paginated_api_keys,
 )
-from fief.dependencies.admin_session import get_admin_session_token
+from fief.dependencies.admin_authentication import is_authenticated_admin_session
 from fief.dependencies.current_workspace import get_current_workspace
 from fief.dependencies.logger import get_audit_logger
 from fief.dependencies.main_repositories import get_main_repository
@@ -25,7 +25,7 @@ from fief.models import AdminAPIKey, AuditLogMessage, Workspace
 from fief.repositories import AdminAPIKeyRepository
 from fief.templates import templates
 
-router = APIRouter(dependencies=[Depends(get_admin_session_token)])
+router = APIRouter(dependencies=[Depends(is_authenticated_admin_session)])
 
 
 async def get_columns() -> list[DatatableColumn]:

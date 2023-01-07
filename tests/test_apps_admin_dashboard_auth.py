@@ -9,10 +9,10 @@ from fief.db import AsyncSession
 from fief.models import AdminSessionToken
 from fief.repositories import AdminSessionTokenRepository
 from fief.settings import settings
-from tests.helpers import admin_dashboard_unauthorized_assertions
 
 
 @pytest.mark.asyncio
+@pytest.mark.workspace_host
 class TestAuthLogin:
     async def test_success(
         self,
@@ -31,13 +31,14 @@ class TestAuthLogin:
         assert location == "http://localhost/authorize"
 
         fief_client_mock.auth_url.assert_called_once_with(
-            redirect_uri="http://api.fief.dev/auth/callback",
+            redirect_uri="http://bretagne.localhost:8000/auth/callback",
             scope=["openid"],
             extras_params={"screen": "login"},
         )
 
 
 @pytest.mark.asyncio
+@pytest.mark.workspace_host
 class TestAuthCallback:
     async def test_missing_code(self, test_client_admin_dashboard: httpx.AsyncClient):
         response = await test_client_admin_dashboard.get("/auth/callback")
@@ -76,11 +77,12 @@ class TestAuthCallback:
 
 
 @pytest.mark.asyncio
+@pytest.mark.workspace_host
 class TestAuthLogout:
     async def test_unauthorized(self, test_client_admin_dashboard: httpx.AsyncClient):
         response = await test_client_admin_dashboard.get("/auth/logout")
 
-        admin_dashboard_unauthorized_assertions(response)
+        assert response.status_code == status.HTTP_307_TEMPORARY_REDIRECT
 
     @pytest.mark.authenticated_admin(mode="session")
     async def test_valid(
@@ -98,7 +100,7 @@ class TestAuthLogout:
         location = response.headers["Location"]
         assert (
             location
-            == f"//{settings.fief_domain}/logout?redirect_uri=http://api.fief.dev/admin/"
+            == f"//{settings.fief_domain}/logout?redirect_uri=http://bretagne.localhost:8000/admin/"
         )
 
         assert "Set-Cookie" in response.headers

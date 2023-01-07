@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 
 from fief import schemas
-from fief.dependencies.admin_authentication import is_authenticated_admin
+from fief.dependencies.admin_authentication import is_authenticated_admin_api
 from fief.dependencies.email_template import (
     get_email_template_by_id_or_404,
     get_paginated_email_templates,
@@ -14,7 +14,7 @@ from fief.models import AuditLogMessage, EmailTemplate
 from fief.repositories.email_template import EmailTemplateRepository
 from fief.schemas.generics import PaginatedResults
 
-router = APIRouter(dependencies=[Depends(is_authenticated_admin)])
+router = APIRouter(dependencies=[Depends(is_authenticated_admin_api)])
 
 
 @router.get(

@@ -5,7 +5,7 @@ from pydantic import UUID4
 from sqlalchemy.orm import joinedload
 
 from fief import schemas, tasks
-from fief.dependencies.admin_authentication import is_authenticated_admin
+from fief.dependencies.admin_authentication import is_authenticated_admin_api
 from fief.dependencies.current_workspace import get_current_workspace
 from fief.dependencies.logger import get_audit_logger
 from fief.dependencies.pagination import PaginatedObjects
@@ -45,7 +45,7 @@ from fief.repositories import (
 from fief.schemas.generics import PaginatedResults
 from fief.tasks import SendTask
 
-router = APIRouter(dependencies=[Depends(is_authenticated_admin)])
+router = APIRouter(dependencies=[Depends(is_authenticated_admin_api)])
 
 
 @router.get(

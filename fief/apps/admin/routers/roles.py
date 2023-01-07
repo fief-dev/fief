@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 
 from fief import schemas
-from fief.dependencies.admin_authentication import is_authenticated_admin
+from fief.dependencies.admin_authentication import is_authenticated_admin_api
 from fief.dependencies.current_workspace import get_current_workspace
 from fief.dependencies.logger import get_audit_logger
 from fief.dependencies.pagination import PaginatedObjects
@@ -15,7 +15,7 @@ from fief.repositories import PermissionRepository, RoleRepository
 from fief.schemas.generics import PaginatedResults
 from fief.tasks import SendTask, on_role_updated
 
-router = APIRouter(dependencies=[Depends(is_authenticated_admin)])
+router = APIRouter(dependencies=[Depends(is_authenticated_admin_api)])
 
 
 @router.get(

@@ -13,7 +13,7 @@ from fief.apps.admin_dashboard.forms.user_field import (
     UserFieldUpdateForm,
 )
 from fief.apps.admin_dashboard.responses import HXRedirectResponse
-from fief.dependencies.admin_session import get_admin_session_token
+from fief.dependencies.admin_authentication import is_authenticated_admin_session
 from fief.dependencies.logger import get_audit_logger
 from fief.dependencies.pagination import PaginatedObjects
 from fief.dependencies.user_field import (
@@ -27,7 +27,7 @@ from fief.models import AuditLogMessage, OAuthProvider, UserField
 from fief.repositories import UserFieldRepository
 from fief.templates import templates
 
-router = APIRouter(dependencies=[Depends(get_admin_session_token)])
+router = APIRouter(dependencies=[Depends(is_authenticated_admin_session)])
 
 
 async def get_columns() -> list[DatatableColumn]:

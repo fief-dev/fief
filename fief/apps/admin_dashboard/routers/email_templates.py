@@ -10,7 +10,7 @@ from fief.apps.admin_dashboard.dependencies import (
 from fief.apps.admin_dashboard.forms.email_template import EmailTemplateUpdateForm
 from fief.apps.admin_dashboard.responses import HXRedirectResponse
 from fief.db import AsyncSession
-from fief.dependencies.admin_session import get_admin_session_token
+from fief.dependencies.admin_authentication import is_authenticated_admin_session
 from fief.dependencies.current_workspace import get_current_workspace_session
 from fief.dependencies.email_template import (
     get_email_template_by_id_or_404,
@@ -31,7 +31,7 @@ from fief.services.email_template.renderers import (
 from fief.services.email_template.types import EmailTemplateType
 from fief.templates import templates
 
-router = APIRouter(dependencies=[Depends(get_admin_session_token)])
+router = APIRouter(dependencies=[Depends(is_authenticated_admin_session)])
 
 
 async def get_columns() -> list[DatatableColumn]:

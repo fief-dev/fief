@@ -21,6 +21,7 @@ from fief.apps.admin_dashboard.routers.themes import router as themes_router
 from fief.apps.admin_dashboard.routers.user_fields import router as user_fields_router
 from fief.apps.admin_dashboard.routers.users import router as users_router
 from fief.apps.admin_dashboard.routers.workspaces import router as workspaces_router
+from fief.dependencies.admin_authentication import is_authenticated_admin_session
 from fief.middlewares.csrf import CSRFCookieSetterMiddleware
 from fief.middlewares.security_headers import SecurityHeadersMiddleware
 from fief.paths import STATIC_DIRECTORY
@@ -58,7 +59,9 @@ for (exc, handler) in exception_handlers.items():
     app.add_exception_handler(exc, handler)
 
 
-@app.get("/", name="dashboard:index")
+@app.get(
+    "/", name="dashboard:index", dependencies=[Depends(is_authenticated_admin_session)]
+)
 async def index(context: BaseContext = Depends(get_base_context)):
     return templates.TemplateResponse("admin/index.html", {**context})
 

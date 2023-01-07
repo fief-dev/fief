@@ -12,7 +12,7 @@ from fief.apps.admin_dashboard.forms.oauth_provider import (
     OAuthProviderUpdateForm,
 )
 from fief.apps.admin_dashboard.responses import HXRedirectResponse
-from fief.dependencies.admin_session import get_admin_session_token
+from fief.dependencies.admin_authentication import is_authenticated_admin_session
 from fief.dependencies.logger import get_audit_logger
 from fief.dependencies.oauth_provider import (
     get_oauth_provider_by_id_or_404,
@@ -26,7 +26,7 @@ from fief.models import AuditLogMessage, OAuthProvider
 from fief.repositories import OAuthProviderRepository
 from fief.templates import templates
 
-router = APIRouter(dependencies=[Depends(get_admin_session_token)])
+router = APIRouter(dependencies=[Depends(is_authenticated_admin_session)])
 
 
 async def get_columns() -> list[DatatableColumn]:
