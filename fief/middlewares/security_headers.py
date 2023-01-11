@@ -28,6 +28,6 @@ class SecurityHeadersMiddleware:
         headers.append("x-frame-options", "SAMEORIGIN")
         headers.append("referrer-policy", "strict-origin-when-cross-origin")
         headers.append("x-content-type-options", "nosniff")
-        headers.append("permissions-policy", "geolocation=() camera=(), microphone=()")
+        headers.append("permissions-policy", "geolocation=(), camera=(), microphone=()")
 
         await send(message)

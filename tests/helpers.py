@@ -34,7 +34,7 @@ def security_headers_assertions(response: httpx.Response):
     assert headers["x-frame-options"] == "SAMEORIGIN"
     assert headers["referrer-policy"] == "strict-origin-when-cross-origin"
     assert headers["x-content-type-options"] == "nosniff"
-    assert headers["permissions-policy"] == "geolocation=() camera=(), microphone=()"
+    assert headers["permissions-policy"] == "geolocation=(), camera=(), microphone=()"
 
 
 async def id_token_assertions(
