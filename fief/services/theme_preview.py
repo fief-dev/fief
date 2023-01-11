@@ -32,7 +32,7 @@ class ThemePreview:
         self, theme: Theme, *, tenant: Tenant, request: Request
     ) -> str:
         oauth_providers = await self.oauth_provider_repository.all()
-        form = LoginForm(meta={"request": request})
+        form = LoginForm(meta={"request": request, "csrf": False})
         context = {
             "request": request,
             "form": form,
@@ -53,7 +53,7 @@ class ThemePreview:
             registration_user_fields, None
         )
         oauth_providers = await self.oauth_provider_repository.all()
-        form = register_form_class(meta={"request": request})
+        form = register_form_class(meta={"request": request, "csrf": False})
         context = {
             "request": request,
             "form": form,
@@ -68,7 +68,7 @@ class ThemePreview:
     async def preview_forgot_password(
         self, theme: Theme, *, tenant: Tenant, request: Request
     ) -> str:
-        form = ForgotPasswordForm(meta={"request": request})
+        form = ForgotPasswordForm(meta={"request": request, "csrf": False})
         context = {
             "request": request,
             "form": form,
@@ -81,7 +81,7 @@ class ThemePreview:
     async def preview_reset_password(
         self, theme: Theme, *, tenant: Tenant, request: Request
     ) -> str:
-        form = ResetPasswordForm(meta={"request": request})
+        form = ResetPasswordForm(meta={"request": request, "csrf": False})
         context = {
             "request": request,
             "form": form,
