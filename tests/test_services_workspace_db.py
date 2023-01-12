@@ -1,6 +1,7 @@
 from collections.abc import AsyncGenerator
 
 import pytest
+import pytest_asyncio
 from sqlalchemy import engine, inspect
 
 from fief.db.types import DatabaseConnectionParameters, DatabaseType
@@ -10,7 +11,7 @@ from fief.services.workspace_db import (
 )
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def test_database_url(
     get_test_database,
 ) -> AsyncGenerator[tuple[DatabaseConnectionParameters, DatabaseType], None]:

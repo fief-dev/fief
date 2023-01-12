@@ -9,6 +9,7 @@ from unittest.mock import MagicMock, patch
 import asgi_lifespan
 import httpx
 import pytest
+import pytest_asyncio
 from fastapi import FastAPI
 from sqlalchemy_utils import create_database, drop_database
 
@@ -69,7 +70,7 @@ def get_test_database() -> GetTestDatabase:
     return _get_test_database
 
 
-@pytest.fixture(scope="session")
+@pytest_asyncio.fixture(scope="session")
 async def main_test_database(
     get_test_database: GetTestDatabase,
 ) -> AsyncGenerator[tuple[DatabaseConnectionParameters, DatabaseType], None]:
@@ -79,7 +80,7 @@ async def main_test_database(
         yield (url, connect_args), database_type
 
 
-@pytest.fixture(scope="session")
+@pytest_asyncio.fixture(scope="session")
 async def main_engine(
     main_test_database: tuple[DatabaseConnectionParameters, DatabaseType],
 ) -> AsyncGenerator[AsyncEngine, None]:
@@ -89,7 +90,7 @@ async def main_engine(
     await engine.dispose()
 
 
-@pytest.fixture(scope="session")
+@pytest_asyncio.fixture(scope="session")
 async def main_connection(
     main_engine: AsyncEngine,
 ) -> AsyncGenerator[AsyncConnection, None]:
@@ -97,12 +98,12 @@ async def main_connection(
         yield connection
 
 
-@pytest.fixture(scope="session")
+@pytest_asyncio.fixture(scope="session")
 async def create_main_db(main_connection: AsyncConnection):
     await main_connection.run_sync(MainBase.metadata.create_all)
 
 
-@pytest.fixture(scope="session")
+@pytest_asyncio.fixture(scope="session")
 async def main_session(
     main_connection: AsyncConnection, create_main_db
 ) -> AsyncGenerator[AsyncSession, None]:
@@ -121,8 +122,7 @@ def main_session_manager(main_session: AsyncSession):
     return _main_session_manager
 
 
-@pytest.fixture(scope="session", autouse=True)
-@pytest.mark.asyncio
+@pytest_asyncio.fixture(scope="session", autouse=True)
 async def workspace(
     main_test_database: tuple[DatabaseConnectionParameters, DatabaseType],
     main_session,
@@ -159,14 +159,14 @@ def latest_revision(workspace: Workspace) -> str:
     return workspace.alembic_revision
 
 
-@pytest.fixture(scope="session")
+@pytest_asyncio.fixture(scope="session")
 async def workspace_engine(workspace: Workspace) -> AsyncGenerator[AsyncEngine, None]:
     engine = create_engine(workspace.get_database_connection_parameters())
     yield engine
     await engine.dispose()
 
 
-@pytest.fixture(scope="session")
+@pytest_asyncio.fixture(scope="session")
 async def workspace_connection(
     workspace_engine: AsyncEngine, workspace: Workspace
 ) -> AsyncGenerator[AsyncConnection, None]:
@@ -178,8 +178,7 @@ async def workspace_connection(
         await connection.rollback()
 
 
-@pytest.fixture(scope="session")
-@pytest.mark.asyncio
+@pytest_asyncio.fixture(scope="session")
 async def test_data(
     workspace_connection: AsyncConnection,
 ) -> AsyncGenerator[TestData, None]:
@@ -194,7 +193,7 @@ async def test_data(
     yield data_mapping
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def workspace_session(
     workspace_connection: AsyncConnection,
 ) -> AsyncGenerator[AsyncSession, None]:
@@ -220,29 +219,29 @@ def not_existing_uuid() -> uuid.UUID:
     return uuid.uuid4()
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def workspace_db_mock(latest_revision: str) -> MagicMock:
     mock = MagicMock(spec=WorkspaceDatabase)
     mock.get_latest_revision.return_value = latest_revision
     return mock
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def workspace_creation_mock() -> MagicMock:
     return MagicMock(spec=WorkspaceCreation)
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def fief_client_mock() -> MagicMock:
     return MagicMock(spec=FiefAsyncRelativeEndpoints)
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def send_task_mock() -> MagicMock:
     return MagicMock(spec=send_task)
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def theme_preview_mock() -> MagicMock:
     return MagicMock(spec=ThemePreview)
 
@@ -309,7 +308,7 @@ async def create_api_key(
     await main_session.delete(admin_api_key)
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def admin_session_token(
     main_session: AsyncSession, workspace: Workspace, workspace_admin_user: User
 ) -> AsyncGenerator[tuple[AdminSessionToken, str], None]:
@@ -319,7 +318,7 @@ async def admin_session_token(
         yield result
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def admin_api_key(
     main_session: AsyncSession, workspace: Workspace
 ) -> AsyncGenerator[tuple[AdminAPIKey, str], None]:
@@ -327,7 +326,7 @@ async def admin_api_key(
         yield result
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def alt_workspace(
     main_session: AsyncSession,
 ) -> AsyncGenerator[Workspace, None]:
@@ -340,7 +339,7 @@ async def alt_workspace(
     await main_session.delete(workspace)
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def admin_session_token_alt_workspace(
     main_session: AsyncSession, alt_workspace: Workspace
 ) -> AsyncGenerator[tuple[AdminSessionToken, str], None]:
@@ -356,7 +355,7 @@ async def admin_session_token_alt_workspace(
         yield result
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def admin_api_key_alt_workspace(
     main_session: AsyncSession, alt_workspace: Workspace
 ) -> AsyncGenerator[tuple[AdminAPIKey, str], None]:
@@ -490,7 +489,7 @@ def csrf_token() -> str:
     return secrets.token_urlsafe()
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def test_client_generator(
     main_session: AsyncSession,
     workspace_session: AsyncSession,
@@ -532,7 +531,7 @@ async def test_client_generator(
     return _test_client_generator
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def test_client_admin(
     test_client_generator: HTTPClientGeneratorType,
 ) -> AsyncGenerator[httpx.AsyncClient, None]:
@@ -554,7 +553,7 @@ def htmx(request: pytest.FixtureRequest):
     return _htmx
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def test_client_admin_dashboard(
     test_client_generator: HTTPClientGeneratorType,
     htmx: Callable[[httpx.AsyncClient], httpx.AsyncClient],
@@ -566,7 +565,7 @@ async def test_client_admin_dashboard(
         yield test_client
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def test_client_auth(
     test_client_generator: HTTPClientGeneratorType,
 ) -> AsyncGenerator[httpx.AsyncClient, None]:
@@ -574,7 +573,7 @@ async def test_client_auth(
         yield test_client
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def test_client_auth_csrf(
     test_client_auth: httpx.AsyncClient, csrf_token: str
 ) -> AsyncGenerator[httpx.AsyncClient, None]:

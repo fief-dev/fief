@@ -2,6 +2,7 @@ from collections.abc import AsyncGenerator
 
 import httpx
 import pytest
+import pytest_asyncio
 from fastapi import Depends, FastAPI, status
 from sqlalchemy import select
 
@@ -16,7 +17,7 @@ from fief.models import Tenant, Workspace
 from tests.types import HTTPClientGeneratorType
 
 
-@pytest.fixture(
+@pytest_asyncio.fixture(
     scope="module",
     params=[
         {"type": "POSTGRESQL", "host": "localhost", "port": 5432},
@@ -35,7 +36,6 @@ from tests.types import HTTPClientGeneratorType
         "MYSQL Invalid host",
     ],
 )
-@pytest.mark.asyncio
 async def unreachable_external_db_workspace(
     request,
     latest_revision: str,
@@ -61,8 +61,7 @@ async def unreachable_external_db_workspace(
     await main_session.commit()
 
 
-@pytest.fixture(scope="module")
-@pytest.mark.asyncio
+@pytest_asyncio.fixture(scope="module")
 async def outdated_migration_workspace(
     main_test_database: tuple[DatabaseConnectionParameters, DatabaseType],
     main_session: AsyncSession,
@@ -108,8 +107,7 @@ def app() -> FastAPI:
     return app
 
 
-@pytest.fixture
-@pytest.mark.asyncio
+@pytest_asyncio.fixture
 async def test_client_auth(
     test_client_generator: HTTPClientGeneratorType, app: FastAPI
 ) -> AsyncGenerator[httpx.AsyncClient, None]:

@@ -3,6 +3,7 @@ from collections.abc import AsyncGenerator
 from unittest.mock import AsyncMock
 
 import pytest
+import pytest_asyncio
 from pytest_mock import MockerFixture
 from sqlalchemy import select
 
@@ -28,7 +29,7 @@ from tests.data import TestData
 from tests.types import GetTestDatabase
 
 
-@pytest.fixture(scope="module")
+@pytest_asyncio.fixture(scope="module")
 async def test_database_url(
     get_test_database: GetTestDatabase,
 ) -> AsyncGenerator[tuple[DatabaseConnectionParameters, DatabaseType], None]:

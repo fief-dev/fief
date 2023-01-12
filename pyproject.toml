@@ -77,7 +77,7 @@ omit = ["fief/alembic/*"]
 [tool.pytest.ini_options]
 addopts = "--cov fief/ --cov-report=term-missing"
 markers = ["test_data", "workspace_host", "access_token", "authenticated_admin", "htmx"]
-asyncio_mode = "auto"
+asyncio_mode = "strict"
 
 [tool.hatch]
 

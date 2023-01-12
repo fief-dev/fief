@@ -109,7 +109,7 @@ class TestTimezone:
             ("us/eastern", "US/Eastern"),
         ],
     )
-    async def test_valid(self, timezone: str, formatted: str):
+    def test_valid(self, timezone: str, formatted: str):
         o = TestTimezone.Model(timezone=timezone)
 
         assert o.timezone == formatted

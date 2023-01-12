@@ -36,6 +36,7 @@ def get_authenticated_request_headers_data(
     return headers, data
 
 
+@pytest.mark.asyncio
 @pytest.mark.workspace_host
 class TestAuthTokenAuthorizationCode:
     @pytest.mark.parametrize(
