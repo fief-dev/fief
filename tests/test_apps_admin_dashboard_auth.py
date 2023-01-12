@@ -9,6 +9,7 @@ from fief.db import AsyncSession
 from fief.models import AdminSessionToken
 from fief.repositories import AdminSessionTokenRepository
 from fief.settings import settings
+from tests.helpers import HTTPXResponseAssertion
 
 
 @pytest.mark.asyncio
@@ -79,10 +80,14 @@ class TestAuthCallback:
 @pytest.mark.asyncio
 @pytest.mark.workspace_host
 class TestAuthLogout:
-    async def test_unauthorized(self, test_client_admin_dashboard: httpx.AsyncClient):
+    async def test_unauthorized(
+        self,
+        unauthorized_dashboard_assertions: HTTPXResponseAssertion,
+        test_client_admin_dashboard: httpx.AsyncClient,
+    ):
         response = await test_client_admin_dashboard.get("/auth/logout")
 
-        assert response.status_code == status.HTTP_307_TEMPORARY_REDIRECT
+        unauthorized_dashboard_assertions(response)
 
     @pytest.mark.authenticated_admin(mode="session")
     async def test_valid(

@@ -3,7 +3,7 @@ import contextlib
 import json
 import secrets
 import uuid
-from collections.abc import AsyncGenerator, Callable
+from collections.abc import AsyncGenerator, Callable, Generator
 from unittest.mock import MagicMock, patch
 
 import asgi_lifespan
@@ -180,7 +180,9 @@ async def workspace_connection(
 
 @pytest.fixture(scope="session")
 @pytest.mark.asyncio
-async def test_data(workspace_connection: AsyncConnection) -> TestData:
+async def test_data(
+    workspace_connection: AsyncConnection,
+) -> AsyncGenerator[TestData, None]:
     async with AsyncSession(
         bind=workspace_connection, expire_on_commit=False
     ) as session:
@@ -246,7 +248,7 @@ async def theme_preview_mock() -> MagicMock:
 
 
 @pytest.fixture
-def smtplib_mock() -> MagicMock:
+def smtplib_mock() -> Generator[MagicMock, None, None]:
     with patch("smtplib.SMTP", autospec=True) as mock:
         yield mock
 
@@ -269,23 +271,18 @@ def workspace_admin_user() -> User:
     )
 
 
-@pytest.fixture
-async def admin_session_token(
-    main_session: AsyncSession,
-    workspace: Workspace,
-    workspace_admin_user: User,
+@contextlib.asynccontextmanager
+async def create_admin_session_token(
+    workspace: Workspace, user: User, main_session: AsyncSession
 ) -> AsyncGenerator[tuple[AdminSessionToken, str], None]:
-    workspace_user = WorkspaceUser(
-        workspace_id=workspace.id, user_id=workspace_admin_user.id
-    )
+    workspace_user = WorkspaceUser(workspace_id=workspace.id, user_id=user.id)
     main_session.add(workspace_user)
-    await main_session.commit()
 
     token, token_hash = generate_token()
     session_token = AdminSessionToken(
         token=token_hash,
         raw_tokens="{}",
-        raw_userinfo=json.dumps(workspace_admin_user.get_claims()),
+        raw_userinfo=json.dumps(user.get_claims()),
     )
     main_session.add(session_token)
 
@@ -296,9 +293,9 @@ async def admin_session_token(
     await main_session.delete(workspace_user)
 
 
-@pytest.fixture
-async def admin_api_key(
-    main_session: AsyncSession, workspace: Workspace
+@contextlib.asynccontextmanager
+async def create_api_key(
+    workspace: Workspace, main_session: AsyncSession
 ) -> AsyncGenerator[tuple[AdminAPIKey, str], None]:
     token, token_hash = generate_token()
     admin_api_key = AdminAPIKey(
@@ -313,21 +310,76 @@ async def admin_api_key(
 
 
 @pytest.fixture
+async def admin_session_token(
+    main_session: AsyncSession, workspace: Workspace, workspace_admin_user: User
+) -> AsyncGenerator[tuple[AdminSessionToken, str], None]:
+    async with create_admin_session_token(
+        workspace, workspace_admin_user, main_session
+    ) as result:
+        yield result
+
+
+@pytest.fixture
+async def admin_api_key(
+    main_session: AsyncSession, workspace: Workspace
+) -> AsyncGenerator[tuple[AdminAPIKey, str], None]:
+    async with create_api_key(workspace, main_session) as result:
+        yield result
+
+
+@pytest.fixture
+async def alt_workspace(
+    main_session: AsyncSession,
+) -> AsyncGenerator[Workspace, None]:
+    workspace = Workspace(name="Gascony", domain="gascony.localhost")
+    main_session.add(workspace)
+    await main_session.commit()
+
+    yield workspace
+
+    await main_session.delete(workspace)
+
+
+@pytest.fixture
+async def admin_session_token_alt_workspace(
+    main_session: AsyncSession, alt_workspace: Workspace
+) -> AsyncGenerator[tuple[AdminSessionToken, str], None]:
+    user_another_workspace = User(
+        id=uuid.uuid4(),
+        email="dev@gascony.duchy",
+        hashed_password="dev",
+        tenant_id=uuid.uuid4(),
+    )
+    async with create_admin_session_token(
+        alt_workspace, user_another_workspace, main_session
+    ) as result:
+        yield result
+
+
+@pytest.fixture
 def authenticated_admin(
     request: pytest.FixtureRequest,
     admin_session_token: tuple[AdminSessionToken, str],
     admin_api_key: tuple[AdminAPIKey, str],
+    admin_session_token_alt_workspace: tuple[AdminSessionToken, str],
 ) -> Callable[[httpx.AsyncClient], httpx.AsyncClient]:
     def _authenticated_admin(client: httpx.AsyncClient) -> httpx.AsyncClient:
         marker = request.node.get_closest_marker("authenticated_admin")
         if marker:
             mode = marker.kwargs.get("mode", "api_key")
+            workspace = marker.kwargs.get("workspace", "main")
+            assert mode in {"session", "api_key"}
+            assert workspace in {"main", "alt"}
             if mode == "session":
-                client.cookies.set(
-                    settings.fief_admin_session_cookie_name, admin_session_token[1]
+                token = (
+                    admin_session_token[1]
+                    if workspace == "main"
+                    else admin_session_token_alt_workspace[1]
                 )
+                client.cookies.set(settings.fief_admin_session_cookie_name, token)
             elif mode == "api_key":
-                client.headers["Authorization"] = f"Bearer {admin_api_key[1]}"
+                token = admin_api_key[1] if workspace == "main" else admin_api_key[1]
+                client.headers["Authorization"] = f"Bearer {token}"
         return client
 
     return _authenticated_admin
@@ -515,3 +567,40 @@ async def test_client_auth_csrf(
 ) -> AsyncGenerator[httpx.AsyncClient, None]:
     test_client_auth.cookies.set(settings.csrf_cookie_name, csrf_token)
     yield test_client_auth
+
+
+def pytest_generate_tests(metafunc: pytest.Metafunc):
+    """
+    Automatically parametrize tests which include
+    `unauthorized_dashboard_assertions` or `unauthorized_api_assertions` fixture.
+
+    The parametrization adds two cases:
+
+    * A case where the client is not authenticated.
+    * A case where the client is authenticated on another workspace.
+
+    The parametrization injects the corresponding assertion function for each case.
+
+    It helps to quickly add tests for those cases that are critical for security.
+    """
+    if "unauthorized_dashboard_assertions" in metafunc.fixturenames:
+        from tests.helpers import (
+            admin_dashboard_unauthorized_alt_workspace_assertions,
+            admin_dashboard_unauthorized_assertions,
+        )
+
+        metafunc.parametrize(
+            "unauthorized_dashboard_assertions",
+            [
+                pytest.param(
+                    admin_dashboard_unauthorized_assertions, id="Unauthorized"
+                ),
+                pytest.param(
+                    admin_dashboard_unauthorized_alt_workspace_assertions,
+                    marks=pytest.mark.authenticated_admin(
+                        mode="session", workspace="alt"
+                    ),
+                    id="Alt workspace",
+                ),
+            ],
+        )

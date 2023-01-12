@@ -9,16 +9,20 @@ from fastapi import status
 from fief.db import AsyncSession
 from fief.repositories import ThemeRepository
 from tests.data import TestData
-from tests.helpers import admin_dashboard_unauthorized_assertions
+from tests.helpers import HTTPXResponseAssertion
 
 
 @pytest.mark.asyncio
 @pytest.mark.workspace_host
 class TestListThemes:
-    async def test_unauthorized(self, test_client_admin_dashboard: httpx.AsyncClient):
+    async def test_unauthorized(
+        self,
+        unauthorized_dashboard_assertions: HTTPXResponseAssertion,
+        test_client_admin_dashboard: httpx.AsyncClient,
+    ):
         response = await test_client_admin_dashboard.get("/customization/themes/")
 
-        admin_dashboard_unauthorized_assertions(response)
+        unauthorized_dashboard_assertions(response)
 
     @pytest.mark.authenticated_admin(mode="session")
     async def test_combobox(
@@ -52,12 +56,16 @@ class TestListThemes:
 @pytest.mark.asyncio
 @pytest.mark.workspace_host
 class TestCreateTheme:
-    async def test_unauthorized(self, test_client_admin_dashboard: httpx.AsyncClient):
+    async def test_unauthorized(
+        self,
+        unauthorized_dashboard_assertions: HTTPXResponseAssertion,
+        test_client_admin_dashboard: httpx.AsyncClient,
+    ):
         response = await test_client_admin_dashboard.post(
             "/customization/themes/create", data={}
         )
 
-        admin_dashboard_unauthorized_assertions(response)
+        unauthorized_dashboard_assertions(response)
 
     @pytest.mark.authenticated_admin(mode="session")
     @pytest.mark.htmx(target="modal")
@@ -101,13 +109,16 @@ class TestCreateTheme:
 @pytest.mark.workspace_host
 class TestUpdateTheme:
     async def test_unauthorized(
-        self, test_client_admin_dashboard: httpx.AsyncClient, test_data: TestData
+        self,
+        unauthorized_dashboard_assertions: HTTPXResponseAssertion,
+        test_client_admin_dashboard: httpx.AsyncClient,
+        test_data: TestData,
     ):
         response = await test_client_admin_dashboard.get(
             f"/customization/themes/{test_data['themes']['default'].id}/edit"
         )
 
-        admin_dashboard_unauthorized_assertions(response)
+        unauthorized_dashboard_assertions(response)
 
     @pytest.mark.authenticated_admin(mode="session")
     async def test_not_existing(
@@ -201,6 +212,7 @@ class TestUpdateTheme:
 
         theme_repository = ThemeRepository(workspace_session)
         updated_theme = await theme_repository.get_by_id(theme.id)
+        assert updated_theme is not None
         assert updated_theme.primary_color == "#ff0000"
 
 
@@ -208,13 +220,16 @@ class TestUpdateTheme:
 @pytest.mark.workspace_host
 class TestSetDefaultTheme:
     async def test_unauthorized(
-        self, test_client_admin_dashboard: httpx.AsyncClient, test_data: TestData
+        self,
+        unauthorized_dashboard_assertions: HTTPXResponseAssertion,
+        test_client_admin_dashboard: httpx.AsyncClient,
+        test_data: TestData,
     ):
         response = await test_client_admin_dashboard.post(
             f"/customization/themes/{test_data['themes']['default'].id}/default"
         )
 
-        admin_dashboard_unauthorized_assertions(response)
+        unauthorized_dashboard_assertions(response)
 
     @pytest.mark.authenticated_admin(mode="session")
     async def test_not_existing(

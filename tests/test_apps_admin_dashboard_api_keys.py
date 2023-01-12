@@ -9,16 +9,20 @@ from fief.crypto.token import generate_token, get_token_hash
 from fief.db import AsyncSession
 from fief.models import AdminAPIKey, Workspace
 from fief.repositories import AdminAPIKeyRepository
-from tests.helpers import admin_dashboard_unauthorized_assertions
+from tests.helpers import HTTPXResponseAssertion
 
 
 @pytest.mark.asyncio
 @pytest.mark.workspace_host
 class TestListAPIKeys:
-    async def test_unauthorized(self, test_client_admin_dashboard: httpx.AsyncClient):
+    async def test_unauthorized(
+        self,
+        unauthorized_dashboard_assertions: HTTPXResponseAssertion,
+        test_client_admin_dashboard: httpx.AsyncClient,
+    ):
         response = await test_client_admin_dashboard.get("/api-keys/")
 
-        admin_dashboard_unauthorized_assertions(response)
+        unauthorized_dashboard_assertions(response)
 
     @pytest.mark.authenticated_admin(mode="session")
     @pytest.mark.htmx(target="main")
@@ -35,10 +39,14 @@ class TestListAPIKeys:
 @pytest.mark.asyncio
 @pytest.mark.workspace_host
 class TestCreateAPIKey:
-    async def test_unauthorized(self, test_client_admin_dashboard: httpx.AsyncClient):
+    async def test_unauthorized(
+        self,
+        unauthorized_dashboard_assertions: HTTPXResponseAssertion,
+        test_client_admin_dashboard: httpx.AsyncClient,
+    ):
         response = await test_client_admin_dashboard.post("/api-keys/create", data={})
 
-        admin_dashboard_unauthorized_assertions(response)
+        unauthorized_dashboard_assertions(response)
 
     @pytest.mark.authenticated_admin(mode="session")
     @pytest.mark.htmx(target="modal")
@@ -81,6 +89,7 @@ class TestCreateAPIKey:
 class TestDeleteAPIKey:
     async def test_unauthorized(
         self,
+        unauthorized_dashboard_assertions: HTTPXResponseAssertion,
         test_client_admin_dashboard: httpx.AsyncClient,
         admin_api_key: tuple[AdminAPIKey, str],
     ):
@@ -88,7 +97,7 @@ class TestDeleteAPIKey:
             f"/api-keys/{admin_api_key[0].id}/delete"
         )
 
-        admin_dashboard_unauthorized_assertions(response)
+        unauthorized_dashboard_assertions(response)
 
     @pytest.mark.authenticated_admin(mode="session")
     @pytest.mark.htmx(target="modal")

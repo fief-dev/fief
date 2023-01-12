@@ -15,16 +15,20 @@ from fief.repositories import (
 )
 from fief.tasks import on_after_register, on_user_role_created, on_user_role_deleted
 from tests.data import TestData
-from tests.helpers import admin_dashboard_unauthorized_assertions
+from tests.helpers import HTTPXResponseAssertion
 
 
 @pytest.mark.asyncio
 @pytest.mark.workspace_host
 class TestListUsers:
-    async def test_unauthorized(self, test_client_admin_dashboard: httpx.AsyncClient):
+    async def test_unauthorized(
+        self,
+        unauthorized_dashboard_assertions: HTTPXResponseAssertion,
+        test_client_admin_dashboard: httpx.AsyncClient,
+    ):
         response = await test_client_admin_dashboard.get("/users/")
 
-        admin_dashboard_unauthorized_assertions(response)
+        unauthorized_dashboard_assertions(response)
 
     @pytest.mark.authenticated_admin(mode="session")
     @pytest.mark.htmx(target="main")
@@ -44,13 +48,16 @@ class TestListUsers:
 @pytest.mark.workspace_host
 class TestGetUser:
     async def test_unauthorized(
-        self, test_client_admin_dashboard: httpx.AsyncClient, test_data: TestData
+        self,
+        unauthorized_dashboard_assertions: HTTPXResponseAssertion,
+        test_client_admin_dashboard: httpx.AsyncClient,
+        test_data: TestData,
     ):
         response = await test_client_admin_dashboard.get(
             f"/users/{test_data['users']['regular'].id}"
         )
 
-        admin_dashboard_unauthorized_assertions(response)
+        unauthorized_dashboard_assertions(response)
 
     @pytest.mark.authenticated_admin(mode="session")
     async def test_not_existing(
@@ -80,10 +87,14 @@ class TestGetUser:
 @pytest.mark.asyncio
 @pytest.mark.workspace_host
 class TestCreateUser:
-    async def test_unauthorized(self, test_client_admin_dashboard: httpx.AsyncClient):
+    async def test_unauthorized(
+        self,
+        unauthorized_dashboard_assertions: HTTPXResponseAssertion,
+        test_client_admin_dashboard: httpx.AsyncClient,
+    ):
         response = await test_client_admin_dashboard.post("/users/create", data={})
 
-        admin_dashboard_unauthorized_assertions(response)
+        unauthorized_dashboard_assertions(response)
 
     @pytest.mark.authenticated_admin(mode="session")
     @pytest.mark.htmx(target="modal")
@@ -218,14 +229,17 @@ class TestCreateUser:
 @pytest.mark.workspace_host
 class TestUpdateUser:
     async def test_unauthorized(
-        self, test_client_admin_dashboard: httpx.AsyncClient, test_data: TestData
+        self,
+        unauthorized_dashboard_assertions: HTTPXResponseAssertion,
+        test_client_admin_dashboard: httpx.AsyncClient,
+        test_data: TestData,
     ):
         user = test_data["users"]["regular"]
         response = await test_client_admin_dashboard.post(
             f"/users/{user.id}/edit", data={}
         )
 
-        admin_dashboard_unauthorized_assertions(response)
+        unauthorized_dashboard_assertions(response)
 
     @pytest.mark.authenticated_admin(mode="session")
     @pytest.mark.htmx(target="modal")
@@ -337,14 +351,17 @@ class TestUpdateUser:
 @pytest.mark.workspace_host
 class TestCreateUserAccessToken:
     async def test_unauthorized(
-        self, test_client_admin_dashboard: httpx.AsyncClient, test_data: TestData
+        self,
+        unauthorized_dashboard_assertions: HTTPXResponseAssertion,
+        test_client_admin_dashboard: httpx.AsyncClient,
+        test_data: TestData,
     ):
         user = test_data["users"]["regular"]
         response = await test_client_admin_dashboard.post(
             f"/users/{user.id}/access-token", data={}
         )
 
-        admin_dashboard_unauthorized_assertions(response)
+        unauthorized_dashboard_assertions(response)
 
     @pytest.mark.authenticated_admin(mode="session")
     @pytest.mark.htmx(target="modal")
@@ -443,13 +460,16 @@ class TestCreateUserAccessToken:
 @pytest.mark.workspace_host
 class TestUserPermissions:
     async def test_unauthorized(
-        self, test_client_admin_dashboard: httpx.AsyncClient, test_data: TestData
+        self,
+        unauthorized_dashboard_assertions: HTTPXResponseAssertion,
+        test_client_admin_dashboard: httpx.AsyncClient,
+        test_data: TestData,
     ):
         response = await test_client_admin_dashboard.get(
             f"/users/{test_data['users']['regular'].id}/permissions"
         )
 
-        admin_dashboard_unauthorized_assertions(response)
+        unauthorized_dashboard_assertions(response)
 
     @pytest.mark.authenticated_admin(mode="session")
     async def test_not_existing(
@@ -557,7 +577,10 @@ class TestUserPermissions:
 @pytest.mark.workspace_host
 class TestDeleteUserPermission:
     async def test_unauthorized(
-        self, test_client_admin_dashboard: httpx.AsyncClient, test_data: TestData
+        self,
+        unauthorized_dashboard_assertions: HTTPXResponseAssertion,
+        test_client_admin_dashboard: httpx.AsyncClient,
+        test_data: TestData,
     ):
         user = test_data["users"]["regular"]
         permission = test_data["permissions"]["castles:delete"]
@@ -565,7 +588,7 @@ class TestDeleteUserPermission:
             f"/users/{user.id}/permissions/{permission.id}"
         )
 
-        admin_dashboard_unauthorized_assertions(response)
+        unauthorized_dashboard_assertions(response)
 
     @pytest.mark.authenticated_admin(mode="session")
     async def test_not_existing_user(
@@ -620,13 +643,16 @@ class TestDeleteUserPermission:
 @pytest.mark.workspace_host
 class TestUserRoles:
     async def test_unauthorized(
-        self, test_client_admin_dashboard: httpx.AsyncClient, test_data: TestData
+        self,
+        unauthorized_dashboard_assertions: HTTPXResponseAssertion,
+        test_client_admin_dashboard: httpx.AsyncClient,
+        test_data: TestData,
     ):
         response = await test_client_admin_dashboard.get(
             f"/users/{test_data['users']['regular'].id}/roles"
         )
 
-        admin_dashboard_unauthorized_assertions(response)
+        unauthorized_dashboard_assertions(response)
 
     @pytest.mark.authenticated_admin(mode="session")
     async def test_not_existing(
@@ -732,7 +758,10 @@ class TestUserRoles:
 @pytest.mark.workspace_host
 class TestDeleteUserRole:
     async def test_unauthorized(
-        self, test_client_admin_dashboard: httpx.AsyncClient, test_data: TestData
+        self,
+        unauthorized_dashboard_assertions: HTTPXResponseAssertion,
+        test_client_admin_dashboard: httpx.AsyncClient,
+        test_data: TestData,
     ):
         user = test_data["users"]["regular"]
         role = test_data["roles"]["castles_visitor"]
@@ -740,7 +769,7 @@ class TestDeleteUserRole:
             f"/users/{user.id}/roles/{role.id}"
         )
 
-        admin_dashboard_unauthorized_assertions(response)
+        unauthorized_dashboard_assertions(response)
 
     @pytest.mark.authenticated_admin(mode="session")
     async def test_not_existing_user(
@@ -801,13 +830,16 @@ class TestDeleteUserRole:
 @pytest.mark.workspace_host
 class TestUserOAuthAccounts:
     async def test_unauthorized(
-        self, test_client_admin_dashboard: httpx.AsyncClient, test_data: TestData
+        self,
+        unauthorized_dashboard_assertions: HTTPXResponseAssertion,
+        test_client_admin_dashboard: httpx.AsyncClient,
+        test_data: TestData,
     ):
         response = await test_client_admin_dashboard.get(
             f"/users/{test_data['users']['regular'].id}/oauth-accounts"
         )
 
-        admin_dashboard_unauthorized_assertions(response)
+        unauthorized_dashboard_assertions(response)
 
     @pytest.mark.authenticated_admin(mode="session")
     async def test_not_existing(

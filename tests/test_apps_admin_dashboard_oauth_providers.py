@@ -9,16 +9,20 @@ from fief.db import AsyncSession
 from fief.models import Workspace
 from fief.repositories import OAuthProviderRepository
 from tests.data import TestData
-from tests.helpers import admin_dashboard_unauthorized_assertions
+from tests.helpers import HTTPXResponseAssertion
 
 
 @pytest.mark.asyncio
 @pytest.mark.workspace_host
 class TestListOAuthProviders:
-    async def test_unauthorized(self, test_client_admin_dashboard: httpx.AsyncClient):
+    async def test_unauthorized(
+        self,
+        unauthorized_dashboard_assertions: HTTPXResponseAssertion,
+        test_client_admin_dashboard: httpx.AsyncClient,
+    ):
         response = await test_client_admin_dashboard.get("/oauth-providers/")
 
-        admin_dashboard_unauthorized_assertions(response)
+        unauthorized_dashboard_assertions(response)
 
     @pytest.mark.authenticated_admin(mode="session")
     @pytest.mark.htmx(target="main")
@@ -38,13 +42,16 @@ class TestListOAuthProviders:
 @pytest.mark.workspace_host
 class TestGetOAuthProvider:
     async def test_unauthorized(
-        self, test_client_admin_dashboard: httpx.AsyncClient, test_data: TestData
+        self,
+        unauthorized_dashboard_assertions: HTTPXResponseAssertion,
+        test_client_admin_dashboard: httpx.AsyncClient,
+        test_data: TestData,
     ):
         response = await test_client_admin_dashboard.get(
             f"/oauth-providers/{test_data['oauth_providers']['google'].id}"
         )
 
-        admin_dashboard_unauthorized_assertions(response)
+        unauthorized_dashboard_assertions(response)
 
     @pytest.mark.authenticated_admin(mode="session")
     async def test_not_existing(
@@ -78,12 +85,16 @@ class TestGetOAuthProvider:
 @pytest.mark.asyncio
 @pytest.mark.workspace_host
 class TestCreateOAuthProvider:
-    async def test_unauthorized(self, test_client_admin_dashboard: httpx.AsyncClient):
+    async def test_unauthorized(
+        self,
+        unauthorized_dashboard_assertions: HTTPXResponseAssertion,
+        test_client_admin_dashboard: httpx.AsyncClient,
+    ):
         response = await test_client_admin_dashboard.post(
             "/oauth-providers/create", data={}
         )
 
-        admin_dashboard_unauthorized_assertions(response)
+        unauthorized_dashboard_assertions(response)
 
     @pytest.mark.parametrize(
         "provider,has_field", [("GOOGLE", False), ("OPENID", True)]
@@ -191,14 +202,17 @@ class TestCreateOAuthProvider:
 @pytest.mark.workspace_host
 class TestUpdateOAuthProvider:
     async def test_unauthorized(
-        self, test_client_admin_dashboard: httpx.AsyncClient, test_data: TestData
+        self,
+        unauthorized_dashboard_assertions: HTTPXResponseAssertion,
+        test_client_admin_dashboard: httpx.AsyncClient,
+        test_data: TestData,
     ):
         oauth_provider = test_data["oauth_providers"]["google"]
         response = await test_client_admin_dashboard.post(
             f"/oauth-providers/{oauth_provider.id}/edit", data={}
         )
 
-        admin_dashboard_unauthorized_assertions(response)
+        unauthorized_dashboard_assertions(response)
 
     @pytest.mark.authenticated_admin(mode="session")
     @pytest.mark.htmx(target="modal")
@@ -295,14 +309,17 @@ class TestUpdateOAuthProvider:
 @pytest.mark.workspace_host
 class TestDeleteOAuthProvider:
     async def test_unauthorized(
-        self, test_client_admin_dashboard: httpx.AsyncClient, test_data: TestData
+        self,
+        unauthorized_dashboard_assertions: HTTPXResponseAssertion,
+        test_client_admin_dashboard: httpx.AsyncClient,
+        test_data: TestData,
     ):
         oauth_provider = test_data["oauth_providers"]["google"]
         response = await test_client_admin_dashboard.delete(
             f"/oauth-providers/{oauth_provider.id}/delete"
         )
 
-        admin_dashboard_unauthorized_assertions(response)
+        unauthorized_dashboard_assertions(response)
 
     @pytest.mark.authenticated_admin(mode="session")
     @pytest.mark.htmx(target="modal")

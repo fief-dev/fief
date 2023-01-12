@@ -11,16 +11,20 @@ from fief.models import Workspace
 from fief.repositories import RoleRepository
 from fief.tasks import on_role_updated
 from tests.data import TestData
-from tests.helpers import admin_dashboard_unauthorized_assertions
+from tests.helpers import HTTPXResponseAssertion
 
 
 @pytest.mark.asyncio
 @pytest.mark.workspace_host
 class TestListRoles:
-    async def test_unauthorized(self, test_client_admin_dashboard: httpx.AsyncClient):
+    async def test_unauthorized(
+        self,
+        unauthorized_dashboard_assertions: HTTPXResponseAssertion,
+        test_client_admin_dashboard: httpx.AsyncClient,
+    ):
         response = await test_client_admin_dashboard.get("/access-control/roles/")
 
-        admin_dashboard_unauthorized_assertions(response)
+        unauthorized_dashboard_assertions(response)
 
     @pytest.mark.authenticated_admin(mode="session")
     async def test_combobox(
@@ -55,13 +59,16 @@ class TestListRoles:
 @pytest.mark.workspace_host
 class TestGetRole:
     async def test_unauthorized(
-        self, test_client_admin_dashboard: httpx.AsyncClient, test_data: TestData
+        self,
+        unauthorized_dashboard_assertions: HTTPXResponseAssertion,
+        test_client_admin_dashboard: httpx.AsyncClient,
+        test_data: TestData,
     ):
         response = await test_client_admin_dashboard.get(
             f"/access-control/roles/{test_data['roles']['castles_visitor'].id}"
         )
 
-        admin_dashboard_unauthorized_assertions(response)
+        unauthorized_dashboard_assertions(response)
 
     @pytest.mark.authenticated_admin(mode="session")
     async def test_not_existing(
@@ -95,12 +102,16 @@ class TestGetRole:
 @pytest.mark.asyncio
 @pytest.mark.workspace_host
 class TestCreateRole:
-    async def test_unauthorized(self, test_client_admin_dashboard: httpx.AsyncClient):
+    async def test_unauthorized(
+        self,
+        unauthorized_dashboard_assertions: HTTPXResponseAssertion,
+        test_client_admin_dashboard: httpx.AsyncClient,
+    ):
         response = await test_client_admin_dashboard.post(
             "/access-control/roles/create", data={}
         )
 
-        admin_dashboard_unauthorized_assertions(response)
+        unauthorized_dashboard_assertions(response)
 
     @pytest.mark.authenticated_admin(mode="session")
     @pytest.mark.htmx(target="modal")
@@ -177,14 +188,17 @@ class TestCreateRole:
 @pytest.mark.workspace_host
 class TestUpdateRole:
     async def test_unauthorized(
-        self, test_client_admin_dashboard: httpx.AsyncClient, test_data: TestData
+        self,
+        unauthorized_dashboard_assertions: HTTPXResponseAssertion,
+        test_client_admin_dashboard: httpx.AsyncClient,
+        test_data: TestData,
     ):
         role = test_data["roles"]["castles_visitor"]
         response = await test_client_admin_dashboard.post(
             f"/access-control/roles/{role.id}/edit", data={}
         )
 
-        admin_dashboard_unauthorized_assertions(response)
+        unauthorized_dashboard_assertions(response)
 
     @pytest.mark.authenticated_admin(mode="session")
     @pytest.mark.htmx(target="modal")
@@ -294,14 +308,17 @@ class TestUpdateRole:
 @pytest.mark.workspace_host
 class TestDeleteRole:
     async def test_unauthorized(
-        self, test_client_admin_dashboard: httpx.AsyncClient, test_data: TestData
+        self,
+        unauthorized_dashboard_assertions: HTTPXResponseAssertion,
+        test_client_admin_dashboard: httpx.AsyncClient,
+        test_data: TestData,
     ):
         role = test_data["roles"]["castles_visitor"]
         response = await test_client_admin_dashboard.delete(
             f"/access-control/roles/{role.id}/delete"
         )
 
-        admin_dashboard_unauthorized_assertions(response)
+        unauthorized_dashboard_assertions(response)
 
     @pytest.mark.authenticated_admin(mode="session")
     @pytest.mark.htmx(target="modal")

@@ -1,4 +1,5 @@
 import json
+from collections.abc import Callable
 from datetime import datetime
 
 import httpx
@@ -13,10 +14,17 @@ from fief.db import AsyncSession
 from fief.models import AuthorizationCode, LoginSession, SessionToken, User
 from fief.repositories import AuthorizationCodeRepository
 
+HTTPXResponseAssertion = Callable[[httpx.Response], None]
+
 
 def admin_dashboard_unauthorized_assertions(response: httpx.Response):
     assert response.status_code == status.HTTP_307_TEMPORARY_REDIRECT
     assert response.headers["Location"].endswith("/auth/login")
+
+
+def admin_dashboard_unauthorized_alt_workspace_assertions(response: httpx.Response):
+    assert response.status_code == status.HTTP_307_TEMPORARY_REDIRECT
+    assert response.headers["Location"] == "http://gascony.localhost/admin/"
 
 
 async def access_token_assertions(*, access_token: str, jwk: jwk.JWK, user: User):

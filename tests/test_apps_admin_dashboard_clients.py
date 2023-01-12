@@ -9,16 +9,20 @@ from jwcrypto import jwk
 from fief.db import AsyncSession
 from fief.repositories import ClientRepository
 from tests.data import TestData
-from tests.helpers import admin_dashboard_unauthorized_assertions
+from tests.helpers import HTTPXResponseAssertion
 
 
 @pytest.mark.asyncio
 @pytest.mark.workspace_host
 class TestListClients:
-    async def test_unauthorized(self, test_client_admin_dashboard: httpx.AsyncClient):
+    async def test_unauthorized(
+        self,
+        unauthorized_dashboard_assertions: HTTPXResponseAssertion,
+        test_client_admin_dashboard: httpx.AsyncClient,
+    ):
         response = await test_client_admin_dashboard.get("/clients/")
 
-        admin_dashboard_unauthorized_assertions(response)
+        unauthorized_dashboard_assertions(response)
 
     @pytest.mark.authenticated_admin(mode="session")
     async def test_combobox(
@@ -52,13 +56,16 @@ class TestListClients:
 @pytest.mark.workspace_host
 class TestGetClient:
     async def test_unauthorized(
-        self, test_client_admin_dashboard: httpx.AsyncClient, test_data: TestData
+        self,
+        unauthorized_dashboard_assertions: HTTPXResponseAssertion,
+        test_client_admin_dashboard: httpx.AsyncClient,
+        test_data: TestData,
     ):
         response = await test_client_admin_dashboard.get(
             f"/clients/{test_data['clients']['default_tenant'].id}"
         )
 
-        admin_dashboard_unauthorized_assertions(response)
+        unauthorized_dashboard_assertions(response)
 
     @pytest.mark.authenticated_admin(mode="session")
     async def test_not_existing(
@@ -90,10 +97,14 @@ class TestGetClient:
 @pytest.mark.asyncio
 @pytest.mark.workspace_host
 class TestCreateClient:
-    async def test_unauthorized(self, test_client_admin_dashboard: httpx.AsyncClient):
+    async def test_unauthorized(
+        self,
+        unauthorized_dashboard_assertions: HTTPXResponseAssertion,
+        test_client_admin_dashboard: httpx.AsyncClient,
+    ):
         response = await test_client_admin_dashboard.post("/clients/create", data={})
 
-        admin_dashboard_unauthorized_assertions(response)
+        unauthorized_dashboard_assertions(response)
 
     @pytest.mark.authenticated_admin(mode="session")
     @pytest.mark.htmx(target="modal")
@@ -211,14 +222,17 @@ class TestCreateClient:
 @pytest.mark.workspace_host
 class TestUpdateClient:
     async def test_unauthorized(
-        self, test_client_admin_dashboard: httpx.AsyncClient, test_data: TestData
+        self,
+        unauthorized_dashboard_assertions: HTTPXResponseAssertion,
+        test_client_admin_dashboard: httpx.AsyncClient,
+        test_data: TestData,
     ):
         client = test_data["clients"]["default_tenant"]
         response = await test_client_admin_dashboard.post(
             f"/clients/{client.id}/edit", data={}
         )
 
-        admin_dashboard_unauthorized_assertions(response)
+        unauthorized_dashboard_assertions(response)
 
     @pytest.mark.authenticated_admin(mode="session")
     @pytest.mark.htmx(target="modal")
@@ -325,14 +339,17 @@ class TestUpdateClient:
 @pytest.mark.workspace_host
 class TestCreateEncryptionKey:
     async def test_unauthorized(
-        self, test_client_admin_dashboard: httpx.AsyncClient, test_data: TestData
+        self,
+        unauthorized_dashboard_assertions: HTTPXResponseAssertion,
+        test_client_admin_dashboard: httpx.AsyncClient,
+        test_data: TestData,
     ):
         client = test_data["clients"]["default_tenant"]
         response = await test_client_admin_dashboard.post(
             f"/clients/{client.id}/encryption-key"
         )
 
-        admin_dashboard_unauthorized_assertions(response)
+        unauthorized_dashboard_assertions(response)
 
     @pytest.mark.authenticated_admin(mode="session")
     @pytest.mark.htmx(target="modal")
