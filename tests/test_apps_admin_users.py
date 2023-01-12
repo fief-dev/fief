@@ -11,15 +11,20 @@ from fief.models import Workspace
 from fief.repositories import UserPermissionRepository, UserRoleRepository
 from fief.tasks import on_after_register, on_user_role_created, on_user_role_deleted
 from tests.data import TestData
+from tests.helpers import HTTPXResponseAssertion
 
 
 @pytest.mark.asyncio
 @pytest.mark.workspace_host
 class TestListUsers:
-    async def test_unauthorized(self, test_client_admin: httpx.AsyncClient):
+    async def test_unauthorized(
+        self,
+        unauthorized_api_assertions: HTTPXResponseAssertion,
+        test_client_admin: httpx.AsyncClient,
+    ):
         response = await test_client_admin.get("/users/")
 
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        unauthorized_api_assertions(response)
 
     @pytest.mark.parametrize(
         "ordering", ["unknown_field", "email,-unknown_field", "tenant", "tenant.name"]
@@ -50,10 +55,14 @@ class TestListUsers:
 @pytest.mark.asyncio
 @pytest.mark.workspace_host
 class TestCreateUser:
-    async def test_unauthorized(self, test_client_admin: httpx.AsyncClient):
+    async def test_unauthorized(
+        self,
+        unauthorized_api_assertions: HTTPXResponseAssertion,
+        test_client_admin: httpx.AsyncClient,
+    ):
         response = await test_client_admin.post("/users/", json={})
 
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        unauthorized_api_assertions(response)
 
     @pytest.mark.authenticated_admin
     async def test_unknown_tenant(
@@ -178,12 +187,15 @@ class TestCreateUser:
 @pytest.mark.workspace_host
 class TestUpdateUser:
     async def test_unauthorized(
-        self, test_client_admin: httpx.AsyncClient, test_data: TestData
+        self,
+        unauthorized_api_assertions: HTTPXResponseAssertion,
+        test_client_admin: httpx.AsyncClient,
+        test_data: TestData,
     ):
         user = test_data["users"]["regular"]
         response = await test_client_admin.patch(f"/users/{user.id}", json={})
 
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        unauthorized_api_assertions(response)
 
     @pytest.mark.authenticated_admin
     async def test_unknown_user(
@@ -270,12 +282,15 @@ class TestUpdateUser:
 @pytest.mark.workspace_host
 class TestListUserPermissions:
     async def test_unauthorized(
-        self, test_client_admin: httpx.AsyncClient, test_data: TestData
+        self,
+        unauthorized_api_assertions: HTTPXResponseAssertion,
+        test_client_admin: httpx.AsyncClient,
+        test_data: TestData,
     ):
         user = test_data["users"]["regular"]
         response = await test_client_admin.get(f"/users/{user.id}/permissions")
 
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        unauthorized_api_assertions(response)
 
     @pytest.mark.authenticated_admin
     async def test_unknown_user(
@@ -315,7 +330,10 @@ class TestListUserPermissions:
 @pytest.mark.workspace_host
 class TestCreateUserPermission:
     async def test_unauthorized(
-        self, test_client_admin: httpx.AsyncClient, test_data: TestData
+        self,
+        unauthorized_api_assertions: HTTPXResponseAssertion,
+        test_client_admin: httpx.AsyncClient,
+        test_data: TestData,
     ):
         user = test_data["users"]["regular"]
         permission = test_data["permissions"]["castles:delete"]
@@ -323,7 +341,7 @@ class TestCreateUserPermission:
             f"/users/{user.id}/permissions", json={"id": str(permission.id)}
         )
 
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        unauthorized_api_assertions(response)
 
     @pytest.mark.authenticated_admin
     async def test_unknown_user(
@@ -408,7 +426,10 @@ class TestCreateUserPermission:
 @pytest.mark.workspace_host
 class TestDeleteUserPermission:
     async def test_unauthorized(
-        self, test_client_admin: httpx.AsyncClient, test_data: TestData
+        self,
+        unauthorized_api_assertions: HTTPXResponseAssertion,
+        test_client_admin: httpx.AsyncClient,
+        test_data: TestData,
     ):
         user = test_data["users"]["regular"]
         permission = test_data["permissions"]["castles:delete"]
@@ -416,7 +437,7 @@ class TestDeleteUserPermission:
             f"/users/{user.id}/permissions/{permission.id}"
         )
 
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        unauthorized_api_assertions(response)
 
     @pytest.mark.authenticated_admin
     async def test_unknown_user(
@@ -470,12 +491,15 @@ class TestDeleteUserPermission:
 @pytest.mark.workspace_host
 class TestListUserRoles:
     async def test_unauthorized(
-        self, test_client_admin: httpx.AsyncClient, test_data: TestData
+        self,
+        unauthorized_api_assertions: HTTPXResponseAssertion,
+        test_client_admin: httpx.AsyncClient,
+        test_data: TestData,
     ):
         user = test_data["users"]["regular"]
         response = await test_client_admin.get(f"/users/{user.id}/roles")
 
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        unauthorized_api_assertions(response)
 
     @pytest.mark.authenticated_admin
     async def test_unknown_user(
@@ -510,7 +534,10 @@ class TestListUserRoles:
 @pytest.mark.workspace_host
 class TestCreateUserRole:
     async def test_unauthorized(
-        self, test_client_admin: httpx.AsyncClient, test_data: TestData
+        self,
+        unauthorized_api_assertions: HTTPXResponseAssertion,
+        test_client_admin: httpx.AsyncClient,
+        test_data: TestData,
     ):
         user = test_data["users"]["regular"]
         role = test_data["roles"]["castles_manager"]
@@ -518,7 +545,7 @@ class TestCreateUserRole:
             f"/users/{user.id}/roles", json={"id": str(role.id)}
         )
 
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        unauthorized_api_assertions(response)
 
     @pytest.mark.authenticated_admin
     async def test_unknown_user(
@@ -599,13 +626,16 @@ class TestCreateUserRole:
 @pytest.mark.workspace_host
 class TestDeleteUserRole:
     async def test_unauthorized(
-        self, test_client_admin: httpx.AsyncClient, test_data: TestData
+        self,
+        unauthorized_api_assertions: HTTPXResponseAssertion,
+        test_client_admin: httpx.AsyncClient,
+        test_data: TestData,
     ):
         user = test_data["users"]["regular"]
         role = test_data["roles"]["castles_visitor"]
         response = await test_client_admin.delete(f"/users/{user.id}/roles/{role.id}")
 
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        unauthorized_api_assertions(response)
 
     @pytest.mark.authenticated_admin
     async def test_unknown_user(
@@ -661,12 +691,15 @@ class TestDeleteUserRole:
 @pytest.mark.workspace_host
 class TestListUserOAuthAccounts:
     async def test_unauthorized(
-        self, test_client_admin: httpx.AsyncClient, test_data: TestData
+        self,
+        unauthorized_api_assertions: HTTPXResponseAssertion,
+        test_client_admin: httpx.AsyncClient,
+        test_data: TestData,
     ):
         user = test_data["users"]["regular"]
         response = await test_client_admin.get(f"/users/{user.id}/oauth-accounts")
 
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        unauthorized_api_assertions(response)
 
     @pytest.mark.authenticated_admin
     async def test_unknown_user(

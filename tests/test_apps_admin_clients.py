@@ -9,15 +9,20 @@ from fief.db import AsyncSession
 from fief.errors import APIErrorCode
 from fief.repositories import ClientRepository
 from tests.data import TestData
+from tests.helpers import HTTPXResponseAssertion
 
 
 @pytest.mark.asyncio
 @pytest.mark.workspace_host
 class TestListClients:
-    async def test_unauthorized(self, test_client_admin: httpx.AsyncClient):
+    async def test_unauthorized(
+        self,
+        unauthorized_api_assertions: HTTPXResponseAssertion,
+        test_client_admin: httpx.AsyncClient,
+    ):
         response = await test_client_admin.get("/clients/")
 
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        unauthorized_api_assertions(response)
 
     @pytest.mark.authenticated_admin
     async def test_valid(
@@ -38,10 +43,14 @@ class TestListClients:
 @pytest.mark.asyncio
 @pytest.mark.workspace_host
 class TestCreateClient:
-    async def test_unauthorized(self, test_client_admin: httpx.AsyncClient):
+    async def test_unauthorized(
+        self,
+        unauthorized_api_assertions: HTTPXResponseAssertion,
+        test_client_admin: httpx.AsyncClient,
+    ):
         response = await test_client_admin.post("/clients/", json={})
 
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        unauthorized_api_assertions(response)
 
     @pytest.mark.authenticated_admin
     async def test_empty_redirect_uris(
@@ -152,12 +161,15 @@ class TestCreateClient:
 @pytest.mark.workspace_host
 class TestUpdateClient:
     async def test_unauthorized(
-        self, test_client_admin: httpx.AsyncClient, test_data: TestData
+        self,
+        unauthorized_api_assertions: HTTPXResponseAssertion,
+        test_client_admin: httpx.AsyncClient,
+        test_data: TestData,
     ):
         client = test_data["clients"]["default_tenant"]
         response = await test_client_admin.patch(f"/clients/{client.id}", json={})
 
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        unauthorized_api_assertions(response)
 
     @pytest.mark.authenticated_admin
     async def test_not_existing(
@@ -223,12 +235,15 @@ class TestUpdateClient:
 @pytest.mark.workspace_host
 class TestCreateEncryptionKey:
     async def test_unauthorized(
-        self, test_client_admin: httpx.AsyncClient, test_data: TestData
+        self,
+        unauthorized_api_assertions: HTTPXResponseAssertion,
+        test_client_admin: httpx.AsyncClient,
+        test_data: TestData,
     ):
         client = test_data["clients"]["default_tenant"]
         response = await test_client_admin.post(f"/clients/{client.id}/encryption-key")
 
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        unauthorized_api_assertions(response)
 
     @pytest.mark.authenticated_admin
     async def test_success(

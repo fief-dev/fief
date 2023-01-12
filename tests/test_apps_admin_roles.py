@@ -12,15 +12,20 @@ from fief.models import Workspace
 from fief.repositories import UserPermissionRepository
 from fief.tasks import on_role_updated
 from tests.data import TestData, data_mapping
+from tests.helpers import HTTPXResponseAssertion
 
 
 @pytest.mark.asyncio
 @pytest.mark.workspace_host
 class TestListRoles:
-    async def test_unauthorized(self, test_client_admin: httpx.AsyncClient):
+    async def test_unauthorized(
+        self,
+        unauthorized_api_assertions: HTTPXResponseAssertion,
+        test_client_admin: httpx.AsyncClient,
+    ):
         response = await test_client_admin.get("/roles/")
 
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        unauthorized_api_assertions(response)
 
     @pytest.mark.parametrize(
         "params,nb_results",
@@ -55,10 +60,14 @@ class TestListRoles:
 @pytest.mark.asyncio
 @pytest.mark.workspace_host
 class TestCreateRole:
-    async def test_unauthorized(self, test_client_admin: httpx.AsyncClient):
+    async def test_unauthorized(
+        self,
+        unauthorized_api_assertions: HTTPXResponseAssertion,
+        test_client_admin: httpx.AsyncClient,
+    ):
         response = await test_client_admin.post("/roles/", json={})
 
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        unauthorized_api_assertions(response)
 
     @pytest.mark.authenticated_admin
     async def test_not_existing_permission(
@@ -111,12 +120,15 @@ class TestCreateRole:
 @pytest.mark.workspace_host
 class TestUpdateRole:
     async def test_unauthorized(
-        self, test_client_admin: httpx.AsyncClient, test_data: TestData
+        self,
+        unauthorized_api_assertions: HTTPXResponseAssertion,
+        test_client_admin: httpx.AsyncClient,
+        test_data: TestData,
     ):
         role = test_data["roles"]["castles_visitor"]
         response = await test_client_admin.patch(f"/roles/{role.id}", json={})
 
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        unauthorized_api_assertions(response)
 
     @pytest.mark.authenticated_admin
     async def test_not_existing(
@@ -194,12 +206,15 @@ class TestUpdateRole:
 @pytest.mark.workspace_host
 class TestDeleteRole:
     async def test_unauthorized(
-        self, test_client_admin: httpx.AsyncClient, test_data: TestData
+        self,
+        unauthorized_api_assertions: HTTPXResponseAssertion,
+        test_client_admin: httpx.AsyncClient,
+        test_data: TestData,
     ):
         role = test_data["roles"]["castles_visitor"]
         response = await test_client_admin.delete(f"/roles/{role.id}")
 
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        unauthorized_api_assertions(response)
 
     @pytest.mark.authenticated_admin
     async def test_not_existing(

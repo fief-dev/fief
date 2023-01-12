@@ -10,15 +10,20 @@ from fief.errors import APIErrorCode
 from fief.models import Client
 from fief.repositories import ClientRepository
 from tests.data import TestData
+from tests.helpers import HTTPXResponseAssertion
 
 
 @pytest.mark.asyncio
 @pytest.mark.workspace_host
 class TestListTenants:
-    async def test_unauthorized(self, test_client_admin: httpx.AsyncClient):
+    async def test_unauthorized(
+        self,
+        unauthorized_api_assertions: HTTPXResponseAssertion,
+        test_client_admin: httpx.AsyncClient,
+    ):
         response = await test_client_admin.get("/tenants/")
 
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        unauthorized_api_assertions(response)
 
     @pytest.mark.authenticated_admin
     async def test_valid(
@@ -50,10 +55,14 @@ class TestListTenants:
 @pytest.mark.asyncio
 @pytest.mark.workspace_host
 class TestCreateTenant:
-    async def test_unauthorized(self, test_client_admin: httpx.AsyncClient):
+    async def test_unauthorized(
+        self,
+        unauthorized_api_assertions: HTTPXResponseAssertion,
+        test_client_admin: httpx.AsyncClient,
+    ):
         response = await test_client_admin.get("/tenants/")
 
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        unauthorized_api_assertions(response)
 
     @pytest.mark.parametrize("logo_url", [None, "https://bretagne.duchy/logo.svg"])
     @pytest.mark.authenticated_admin
@@ -136,12 +145,15 @@ class TestCreateTenant:
 @pytest.mark.workspace_host
 class TestUpdateTenant:
     async def test_unauthorized(
-        self, test_client_admin: httpx.AsyncClient, test_data: TestData
+        self,
+        unauthorized_api_assertions: HTTPXResponseAssertion,
+        test_client_admin: httpx.AsyncClient,
+        test_data: TestData,
     ):
         tenant = test_data["tenants"]["default"]
         response = await test_client_admin.patch(f"/tenants/{tenant.id}", json={})
 
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        unauthorized_api_assertions(response)
 
     @pytest.mark.authenticated_admin
     async def test_not_existing(

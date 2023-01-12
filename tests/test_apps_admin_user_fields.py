@@ -7,15 +7,20 @@ from fastapi import status
 
 from fief.errors import APIErrorCode
 from tests.data import TestData
+from tests.helpers import HTTPXResponseAssertion
 
 
 @pytest.mark.asyncio
 @pytest.mark.workspace_host
 class TestListUserFields:
-    async def test_unauthorized(self, test_client_admin: httpx.AsyncClient):
+    async def test_unauthorized(
+        self,
+        unauthorized_api_assertions: HTTPXResponseAssertion,
+        test_client_admin: httpx.AsyncClient,
+    ):
         response = await test_client_admin.get("/user-fields/")
 
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        unauthorized_api_assertions(response)
 
     @pytest.mark.authenticated_admin
     async def test_valid(
@@ -32,10 +37,14 @@ class TestListUserFields:
 @pytest.mark.asyncio
 @pytest.mark.workspace_host
 class TestCreateUserField:
-    async def test_unauthorized(self, test_client_admin: httpx.AsyncClient):
+    async def test_unauthorized(
+        self,
+        unauthorized_api_assertions: HTTPXResponseAssertion,
+        test_client_admin: httpx.AsyncClient,
+    ):
         response = await test_client_admin.post("/user-fields/", json={})
 
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        unauthorized_api_assertions(response)
 
     @pytest.mark.authenticated_admin
     async def test_invalid_configuration(self, test_client_admin: httpx.AsyncClient):
@@ -168,14 +177,17 @@ class TestCreateUserField:
 @pytest.mark.workspace_host
 class TestUpdateUserField:
     async def test_unauthorized(
-        self, test_client_admin: httpx.AsyncClient, test_data: TestData
+        self,
+        unauthorized_api_assertions: HTTPXResponseAssertion,
+        test_client_admin: httpx.AsyncClient,
+        test_data: TestData,
     ):
         user_field = test_data["user_fields"]["given_name"]
         response = await test_client_admin.patch(
             f"/user-fields/{user_field.id}", json={}
         )
 
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        unauthorized_api_assertions(response)
 
     @pytest.mark.authenticated_admin
     async def test_not_existing(
@@ -247,12 +259,15 @@ class TestUpdateUserField:
 @pytest.mark.workspace_host
 class TestDeleteUserField:
     async def test_unauthorized(
-        self, test_client_admin: httpx.AsyncClient, test_data: TestData
+        self,
+        unauthorized_api_assertions: HTTPXResponseAssertion,
+        test_client_admin: httpx.AsyncClient,
+        test_data: TestData,
     ):
         user_field = test_data["user_fields"]["given_name"]
         response = await test_client_admin.delete(f"/user-fields/{user_field.id}")
 
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        unauthorized_api_assertions(response)
 
     @pytest.mark.authenticated_admin
     async def test_not_existing(

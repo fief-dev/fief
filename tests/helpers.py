@@ -17,6 +17,14 @@ from fief.repositories import AuthorizationCodeRepository
 HTTPXResponseAssertion = Callable[[httpx.Response], None]
 
 
+def admin_api_unauthorized_assertions(response: httpx.Response):
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+
+def admin_api_unauthorized_alt_workspace_assertions(response: httpx.Response):
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+
 def admin_dashboard_unauthorized_assertions(response: httpx.Response):
     assert response.status_code == status.HTTP_307_TEMPORARY_REDIRECT
     assert response.headers["Location"].endswith("/auth/login")

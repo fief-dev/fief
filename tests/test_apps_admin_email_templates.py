@@ -5,15 +5,20 @@ import pytest
 from fastapi import status
 
 from tests.data import TestData
+from tests.helpers import HTTPXResponseAssertion
 
 
 @pytest.mark.asyncio
 @pytest.mark.workspace_host
 class TestListEmailTemplates:
-    async def test_unauthorized(self, test_client_admin: httpx.AsyncClient):
+    async def test_unauthorized(
+        self,
+        unauthorized_api_assertions: HTTPXResponseAssertion,
+        test_client_admin: httpx.AsyncClient,
+    ):
         response = await test_client_admin.get("/email-templates/")
 
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        unauthorized_api_assertions(response)
 
     @pytest.mark.authenticated_admin
     async def test_valid(
@@ -31,12 +36,15 @@ class TestListEmailTemplates:
 @pytest.mark.workspace_host
 class TestGetEmailTemplate:
     async def test_unauthorized(
-        self, test_client_admin: httpx.AsyncClient, test_data: TestData
+        self,
+        unauthorized_api_assertions: HTTPXResponseAssertion,
+        test_client_admin: httpx.AsyncClient,
+        test_data: TestData,
     ):
         email_template = test_data["email_templates"]["base"]
         response = await test_client_admin.get(f"/email-templates/{email_template.id}")
 
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        unauthorized_api_assertions(response)
 
     @pytest.mark.authenticated_admin
     async def test_not_existing(
@@ -65,14 +73,17 @@ class TestGetEmailTemplate:
 @pytest.mark.workspace_host
 class TestUpdateEmailTemplate:
     async def test_unauthorized(
-        self, test_client_admin: httpx.AsyncClient, test_data: TestData
+        self,
+        unauthorized_api_assertions: HTTPXResponseAssertion,
+        test_client_admin: httpx.AsyncClient,
+        test_data: TestData,
     ):
         email_template = test_data["email_templates"]["base"]
         response = await test_client_admin.patch(
             f"/email-templates/{email_template.id}", json={}
         )
 
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        unauthorized_api_assertions(response)
 
     @pytest.mark.authenticated_admin
     async def test_not_existing(

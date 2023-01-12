@@ -17,15 +17,20 @@ from fief.db import AsyncSession
 from fief.errors import APIErrorCode
 from fief.repositories import OAuthAccountRepository, OAuthProviderRepository
 from tests.data import TestData
+from tests.helpers import HTTPXResponseAssertion
 
 
 @pytest.mark.asyncio
 @pytest.mark.workspace_host
 class TestListOAuthProviders:
-    async def test_unauthorized(self, test_client_admin: httpx.AsyncClient):
+    async def test_unauthorized(
+        self,
+        unauthorized_api_assertions: HTTPXResponseAssertion,
+        test_client_admin: httpx.AsyncClient,
+    ):
         response = await test_client_admin.get("/oauth-providers/")
 
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        unauthorized_api_assertions(response)
 
     @pytest.mark.authenticated_admin
     async def test_valid(
@@ -42,10 +47,14 @@ class TestListOAuthProviders:
 @pytest.mark.asyncio
 @pytest.mark.workspace_host
 class TestCreateOAuthProvider:
-    async def test_unauthorized(self, test_client_admin: httpx.AsyncClient):
+    async def test_unauthorized(
+        self,
+        unauthorized_api_assertions: HTTPXResponseAssertion,
+        test_client_admin: httpx.AsyncClient,
+    ):
         response = await test_client_admin.post("/oauth-providers/", json={})
 
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        unauthorized_api_assertions(response)
 
     @pytest.mark.authenticated_admin
     async def test_missing_configuration_endpoint_for_openid(
@@ -114,14 +123,17 @@ class TestCreateOAuthProvider:
 @pytest.mark.workspace_host
 class TestUpdateOAuthProvider:
     async def test_unauthorized(
-        self, test_client_admin: httpx.AsyncClient, test_data: TestData
+        self,
+        unauthorized_api_assertions: HTTPXResponseAssertion,
+        test_client_admin: httpx.AsyncClient,
+        test_data: TestData,
     ):
         oauth_provider = test_data["oauth_providers"]["google"]
         response = await test_client_admin.patch(
             f"/oauth-providers/{oauth_provider.id}", json={}
         )
 
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        unauthorized_api_assertions(response)
 
     @pytest.mark.authenticated_admin
     async def test_not_existing(
@@ -195,14 +207,17 @@ class TestUpdateOAuthProvider:
 @pytest.mark.workspace_host
 class TestDeleteOAuthProvider:
     async def test_unauthorized(
-        self, test_client_admin: httpx.AsyncClient, test_data: TestData
+        self,
+        unauthorized_api_assertions: HTTPXResponseAssertion,
+        test_client_admin: httpx.AsyncClient,
+        test_data: TestData,
     ):
         oauth_provider = test_data["oauth_providers"]["google"]
         response = await test_client_admin.delete(
             f"/oauth-providers/{oauth_provider.id}"
         )
 
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        unauthorized_api_assertions(response)
 
     @pytest.mark.authenticated_admin
     async def test_not_existing(
@@ -230,7 +245,10 @@ class TestDeleteOAuthProvider:
 @pytest.mark.workspace_host
 class TestGetOAuthProviderUserAccessToken:
     async def test_unauthorized(
-        self, test_client_admin: httpx.AsyncClient, test_data: TestData
+        self,
+        unauthorized_api_assertions: HTTPXResponseAssertion,
+        test_client_admin: httpx.AsyncClient,
+        test_data: TestData,
     ):
         oauth_provider = test_data["oauth_providers"]["google"]
         user = test_data["users"]["regular"]
@@ -238,7 +256,7 @@ class TestGetOAuthProviderUserAccessToken:
             f"/oauth-providers/{oauth_provider.id}/access-token/{user.id}"
         )
 
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        unauthorized_api_assertions(response)
 
     @pytest.mark.authenticated_admin
     async def test_not_existing_oauth_provider(

@@ -357,11 +357,20 @@ async def admin_session_token_alt_workspace(
 
 
 @pytest.fixture
+async def admin_api_key_alt_workspace(
+    main_session: AsyncSession, alt_workspace: Workspace
+) -> AsyncGenerator[tuple[AdminAPIKey, str], None]:
+    async with create_api_key(alt_workspace, main_session) as result:
+        yield result
+
+
+@pytest.fixture
 def authenticated_admin(
     request: pytest.FixtureRequest,
     admin_session_token: tuple[AdminSessionToken, str],
     admin_api_key: tuple[AdminAPIKey, str],
     admin_session_token_alt_workspace: tuple[AdminSessionToken, str],
+    admin_api_key_alt_workspace: tuple[AdminAPIKey, str],
 ) -> Callable[[httpx.AsyncClient], httpx.AsyncClient]:
     def _authenticated_admin(client: httpx.AsyncClient) -> httpx.AsyncClient:
         marker = request.node.get_closest_marker("authenticated_admin")
@@ -378,7 +387,11 @@ def authenticated_admin(
                 )
                 client.cookies.set(settings.fief_admin_session_cookie_name, token)
             elif mode == "api_key":
-                token = admin_api_key[1] if workspace == "main" else admin_api_key[1]
+                token = (
+                    admin_api_key[1]
+                    if workspace == "main"
+                    else admin_api_key_alt_workspace[1]
+                )
                 client.headers["Authorization"] = f"Bearer {token}"
         return client
 
@@ -599,6 +612,25 @@ def pytest_generate_tests(metafunc: pytest.Metafunc):
                     admin_dashboard_unauthorized_alt_workspace_assertions,
                     marks=pytest.mark.authenticated_admin(
                         mode="session", workspace="alt"
+                    ),
+                    id="Alt workspace",
+                ),
+            ],
+        )
+    elif "unauthorized_api_assertions" in metafunc.fixturenames:
+        from tests.helpers import (
+            admin_api_unauthorized_alt_workspace_assertions,
+            admin_api_unauthorized_assertions,
+        )
+
+        metafunc.parametrize(
+            "unauthorized_api_assertions",
+            [
+                pytest.param(admin_api_unauthorized_assertions, id="Unauthorized"),
+                pytest.param(
+                    admin_api_unauthorized_alt_workspace_assertions,
+                    marks=pytest.mark.authenticated_admin(
+                        mode="api_key", workspace="alt"
                     ),
                     id="Alt workspace",
                 ),
