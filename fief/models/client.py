@@ -1,10 +1,11 @@
 import enum
 import re
 import secrets
+from datetime import datetime, timedelta, timezone
 
 from jwcrypto import jwk
 from pydantic import UUID4
-from sqlalchemy import Boolean, Column, Enum, ForeignKey, String, Text
+from sqlalchemy import Boolean, Column, Enum, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.sqltypes import JSON
 
@@ -12,6 +13,7 @@ from fief.crypto.jwk import load_jwk
 from fief.models.base import WorkspaceBase
 from fief.models.generics import GUID, CreatedUpdatedAt, UUIDModel
 from fief.models.tenant import Tenant
+from fief.settings import settings
 
 LOCALHOST_HOST_PATTERN = re.compile(
     r"([^\.]+\.)?localhost(\d+)?|127\.0\.0\.1", flags=re.IGNORECASE
@@ -61,6 +63,20 @@ class Client(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
     )
     encrypt_jwk: str = Column(Text, nullable=True)
 
+    authorization_code_lifetime_seconds: int = Column(
+        Integer,
+        nullable=False,
+        default=settings.default_authorization_code_lifetime_seconds,
+    )
+    access_id_token_lifetime_seconds: int = Column(
+        Integer,
+        nullable=False,
+        default=settings.default_access_id_token_lifetime_seconds,
+    )
+    refresh_token_lifetime_seconds: int = Column(
+        Integer, nullable=False, default=settings.default_refresh_token_lifetime_seconds
+    )
+
     tenant_id: UUID4 = Column(
         GUID, ForeignKey(Tenant.id, ondelete="CASCADE"), nullable=False
     )
@@ -73,3 +89,16 @@ class Client(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
         if self.encrypt_jwk is None:
             return None
         return load_jwk(self.encrypt_jwk)
+
+    def get_authorization_code_expires_at(self) -> datetime:
+        return self._get_expires_at("authorization_code_lifetime_seconds")
+
+    def get_access_id_token_expires_at(self) -> datetime:
+        return self._get_expires_at("access_id_token_lifetime_seconds")
+
+    def get_refresh_token_expires_at(self) -> datetime:
+        return self._get_expires_at("refresh_token_lifetime_seconds")
+
+    def _get_expires_at(self, attr: str) -> datetime:
+        print(attr, getattr(self, attr))
+        return datetime.now(timezone.utc) + timedelta(seconds=getattr(self, attr))

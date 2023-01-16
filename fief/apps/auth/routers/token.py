@@ -20,7 +20,6 @@ from fief.logger import AuditLogger
 from fief.models import AuditLogMessage, RefreshToken, Tenant, User, Workspace
 from fief.repositories import RefreshTokenRepository
 from fief.schemas.auth import TokenResponse
-from fief.settings import settings
 
 router = APIRouter()
 
@@ -53,7 +52,7 @@ async def token(
         user,
         scope,
         permissions,
-        settings.access_id_token_lifetime_seconds,
+        client.access_id_token_lifetime_seconds,
     )
     id_token = generate_id_token(
         tenant.get_sign_jwk(),
@@ -61,7 +60,7 @@ async def token(
         client,
         authenticated_at,
         user,
-        settings.access_id_token_lifetime_seconds,
+        client.access_id_token_lifetime_seconds,
         nonce=nonce,
         c_hash=c_hash,
         access_token=access_token,
@@ -70,7 +69,7 @@ async def token(
     token_response = TokenResponse(
         access_token=access_token,
         id_token=id_token,
-        expires_in=settings.access_id_token_lifetime_seconds,
+        expires_in=client.access_id_token_lifetime_seconds,
     )
 
     if "offline_access" in scope:
@@ -81,6 +80,7 @@ async def token(
             user_id=user.id,
             client_id=client.id,
             authenticated_at=authenticated_at,
+            expires_at=client.get_refresh_token_expires_at(),
         )
         refresh_token = await refresh_token_repository.create(refresh_token)
         token_response.refresh_token = token
