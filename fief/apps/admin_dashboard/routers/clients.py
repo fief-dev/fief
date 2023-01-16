@@ -9,7 +9,11 @@ from fief.apps.admin_dashboard.dependencies import (
     DatatableQueryParametersGetter,
     get_base_context,
 )
-from fief.apps.admin_dashboard.forms.client import ClientCreateForm, ClientUpdateForm
+from fief.apps.admin_dashboard.forms.client import (
+    ClientCreateForm,
+    ClientLifetimesForm,
+    ClientUpdateForm,
+)
 from fief.apps.admin_dashboard.responses import HXRedirectResponse
 from fief.crypto.jwk import generate_jwk
 from fief.dependencies.admin_authentication import is_authenticated_admin_session
@@ -75,9 +79,42 @@ async def get_client(
     context: BaseContext = Depends(get_base_context),
 ):
     return templates.TemplateResponse(
-        "admin/clients/get.html",
-        {**context, **list_context, "client": client},
+        "admin/clients/get/general.html",
+        {**context, **list_context, "client": client, "tab": "general"},
     )
+
+
+@router.api_route(
+    "/{id:uuid}/lifetimes", methods=["GET", "POST"], name="dashboard.clients:lifetimes"
+)
+async def client_lifetimes(
+    request: Request,
+    repository: ClientRepository = Depends(get_workspace_repository(ClientRepository)),
+    client: Client = Depends(get_client_by_id_or_404),
+    list_context=Depends(get_list_context),
+    context: BaseContext = Depends(get_base_context),
+    audit_logger: AuditLogger = Depends(get_audit_logger),
+):
+    form_helper = FormHelper(
+        ClientLifetimesForm,
+        "admin/clients/get/lifetimes.html",
+        object=client,
+        request=request,
+        context={**context, **list_context, "client": client, "tab": "lifetimes"},
+    )
+
+    if await form_helper.is_submitted_and_valid():
+        form = await form_helper.get_form()
+        form.populate_obj(client)
+
+        await repository.update(client)
+        audit_logger.log_object_write(AuditLogMessage.OBJECT_UPDATED, client)
+
+        return HXRedirectResponse(
+            request.url_for("dashboard.clients:lifetimes", id=client.id)
+        )
+
+    return await form_helper.get_response()
 
 
 @router.api_route("/create", methods=["GET", "POST"], name="dashboard.clients:create")

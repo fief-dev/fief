@@ -1,4 +1,11 @@
-from wtforms import BooleanField, FieldList, SelectField, StringField, validators
+from wtforms import (
+    BooleanField,
+    FieldList,
+    IntegerField,
+    SelectField,
+    StringField,
+    validators,
+)
 
 from fief.apps.admin_dashboard.validators import RedirectURLValidator
 from fief.forms import ComboboxSelectField, CSRFBaseForm
@@ -31,3 +38,21 @@ class ClientCreateForm(BaseClientForm):
 
 class ClientUpdateForm(BaseClientForm):
     pass
+
+
+class ClientLifetimesForm(CSRFBaseForm):
+    authorization_code_lifetime_seconds = IntegerField(
+        "Authorization code",
+        description="In seconds",
+        validators=[validators.InputRequired(), validators.NumberRange(min=0)],
+    )
+    access_id_token_lifetime_seconds = IntegerField(
+        "Access and ID Token",
+        description="In seconds",
+        validators=[validators.InputRequired(), validators.NumberRange(min=0)],
+    )
+    refresh_token_lifetime_seconds = IntegerField(
+        "Refresh Token",
+        description="In seconds",
+        validators=[validators.InputRequired(), validators.NumberRange(min=0)],
+    )

@@ -1,0 +1,32 @@
+{% import "macros/alerts.html" as alerts %}
+{% import "macros/forms.html" as forms %}
+
+{% extends "admin/clients/get/base.html" %}
+
+{% block tab %}
+<div class="mt-6 mb-4">
+  {% call alerts.warning() %}
+    <p>This is an advanced feature allowing you to customize the lifetime of the tokens generated after a successful user authentication. The default values should be enough for most applications.</p>
+    <p>If you're not sure of what you're doing, please ask for help.</p>
+  {% endcall %}
+</div>
+<form
+  hx-boost="true"
+  hx-target="#aside"
+  method="POST"
+  action="{{ url_for('dashboard.clients:lifetimes', id=client.id) }}"
+>
+  <div class="space-y-4">
+    {{ forms.form_field(form.authorization_code_lifetime_seconds) }}
+    {{ forms.form_field(form.access_id_token_lifetime_seconds) }}
+    {{ forms.form_field(form.refresh_token_lifetime_seconds) }}
+    {{ forms.form_csrf_token(form) }}
+    <button
+      type="submit"
+      class="btn w-full border-slate-200 hover:border-slate-300"
+    >
+      Update
+    </button>
+  </div>
+</form>
+{% endblock %}
