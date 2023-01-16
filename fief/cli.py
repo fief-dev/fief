@@ -260,6 +260,8 @@ def quickstart(
         environment_variables.update(
             {
                 "CSRF_COOKIE_SECURE": False,
+                "SESSION_DATA_COOKIE_SECURE": False,
+                "USER_LOCALE_COOKIE_SECURE": False,
                 "LOGIN_SESSION_COOKIE_SECURE": False,
                 "SESSION_COOKIE_SECURE": False,
                 "FIEF_ADMIN_SESSION_COOKIE_SECURE": False,

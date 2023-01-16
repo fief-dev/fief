@@ -88,6 +88,9 @@ clients: ModelMapping[Client] = {
         client_id="DEFAULT_TENANT_CLIENT_ID",
         client_secret="DEFAULT_TENANT_CLIENT_SECRET",
         redirect_uris=["https://nantes.city/callback"],
+        authorization_code_lifetime_seconds=settings.default_authorization_code_lifetime_seconds,
+        access_id_token_lifetime_seconds=settings.default_access_id_token_lifetime_seconds,
+        refresh_token_lifetime_seconds=settings.default_refresh_token_lifetime_seconds,
     ),
     "granted_default_tenant": Client(
         name="Granted default",
@@ -95,6 +98,9 @@ clients: ModelMapping[Client] = {
         client_id="GRANTED_DEFAULT_TENANT_CLIENT_ID",
         client_secret="GRANTED_DEFAULT_TENANT_CLIENT_SECRET",
         redirect_uris=["https://nantes.city/callback"],
+        authorization_code_lifetime_seconds=settings.default_authorization_code_lifetime_seconds,
+        access_id_token_lifetime_seconds=settings.default_access_id_token_lifetime_seconds,
+        refresh_token_lifetime_seconds=settings.default_refresh_token_lifetime_seconds,
     ),
     "first_party_default_tenant": Client(
         name="First-party default",
@@ -103,6 +109,9 @@ clients: ModelMapping[Client] = {
         client_id="FIRST_PARTY_DEFAULT_TENANT_CLIENT_ID",
         client_secret="FIRST_PARTY_DEFAULT_TENANT_CLIENT_SECRET",
         redirect_uris=["https://nantes.city/callback"],
+        authorization_code_lifetime_seconds=settings.default_authorization_code_lifetime_seconds,
+        access_id_token_lifetime_seconds=settings.default_access_id_token_lifetime_seconds,
+        refresh_token_lifetime_seconds=settings.default_refresh_token_lifetime_seconds,
     ),
     "public_default_tenant": Client(
         name="Default",
@@ -111,6 +120,9 @@ clients: ModelMapping[Client] = {
         client_id="PUBLIC_DEFAULT_TENANT_CLIENT_ID",
         client_secret="PUBLIC_DEFAULT_TENANT_CLIENT_SECRET",
         redirect_uris=["https://nantes.city/callback"],
+        authorization_code_lifetime_seconds=settings.default_authorization_code_lifetime_seconds,
+        access_id_token_lifetime_seconds=settings.default_access_id_token_lifetime_seconds,
+        refresh_token_lifetime_seconds=settings.default_refresh_token_lifetime_seconds,
     ),
     "encryption_default_tenant": Client(
         name="Encryption default",
@@ -119,16 +131,25 @@ clients: ModelMapping[Client] = {
         client_secret="ENCRYPTION_DEFAULT_TENANT_CLIENT_SECRET",
         encrypt_jwk=generate_jwk(secrets.token_urlsafe(), "enc").export_public(),
         redirect_uris=["https://nantes.city/callback"],
+        authorization_code_lifetime_seconds=settings.default_authorization_code_lifetime_seconds,
+        access_id_token_lifetime_seconds=settings.default_access_id_token_lifetime_seconds,
+        refresh_token_lifetime_seconds=settings.default_refresh_token_lifetime_seconds,
     ),
     "secondary_tenant": Client(
         name="Secondary",
         tenant=tenants["secondary"],
         redirect_uris=["https://nantes.city/callback"],
+        authorization_code_lifetime_seconds=settings.default_authorization_code_lifetime_seconds,
+        access_id_token_lifetime_seconds=settings.default_access_id_token_lifetime_seconds,
+        refresh_token_lifetime_seconds=settings.default_refresh_token_lifetime_seconds,
     ),
     "registration_disabled_tenant": Client(
         name="Registration disabled",
         tenant=tenants["registration_disabled"],
         redirect_uris=["https://nantes.city/callback"],
+        authorization_code_lifetime_seconds=settings.default_authorization_code_lifetime_seconds,
+        access_id_token_lifetime_seconds=settings.default_access_id_token_lifetime_seconds,
+        refresh_token_lifetime_seconds=settings.default_refresh_token_lifetime_seconds,
     ),
 }
 
@@ -542,6 +563,7 @@ authorization_codes: ModelMapping[AuthorizationCode] = {
         client=clients["default_tenant"],
         scope=["openid", "offline_access"],
         authenticated_at=now,
+        expires_at=clients["default_tenant"].get_authorization_code_expires_at(),
     ),
     "default_regular_code_challenge_plain": AuthorizationCode(
         code=authorization_code_codes["default_regular_code_challenge_plain"][1],
@@ -555,6 +577,7 @@ authorization_codes: ModelMapping[AuthorizationCode] = {
         code_challenge="PLAIN_CODE_CHALLENGE",
         code_challenge_method="plain",
         authenticated_at=now,
+        expires_at=clients["default_tenant"].get_authorization_code_expires_at(),
     ),
     "default_regular_code_challenge_s256": AuthorizationCode(
         code=authorization_code_codes["default_regular_code_challenge_s256"][1],
@@ -568,6 +591,7 @@ authorization_codes: ModelMapping[AuthorizationCode] = {
         code_challenge=get_code_verifier_hash("S256_CODE_CHALLENGE"),
         code_challenge_method="S256",
         authenticated_at=now,
+        expires_at=clients["default_tenant"].get_authorization_code_expires_at(),
     ),
     "default_regular_nonce": AuthorizationCode(
         code=authorization_code_codes["default_regular_nonce"][1],
@@ -580,6 +604,7 @@ authorization_codes: ModelMapping[AuthorizationCode] = {
         scope=["openid", "offline_access"],
         nonce="NONCE",
         authenticated_at=now,
+        expires_at=clients["default_tenant"].get_authorization_code_expires_at(),
     ),
     "secondary_regular": AuthorizationCode(
         code=authorization_code_codes["secondary_regular"][1],
@@ -589,10 +614,13 @@ authorization_codes: ModelMapping[AuthorizationCode] = {
         client=clients["secondary_tenant"],
         scope=["openid"],
         authenticated_at=now,
+        expires_at=clients["secondary_tenant"].get_authorization_code_expires_at(),
     ),
     "expired": AuthorizationCode(
         expires_at=datetime.now(timezone.utc)
-        - timedelta(seconds=settings.authorization_code_lifetime_seconds),
+        - timedelta(
+            seconds=clients["default_tenant"].authorization_code_lifetime_seconds
+        ),
         code=authorization_code_codes["expired"][1],
         c_hash=get_validation_hash(authorization_code_codes["expired"][0]),
         redirect_uri="https://bretagne.duchy/callback",
@@ -611,6 +639,7 @@ authorization_codes: ModelMapping[AuthorizationCode] = {
         client=clients["public_default_tenant"],
         scope=["openid", "offline_access"],
         authenticated_at=now,
+        expires_at=clients["public_default_tenant"].get_authorization_code_expires_at(),
     ),
     "default_public_regular_code_challenge_s256": AuthorizationCode(
         code=authorization_code_codes["default_public_regular_code_challenge_s256"][1],
@@ -624,6 +653,7 @@ authorization_codes: ModelMapping[AuthorizationCode] = {
         code_challenge=get_code_verifier_hash("S256_CODE_CHALLENGE"),
         code_challenge_method="S256",
         authenticated_at=now,
+        expires_at=clients["public_default_tenant"].get_authorization_code_expires_at(),
     ),
 }
 
@@ -639,6 +669,7 @@ refresh_tokens: ModelMapping[RefreshToken] = {
         client=clients["default_tenant"],
         scope=["openid", "offline_access"],
         authenticated_at=now,
+        expires_at=clients["default_tenant"].get_refresh_token_expires_at(),
     ),
     "default_public_regular": RefreshToken(
         token=refresh_token_tokens["default_public_regular"][1],
@@ -646,6 +677,7 @@ refresh_tokens: ModelMapping[RefreshToken] = {
         client=clients["public_default_tenant"],
         scope=["openid", "offline_access"],
         authenticated_at=now,
+        expires_at=clients["default_tenant"].get_refresh_token_expires_at(),
     ),
 }
 

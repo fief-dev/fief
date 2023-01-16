@@ -14,12 +14,10 @@ from fief.models.generics import (
     UUIDModel,
 )
 from fief.models.user import User
-from fief.settings import settings
 
 
 class RefreshToken(UUIDModel, CreatedUpdatedAt, ExpiresAt, WorkspaceBase):
     __tablename__ = "refresh_tokens"
-    __lifetime_seconds__ = settings.refresh_token_lifetime_seconds
 
     token: str = Column(
         String(length=255),

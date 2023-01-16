@@ -16,12 +16,10 @@ from fief.models.generics import (
     UUIDModel,
 )
 from fief.models.user import User
-from fief.settings import settings
 
 
 class AuthorizationCode(UUIDModel, CreatedUpdatedAt, ExpiresAt, WorkspaceBase):
     __tablename__ = "authorization_codes"
-    __lifetime_seconds__ = settings.authorization_code_lifetime_seconds
 
     code: str = Column(
         String(length=255),

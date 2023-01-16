@@ -66,7 +66,6 @@ from fief.repositories import (
     UserPermissionRepository,
     UserRoleRepository,
 )
-from fief.settings import settings
 from fief.tasks import SendTask
 from fief.templates import templates
 
@@ -303,7 +302,7 @@ async def create_user_access_token(
             user,
             data["scopes"],
             permissions,
-            settings.access_id_token_lifetime_seconds,
+            client.access_id_token_lifetime_seconds,
         )
 
         audit_logger(
@@ -319,7 +318,7 @@ async def create_user_access_token(
                 **list_context,
                 "user": user,
                 "access_token": access_token,
-                "expires_in": settings.access_id_token_lifetime_seconds,
+                "expires_in": client.access_id_token_lifetime_seconds,
             },
         )
 

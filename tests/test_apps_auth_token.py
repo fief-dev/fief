@@ -8,7 +8,6 @@ from fief.crypto.token import get_token_hash
 from fief.db import AsyncSession
 from fief.models import Client
 from fief.repositories import AuthorizationCodeRepository, RefreshTokenRepository
-from fief.settings import settings
 from tests.data import TestData, authorization_code_codes, refresh_token_tokens
 from tests.helpers import access_token_assertions, id_token_assertions
 from tests.types import TenantParams
@@ -399,7 +398,7 @@ class TestAuthTokenAuthorizationCode:
         assert isinstance(json["access_token"], str)
         assert isinstance(json["id_token"], str)
         assert json["token_type"] == "bearer"
-        assert json["expires_in"] == settings.access_id_token_lifetime_seconds
+        assert json["expires_in"] == client.access_id_token_lifetime_seconds
 
         await access_token_assertions(
             access_token=json["access_token"],
@@ -701,7 +700,7 @@ class TestAuthTokenRefreshToken:
         assert isinstance(json["access_token"], str)
         assert isinstance(json["id_token"], str)
         assert json["token_type"] == "bearer"
-        assert json["expires_in"] == settings.access_id_token_lifetime_seconds
+        assert json["expires_in"] == client.access_id_token_lifetime_seconds
 
         await access_token_assertions(
             access_token=json["access_token"],

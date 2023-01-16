@@ -8,6 +8,7 @@ from jwcrypto import jwk
 from fief.db import AsyncSession
 from fief.errors import APIErrorCode
 from fief.repositories import ClientRepository
+from fief.settings import settings
 from tests.data import TestData
 from tests.helpers import HTTPXResponseAssertion
 
@@ -38,6 +39,10 @@ class TestListClients:
         for result in json["results"]:
             assert "tenant" in result
             assert result["encrypt_jwk"] in [None, "**********"]
+
+            assert "authorization_code_lifetime_seconds" in result
+            assert "access_id_token_lifetime_seconds" in result
+            assert "refresh_token_lifetime_seconds" in result
 
 
 @pytest.mark.asyncio
@@ -156,6 +161,19 @@ class TestCreateClient:
         assert json["client_secret"] is not None
         assert json["tenant_id"] == str(tenant.id)
 
+        assert (
+            json["authorization_code_lifetime_seconds"]
+            == settings.default_authorization_code_lifetime_seconds
+        )
+        assert (
+            json["access_id_token_lifetime_seconds"]
+            == settings.default_access_id_token_lifetime_seconds
+        )
+        assert (
+            json["refresh_token_lifetime_seconds"]
+            == settings.default_refresh_token_lifetime_seconds
+        )
+
 
 @pytest.mark.asyncio
 @pytest.mark.workspace_host
@@ -229,6 +247,27 @@ class TestUpdateClient:
 
         json = response.json()
         assert json["name"] == "Updated name"
+
+    @pytest.mark.authenticated_admin
+    async def test_valid_update_lifetime(
+        self, test_client_admin: httpx.AsyncClient, test_data: TestData
+    ):
+        client = test_data["clients"]["default_tenant"]
+        response = await test_client_admin.patch(
+            f"/clients/{client.id}",
+            json={
+                "authorization_code_lifetime_seconds": 3600,
+                "access_id_token_lifetime_seconds": 3600,
+                "refresh_token_lifetime_seconds": 3600,
+            },
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+
+        json = response.json()
+        assert json["authorization_code_lifetime_seconds"] == 3600
+        assert json["access_id_token_lifetime_seconds"] == 3600
+        assert json["refresh_token_lifetime_seconds"] == 3600
 
 
 @pytest.mark.asyncio

@@ -108,13 +108,18 @@ def _get_default_expires_at(timedelta_seconds: int) -> datetime:
 class ExpiresAt(BaseModel):
     @declared_attr
     def expires_at(cls) -> Column[TIMESTAMPAware]:
+        try:
+            default_lifetime_seconds = getattr(
+                cls,
+                "__lifetime_seconds__",
+            )
+            default = functools.partial(
+                _get_default_expires_at, timedelta_seconds=default_lifetime_seconds
+            )
+        except AttributeError:
+            default = None
         return Column(
-            TIMESTAMPAware(timezone=True),
-            nullable=False,
-            index=True,
-            default=functools.partial(
-                _get_default_expires_at, timedelta_seconds=cls.__lifetime_seconds__
-            ),
+            TIMESTAMPAware(timezone=True), nullable=False, index=True, default=default
         )
 
 

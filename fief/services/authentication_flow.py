@@ -158,6 +158,7 @@ class AuthenticationFlow:
                 nonce=login_session.nonce,
                 user_id=user.id,
                 client_id=client.id,
+                expires_at=client.get_authorization_code_expires_at(),
             )
         )
 
@@ -184,7 +185,7 @@ class AuthenticationFlow:
                 user,
                 login_session.scope,
                 permissions,
-                settings.access_id_token_lifetime_seconds,
+                client.access_id_token_lifetime_seconds,
             )
             params["access_token"] = access_token
             params["token_type"] = "bearer"
@@ -196,7 +197,7 @@ class AuthenticationFlow:
                 client,
                 authenticated_at,
                 user,
-                settings.access_id_token_lifetime_seconds,
+                client.access_id_token_lifetime_seconds,
                 nonce=login_session.nonce,
                 c_hash=c_hash,
                 access_token=access_token,

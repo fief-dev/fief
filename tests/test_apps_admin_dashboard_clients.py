@@ -96,6 +96,100 @@ class TestGetClient:
 
 @pytest.mark.asyncio
 @pytest.mark.workspace_host
+class TestClientLifetimes:
+    async def test_unauthorized(
+        self,
+        unauthorized_dashboard_assertions: HTTPXResponseAssertion,
+        test_client_admin_dashboard: httpx.AsyncClient,
+        test_data: TestData,
+    ):
+        response = await test_client_admin_dashboard.get(
+            f"/clients/{test_data['clients']['default_tenant'].id}/lifetimes"
+        )
+
+        unauthorized_dashboard_assertions(response)
+
+    @pytest.mark.authenticated_admin(mode="session")
+    async def test_not_existing(
+        self,
+        test_client_admin_dashboard: httpx.AsyncClient,
+        not_existing_uuid: uuid.UUID,
+    ):
+        response = await test_client_admin_dashboard.get(
+            f"/clients/{not_existing_uuid}/lifetimes"
+        )
+
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    @pytest.mark.authenticated_admin(mode="session")
+    @pytest.mark.htmx(target="aside")
+    async def test_valid(
+        self, test_client_admin_dashboard: httpx.AsyncClient, test_data: TestData
+    ):
+        client = test_data["clients"]["default_tenant"]
+        response = await test_client_admin_dashboard.get(
+            f"/clients/{client.id}/lifetimes"
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+
+        html = BeautifulSoup(response.text, features="html.parser")
+        inputs = html.find_all("input", type="number")
+        assert len(inputs) == 3
+
+    @pytest.mark.authenticated_admin(mode="session")
+    @pytest.mark.htmx(target="aside")
+    async def test_update_invalid(
+        self,
+        test_client_admin_dashboard: httpx.AsyncClient,
+        test_data: TestData,
+        csrf_token: str,
+    ):
+        client = test_data["clients"]["default_tenant"]
+        response = await test_client_admin_dashboard.post(
+            f"/clients/{client.id}/lifetimes",
+            data={
+                "authorization_code_lifetime_seconds": -1,
+                "access_id_token_lifetime_seconds": -1,
+                "refresh_token_lifetime_seconds": -1,
+                "csrf_token": csrf_token,
+            },
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    @pytest.mark.authenticated_admin(mode="session")
+    @pytest.mark.htmx(target="aside")
+    async def test_update_valid(
+        self,
+        test_client_admin_dashboard: httpx.AsyncClient,
+        test_data: TestData,
+        csrf_token: str,
+        workspace_session: AsyncSession,
+    ):
+        client = test_data["clients"]["default_tenant"]
+        response = await test_client_admin_dashboard.post(
+            f"/clients/{client.id}/lifetimes",
+            data={
+                "authorization_code_lifetime_seconds": 3600,
+                "access_id_token_lifetime_seconds": 3600,
+                "refresh_token_lifetime_seconds": 3600,
+                "csrf_token": csrf_token,
+            },
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+
+        client_repository = ClientRepository(workspace_session)
+        updated_client = await client_repository.get_by_id(client.id)
+        assert updated_client is not None
+        assert updated_client.authorization_code_lifetime_seconds == 3600
+        assert updated_client.access_id_token_lifetime_seconds == 3600
+        assert updated_client.refresh_token_lifetime_seconds == 3600
+
+
+@pytest.mark.asyncio
+@pytest.mark.workspace_host
 class TestCreateClient:
     async def test_unauthorized(
         self,
