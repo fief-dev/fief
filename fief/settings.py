@@ -98,7 +98,7 @@ class Settings(BaseSettings):
     session_lifetime_seconds: int = 86400 * 30
 
     authorization_code_lifetime_seconds: int = 600
-    access_id_token_lifetime_seconds: int = 3600
+    access_id_token_lifetime_seconds: int = 3600 * 24
     refresh_token_lifetime_seconds: int = 3600 * 24 * 30
 
     fief_domain: str = "localhost:8000"
