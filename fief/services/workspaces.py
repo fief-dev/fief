@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 
 from fief.db.main import create_main_async_session_maker
-from fief.db.workspace import WorkspaceEngineManager, get_workspace_session
+from fief.db.workspace import WorkspaceEngineManager
 from fief.models import Workspace
-from fief.repositories import UserRepository, WorkspaceRepository
+from fief.repositories import WorkspaceRepository
 
 
 @dataclass
@@ -28,28 +28,14 @@ class Workspaces:
 
         workspaces = await self.workspace_repository.all()
         for workspace in workspaces:
-            try:
-                async with get_workspace_session(
-                    workspace, self.workspace_engine_manager
-                ) as session:
-                    user_repository = UserRepository(session)
-                    nb_users = await user_repository.count_all()
-                    stats.append(
-                        WorkspaceStats(
-                            workspace=workspace,
-                            reachable=True,
-                            external_db=workspace.database_type is not None,
-                            nb_users=nb_users,
-                        )
-                    )
-            except ConnectionError:
-                stats.append(
-                    WorkspaceStats(
-                        workspace=workspace,
-                        external_db=workspace.database_type is not None,
-                        reachable=False,
-                    )
+            stats.append(
+                WorkspaceStats(
+                    workspace=workspace,
+                    reachable=True,
+                    external_db=workspace.database_type is not None,
+                    nb_users=workspace.users_count,
                 )
+            )
 
         return stats
 
