@@ -5,6 +5,7 @@ import pytest
 from fastapi import status
 from fastapi_users.jwt import generate_jwt
 
+from fief.crypto.password import password_helper
 from fief.dependencies.users import UserManager
 from fief.models import Workspace
 from fief.settings import settings
@@ -148,7 +149,8 @@ class TestPostResetPassword:
     ):
         user = test_data["users"]["regular"]
         token_data = {
-            "user_id": str(user.id),
+            "sub": str(user.id),
+            "password_fgpt": password_helper.hash(user.hashed_password),
             "aud": UserManager.reset_password_token_audience,
         }
         token = generate_jwt(token_data, UserManager.reset_password_token_secret, 3600)
@@ -170,7 +172,8 @@ class TestPostResetPassword:
     ):
         user = test_data["users"]["regular"]
         token_data = {
-            "user_id": str(user.id),
+            "sub": str(user.id),
+            "password_fgpt": password_helper.hash(user.hashed_password),
             "aud": UserManager.reset_password_token_audience,
         }
         token = generate_jwt(token_data, UserManager.reset_password_token_secret, 3600)
@@ -190,7 +193,8 @@ class TestPostResetPassword:
     ):
         user = test_data["users"]["regular"]
         token_data = {
-            "user_id": str(user.id),
+            "sub": str(user.id),
+            "password_fgpt": password_helper.hash(user.hashed_password),
             "aud": UserManager.reset_password_token_audience,
         }
         token = generate_jwt(token_data, UserManager.reset_password_token_secret, 3600)
