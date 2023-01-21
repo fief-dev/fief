@@ -14,6 +14,14 @@
 </a>
 {% endmacro %}
 
+{% macro created_at_column(user) %}
+{{ user.created_at.strftime('%x %X') }}
+{% endmacro %}
+
+{% macro updated_at_column(user) %}
+{{ user.updated_at.strftime('%x %X') }}
+{% endmacro %}
+
 {% macro tenant_column(user) %}
 {{ user.tenant.name }}
 {% endmacro %}

@@ -77,6 +77,12 @@ async def get_columns(
 ) -> list[DatatableColumn]:
     return [
         DatatableColumn("Email address", "email", "email_column", ordering="email"),
+        DatatableColumn(
+            "Created at", "created_at", "created_at_column", ordering="created_at"
+        ),
+        DatatableColumn(
+            "Updated at", "updated_at", "updated_at_column", ordering="updated_at"
+        ),
         DatatableColumn("ID", "id", "id_column", ordering="id"),
         DatatableColumn("Tenant", "tenant", "tenant_column", ordering="tenant.name"),
         *[
@@ -94,7 +100,7 @@ async def get_columns(
 async def get_list_context(
     columns: list[DatatableColumn] = Depends(get_columns),
     datatable_query_parameters: DatatableQueryParameters = Depends(
-        DatatableQueryParametersGetter(["email", "id", "tenant"])
+        DatatableQueryParametersGetter(["email", "created_at", "id", "tenant"])
     ),
     paginated_users: PaginatedObjects[User] = Depends(get_paginated_users),
 ):
