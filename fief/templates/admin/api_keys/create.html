@@ -5,6 +5,8 @@
 
 {% extends "admin/api_keys/list.html" %}
 
+{% block head_title_content %}Create API Key · {{ super() }}{% endblock %}
+
 {% set open_modal = true %}
 
 {% block modal %}

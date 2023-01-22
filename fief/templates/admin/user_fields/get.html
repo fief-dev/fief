@@ -3,6 +3,8 @@
 
 {% extends "admin/user_fields/list.html" %}
 
+{% block head_title_content %}{{ user_field.name }} · {{ super() }}{% endblock %}
+
 {% set open_aside = true %}
 
 {% block aside %}

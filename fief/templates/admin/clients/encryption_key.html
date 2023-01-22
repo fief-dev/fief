@@ -4,6 +4,8 @@
 
 {% extends layout %}
 
+{% block head_title_content %}{{ client.name }} · {{ super() }}{% endblock %}
+
 {% set open_modal = true %}
 
 {% block modal %}

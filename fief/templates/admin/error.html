@@ -1,5 +1,7 @@
 {% extends "admin/base.html" %}
 
+{% block head_title_content %}Error {{ status_code }}{{ super() }}{% endblock %}
+
 {% block body %}
 <main class="bg-white">
 

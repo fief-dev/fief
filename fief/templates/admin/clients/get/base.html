@@ -3,8 +3,9 @@
 
 {% extends "admin/clients/list.html" %}
 
-{% set open_aside = true %}
+{% block head_title_content %}{{ client.name }} · {{ super() }}{% endblock %}
 
+{% set open_aside = true %}
 
 {% macro tab_header(title, route, active) %}
 <li class="mr-6 last:mr-0 first:pl-4 sm:first:pl-6 lg:first:pl-8 last:pr-4 sm:last:pr-6 lg:last:pr-8">

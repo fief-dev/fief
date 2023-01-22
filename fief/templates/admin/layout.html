@@ -2,6 +2,8 @@
 
 {% extends "admin/base.html" %}
 
+{% block head_title_content %}{{ current_workspace.name }} · Fief{% endblock %}
+
 {% block body %}
 <div
   class="w-4 h-4 m-4 absolute z-40 bottom-0 right-0 hidden"

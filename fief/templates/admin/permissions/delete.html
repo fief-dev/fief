@@ -5,6 +5,8 @@
 
 {% extends "admin/permissions/list.html" %}
 
+{% block head_title_content %}{{ permission.name }} · {{ super() }}{% endblock %}
+
 {% set open_modal = true %}
 
 {% block modal %}

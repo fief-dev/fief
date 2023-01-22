@@ -22,6 +22,8 @@
 
 {% extends layout %}
 
+{% block head_title_content %}{{ email_template.get_type_display_name() }} · Email templates · {{ super() }}{% endblock %}
+
 {% block javascripts_modules %}
 <script src="{{ url_for('dashboard:static', path='/code-editor.bundle.js') }}"></script>
 {% endblock %}

@@ -31,6 +31,8 @@
 
 {% extends layout %}
 
+{% block head_title_content %}{{ theme.name }} · Themes · {{ super() }}{% endblock %}
+
 {% block main %}
 <form
   id="theme-form"

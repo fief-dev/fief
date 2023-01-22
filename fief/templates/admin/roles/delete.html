@@ -5,6 +5,8 @@
 
 {% extends "admin/roles/list.html" %}
 
+{% block head_title_content %}{{ role.name }} · {{ super() }}{% endblock %}
+
 {% set open_modal = true %}
 
 {% block modal %}

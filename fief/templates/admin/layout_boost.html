@@ -1,3 +1,9 @@
+{% block head_title %}
+  <title id="head-title" hx-swap-oob="true">
+    {% block head_title_content %}{{ current_workspace.name }} · Fief{% endblock %}
+  </title>
+{% endblock %}
+
 {% if hx_target == "main" %}
     {% block main %}{% endblock %}
 {% endif %}

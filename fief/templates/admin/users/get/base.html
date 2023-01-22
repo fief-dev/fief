@@ -3,6 +3,8 @@
 
 {% extends "admin/users/list.html" %}
 
+{% block head_title_content %}{{ user.email }} · {{ super() }}{% endblock %}
+
 {% set open_aside = true %}
 
 {% macro tab_header(title, route, active) %}

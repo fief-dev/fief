@@ -5,6 +5,8 @@
 
 {% extends "admin/themes/list.html" %}
 
+{% block head_title_content %}Create Theme · {{ super() }}{% endblock %}
+
 {% set open_modal = true %}
 
 {% block modal %}

@@ -5,6 +5,8 @@
 
 {% extends "admin/oauth_providers/list.html" %}
 
+{% block head_title_content %}{{ oauth_provider.get_display_name() }} · {{ super() }}{% endblock %}
+
 {% set open_modal = true %}
 
 {% block modal %}

@@ -3,6 +3,8 @@
 
 {% extends "admin/tenants/list.html" %}
 
+{% block head_title_content %}{{ tenant.name }} · {{ super() }}{% endblock %}
+
 {% set open_aside = true %}
 
 {% block aside %}

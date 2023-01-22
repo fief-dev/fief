@@ -5,6 +5,8 @@
 
 {% extends "admin/clients/list.html" %}
 
+{% block head_title_content %}Create Client · {{ super() }}{% endblock %}
+
 {% set open_modal = true %}
 
 {% block modal %}

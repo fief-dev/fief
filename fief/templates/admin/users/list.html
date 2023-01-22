@@ -2,6 +2,8 @@
 
 {% extends layout %}
 
+{% block head_title_content %}Users · {{ super() }}{% endblock %}
+
 {% macro column_switcher(label, slug) %}
 <li class="w-full">
   <a href="?{{ datatable_query_parameters.toggle_column(slug) }}" class="block rounded text-sm hover:bg-slate-100 p-2">

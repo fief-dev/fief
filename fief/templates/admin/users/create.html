@@ -5,6 +5,8 @@
 
 {% extends "admin/users/list.html" %}
 
+{% block head_title_content %}Create User · {{ super() }}{% endblock %}
+
 {% set open_modal = true %}
 
 {% block modal %}
