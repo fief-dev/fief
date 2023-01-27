@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
 from sqlalchemy import Boolean, Column, ForeignKey, String, Table
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from fief.models.base import WorkspaceBase, get_prefixed_tablename
 from fief.models.generics import CreatedUpdatedAt, UUIDModel
@@ -29,13 +29,15 @@ RolePermission = Table(
 class Role(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
     __tablename__ = "roles"
 
-    name: str = Column(String(length=255), nullable=False)
-    granted_by_default: bool = Column(Boolean, default=False, nullable=False)
+    name: Mapped[str] = mapped_column(String(length=255), nullable=False)
+    granted_by_default: Mapped[bool] = mapped_column(
+        Boolean, default=False, nullable=False
+    )
 
-    permissions: list[Permission] = relationship(
+    permissions: Mapped[list[Permission]] = relationship(
         "Permission", secondary=RolePermission, lazy="selectin"
     )
-    user_permissions: list["UserPermission"] = relationship(
+    user_permissions: Mapped[list["UserPermission"]] = relationship(
         "UserPermission", cascade="all, delete"
     )
 

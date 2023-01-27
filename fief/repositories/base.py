@@ -1,7 +1,7 @@
 import asyncio
 from collections.abc import Sequence
 from datetime import datetime, timezone
-from typing import Any, Generic, Protocol, TypeVar
+from typing import Any, Generic, Protocol, TypeVar, cast
 
 from pydantic import UUID4
 from sqlalchemy import delete, func, select
@@ -160,11 +160,11 @@ class BaseRepository(BaseRepositoryProtocol, Generic[M]):
 
     async def list(self, statement: Select) -> list[M]:
         result = await self._execute_query(statement)
-        return result.scalars().unique().all()
+        return cast(list[M], result.scalars().unique().all())
 
     async def _count(self, statement: Select) -> int:
         count_statement = statement.with_only_columns(
-            [func.count()], maintain_column_froms=True  # type: ignore
+            func.count(), maintain_column_froms=True
         ).order_by(None)
         result = await self._execute_query(count_statement)
         return result.scalar_one()

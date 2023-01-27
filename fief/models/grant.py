@@ -1,6 +1,6 @@
 from pydantic import UUID4
-from sqlalchemy import JSON, Column, ForeignKey
-from sqlalchemy.orm import relationship
+from sqlalchemy import JSON, ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql.schema import UniqueConstraint
 
 from fief.models.base import WorkspaceBase
@@ -13,14 +13,14 @@ class Grant(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
     __tablename__ = "grants"
     __table_args__ = (UniqueConstraint("user_id", "client_id"),)
 
-    scope: list[str] = Column(JSON, nullable=False, default=list)
+    scope: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)
 
-    user_id: UUID4 = Column(
+    user_id: Mapped[UUID4] = mapped_column(
         GUID, ForeignKey(User.id, ondelete="CASCADE"), nullable=False
     )
-    user: User = relationship("User")
+    user: Mapped[User] = relationship("User")
 
-    client_id: UUID4 = Column(
+    client_id: Mapped[UUID4] = mapped_column(
         GUID, ForeignKey(Client.id, ondelete="CASCADE"), nullable=False
     )
-    client: Client = relationship("Client", lazy="joined")
+    client: Mapped[Client] = relationship("Client", lazy="joined")

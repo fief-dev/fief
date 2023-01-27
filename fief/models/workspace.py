@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Column, Enum, Integer, String, Text
-from sqlalchemy.orm import relationship
+from sqlalchemy import Enum, Integer, String, Text
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from fief.crypto.encryption import FernetEngine, StringEncryptedType
 from fief.db.types import (
@@ -20,34 +20,40 @@ if TYPE_CHECKING:
 class Workspace(UUIDModel, CreatedUpdatedAt, MainBase):
     __tablename__ = "workspaces"
 
-    name: str = Column(String(length=255), nullable=False)
-    domain: str = Column(String(length=255), nullable=False)
+    name: Mapped[str] = mapped_column(String(length=255), nullable=False)
+    domain: Mapped[str] = mapped_column(String(length=255), nullable=False)
 
-    database_type: DatabaseType | None = Column(Enum(DatabaseType), nullable=True)
-    database_host: str | None = Column(
+    database_type: Mapped[DatabaseType | None] = mapped_column(
+        Enum(DatabaseType), nullable=True
+    )
+    database_host: Mapped[str | None] = mapped_column(
         StringEncryptedType(Text, settings.encryption_key, FernetEngine), nullable=True
     )
-    database_port: str | None = Column(
+    database_port: Mapped[str | None] = mapped_column(
         StringEncryptedType(Text, settings.encryption_key, FernetEngine), nullable=True
     )
-    database_username: str | None = Column(
+    database_username: Mapped[str | None] = mapped_column(
         StringEncryptedType(Text, settings.encryption_key, FernetEngine), nullable=True
     )
-    database_password: str | None = Column(
+    database_password: Mapped[str | None] = mapped_column(
         StringEncryptedType(Text, settings.encryption_key, FernetEngine), nullable=True
     )
-    database_name: str | None = Column(
+    database_name: Mapped[str | None] = mapped_column(
         StringEncryptedType(Text, settings.encryption_key, FernetEngine), nullable=True
     )
-    database_ssl_mode: str | None = Column(
+    database_ssl_mode: Mapped[str | None] = mapped_column(
         StringEncryptedType(Text, settings.encryption_key, FernetEngine), nullable=True
     )
 
-    alembic_revision: str | None = Column(String(length=255), nullable=True, index=True)
+    alembic_revision: Mapped[str | None] = mapped_column(
+        String(length=255), nullable=True, index=True
+    )
 
-    users_count: int = Column(Integer, nullable=False, default=0, server_default="0")
+    users_count: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=0, server_default="0"
+    )
 
-    workspace_users: list["WorkspaceUser"] = relationship(
+    workspace_users: Mapped[list["WorkspaceUser"]] = relationship(
         "WorkspaceUser", back_populates="workspace", cascade="all, delete"
     )
 

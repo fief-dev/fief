@@ -2,8 +2,8 @@ from datetime import date, datetime
 from typing import TYPE_CHECKING, Any
 
 from pydantic import UUID4
-from sqlalchemy import JSON, Boolean, Column, Date, ForeignKey, Integer, Text
-from sqlalchemy.orm import relationship
+from sqlalchemy import JSON, Boolean, Date, ForeignKey, Integer, Text
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql.schema import UniqueConstraint
 
 from fief.models.base import WorkspaceBase
@@ -21,22 +21,24 @@ class UserFieldValue(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
     __tablename__ = "user_field_values"
     __table_args__ = (UniqueConstraint("user_field_id", "user_id"),)
 
-    value_string = Column(Text, nullable=True)
-    value_integer = Column(Integer, nullable=True)
-    value_boolean = Column(Boolean, nullable=True)
-    value_date = Column(Date, nullable=True)
-    value_datetime = Column(TIMESTAMPAware(timezone=True), nullable=True)
-    value_json = Column(JSON, nullable=True)
+    value_string: Mapped[str | None] = mapped_column(Text, nullable=True)
+    value_integer: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    value_boolean: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    value_date: Mapped[date | None] = mapped_column(Date, nullable=True)
+    value_datetime: Mapped[datetime | None] = mapped_column(
+        TIMESTAMPAware(timezone=True), nullable=True
+    )
+    value_json: Mapped[Any | None] = mapped_column(JSON, nullable=True)
 
-    user_id: UUID4 = Column(
+    user_id: Mapped[UUID4] = mapped_column(
         GUID, ForeignKey(User.id, ondelete="CASCADE"), nullable=False
     )
-    user: User = relationship("User", back_populates="user_field_values")
+    user: Mapped[User] = relationship("User", back_populates="user_field_values")
 
-    user_field_id: UUID4 = Column(
+    user_field_id: Mapped[UUID4] = mapped_column(
         GUID, ForeignKey(UserField.id, ondelete="CASCADE"), nullable=False
     )
-    user_field: UserField = relationship(
+    user_field: Mapped[UserField] = relationship(
         "UserField", back_populates="user_field_values", lazy="selectin"
     )
 

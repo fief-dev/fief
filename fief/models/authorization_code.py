@@ -2,8 +2,8 @@ from datetime import datetime
 from typing import cast
 
 from pydantic import UUID4
-from sqlalchemy import Column, ForeignKey
-from sqlalchemy.orm import relationship
+from sqlalchemy import ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql.sqltypes import JSON, String
 
 from fief.models.base import WorkspaceBase
@@ -21,29 +21,35 @@ from fief.models.user import User
 class AuthorizationCode(UUIDModel, CreatedUpdatedAt, ExpiresAt, WorkspaceBase):
     __tablename__ = "authorization_codes"
 
-    code: str = Column(
+    code: Mapped[str] = mapped_column(
         String(length=255),
         nullable=False,
         index=True,
         unique=True,
     )
-    c_hash: str = Column(String(length=255), nullable=False)
-    redirect_uri: str = Column(String(length=2048), nullable=False)
-    scope: list[str] = Column(JSON, nullable=False, default=list)
-    authenticated_at: datetime = Column(TIMESTAMPAware(timezone=True), nullable=False)
-    nonce: str | None = Column(String(length=255), nullable=True)
-    code_challenge: str | None = Column(String(length=255), nullable=True)
-    code_challenge_method: str | None = Column(String(length=255), nullable=True)
+    c_hash: Mapped[str] = mapped_column(String(length=255), nullable=False)
+    redirect_uri: Mapped[str] = mapped_column(String(length=2048), nullable=False)
+    scope: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)
+    authenticated_at: Mapped[datetime] = mapped_column(
+        TIMESTAMPAware(timezone=True), nullable=False
+    )
+    nonce: Mapped[str | None] = mapped_column(String(length=255), nullable=True)
+    code_challenge: Mapped[str | None] = mapped_column(
+        String(length=255), nullable=True
+    )
+    code_challenge_method: Mapped[str | None] = mapped_column(
+        String(length=255), nullable=True
+    )
 
-    user_id: UUID4 = Column(
+    user_id: Mapped[UUID4] = mapped_column(
         GUID, ForeignKey(User.id, ondelete="CASCADE"), nullable=False
     )
-    user: User = relationship("User")
+    user: Mapped[User] = relationship("User")
 
-    client_id: UUID4 = Column(
+    client_id: Mapped[UUID4] = mapped_column(
         GUID, ForeignKey(Client.id, ondelete="CASCADE"), nullable=False
     )
-    client: Client = relationship("Client", lazy="joined")
+    client: Mapped[Client] = relationship("Client", lazy="joined")
 
     def get_code_challenge_tuple(self) -> tuple[str, str] | None:
         if self.code_challenge is not None:

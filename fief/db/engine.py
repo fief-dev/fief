@@ -1,6 +1,5 @@
 from sqlalchemy import event
-from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, create_async_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.asyncio import AsyncEngine, async_sessionmaker, create_async_engine
 
 from fief.db.types import DatabaseConnectionParameters
 from fief.settings import settings
@@ -42,7 +41,7 @@ def create_engine(
 
 
 def create_async_session_maker(engine: AsyncEngine):
-    return sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+    return async_sessionmaker(engine, expire_on_commit=False)
 
 
 __all__ = [

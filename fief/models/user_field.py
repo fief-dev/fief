@@ -1,9 +1,9 @@
 from enum import Enum
 from typing import TYPE_CHECKING, Any, TypedDict
 
-from sqlalchemy import JSON, Column, String
+from sqlalchemy import JSON, String
 from sqlalchemy import Enum as SQLEnum
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from fief.models.base import WorkspaceBase
 from fief.models.generics import CreatedUpdatedAt, UUIDModel
@@ -61,12 +61,16 @@ class UserFieldConfiguration(TypedDict):
 class UserField(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
     __tablename__ = "user_fields"
 
-    name: str = Column(String(length=320), nullable=False)
-    slug: str = Column(String(length=320), index=True, nullable=False, unique=True)
-    type: UserFieldType = Column(SQLEnum(UserFieldType), index=True, nullable=True)
-    configuration: UserFieldConfiguration = Column(JSON, nullable=False)
+    name: Mapped[str] = mapped_column(String(length=320), nullable=False)
+    slug: Mapped[str] = mapped_column(
+        String(length=320), index=True, nullable=False, unique=True
+    )
+    type: Mapped[UserFieldType] = mapped_column(
+        SQLEnum(UserFieldType), index=True, nullable=True
+    )
+    configuration: Mapped[UserFieldConfiguration] = mapped_column(JSON, nullable=False)
 
-    user_field_values: list["UserFieldValue"] = relationship(
+    user_field_values: Mapped[list["UserFieldValue"]] = relationship(
         "UserFieldValue", back_populates="user_field", cascade="all, delete"
     )
 

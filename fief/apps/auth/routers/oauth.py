@@ -150,8 +150,8 @@ async def callback(
             )
 
         # Update tokens
-        oauth_account.access_token = access_token  # type: ignore
-        oauth_account.refresh_token = refresh_token  # type: ignore
+        oauth_account.access_token = access_token
+        oauth_account.refresh_token = refresh_token
         oauth_account.expires_at = expires_at
         await oauth_account_repository.update(oauth_account)
 

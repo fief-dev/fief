@@ -1,6 +1,6 @@
 from pydantic import UUID4
-from sqlalchemy import Column, ForeignKey
-from sqlalchemy.orm import relationship
+from sqlalchemy import ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql.schema import UniqueConstraint
 
 from fief.models.base import WorkspaceBase
@@ -13,15 +13,15 @@ class UserRole(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
     __tablename__ = "user_roles"
     __table_args__ = (UniqueConstraint("user_id", "role_id"),)
 
-    user_id: UUID4 = Column(
+    user_id: Mapped[UUID4] = mapped_column(
         GUID, ForeignKey(User.id, ondelete="CASCADE"), nullable=False
     )
-    role_id: UUID4 = Column(
+    role_id: Mapped[UUID4] = mapped_column(
         GUID, ForeignKey(Role.id, ondelete="CASCADE"), nullable=False
     )
 
-    user: User = relationship("User")
-    role: Role = relationship("Role")
+    user: Mapped[User] = relationship("User")
+    role: Mapped[Role] = relationship("Role")
 
     def __repr__(self) -> str:
         return f"UserRole(id={self.id}, user_id={self.user_id}, role_id={self.role_id})"
