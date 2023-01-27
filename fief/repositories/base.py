@@ -139,13 +139,11 @@ class BaseRepository(BaseRepositoryProtocol, Generic[M]):
     async def create(self, object: M) -> M:
         self.session.add(object)
         await self.session.commit()
-        await self.session.refresh(object)
         return object
 
     async def update(self, object: M) -> None:
         self.session.add(object)
         await self.session.commit()
-        await self.session.refresh(object)
 
     async def delete(self, object: M) -> None:
         await self.session.delete(object)
