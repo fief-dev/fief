@@ -147,8 +147,7 @@ class BaseRepository(BaseRepositoryProtocol, Generic[M]):
         await self.session.commit()
 
     async def create_many(self, objects: list[M]) -> list[M]:
-        for object in objects:
-            self.session.add(object)
+        self.session.add_all(objects)
         await self.session.commit()
         return objects
 
