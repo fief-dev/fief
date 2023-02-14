@@ -1,5 +1,6 @@
 # mypy: ignore-errors
 
+import contextlib
 from logging.config import fileConfig
 
 from alembic import context
@@ -52,6 +53,23 @@ def run_migrations_offline():
         context.run_migrations()
 
 
+@contextlib.contextmanager
+def get_connection():
+    connection = config.attributes.get("connection", None)
+    if connection is not None:
+        yield connection
+        return
+
+    engine = engine_from_config(
+        config.get_section(config.config_ini_section),
+        prefix="sqlalchemy.",
+        url=config.get_main_option("sqlalchemy.url"),
+        poolclass=pool.NullPool,
+    )
+    with engine.begin() as connection:
+        yield connection
+
+
 def run_migrations_online():
     """Run migrations in 'online' mode.
 
@@ -59,17 +77,7 @@ def run_migrations_online():
     and associate a connection with the context.
 
     """
-    connectable = config.attributes.get("connection", None)
-
-    if connectable is None:
-        connectable = engine_from_config(
-            config.get_section(config.config_ini_section),
-            prefix="sqlalchemy.",
-            url=config.get_main_option("sqlalchemy.url"),
-            poolclass=pool.NullPool,
-        )
-
-    with connectable.connect() as connection:
+    with get_connection() as connection:
         context.configure(
             connection=connection,
             target_metadata=target_metadata,

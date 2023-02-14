@@ -30,7 +30,6 @@ def workspace_db() -> WorkspaceDatabase:
 @pytest.mark.asyncio
 class TestMigrate:
     async def test_connection_error(self, workspace_db: WorkspaceDatabase):
-
         with pytest.raises(WorkspaceDatabaseConnectionError):
             workspace_db.migrate(
                 (engine.make_url("postgresql://foo:bar@localhost:1234/foobar"), {}),

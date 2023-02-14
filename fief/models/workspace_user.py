@@ -1,6 +1,6 @@
 from pydantic import UUID4
-from sqlalchemy import Column, ForeignKey
-from sqlalchemy.orm import relationship
+from sqlalchemy import ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from fief.models.base import MainBase
 from fief.models.generics import GUID, CreatedUpdatedAt, UUIDModel
@@ -10,12 +10,12 @@ from fief.models.workspace import Workspace
 class WorkspaceUser(UUIDModel, CreatedUpdatedAt, MainBase):
     __tablename__ = "workspace_users"
 
-    workspace_id: UUID4 = Column(
+    workspace_id: Mapped[UUID4] = mapped_column(
         GUID, ForeignKey(Workspace.id, ondelete="CASCADE"), nullable=False
     )
-    user_id: UUID4 = Column(GUID, nullable=False)
+    user_id: Mapped[UUID4] = mapped_column(GUID, nullable=False)
 
-    workspace: Workspace = relationship(
+    workspace: Mapped[Workspace] = relationship(
         "Workspace", back_populates="workspace_users", lazy="joined"
     )
 

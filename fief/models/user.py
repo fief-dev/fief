@@ -1,8 +1,8 @@
 from typing import TYPE_CHECKING, Any, Optional
 
 from pydantic import UUID4
-from sqlalchemy import Boolean, Column, ForeignKey, String
-from sqlalchemy.orm import relationship
+from sqlalchemy import Boolean, ForeignKey, String
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql.schema import UniqueConstraint
 
 from fief.models.base import WorkspaceBase
@@ -25,18 +25,24 @@ class User(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
         is_superuser: bool
         is_verified: bool
     else:
-        email: str = Column(String(length=320), index=True, nullable=False)
-        hashed_password: str = Column(String(length=255), nullable=False)
-        is_active: bool = Column(Boolean, default=True, nullable=False)
-        is_superuser: bool = Column(Boolean, default=False, nullable=False)
-        is_verified: bool = Column(Boolean, default=False, nullable=False)
+        email: Mapped[str] = mapped_column(
+            String(length=320), index=True, nullable=False
+        )
+        hashed_password: Mapped[str] = mapped_column(String(length=255), nullable=False)
+        is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+        is_superuser: Mapped[bool] = mapped_column(
+            Boolean, default=False, nullable=False
+        )
+        is_verified: Mapped[bool] = mapped_column(
+            Boolean, default=False, nullable=False
+        )
 
-    tenant_id: UUID4 = Column(
+    tenant_id: Mapped[UUID4] = mapped_column(
         GUID, ForeignKey(Tenant.id, ondelete="CASCADE"), nullable=False
     )
-    tenant: Tenant = relationship("Tenant")
+    tenant: Mapped[Tenant] = relationship("Tenant")
 
-    user_field_values: list["UserFieldValue"] = relationship(
+    user_field_values: Mapped[list["UserFieldValue"]] = relationship(
         "UserFieldValue", back_populates="user", cascade="all, delete", lazy="selectin"
     )
 

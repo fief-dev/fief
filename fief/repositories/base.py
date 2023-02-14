@@ -1,7 +1,7 @@
 import asyncio
 from collections.abc import Sequence
 from datetime import datetime, timezone
-from typing import Any, Generic, Protocol, TypeVar
+from typing import Any, Generic, Protocol, TypeVar, cast
 
 from pydantic import UUID4
 from sqlalchemy import delete, func, select
@@ -80,16 +80,15 @@ class BaseRepository(BaseRepositoryProtocol, Generic[M]):
         skip=0,
     ) -> tuple[list[M], int]:
         paginated_statement = statement.offset(skip).limit(limit)
-        [count, result] = await asyncio.gather(
-            self._count(statement), self._execute_query(paginated_statement)
-        )
-
-        return result.scalars().unique().all(), count
+        async with asyncio.TaskGroup() as tg:
+            count_task = tg.create_task(self._count(statement))
+            query_task = tg.create_task(self.list(paginated_statement))
+        return query_task.result(), count_task.result()
 
     def orderize(
         self, statement: Select, ordering: list[tuple[list[str], bool]]
     ) -> Select:
-        for (accessors, is_desc) in ordering:
+        for accessors, is_desc in ordering:
             field: InstrumentedAttribute
             # Local field
             if len(accessors) == 1:
@@ -132,39 +131,33 @@ class BaseRepository(BaseRepositoryProtocol, Generic[M]):
 
     async def get_one_or_none(self, statement: Select) -> M | None:
         result = await self._execute_query(statement)
-        object = result.scalar()
-        if object is None:
-            return None
-        return object
+        return result.scalar()
 
     async def create(self, object: M) -> M:
         self.session.add(object)
         await self.session.commit()
-        await self.session.refresh(object)
         return object
 
     async def update(self, object: M) -> None:
         self.session.add(object)
         await self.session.commit()
-        await self.session.refresh(object)
 
     async def delete(self, object: M) -> None:
         await self.session.delete(object)
         await self.session.commit()
 
     async def create_many(self, objects: list[M]) -> list[M]:
-        for object in objects:
-            self.session.add(object)
+        self.session.add_all(objects)
         await self.session.commit()
         return objects
 
     async def list(self, statement: Select) -> list[M]:
         result = await self._execute_query(statement)
-        return result.scalars().unique().all()
+        return cast(list[M], result.scalars().unique().all())
 
     async def _count(self, statement: Select) -> int:
         count_statement = statement.with_only_columns(
-            [func.count()], maintain_column_froms=True  # type: ignore
+            func.count(), maintain_column_froms=True
         ).order_by(None)
         result = await self._execute_query(count_statement)
         return result.scalar_one()

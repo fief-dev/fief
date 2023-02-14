@@ -55,7 +55,7 @@ app.include_router(users_router, prefix="/users")
 app.include_router(workspaces_router, prefix="/workspaces")
 app.mount("/static", StaticFiles(directory=STATIC_DIRECTORY), name="dashboard:static")
 
-for (exc, handler) in exception_handlers.items():
+for exc, handler in exception_handlers.items():
     app.add_exception_handler(exc, handler)
 
 

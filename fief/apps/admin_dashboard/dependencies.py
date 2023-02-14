@@ -83,7 +83,7 @@ class DatatableQueryParameters:
 
     def is_ordered(self, field: str, way: Literal["asc", "desc"] = "asc") -> bool:
         field_accessor = field.split(".")
-        for (ordered_field, is_desc) in self.ordering:
+        for ordered_field, is_desc in self.ordering:
             if ordered_field == field_accessor:
                 return (way == "asc" and is_desc is False) or (
                     way == "desc" and is_desc is True

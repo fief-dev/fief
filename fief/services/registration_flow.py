@@ -39,7 +39,7 @@ class RegistrationFlow:
         flow: RegistrationSessionFlow,
         *,
         tenant: Tenant,
-        oauth_account: OAuthAccount | None = None
+        oauth_account: OAuthAccount | None = None,
     ) -> ResponseType:
         email = None
         oauth_account_id = None

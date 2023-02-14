@@ -3,8 +3,8 @@ from typing import Any
 from fastapi import Request
 from jwcrypto import jwk
 from pydantic import UUID4
-from sqlalchemy import Boolean, Column, ForeignKey, String, Text
-from sqlalchemy.orm import relationship
+from sqlalchemy import Boolean, ForeignKey, String, Text
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from starlette.routing import Router
 
 from fief.crypto.jwk import generate_signature_jwk_string, load_jwk
@@ -16,18 +16,24 @@ from fief.models.theme import Theme
 class Tenant(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
     __tablename__ = "tenants"
 
-    name: str = Column(String(length=255), nullable=False)
-    slug: str = Column(String(length=255), nullable=False, unique=True)
-    default: bool = Column(Boolean, default=False, nullable=False)
-    sign_jwk: str = Column(Text, nullable=False, default=generate_signature_jwk_string)
-    registration_allowed: bool = Column(Boolean, default=True, nullable=False)
+    name: Mapped[str] = mapped_column(String(length=255), nullable=False)
+    slug: Mapped[str] = mapped_column(String(length=255), nullable=False, unique=True)
+    default: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    sign_jwk: Mapped[str] = mapped_column(
+        Text, nullable=False, default=generate_signature_jwk_string
+    )
+    registration_allowed: Mapped[bool] = mapped_column(
+        Boolean, default=True, nullable=False
+    )
 
-    theme_id: UUID4 | None = Column(
+    theme_id: Mapped[UUID4 | None] = mapped_column(
         GUID, ForeignKey(Theme.id, ondelete="SET NULL"), nullable=True
     )
-    theme: Theme | None = relationship("Theme")
+    theme: Mapped[Theme | None] = relationship("Theme")
 
-    logo_url: str | None = Column(String(length=512), default=None, nullable=True)
+    logo_url: Mapped[str | None] = mapped_column(
+        String(length=512), default=None, nullable=True
+    )
 
     def __repr__(self) -> str:
         return f"Tenant(id={self.id}, name={self.name}, slug={self.slug}, default={self.default})"

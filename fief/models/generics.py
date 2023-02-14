@@ -4,10 +4,10 @@ from datetime import datetime, timedelta, timezone
 from typing import TypeVar
 
 from pydantic import UUID4
-from sqlalchemy import TIMESTAMP, Column
+from sqlalchemy import TIMESTAMP
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declared_attr
-from sqlalchemy.orm import declarative_mixin
+from sqlalchemy.orm import Mapped, MappedColumn, mapped_column
 from sqlalchemy.sql import func
 from sqlalchemy.types import CHAR, TypeDecorator
 
@@ -55,9 +55,8 @@ class BaseModel:
     pass
 
 
-@declarative_mixin
 class UUIDModel(BaseModel):
-    id: UUID4 = Column(GUID, primary_key=True, default=uuid.uuid4)
+    id: Mapped[UUID4] = mapped_column(GUID, primary_key=True, default=uuid.uuid4)
 
 
 def now_utc():
@@ -81,16 +80,15 @@ class TIMESTAMPAware(TypeDecorator):
         return value
 
 
-@declarative_mixin
 class CreatedUpdatedAt(BaseModel):
-    created_at: datetime = Column(
+    created_at: Mapped[datetime] = mapped_column(
         TIMESTAMPAware(timezone=True),
         nullable=False,
         index=True,
         default=now_utc,
         server_default=func.now(),
     )
-    updated_at: datetime = Column(
+    updated_at: Mapped[datetime] = mapped_column(
         TIMESTAMPAware(timezone=True),
         nullable=False,
         index=True,
@@ -104,10 +102,9 @@ def _get_default_expires_at(timedelta_seconds: int) -> datetime:
     return datetime.now(timezone.utc) + timedelta(seconds=timedelta_seconds)
 
 
-@declarative_mixin
 class ExpiresAt(BaseModel):
     @declared_attr
-    def expires_at(cls) -> Column[TIMESTAMPAware]:
+    def expires_at(cls) -> MappedColumn[TIMESTAMPAware]:
         try:
             default_lifetime_seconds = getattr(
                 cls,
@@ -118,7 +115,7 @@ class ExpiresAt(BaseModel):
             )
         except AttributeError:
             default = None
-        return Column(
+        return mapped_column(
             TIMESTAMPAware(timezone=True), nullable=False, index=True, default=default
         )
 

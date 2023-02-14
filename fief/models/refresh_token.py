@@ -1,8 +1,8 @@
 from datetime import datetime
 
 from pydantic import UUID4
-from sqlalchemy import JSON, Column, ForeignKey, String
-from sqlalchemy.orm import relationship
+from sqlalchemy import JSON, ForeignKey, String
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from fief.models.base import WorkspaceBase
 from fief.models.client import Client
@@ -19,21 +19,23 @@ from fief.models.user import User
 class RefreshToken(UUIDModel, CreatedUpdatedAt, ExpiresAt, WorkspaceBase):
     __tablename__ = "refresh_tokens"
 
-    token: str = Column(
+    token: Mapped[str] = mapped_column(
         String(length=255),
         nullable=False,
         index=True,
         unique=True,
     )
-    scope: list[str] = Column(JSON, nullable=False, default=list)
-    authenticated_at: datetime = Column(TIMESTAMPAware(timezone=True), nullable=False)
+    scope: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)
+    authenticated_at: Mapped[datetime] = mapped_column(
+        TIMESTAMPAware(timezone=True), nullable=False
+    )
 
-    user_id: UUID4 = Column(
+    user_id: Mapped[UUID4] = mapped_column(
         GUID, ForeignKey(User.id, ondelete="CASCADE"), nullable=False
     )
-    user: User = relationship("User")
+    user: Mapped[User] = relationship("User")
 
-    client_id: UUID4 = Column(
+    client_id: Mapped[UUID4] = mapped_column(
         GUID, ForeignKey(Client.id, ondelete="CASCADE"), nullable=False
     )
-    client: Client = relationship("Client", lazy="joined")
+    client: Mapped[Client] = relationship("Client", lazy="joined")

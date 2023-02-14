@@ -67,7 +67,6 @@ class WorkspaceDatabase:
         database_connection_parameters: DatabaseConnectionParameters,
         schema_name: str | None = None,
     ) -> Generator[Engine, None, None]:
-
         database_url, connect_args = database_connection_parameters
 
         if schema_name is not None:

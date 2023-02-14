@@ -51,7 +51,7 @@ app.include_router(default_tenant_router)
 app.include_router(tenant_router)
 app.mount("/static", StaticFiles(directory=STATIC_DIRECTORY), name="auth:static")
 
-for (exc, handler) in exception_handlers.items():
+for exc, handler in exception_handlers.items():
     app.add_exception_handler(exc, handler)
 
 

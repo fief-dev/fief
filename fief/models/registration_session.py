@@ -2,8 +2,8 @@ import secrets
 from enum import Enum
 
 from pydantic import UUID4
-from sqlalchemy import Column, ForeignKey
-from sqlalchemy.orm import relationship
+from sqlalchemy import ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql.sqltypes import String
 
 from fief.models.base import WorkspaceBase
@@ -22,7 +22,7 @@ class RegistrationSession(UUIDModel, CreatedUpdatedAt, ExpiresAt, WorkspaceBase)
     __tablename__ = "registration_sessions"
     __lifetime_seconds__ = settings.registration_session_lifetime_seconds
 
-    token: str = Column(
+    token: Mapped[str] = mapped_column(
         String(length=255),
         default=secrets.token_urlsafe,
         nullable=False,
@@ -30,18 +30,20 @@ class RegistrationSession(UUIDModel, CreatedUpdatedAt, ExpiresAt, WorkspaceBase)
         unique=True,
     )
 
-    flow: RegistrationSessionFlow = Column(
+    flow: Mapped[RegistrationSessionFlow] = mapped_column(
         String(length=255), default=RegistrationSessionFlow.PASSWORD, nullable=False
     )
 
-    email: str | None = Column(String(length=320), nullable=True)
+    email: Mapped[str | None] = mapped_column(String(length=320), nullable=True)
 
-    oauth_account_id: UUID4 | None = Column(
+    oauth_account_id: Mapped[UUID4 | None] = mapped_column(
         GUID, ForeignKey(OAuthAccount.id, ondelete="CASCADE"), nullable=True
     )
-    oauth_account: OAuthAccount | None = relationship("OAuthAccount", lazy="joined")
+    oauth_account: Mapped[OAuthAccount | None] = relationship(
+        "OAuthAccount", lazy="joined"
+    )
 
-    tenant_id: UUID4 = Column(
+    tenant_id: Mapped[UUID4] = mapped_column(
         GUID, ForeignKey(Tenant.id, ondelete="CASCADE"), nullable=False
     )
-    tenant: Tenant = relationship("Tenant")
+    tenant: Mapped[Tenant] = relationship("Tenant")

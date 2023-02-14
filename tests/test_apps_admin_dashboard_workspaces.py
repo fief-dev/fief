@@ -310,7 +310,6 @@ class TestCreateWorkspaceStep4:
         test_client_admin_dashboard: httpx.AsyncClient,
         csrf_token: str,
     ):
-
         response = await test_client_admin_dashboard.post(
             "/workspaces/create/step4",
             data={"csrf_token": csrf_token},

@@ -2,8 +2,8 @@ from datetime import datetime
 from enum import Enum
 
 from pydantic import UUID4
-from sqlalchemy import JSON, Column, String, Text
-from sqlalchemy.orm import relationship
+from sqlalchemy import JSON, String, Text
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from fief.models.base import WorkspaceBase
 from fief.models.generics import GUID, TIMESTAMPAware, UUIDModel
@@ -26,22 +26,28 @@ class AuditLogMessage(str, Enum):
 class AuditLog(UUIDModel, WorkspaceBase):
     __tablename__ = "audit_logs"
 
-    timestamp: datetime = Column(
+    timestamp: Mapped[datetime] = mapped_column(
         TIMESTAMPAware(timezone=True), nullable=False, index=True
     )
-    level: str = Column(String(length=255), nullable=False, index=True)
-    message: str = Column(Text, nullable=False)
-    extra: dict = Column(JSON, nullable=True)
+    level: Mapped[str] = mapped_column(String(length=255), nullable=False, index=True)
+    message: Mapped[str] = mapped_column(Text, nullable=False)
+    extra: Mapped[dict] = mapped_column(JSON, nullable=True)
 
-    subject_user_id: UUID4 | None = Column(GUID, nullable=True, index=True)
+    subject_user_id: Mapped[UUID4 | None] = mapped_column(
+        GUID, nullable=True, index=True
+    )
 
-    object_id: UUID4 | None = Column(GUID, nullable=True, index=True)
-    object_class: str | None = Column(String(length=255), nullable=True, index=True)
+    object_id: Mapped[UUID4 | None] = mapped_column(GUID, nullable=True, index=True)
+    object_class: Mapped[str | None] = mapped_column(
+        String(length=255), nullable=True, index=True
+    )
 
-    admin_user_id: UUID4 | None = Column(GUID, nullable=True, index=True)
-    admin_api_key_id: UUID4 | None = Column(GUID, nullable=True, index=True)
+    admin_user_id: Mapped[UUID4 | None] = mapped_column(GUID, nullable=True, index=True)
+    admin_api_key_id: Mapped[UUID4 | None] = mapped_column(
+        GUID, nullable=True, index=True
+    )
 
-    subject_user: User | None = relationship(
+    subject_user: Mapped[User | None] = relationship(
         "User",
         # Define a relationship, but without a foreign key constraint
         foreign_keys="AuditLog.subject_user_id",
