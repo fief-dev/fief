@@ -10,7 +10,7 @@ from sqlalchemy import select
 from fief.db import AsyncSession
 from fief.db.types import DatabaseConnectionParameters, DatabaseType
 from fief.db.workspace import WorkspaceEngineManager, get_workspace_session
-from fief.models import User, Workspace
+from fief.models import Client, User, Workspace
 from fief.repositories import (
     ClientRepository,
     EmailTemplateRepository,
@@ -77,9 +77,20 @@ def workspace_creation(
     )
 
 
+@pytest.fixture
+def main_fief_client(test_data: TestData) -> Client:
+    return Client(
+        name="Default",
+        tenant=test_data["tenants"]["default"],
+        client_id="DEFAULT_TENANT_CLIENT_ID",
+        client_secret="DEFAULT_TENANT_CLIENT_SECRET",
+        redirect_uris=["https://nantes.city/callback"],
+    )
+
+
 @pytest.fixture(autouse=True)
 def mock_main_fief_functions(
-    mocker: MockerFixture, workspace: Workspace, test_data: TestData
+    mocker: MockerFixture, workspace: Workspace, main_fief_client: Client
 ):
     get_main_fief_workspace_mock = mocker.patch(
         "fief.services.workspace_creation.get_main_fief_workspace"
@@ -89,9 +100,7 @@ def mock_main_fief_functions(
     get_main_fief_client_mock = mocker.patch(
         "fief.services.workspace_creation.get_main_fief_client"
     )
-    get_main_fief_client_mock.side_effect = AsyncMock(
-        return_value=test_data["clients"]["default_tenant"]
-    )
+    get_main_fief_client_mock.side_effect = AsyncMock(return_value=main_fief_client)
 
 
 @pytest.mark.asyncio
@@ -177,19 +186,16 @@ class TestWorkspaceCreationCreate:
         workspace_create: WorkspaceCreate,
         workspace_creation: WorkspaceCreation,
         workspace_admin_user: User,
-        workspace_session: AsyncSession,
-        test_data: TestData,
+        main_fief_client: Client,
     ):
         workspace = await workspace_creation.create(
             workspace_create, workspace_admin_user.id
         )
 
-        client_repository = ClientRepository(workspace_session)
-        client = await client_repository.get_by_id(
-            test_data["clients"]["default_tenant"].id
+        assert (
+            f"http://{workspace.domain}/admin/auth/callback"
+            in main_fief_client.redirect_uris
         )
-        assert client is not None
-        assert f"http://{workspace.domain}/admin/auth/callback" in client.redirect_uris
 
     async def test_default_parameters(
         self,
