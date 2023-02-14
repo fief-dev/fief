@@ -88,7 +88,7 @@ class BaseRepository(BaseRepositoryProtocol, Generic[M]):
     def orderize(
         self, statement: Select, ordering: list[tuple[list[str], bool]]
     ) -> Select:
-        for (accessors, is_desc) in ordering:
+        for accessors, is_desc in ordering:
             field: InstrumentedAttribute
             # Local field
             if len(accessors) == 1:

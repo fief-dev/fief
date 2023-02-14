@@ -52,7 +52,7 @@ async def get_connection(
         OSError,
     ) as e:
         raise ConnectionError from e
-    except (exc.OperationalError) as e:
+    except exc.OperationalError as e:
         # Catch MySQL connection error with code 2003
         if isinstance(e.orig, pymysql.err.OperationalError) and e.orig.args[0] == 2003:
             raise ConnectionError from e

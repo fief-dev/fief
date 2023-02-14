@@ -282,7 +282,7 @@ def quickstart(
         ]
         typer.echo(" \\\n  ".join(parts))
     else:
-        for (name, value) in environment_variables.items():
+        for name, value in environment_variables.items():
             typer.echo(f"{typer.style(name, bold=True)}={value}")
 
 

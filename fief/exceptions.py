@@ -38,7 +38,7 @@ class LoginException(Exception):
         oauth_providers: list[OAuthProvider] | None = None,
         tenant: Tenant | None = None,
         *,
-        fatal: bool = False
+        fatal: bool = False,
     ) -> None:
         self.error = error
         self.oauth_providers = oauth_providers
@@ -53,7 +53,7 @@ class OAuthException(Exception):
         oauth_providers: list[OAuthProvider] | None = None,
         tenant: Tenant | None = None,
         *,
-        fatal: bool = False
+        fatal: bool = False,
     ) -> None:
         self.error = error
         self.oauth_providers = oauth_providers

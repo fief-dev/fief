@@ -104,7 +104,6 @@ async def create_user_field(
         configuration_form.set_dynamic_parameters()
 
     if hx_trigger is None and await form_helper.is_submitted_and_valid():
-
         existing_user_field = await repository.get_by_slug(form.data["slug"])
         if existing_user_field is not None:
             form.slug.errors.append("A user field with this slug already exists.")
@@ -156,7 +155,6 @@ async def update_user_field(
     configuration_form.set_dynamic_parameters()
 
     if hx_trigger is None and await form_helper.is_submitted_and_valid():
-
         existing_user_field = await repository.get_by_slug(form.data["slug"])
         if existing_user_field is not None and existing_user_field.id != user_field.id:
             form.slug.errors.append("A user field with this slug already exists.")

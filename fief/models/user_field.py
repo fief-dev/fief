@@ -86,7 +86,7 @@ class UserField(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
     def get_choice_label(self, value: str) -> str:
         if self.type != UserFieldType.CHOICE:
             raise UserFieldNotChoice()
-        for (value, label) in self.configuration["choices"] or []:
+        for value, label in self.configuration["choices"] or []:
             if value == value:
                 return label
         raise UserFieldChoiceNotExistingValue()
