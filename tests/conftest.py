@@ -173,9 +173,7 @@ async def workspace_connection(
     async with get_connection(
         workspace_engine, workspace.get_schema_name()
     ) as connection:
-        await connection.begin()
         yield connection
-        await connection.rollback()
 
 
 @pytest_asyncio.fixture(scope="session")
@@ -183,13 +181,14 @@ async def test_data(
     workspace_connection: AsyncConnection,
 ) -> AsyncGenerator[TestData, None]:
     async with AsyncSession(
-        bind=workspace_connection, expire_on_commit=False
+        bind=workspace_connection,
+        expire_on_commit=False,
+        join_transaction_mode="control_fully",
     ) as session:
         for model in data_mapping.values():
             for object in model.values():
                 session.add(object)
         await session.commit()
-    await workspace_connection.commit()
     yield data_mapping
 
 
@@ -197,12 +196,14 @@ async def test_data(
 async def workspace_session(
     workspace_connection: AsyncConnection,
 ) -> AsyncGenerator[AsyncSession, None]:
-    await workspace_connection.begin_nested()
+    transaction = await workspace_connection.begin_nested()
     async with AsyncSession(
-        bind=workspace_connection, expire_on_commit=False
+        bind=workspace_connection,
+        expire_on_commit=False,
+        join_transaction_mode="rollback_only",
     ) as session:
         yield session
-    await workspace_connection.rollback()
+    await transaction.rollback()
 
 
 @pytest.fixture
