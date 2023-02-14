@@ -83,7 +83,7 @@ class BaseRepository(BaseRepositoryProtocol, Generic[M]):
         async with asyncio.TaskGroup() as tg:
             count_task = tg.create_task(self._count(statement))
             query_task = tg.create_task(self.list(paginated_statement))
-        return query_task.result(),  count_task.result()
+        return query_task.result(), count_task.result()
 
     def orderize(
         self, statement: Select, ordering: list[tuple[list[str], bool]]
