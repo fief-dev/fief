@@ -111,6 +111,7 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, UUID4]):
         request: Request | None = None,
     ) -> User:
         user = await self.create(user_create, safe, request)
+        await self.user_db.session.refresh(user)  # type: ignore
 
         for user_field in user_fields:
             user_field_value = UserFieldValue(user_field=user_field)
