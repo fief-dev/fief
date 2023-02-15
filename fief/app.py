@@ -1,7 +1,8 @@
 import functools
 
 import sentry_sdk
-from fastapi import FastAPI
+from fastapi import FastAPI, status
+from fastapi.responses import RedirectResponse
 from sentry_sdk.integrations.asgi import SentryAsgiMiddleware
 from sentry_sdk.integrations.redis import RedisIntegration
 
@@ -23,6 +24,12 @@ sentry_sdk.init(
 app = FastAPI(openapi_url=None)
 
 app.add_middleware(SentryAsgiMiddleware)
+
+
+@app.get("/admin")
+async def get_admin():
+    return RedirectResponse("/admin/", status_code=status.HTTP_308_PERMANENT_REDIRECT)
+
 
 app.mount("/admin/api", admin_app)
 app.mount("/admin", admin_dashboard_app)
