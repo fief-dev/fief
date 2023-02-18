@@ -17,6 +17,7 @@ from fief.repositories import (
     OAuthSessionRepository,
     RegistrationSessionRepository,
     SessionTokenRepository,
+    TenantRepository,
 )
 from fief.settings import settings
 from tests.data import TestData
@@ -102,6 +103,37 @@ class TestOAuthAuthorize:
         headers = response.headers
         assert headers["X-Fief-Error"] == "invalid_provider"
 
+    async def test_invalid_oauth_provider_for_tenant(
+        self,
+        test_client_auth: httpx.AsyncClient,
+        test_data: TestData,
+        workspace_session: AsyncSession,
+    ):
+        login_session = test_data["login_sessions"]["default"]
+        client = login_session.client
+        tenant = client.tenant
+
+        tenant_repository = TenantRepository(workspace_session)
+        tenant.oauth_providers = []
+        await tenant_repository.update(tenant)
+
+        cookies = {}
+        cookies[settings.login_session_cookie_name] = login_session.token
+
+        response = await test_client_auth.get(
+            "/oauth/authorize",
+            params={
+                "tenant": str(tenant.id),
+                "provider": str(test_data["oauth_providers"]["google"].id),
+            },
+            cookies=cookies,
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+        headers = response.headers
+        assert headers["X-Fief-Error"] == "invalid_provider"
+
     async def test_valid(
         self,
         test_client_auth: httpx.AsyncClient,
@@ -113,6 +145,9 @@ class TestOAuthAuthorize:
         tenant = client.tenant
 
         oauth_provider = test_data["oauth_providers"]["google"]
+        tenant_repository = TenantRepository(workspace_session)
+        tenant.oauth_providers = [oauth_provider]
+        await tenant_repository.update(tenant)
 
         cookies = {}
         cookies[settings.login_session_cookie_name] = login_session.token
@@ -151,13 +186,19 @@ class TestOAuthAuthorize:
         assert redirect_uri.endswith("/oauth/callback")
 
     async def test_valid_secondary_tenant(
-        self, test_client_auth: httpx.AsyncClient, test_data: TestData
+        self,
+        test_client_auth: httpx.AsyncClient,
+        test_data: TestData,
+        workspace_session: AsyncSession,
     ):
         login_session = test_data["login_sessions"]["secondary"]
         client = login_session.client
         tenant = client.tenant
 
         oauth_provider = test_data["oauth_providers"]["google"]
+        tenant_repository = TenantRepository(workspace_session)
+        tenant.oauth_providers = [oauth_provider]
+        await tenant_repository.update(tenant)
 
         cookies = {}
         cookies[settings.login_session_cookie_name] = login_session.token
@@ -168,6 +209,7 @@ class TestOAuthAuthorize:
             cookies=cookies,
         )
 
+        print(response.text)
         assert response.status_code == status.HTTP_302_FOUND
 
 

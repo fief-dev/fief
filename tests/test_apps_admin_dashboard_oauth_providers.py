@@ -79,7 +79,7 @@ class TestGetOAuthProvider:
 
         html = BeautifulSoup(response.text, features="html.parser")
         title = html.find("h2")
-        assert oauth_provider.get_display_name() in title.text
+        assert oauth_provider.display_name in title.text
 
 
 @pytest.mark.asyncio

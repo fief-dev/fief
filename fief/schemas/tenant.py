@@ -1,6 +1,7 @@
 from pydantic import UUID4, AnyHttpUrl
 
 from fief.schemas.generics import BaseModel, CreatedUpdatedAt, UUIDSchema
+from fief.schemas.oauth_provider import OAuthProviderEmbedded
 
 
 class TenantCreate(BaseModel):
@@ -8,6 +9,7 @@ class TenantCreate(BaseModel):
     registration_allowed: bool = True
     theme_id: UUID4 | None
     logo_url: AnyHttpUrl | None
+    oauth_providers: list[UUID4] | None
 
 
 class TenantUpdate(BaseModel):
@@ -15,6 +17,7 @@ class TenantUpdate(BaseModel):
     registration_allowed: bool | None
     theme_id: UUID4 | None
     logo_url: AnyHttpUrl | None
+    oauth_providers: list[UUID4] | None
 
 
 class BaseTenant(UUIDSchema, CreatedUpdatedAt):
@@ -27,7 +30,7 @@ class BaseTenant(UUIDSchema, CreatedUpdatedAt):
 
 
 class Tenant(BaseTenant):
-    pass
+    oauth_providers: list[OAuthProviderEmbedded]
 
 
 class TenantEmbedded(BaseTenant):

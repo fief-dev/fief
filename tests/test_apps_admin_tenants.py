@@ -140,6 +140,37 @@ class TestCreateTenant:
         json = response.json()
         assert json["theme_id"] == theme_id
 
+    @pytest.mark.authenticated_admin
+    async def test_unknown_oauth_provider(
+        self, test_client_admin: httpx.AsyncClient, not_existing_uuid: uuid.UUID
+    ):
+        response = await test_client_admin.post(
+            "/tenants/",
+            json={"name": "Tertiary", "oauth_providers": [str(not_existing_uuid)]},
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        json = response.json()
+        assert json["detail"] == APIErrorCode.TENANT_CREATE_NOT_EXISTING_OAUTH_PROVIDER
+
+    @pytest.mark.authenticated_admin
+    async def test_valid_oauth_provider(
+        self, test_client_admin: httpx.AsyncClient, test_data: TestData
+    ):
+        oauth_provider_id = test_data["oauth_providers"]["google"].id
+        response = await test_client_admin.post(
+            "/tenants/",
+            json={
+                "name": "Tertiary",
+                "oauth_providers": [str(oauth_provider_id)],
+            },
+        )
+
+        assert response.status_code == status.HTTP_201_CREATED
+        json = response.json()
+        assert len(json["oauth_providers"]) == 1
+        assert json["oauth_providers"][0]["id"] == str(oauth_provider_id)
+
 
 @pytest.mark.asyncio
 @pytest.mark.workspace_host
@@ -224,3 +255,36 @@ class TestUpdateTenant:
         assert response.status_code == status.HTTP_200_OK
         json = response.json()
         assert json["theme_id"] == theme_id
+
+    @pytest.mark.authenticated_admin
+    async def test_unknown_oauth_provider(
+        self,
+        test_client_admin: httpx.AsyncClient,
+        test_data: TestData,
+        not_existing_uuid: uuid.UUID,
+    ):
+        tenant = test_data["tenants"]["default"]
+        response = await test_client_admin.patch(
+            f"/tenants/{tenant.id}",
+            json={"oauth_providers": [str(not_existing_uuid)]},
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        json = response.json()
+        assert json["detail"] == APIErrorCode.TENANT_UPDATE_NOT_EXISTING_OAUTH_PROVIDER
+
+    @pytest.mark.authenticated_admin
+    async def test_valid_oauth_provider(
+        self, test_client_admin: httpx.AsyncClient, test_data: TestData
+    ):
+        tenant = test_data["tenants"]["default"]
+        oauth_provider_id = test_data["oauth_providers"]["google"].id
+        response = await test_client_admin.patch(
+            f"/tenants/{tenant.id}",
+            json={"oauth_providers": [str(oauth_provider_id)]},
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+        json = response.json()
+        assert len(json["oauth_providers"]) == 1
+        assert json["oauth_providers"][0]["id"] == str(oauth_provider_id)

@@ -3,12 +3,12 @@
 
 {% extends "admin/oauth_providers/list.html" %}
 
-{% block head_title_content %}{{ oauth_provider.get_display_name() }} · {{ super() }}{% endblock %}
+{% block head_title_content %}{{ oauth_provider.display_name }} · {{ super() }}{% endblock %}
 
 {% set open_aside = true %}
 
 {% block aside %}
-<h2 class="text-slate-800 font-semibold text-center mb-6">{{ oauth_provider.get_display_name() }}</h2>
+<h2 class="text-slate-800 font-semibold text-center mb-6">{{ oauth_provider.display_name }}</h2>
 <div class="mt-6">
   <ul>
     <li class="flex items-center justify-between py-3 border-b border-slate-200">

@@ -2,16 +2,11 @@ from fastapi import Cookie, Depends, Query
 from pydantic import UUID4
 
 from fief.dependencies.oauth_provider import get_oauth_providers
-from fief.dependencies.tenant import get_current_tenant
 from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.exceptions import OAuthException
 from fief.locale import gettext_lazy as _
 from fief.models import LoginSession, OAuthProvider, Tenant
-from fief.repositories import (
-    LoginSessionRepository,
-    OAuthProviderRepository,
-    TenantRepository,
-)
+from fief.repositories import LoginSessionRepository, TenantRepository
 from fief.schemas.oauth import OAuthError
 from fief.settings import settings
 
@@ -70,13 +65,10 @@ async def get_login_session_with_tenant_query(
 
 async def get_oauth_provider(
     provider: UUID4 = Query(...),
-    oauth_provider_repository: OAuthProviderRepository = Depends(
-        get_workspace_repository(OAuthProviderRepository)
-    ),
+    tenant: Tenant = Depends(get_tenant_by_query),
     oauth_providers: list[OAuthProvider] | None = Depends(get_oauth_providers),
-    tenant: Tenant = Depends(get_current_tenant),
 ) -> OAuthProvider:
-    oauth_provider = await oauth_provider_repository.get_by_id(provider)
+    oauth_provider = tenant.get_oauth_provider(provider)
     if oauth_provider is None:
         raise OAuthException(
             OAuthError.get_invalid_provider(_("Unknown OAuth provider")),

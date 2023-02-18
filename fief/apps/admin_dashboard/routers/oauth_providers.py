@@ -54,14 +54,19 @@ async def get_list_context(
     }
 
 
+async def get_list_template(hx_combobox: bool = Header(False)) -> str:
+    if hx_combobox:
+        return "admin/oauth_providers/list_combobox.html"
+    return "admin/oauth_providers/list.html"
+
+
 @router.get("/", name="dashboard.oauth_providers:list")
 async def list_oauth_providers(
+    template: str = Depends(get_list_template),
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
 ):
-    return templates.TemplateResponse(
-        "admin/oauth_providers/list.html", {**context, **list_context}
-    )
+    return templates.TemplateResponse(template, {**context, **list_context})
 
 
 @router.get("/{id:uuid}", name="dashboard.oauth_providers:get")

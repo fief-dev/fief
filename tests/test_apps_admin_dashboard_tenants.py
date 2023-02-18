@@ -157,6 +157,27 @@ class TestCreateTenant:
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert response.headers["X-Fief-Error"] == "unknown_theme"
 
+    @pytest.mark.authenticated_admin(mode="session")
+    @pytest.mark.htmx(target="modal")
+    async def test_unknown_oauth_provider(
+        self,
+        test_client_admin_dashboard: httpx.AsyncClient,
+        csrf_token: str,
+        not_existing_uuid: uuid.UUID,
+    ):
+        response = await test_client_admin_dashboard.post(
+            "/tenants/create",
+            data={
+                "name": "Tertiary",
+                "registration_allowed": True,
+                "oauth_providers": [str(not_existing_uuid)],
+                "csrf_token": csrf_token,
+            },
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.headers["X-Fief-Error"] == "unknown_oauth_provider"
+
     @pytest.mark.parametrize("theme_alias", [None, "custom"])
     @pytest.mark.authenticated_admin(mode="session")
     @pytest.mark.htmx(target="modal")
@@ -173,12 +194,14 @@ class TestCreateTenant:
             if theme_alias is not None
             else None
         )
+        oauth_provider = test_data["oauth_providers"]["google"]
         response = await test_client_admin_dashboard.post(
             "/tenants/create",
             data={
                 "name": "Tertiary",
                 "registration_allowed": True,
                 "theme": theme_id,
+                "oauth_providers": [str(oauth_provider.id)],
                 "logo_url": "https://bretagne.duchy/logo.svg",
                 "csrf_token": csrf_token,
             },
@@ -200,6 +223,9 @@ class TestCreateTenant:
             assert tenant.theme_id is None
         else:
             assert tenant.theme_id == uuid.UUID(theme_id)
+
+        assert len(tenant.oauth_providers) == 1
+        assert tenant.oauth_providers[0].id == oauth_provider.id
 
         client_repository = ClientRepository(workspace_session)
         clients = await client_repository.list(
@@ -303,6 +329,29 @@ class TestUpdateTenant:
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert response.headers["X-Fief-Error"] == "unknown_theme"
 
+    @pytest.mark.authenticated_admin(mode="session")
+    @pytest.mark.htmx(target="modal")
+    async def test_unknown_oauth_provider(
+        self,
+        test_client_admin_dashboard: httpx.AsyncClient,
+        test_data: TestData,
+        not_existing_uuid: uuid.UUID,
+        csrf_token: str,
+    ):
+        tenant = test_data["tenants"]["default"]
+        response = await test_client_admin_dashboard.post(
+            f"/tenants/{tenant.id}/edit",
+            data={
+                "name": "Updated name",
+                "registration_allowed": tenant.registration_allowed,
+                "oauth_providers": [not_existing_uuid],
+                "csrf_token": csrf_token,
+            },
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.headers["X-Fief-Error"] == "unknown_oauth_provider"
+
     @pytest.mark.parametrize("theme_alias", [None, "custom"])
     @pytest.mark.authenticated_admin(mode="session")
     @pytest.mark.htmx(target="modal")
@@ -319,6 +368,7 @@ class TestUpdateTenant:
             if theme_alias is not None
             else None
         )
+        oauth_provider = test_data["oauth_providers"]["google"]
         tenant = test_data["tenants"]["default"]
         response = await test_client_admin_dashboard.post(
             f"/tenants/{tenant.id}/edit",
@@ -327,6 +377,7 @@ class TestUpdateTenant:
                 "registration_allowed": tenant.registration_allowed,
                 "logo_url": "https://bretagne.duchy/logo.svg",
                 "theme": theme_id,
+                "oauth_providers": [str(oauth_provider.id)],
                 "csrf_token": csrf_token,
             },
         )
@@ -342,3 +393,6 @@ class TestUpdateTenant:
             assert updated_tenant.theme_id is None
         else:
             assert updated_tenant.theme_id == uuid.UUID(theme_id)
+
+        assert len(updated_tenant.oauth_providers) == 1
+        assert updated_tenant.oauth_providers[0].id == oauth_provider.id

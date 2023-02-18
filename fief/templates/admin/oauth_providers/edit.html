@@ -5,7 +5,7 @@
 
 {% extends "admin/oauth_providers/list.html" %}
 
-{% block head_title_content %}{{ oauth_provider.get_display_name() }} · {{ super() }}{% endblock %}
+{% block head_title_content %}{{ oauth_provider.display_name }} · {{ super() }}{% endblock %}
 
 {% set open_modal = true %}
 
@@ -18,7 +18,7 @@
     _="on fief:closeModal go back"
   >
   {% call modal.header() %}
-    {% call modal.title() %}Edit OAuth Provider {{ oauth_provider.get_display_name() }}{% endcall %}
+    {% call modal.title() %}Edit OAuth Provider {{ oauth_provider.display_name }}{% endcall %}
   {% endcall %}
   {% call modal.body() %}
     <div class="space-y-4">

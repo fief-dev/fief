@@ -1,6 +1,6 @@
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Query, status
 from pydantic import UUID4
-from sqlalchemy import select
+from sqlalchemy import or_, select
 
 from fief.dependencies.pagination import (
     GetPaginatedObjects,
@@ -11,12 +11,14 @@ from fief.dependencies.pagination import (
     get_paginated_objects_getter,
     get_pagination,
 )
+from fief.dependencies.tenant import get_current_tenant
 from fief.dependencies.workspace_repositories import get_workspace_repository
-from fief.models import OAuthProvider
+from fief.models import OAuthProvider, Tenant
 from fief.repositories import OAuthProviderRepository
 
 
 async def get_paginated_oauth_providers(
+    query: str | None = Query(None),
     pagination: Pagination = Depends(get_pagination),
     ordering: Ordering = Depends(get_ordering),
     repository: OAuthProviderRepository = Depends(
@@ -27,6 +29,15 @@ async def get_paginated_oauth_providers(
     ),
 ) -> PaginatedObjects[OAuthProvider]:
     statement = select(OAuthProvider)
+
+    if query is not None:
+        statement = statement.where(
+            or_(
+                OAuthProvider.name.ilike(f"%{query}%"),
+                OAuthProvider.provider.ilike(f"%{query}%"),
+            )
+        )
+
     return await get_paginated_objects(statement, pagination, ordering, repository)
 
 
@@ -45,8 +56,6 @@ async def get_oauth_provider_by_id_or_404(
 
 
 async def get_oauth_providers(
-    repository: OAuthProviderRepository = Depends(
-        get_workspace_repository(OAuthProviderRepository)
-    ),
+    tenant: Tenant = Depends(get_current_tenant),
 ) -> list[OAuthProvider]:
-    return await repository.all_by_name_and_provider()
+    return tenant.oauth_providers

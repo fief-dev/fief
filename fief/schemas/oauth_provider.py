@@ -58,3 +58,7 @@ class BaseOAuthProvider(UUIDSchema, CreatedUpdatedAt):
 
 class OAuthProvider(BaseOAuthProvider):
     pass
+
+
+class OAuthProviderEmbedded(BaseOAuthProvider):
+    pass

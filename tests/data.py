@@ -70,14 +70,33 @@ class TestData(TypedDict):
     themes: ModelMapping[Theme]
 
 
+oauth_providers: ModelMapping[OAuthProvider] = {
+    "google": OAuthProvider(
+        provider=AvailableOAuthProvider.GOOGLE,
+        scopes=["custom_scope"],
+        client_id="GOOGLE_CLIENT_ID",
+        client_secret="GOOGLE_CLIENT_SECRET",
+    ),
+    "openid": OAuthProvider(
+        provider=AvailableOAuthProvider.OPENID,
+        scopes=["openid"],
+        client_id="OPENID_CLIENT_ID",
+        client_secret="OPENID_CLIENT_SECRET",
+        openid_configuration_endpoint="http://rome.city/.well-known/openid-configuration",
+    ),
+}
+
 tenants: ModelMapping[Tenant] = {
-    "default": Tenant(name="Default", slug="default", default=True),
-    "secondary": Tenant(name="Secondary", slug="secondary", default=False),
+    "default": Tenant(name="Default", slug="default", default=True, oauth_providers=[]),
+    "secondary": Tenant(
+        name="Secondary", slug="secondary", default=False, oauth_providers=[]
+    ),
     "registration_disabled": Tenant(
         name="Registration disabled",
         slug="registration-disabled",
         default=False,
         registration_allowed=False,
+        oauth_providers=[],
     ),
 }
 
@@ -150,22 +169,6 @@ clients: ModelMapping[Client] = {
         authorization_code_lifetime_seconds=settings.default_authorization_code_lifetime_seconds,
         access_id_token_lifetime_seconds=settings.default_access_id_token_lifetime_seconds,
         refresh_token_lifetime_seconds=settings.default_refresh_token_lifetime_seconds,
-    ),
-}
-
-oauth_providers: ModelMapping[OAuthProvider] = {
-    "google": OAuthProvider(
-        provider=AvailableOAuthProvider.GOOGLE,
-        scopes=["custom_scope"],
-        client_id="GOOGLE_CLIENT_ID",
-        client_secret="GOOGLE_CLIENT_SECRET",
-    ),
-    "openid": OAuthProvider(
-        provider=AvailableOAuthProvider.OPENID,
-        scopes=["openid"],
-        client_id="OPENID_CLIENT_ID",
-        client_secret="OPENID_CLIENT_SECRET",
-        openid_configuration_endpoint="http://rome.city/.well-known/openid-configuration",
     ),
 }
 

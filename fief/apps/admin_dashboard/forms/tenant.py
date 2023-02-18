@@ -1,6 +1,11 @@
 from wtforms import BooleanField, StringField, URLField, validators
 
-from fief.forms import ComboboxSelectField, CSRFBaseForm, empty_string_to_none
+from fief.forms import (
+    ComboboxSelectField,
+    ComboboxSelectMultipleField,
+    CSRFBaseForm,
+    empty_string_to_none,
+)
 
 
 class BaseTenantForm(CSRFBaseForm):
@@ -18,6 +23,14 @@ class BaseTenantForm(CSRFBaseForm):
         validators=[validators.Optional(), validators.UUID()],
         filters=[empty_string_to_none],
         description="If left empty, the default theme will be used.",
+    )
+    oauth_providers = ComboboxSelectMultipleField(
+        "OAuth Providers",
+        query_endpoint_path="/admin/oauth-providers/",
+        label_attr="display_name",
+        choices=[],
+        validate_choice=False,
+        description="OAuth Providers users should be allowed to use to login.",
     )
 
 

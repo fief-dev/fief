@@ -3,14 +3,32 @@ from typing import Any
 from fastapi import Request
 from jwcrypto import jwk
 from pydantic import UUID4
-from sqlalchemy import Boolean, ForeignKey, String, Text
+from sqlalchemy import Boolean, Column, ForeignKey, String, Table, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from starlette.routing import Router
 
 from fief.crypto.jwk import generate_signature_jwk_string, load_jwk
-from fief.models.base import WorkspaceBase
+from fief.models.base import WorkspaceBase, get_prefixed_tablename
 from fief.models.generics import GUID, CreatedUpdatedAt, UUIDModel
+from fief.models.oauth_provider import OAuthProvider
 from fief.models.theme import Theme
+
+TenantOAuthProvider = Table(
+    get_prefixed_tablename("tenants_oauth_providers"),
+    WorkspaceBase.metadata,
+    Column(
+        "tenant_id",
+        ForeignKey(f"{get_prefixed_tablename('tenants')}.id", ondelete="CASCADE"),
+        primary_key=True,
+    ),
+    Column(
+        "oauth_provider_id",
+        ForeignKey(
+            f"{get_prefixed_tablename('oauth_providers')}.id", ondelete="CASCADE"
+        ),
+        primary_key=True,
+    ),
+)
 
 
 class Tenant(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
@@ -35,6 +53,10 @@ class Tenant(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
         String(length=512), default=None, nullable=True
     )
 
+    oauth_providers: Mapped[list[OAuthProvider]] = relationship(
+        "OAuthProvider", secondary=TenantOAuthProvider, lazy="selectin"
+    )
+
     def __repr__(self) -> str:
         return f"Tenant(id={self.id}, name={self.name}, slug={self.slug}, default={self.default})"
 
@@ -57,3 +79,9 @@ class Tenant(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
             path_params["tenant_slug"] = self.slug
         router: Router = request.scope["router"]
         return str(router.url_path_for(name, **path_params))
+
+    def get_oauth_provider(self, id: UUID4) -> OAuthProvider | None:
+        for oauth_provider in self.oauth_providers:
+            if oauth_provider.id == id:
+                return oauth_provider
+        return None

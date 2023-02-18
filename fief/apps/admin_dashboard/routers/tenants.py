@@ -16,8 +16,13 @@ from fief.dependencies.tenant import get_paginated_tenants, get_tenant_by_id_or_
 from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.forms import FormHelper
 from fief.logger import AuditLogger
-from fief.models import AuditLogMessage, Client, Tenant
-from fief.repositories import ClientRepository, TenantRepository, ThemeRepository
+from fief.models import AuditLogMessage, Client, OAuthProvider, Tenant
+from fief.repositories import (
+    ClientRepository,
+    OAuthProviderRepository,
+    TenantRepository,
+    ThemeRepository,
+)
 from fief.templates import templates
 
 router = APIRouter(dependencies=[Depends(is_authenticated_admin_session)])
@@ -89,6 +94,9 @@ async def create_tenant(
     theme_repository: ThemeRepository = Depends(
         get_workspace_repository(ThemeRepository)
     ),
+    oauth_provider_repository: OAuthProviderRepository = Depends(
+        get_workspace_repository(OAuthProviderRepository)
+    ),
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
     audit_logger: AuditLogger = Depends(get_audit_logger),
@@ -102,6 +110,7 @@ async def create_tenant(
 
     if await form_helper.is_submitted_and_valid():
         form = await form_helper.get_form()
+        tenant = Tenant()
 
         theme_id = form.data["theme"]
         if theme_id is not None:
@@ -113,7 +122,20 @@ async def create_tenant(
                 )
             form.theme.data = theme
 
-        tenant = Tenant()
+        oauth_providers_ids = form.data["oauth_providers"]
+        oauth_providers: list[OAuthProvider] = []
+        for oauth_provider_id in oauth_providers_ids:
+            oauth_provider = await oauth_provider_repository.get_by_id(
+                oauth_provider_id
+            )
+            if oauth_provider is None:
+                form.oauth_providers.errors.append("Unknown OAuth Provider.")
+                return await form_helper.get_error_response(
+                    "Unknown OAuth Provider.", "unknown_oauth_provider"
+                )
+            oauth_providers.append(oauth_provider)
+            form.oauth_providers.data = oauth_providers
+
         form.populate_obj(tenant)
         tenant.slug = await repository.get_available_slug(tenant.name)
         tenant = await repository.create(tenant)
@@ -149,6 +171,9 @@ async def update_tenant(
     theme_repository: ThemeRepository = Depends(
         get_workspace_repository(ThemeRepository)
     ),
+    oauth_provider_repository: OAuthProviderRepository = Depends(
+        get_workspace_repository(OAuthProviderRepository)
+    ),
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
     audit_logger: AuditLogger = Depends(get_audit_logger),
@@ -160,10 +185,13 @@ async def update_tenant(
         request=request,
         context={**context, **list_context, "tenant": tenant},
     )
+    form = await form_helper.get_form()
+    form.oauth_providers.choices = [
+        (oauth_provider.id, oauth_provider.display_name)
+        for oauth_provider in tenant.oauth_providers
+    ]
 
     if await form_helper.is_submitted_and_valid():
-        form = await form_helper.get_form()
-
         theme_id = form.data["theme"]
         if theme_id is not None:
             theme = await theme_repository.get_by_id(theme_id)
@@ -174,6 +202,19 @@ async def update_tenant(
                 )
             form.theme.data = theme
 
+        tenant.oauth_providers = []
+        for oauth_provider_id in form.data["oauth_providers"]:
+            oauth_provider = await oauth_provider_repository.get_by_id(
+                oauth_provider_id
+            )
+            if oauth_provider is None:
+                form.oauth_providers.errors.append("Unknown OAuth Provider.")
+                return await form_helper.get_error_response(
+                    "Unknown OAuth Provider.", "unknown_oauth_provider"
+                )
+            tenant.oauth_providers.append(oauth_provider)
+
+        del form.oauth_providers
         form.populate_obj(tenant)
 
         await repository.update(tenant)

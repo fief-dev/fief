@@ -30,5 +30,6 @@ class OAuthProvider(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
     def get_provider_display_name(self) -> str:
         return AvailableOAuthProvider[self.provider].get_display_name()
 
-    def get_display_name(self) -> str:
+    @property
+    def display_name(self) -> str:
         return f"{self.get_provider_display_name()}{f' ({self.name})' if self.name else ''}"

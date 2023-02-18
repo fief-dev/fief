@@ -5,14 +5,14 @@
 
 {% extends "admin/oauth_providers/list.html" %}
 
-{% block head_title_content %}{{ oauth_provider.get_display_name() }} · {{ super() }}{% endblock %}
+{% block head_title_content %}{{ oauth_provider.display_name }} · {{ super() }}{% endblock %}
 
 {% set open_modal = true %}
 
 {% block modal %}
 {{
   modal.delete_modal(
-    "Delete the OAuth Provider \"" ~ oauth_provider.get_display_name() ~ "\"?",
+    "Delete the OAuth Provider \"" ~ oauth_provider.display_name ~ "\"?",
     "If you delete this provider, the associated OAuth accounts will be deleted as well. The associated users won't be deleted, but they will have to sign in with another method.",
     url_for("dashboard.oauth_providers:delete", id=oauth_provider.id),
   )
