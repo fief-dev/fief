@@ -1,0 +1,273 @@
+msgid ""
+msgstr ""
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: POEditor.com\n"
+"Project-Id-Version: Fief\n"
+"Language: zh-cn\n"
+
+#: fief/templates/auth/login.html:7
+msgid "Welcome back!"
+msgstr "欢迎回来！"
+
+#: fief/apps/auth/forms/auth.py:10 fief/apps/auth/forms/register.py:15
+#: fief/apps/auth/forms/reset.py:9
+msgid "Email address"
+msgstr "电子邮箱地址"
+
+#: fief/apps/auth/forms/auth.py:12 fief/forms.py:303
+msgid "Password"
+msgstr "密码"
+
+#: fief/templates/auth/login.html:5 fief/templates/auth/login.html:20
+msgid "Sign in"
+msgstr "登录"
+
+#: fief/apps/auth/routers/auth.py:114
+msgid "Invalid email or password"
+msgstr "电子邮箱地址或密码出错"
+
+#: fief/apps/auth/routers/register.py:81
+msgid "A user with the same email address already exists."
+msgstr "该电子邮箱地址已被注册"
+
+#: fief/dependencies/auth.py:75
+msgid "response_type is missing"
+msgstr "缺失response_type"
+
+#: fief/dependencies/auth.py:34
+msgid "client_id is missing"
+msgstr "缺失client_id"
+
+#: fief/dependencies/auth.py:40
+msgid "Unknown client"
+msgstr "未知client"
+
+#: fief/apps/auth/routers/auth.py:218 fief/dependencies/auth.py:51
+msgid "redirect_uri is missing"
+msgstr "缺失redirect_uri"
+
+#: fief/dependencies/auth.py:143
+msgid "scope is missing"
+msgstr "缺失scope"
+
+#: fief/dependencies/auth.py:154
+msgid "scope should contain \"openid\""
+msgstr "scope应包含\"openid\""
+
+#: fief/dependencies/auth.py:201
+msgid "screen should either be \"login\" or \"register\""
+msgstr "screen应为\"login\"或\"register\""
+
+#: fief/dependencies/auth.py:275
+msgid "Invalid login session"
+msgstr "login session不正确"
+
+#: fief/dependencies/users.py:102
+msgid "The password should be at least 8 characters."
+msgstr "密码最少应包含8个字符"
+
+#: fief/templates/auth/authorize.html:3 fief/templates/auth/authorize.html:5
+msgid "Authorize"
+msgstr "授权"
+
+#: fief/templates/auth/register.html:40
+msgid "I already have an account"
+msgstr "已注册过"
+
+#: fief/templates/auth/login.html:40 fief/templates/auth/register.html:9
+#: fief/templates/auth/register.html:17 fief/templates/auth/register.html:42
+msgid "Sign up"
+msgstr "注册"
+
+#: fief/apps/auth/routers/auth.py:195
+msgid "The user denied access to their data."
+msgstr "用户拒绝授权其数据"
+
+#: fief/dependencies/auth.py:174
+msgid "prompt should either be \"none\", \"login\" or \"register\""
+msgstr "prompt应为\"none\"、\"login\"或\"register\""
+
+#: fief/dependencies/auth.py:183
+msgid "User is not logged in"
+msgstr "用户未登录"
+
+#: fief/dependencies/auth.py:317
+msgid "User consent is required for this scope"
+msgstr "该scope需要用户许可"
+
+#: fief/templates/auth/consent.html:5
+msgid "Consent"
+msgstr "许可"
+
+#: fief/templates/auth/consent.html:7
+msgid "%(name)s wants to access your account"
+msgstr "%(name)s试图读取你的账户"
+
+#: fief/templates/auth/consent.html:12
+msgid "This will allow %(name)s to:"
+msgstr "即将允许%(name)s："
+
+#: fief/apps/auth/forms/auth.py:25
+msgid "Deny"
+msgstr "拒绝"
+
+#: fief/apps/auth/forms/auth.py:24
+msgid "Allow"
+msgstr "允许"
+
+#: fief/apps/auth/routers/reset.py:42
+msgid "Check your inbox! If an account associated with this email address exists in our system, you'll receive a link to reset your password."
+msgstr "请检查你的收件箱。若该邮箱已被使用，你将收到重置密码的链接。"
+
+#: fief/apps/auth/routers/reset.py:68
+msgid "The reset password token is missing."
+msgstr "重置密码token缺失"
+
+#: fief/apps/auth/routers/reset.py:80
+msgid "The reset password token is invalid or expired."
+msgstr "重置密码token不正确或已过期"
+
+#: fief/templates/auth/forgot_password.html:5
+#: fief/templates/auth/forgot_password.html:7
+msgid "Forgot password"
+msgstr "忘记密码"
+
+#: fief/templates/auth/forgot_password.html:17
+msgid "I remember my password"
+msgstr "已想起密码"
+
+#: fief/templates/auth/forgot_password.html:19
+msgid "Send me a reset link"
+msgstr "发送重置密码链接"
+
+#: fief/templates/auth/login.html:18
+msgid "I forgot my password"
+msgstr "忘记密码"
+
+#: fief/templates/auth/reset_password.html:5
+#: fief/templates/auth/reset_password.html:7
+msgid "Reset password"
+msgstr "重置密码"
+
+#: fief/apps/auth/forms/reset.py:14
+msgid "New password"
+msgstr "新的密码"
+
+#: fief/templates/auth/reset_password.html:18
+msgid "Reset my password"
+msgstr "重置密码"
+
+#: fief/dependencies/auth.py:57
+msgid "redirect_uri is not authorized for this client"
+msgstr "该redirect_uri未获得此client的授权"
+
+#: fief/dependencies/auth.py:107
+msgid "request parameter is not supported"
+msgstr "不支持request parameter"
+
+#: fief/dependencies/auth.py:224
+msgid "Unsupported code_challenge_method"
+msgstr "不支持该code_challenge_method"
+
+#: fief/forms.py:252
+msgid "This phone number is invalid."
+msgstr "该号码不正确"
+
+#: fief/forms.py:250
+msgid "The country code is missing."
+msgstr "国家编号缺失"
+
+#: fief/dependencies/auth.py:83
+msgid "response_type is invalid"
+msgstr "response_type不正确"
+
+#: fief/dependencies/auth.py:125
+msgid "nonce parameter is required for this response_type"
+msgstr "该response_type需要nonce parameter"
+
+#: fief/templates/auth/layout.html:46
+msgid "Powered and secured by"
+msgstr "用户认证方案"
+
+#: fief/templates/auth/login.html:39
+msgid "Don't have an account?"
+msgstr "尚未注册？"
+
+#: fief/templates/auth/logout.html:3 fief/templates/auth/logout.html:5
+msgid "Sign out"
+msgstr "退出登录"
+
+#: fief/forms.py:270
+msgid "Address line 1"
+msgstr "地址栏 1"
+
+#: fief/forms.py:272
+msgid "Address line 2"
+msgstr "地址栏 2"
+
+#: fief/forms.py:276
+msgid "Postal code"
+msgstr "邮编"
+
+#: fief/forms.py:277
+msgid "City"
+msgstr "城市"
+
+#: fief/forms.py:279
+msgid "State"
+msgstr "省/州"
+
+#: fief/forms.py:281
+msgid "Country"
+msgstr "国家"
+
+#: fief/forms.py:64
+msgid "CSRF failed."
+msgstr "CSRF失败"
+
+#: fief/apps/auth/routers/oauth.py:94
+msgid "Missing authorization code."
+msgstr "authorization code缺失"
+
+#: fief/apps/auth/routers/oauth.py:106
+msgid "Invalid OAuth session."
+msgstr "OAuth session不正确"
+
+#: fief/apps/auth/routers/oauth.py:122
+msgid "An error occurred while getting the access token."
+msgstr "获取access token时出错"
+
+#: fief/apps/auth/routers/oauth.py:147
+msgid "Your account is inactive."
+msgstr "该账号未激活"
+
+#: fief/dependencies/oauth.py:29
+msgid "Unknown tenant"
+msgstr "未知tenant"
+
+#: fief/dependencies/oauth.py:63
+msgid "Invalid login session."
+msgstr "login session不正确"
+
+#: fief/dependencies/oauth.py:82
+msgid "Unknown OAuth provider"
+msgstr "未知OAuth provider"
+
+#: fief/templates/auth/login.html:31
+msgid "Sign in with %(provider)s"
+msgstr "通过%(provider)s登录"
+
+#: fief/templates/auth/register.html:7 fief/templates/auth/register.html:15
+#: fief/templates/auth/register.html:35
+msgid "Finalize sign up"
+msgstr "确认登录"
+
+#: fief/templates/auth/register.html:54
+msgid "Sign up with %(provider)s"
+msgstr "通过%(provider)s注册"
+
+#: fief/apps/auth/routers/register.py:49
+msgid "Registration is disabled"
+msgstr "已停止注册"
