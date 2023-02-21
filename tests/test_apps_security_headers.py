@@ -8,8 +8,8 @@ from tests.helpers import security_headers_assertions
 
 @pytest.mark.asyncio
 @pytest.mark.workspace_host
-async def test_admin_app(test_client_admin: httpx.AsyncClient):
-    response = await test_client_admin.get("/openapi.json")
+async def test_admin_app(test_client_api: httpx.AsyncClient):
+    response = await test_client_api.get("/openapi.json")
 
     assert response.status_code == status.HTTP_200_OK
     security_headers_assertions(response)
@@ -18,8 +18,8 @@ async def test_admin_app(test_client_admin: httpx.AsyncClient):
 @pytest.mark.asyncio
 @pytest.mark.workspace_host
 @pytest.mark.authenticated_admin(mode="session")
-async def test_admin_dashboard_app(test_client_admin_dashboard: httpx.AsyncClient):
-    response = await test_client_admin_dashboard.get("/")
+async def test_dashboard_app(test_client_dashboard: httpx.AsyncClient):
+    response = await test_client_dashboard.get("/")
 
     assert response.status_code == status.HTTP_200_OK
     security_headers_assertions(response)

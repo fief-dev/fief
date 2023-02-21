@@ -7,7 +7,7 @@ from sentry_sdk.integrations.asgi import SentryAsgiMiddleware
 from sentry_sdk.integrations.redis import RedisIntegration
 
 from fief import __version__
-from fief.apps import admin_app, admin_dashboard_app, auth_app
+from fief.apps import api_app, auth_app, dashboard_app
 from fief.db.workspace import get_workspace_session
 from fief.dependencies.db import main_async_session_maker, workspace_engine_manager
 from fief.logger import init_audit_logger, logger
@@ -31,8 +31,8 @@ async def get_admin():
     return RedirectResponse("/admin/", status_code=status.HTTP_308_PERMANENT_REDIRECT)
 
 
-app.mount("/admin/api", admin_app)
-app.mount("/admin", admin_dashboard_app)
+app.mount("/admin/api", api_app)
+app.mount("/admin", dashboard_app)
 app.mount("/", auth_app)
 
 

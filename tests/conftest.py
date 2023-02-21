@@ -13,7 +13,7 @@ import pytest_asyncio
 from fastapi import FastAPI
 from sqlalchemy_utils import create_database, drop_database
 
-from fief.apps import admin_app, admin_dashboard_app, auth_app
+from fief.apps import api_app, auth_app, dashboard_app
 from fief.crypto.access_token import generate_access_token
 from fief.crypto.token import generate_token
 from fief.db import AsyncConnection, AsyncEngine, AsyncSession
@@ -533,10 +533,10 @@ async def test_client_generator(
 
 
 @pytest_asyncio.fixture
-async def test_client_admin(
+async def test_client_api(
     test_client_generator: HTTPClientGeneratorType,
 ) -> AsyncGenerator[httpx.AsyncClient, None]:
-    async with test_client_generator(admin_app) as test_client:
+    async with test_client_generator(api_app) as test_client:
         yield test_client
 
 
@@ -555,12 +555,12 @@ def htmx(request: pytest.FixtureRequest):
 
 
 @pytest_asyncio.fixture
-async def test_client_admin_dashboard(
+async def test_client_dashboard(
     test_client_generator: HTTPClientGeneratorType,
     htmx: Callable[[httpx.AsyncClient], httpx.AsyncClient],
     csrf_token: str,
 ) -> AsyncGenerator[httpx.AsyncClient, None]:
-    async with test_client_generator(admin_dashboard_app) as test_client:
+    async with test_client_generator(dashboard_app) as test_client:
         test_client.cookies.set(settings.csrf_cookie_name, csrf_token)
         test_client = htmx(test_client)
         yield test_client
@@ -598,18 +598,16 @@ def pytest_generate_tests(metafunc: pytest.Metafunc):
     """
     if "unauthorized_dashboard_assertions" in metafunc.fixturenames:
         from tests.helpers import (
-            admin_dashboard_unauthorized_alt_workspace_assertions,
-            admin_dashboard_unauthorized_assertions,
+            dashboard_unauthorized_alt_workspace_assertions,
+            dashboard_unauthorized_assertions,
         )
 
         metafunc.parametrize(
             "unauthorized_dashboard_assertions",
             [
+                pytest.param(dashboard_unauthorized_assertions, id="Unauthorized"),
                 pytest.param(
-                    admin_dashboard_unauthorized_assertions, id="Unauthorized"
-                ),
-                pytest.param(
-                    admin_dashboard_unauthorized_alt_workspace_assertions,
+                    dashboard_unauthorized_alt_workspace_assertions,
                     marks=pytest.mark.authenticated_admin(
                         mode="session", workspace="alt"
                     ),
@@ -619,16 +617,16 @@ def pytest_generate_tests(metafunc: pytest.Metafunc):
         )
     elif "unauthorized_api_assertions" in metafunc.fixturenames:
         from tests.helpers import (
-            admin_api_unauthorized_alt_workspace_assertions,
-            admin_api_unauthorized_assertions,
+            api_unauthorized_alt_workspace_assertions,
+            api_unauthorized_assertions,
         )
 
         metafunc.parametrize(
             "unauthorized_api_assertions",
             [
-                pytest.param(admin_api_unauthorized_assertions, id="Unauthorized"),
+                pytest.param(api_unauthorized_assertions, id="Unauthorized"),
                 pytest.param(
-                    admin_api_unauthorized_alt_workspace_assertions,
+                    api_unauthorized_alt_workspace_assertions,
                     marks=pytest.mark.authenticated_admin(
                         mode="api_key", workspace="alt"
                     ),
