@@ -36,7 +36,7 @@ def generate_access_token(
         "permissions": permissions,
     }
 
-    token = jwt.JWT(header={"alg": "RS256", "kid": key.key_id}, claims=claims)
+    token = jwt.JWT(header={"alg": "RS256", "kid": key["kid"]}, claims=claims)
     token.make_signed_token(key)
 
     return token.serialize()

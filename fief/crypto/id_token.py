@@ -58,7 +58,7 @@ def generate_id_token(
         claims["at_hash"] = get_validation_hash(access_token)
 
     signed_token = jwt.JWT(
-        header={"alg": "RS256", "kid": signing_key.key_id}, claims=claims
+        header={"alg": "RS256", "kid": signing_key["kid"]}, claims=claims
     )
     signed_token.make_signed_token(signing_key)
 
@@ -67,7 +67,7 @@ def generate_id_token(
             header={
                 "alg": "RSA-OAEP-256",
                 "enc": "A256CBC-HS512",
-                "kid": encryption_key.key_id,
+                "kid": encryption_key["kid"],
             },
             claims=signed_token.serialize(),
         )

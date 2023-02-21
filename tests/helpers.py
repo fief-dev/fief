@@ -39,7 +39,7 @@ async def access_token_assertions(*, access_token: str, jwk: jwk.JWK, user: User
     access_token_jwt = jwt.JWT(jwt=access_token, algs=["RS256"], key=jwk)
 
     access_token_header = json.loads(access_token_jwt.header)
-    assert access_token_header["kid"] == jwk.key_id
+    assert access_token_header["kid"] == jwk["kid"]
 
     access_token_claims = json.loads(access_token_jwt.claims)
 
@@ -68,7 +68,7 @@ async def id_token_assertions(
     id_token_jwt = jwt.JWT(jwt=id_token, algs=["RS256"], key=jwk)
 
     id_token_header = json.loads(id_token_jwt.header)
-    assert id_token_header["kid"] == jwk.key_id
+    assert id_token_header["kid"] == jwk["kid"]
 
     id_token_claims = json.loads(id_token_jwt.claims)
 
@@ -102,7 +102,7 @@ async def encrypted_id_token_assertions(
     )
 
     encrypted_id_token_header = json.loads(encrypted_id_token_jwt.header)
-    assert encrypted_id_token_header["kid"] == encrypt_jwk.key_id
+    assert encrypted_id_token_header["kid"] == encrypt_jwk["kid"]
 
     await id_token_assertions(
         id_token=encrypted_id_token_jwt.claims,
