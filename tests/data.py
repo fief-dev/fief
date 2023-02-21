@@ -1,12 +1,13 @@
-import secrets
 import uuid
 from collections.abc import Mapping
 from datetime import date, datetime, timedelta, timezone
+from os import path
 from typing import TypedDict
+
+from jwcrypto import jwk
 
 from fief.crypto.code_challenge import get_code_verifier_hash
 from fief.crypto.id_token import get_validation_hash
-from fief.crypto.jwk import generate_jwk
 from fief.crypto.password import password_helper
 from fief.crypto.token import generate_token
 from fief.models import (
@@ -43,6 +44,16 @@ ModelMapping = Mapping[str, M]
 
 now = datetime.now(timezone.utc)
 hashed_password = password_helper.hash("hermine")
+
+
+def load_jwk_keys() -> jwk.JWKSet:
+    with open(path.join(path.dirname(__file__), "jwks.json"), "r") as jwks_file:
+        return jwk.JWKSet.from_json(jwks_file.read())
+
+
+_jwk_keys = load_jwk_keys()
+signature_key: jwk.JWK = _jwk_keys.get_key("fief-client-tests-sig")
+encryption_key: jwk.JWK = _jwk_keys.get_key("fief-client-tests-enc")
 
 
 class TestData(TypedDict):
@@ -87,9 +98,19 @@ oauth_providers: ModelMapping[OAuthProvider] = {
 }
 
 tenants: ModelMapping[Tenant] = {
-    "default": Tenant(name="Default", slug="default", default=True, oauth_providers=[]),
+    "default": Tenant(
+        name="Default",
+        slug="default",
+        default=True,
+        oauth_providers=[],
+        sign_jwk=signature_key.export(),
+    ),
     "secondary": Tenant(
-        name="Secondary", slug="secondary", default=False, oauth_providers=[]
+        name="Secondary",
+        slug="secondary",
+        default=False,
+        oauth_providers=[],
+        sign_jwk=signature_key.export(),
     ),
     "registration_disabled": Tenant(
         name="Registration disabled",
@@ -97,10 +118,9 @@ tenants: ModelMapping[Tenant] = {
         default=False,
         registration_allowed=False,
         oauth_providers=[],
+        sign_jwk=signature_key.export(),
     ),
 }
-
-client_encryption_key = generate_jwk(secrets.token_urlsafe(), "enc")
 
 clients: ModelMapping[Client] = {
     "default_tenant": Client(
@@ -150,7 +170,7 @@ clients: ModelMapping[Client] = {
         tenant=tenants["default"],
         client_id="ENCRYPTION_DEFAULT_TENANT_CLIENT_ID",
         client_secret="ENCRYPTION_DEFAULT_TENANT_CLIENT_SECRET",
-        encrypt_jwk=client_encryption_key.export_public(),
+        encrypt_jwk=encryption_key.export_public(),
         redirect_uris=["https://nantes.city/callback"],
         authorization_code_lifetime_seconds=settings.default_authorization_code_lifetime_seconds,
         access_id_token_lifetime_seconds=settings.default_access_id_token_lifetime_seconds,

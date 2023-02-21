@@ -11,7 +11,7 @@ from fief.repositories import AuthorizationCodeRepository, RefreshTokenRepositor
 from tests.data import (
     TestData,
     authorization_code_codes,
-    client_encryption_key,
+    encryption_key,
     refresh_token_tokens,
 )
 from tests.helpers import (
@@ -533,7 +533,7 @@ class TestAuthTokenAuthorizationCode:
 
         await encrypted_id_token_assertions(
             id_token=json["id_token"],
-            encrypt_jwk=client_encryption_key,
+            encrypt_jwk=encryption_key,
             sign_jwk=tenant.get_sign_jwk(),
             authenticated_at=authorization_code.authenticated_at,
             authorization_code_tuple=(
