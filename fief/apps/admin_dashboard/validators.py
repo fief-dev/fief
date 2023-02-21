@@ -2,7 +2,7 @@ import re
 
 from wtforms import validators
 
-from fief.models.client import LOCALHOST_HOST_PATTERN
+from fief.services.localhost import is_localhost
 
 
 class RedirectURLValidator(validators.Regexp):
@@ -25,5 +25,5 @@ class RedirectURLValidator(validators.Regexp):
         scheme = match.group("scheme")
         host = match.group("host")
 
-        if scheme == "http" and not LOCALHOST_HOST_PATTERN.match(host):
+        if scheme == "http" and not is_localhost(host):
             raise validators.ValidationError("An HTTPS URL is required.")

@@ -1,5 +1,4 @@
 import enum
-import re
 import secrets
 from datetime import datetime, timedelta, timezone
 
@@ -14,10 +13,6 @@ from fief.models.base import WorkspaceBase
 from fief.models.generics import GUID, CreatedUpdatedAt, UUIDModel
 from fief.models.tenant import Tenant
 from fief.settings import settings
-
-LOCALHOST_HOST_PATTERN = re.compile(
-    r"([^\.]+\.)?localhost(\d+)?|127\.0\.0\.1", flags=re.IGNORECASE
-)
 
 
 def get_default_redirect_uris() -> list[str]:

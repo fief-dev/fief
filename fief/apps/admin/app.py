@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from fief import __version__
 from fief.apps.admin.routers.clients import router as clients_router
 from fief.apps.admin.routers.email_templates import router as email_templates_router
 from fief.apps.admin.routers.oauth_providers import router as oauth_providers_router
@@ -10,9 +11,30 @@ from fief.apps.admin.routers.tenants import router as tenants_router
 from fief.apps.admin.routers.user_fields import router as user_fields_router
 from fief.apps.admin.routers.users import router as users_router
 from fief.middlewares.security_headers import SecurityHeadersMiddleware
+from fief.services.localhost import is_localhost
 from fief.settings import settings
 
-app = FastAPI(title="Fief Administration API")
+app = FastAPI(
+    title="Fief Administration API",
+    version=__version__,
+    servers=[
+        {
+            "url": "{scheme}://{host}/admin/api",
+            "variables": {
+                "scheme": {
+                    "enum": ["http", "https"],
+                    "default": "http"
+                    if is_localhost(settings.fief_domain)
+                    else "https",
+                },
+                "host": {
+                    "default": settings.fief_domain,
+                    "description": "Your Fief's workspace hostname",
+                },
+            },
+        }
+    ],
+)
 
 app.add_middleware(
     CORSMiddleware,

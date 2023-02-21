@@ -1,5 +1,3 @@
-import re
-
 from pydantic import UUID4
 
 from fief.db.workspace import WorkspaceEngineManager, get_workspace_session
@@ -14,15 +12,12 @@ from fief.repositories import (
 )
 from fief.schemas.workspace import WorkspaceCreate
 from fief.services.email_template.initializer import EmailTemplateInitializer
+from fief.services.localhost import is_localhost
 from fief.services.main_workspace import get_main_fief_client, get_main_fief_workspace
 from fief.services.theme import init_default_theme
 from fief.services.workspace_db import (
     WorkspaceDatabase,
     WorkspaceDatabaseConnectionError,
-)
-
-LOCALHOST_HOST_PATTERN = re.compile(
-    r"([^\.]+\.)?localhost(\d+)?|127\.0\.0\.1", flags=re.IGNORECASE
 )
 
 
@@ -135,8 +130,8 @@ class WorkspaceCreation:
             client_repository = ClientRepository(session)
             fief_client = await get_main_fief_client()
 
-            localhost_domain = LOCALHOST_HOST_PATTERN.match(workspace.domain)
-            redirect_uri = f"{'http' if localhost_domain else 'https'}://{workspace.domain}/admin/auth/callback"
+            is_localhost_domain = is_localhost(workspace.domain)
+            redirect_uri = f"{'http' if is_localhost_domain else 'https'}://{workspace.domain}/admin/auth/callback"
             fief_client.redirect_uris = fief_client.redirect_uris + [redirect_uri]
 
             await client_repository.update(fief_client)
