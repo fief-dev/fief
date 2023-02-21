@@ -95,5 +95,4 @@ class Client(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
         return self._get_expires_at("refresh_token_lifetime_seconds")
 
     def _get_expires_at(self, attr: str) -> datetime:
-        print(attr, getattr(self, attr))
         return datetime.now(timezone.utc) + timedelta(seconds=getattr(self, attr))

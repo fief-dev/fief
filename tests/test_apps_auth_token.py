@@ -8,8 +8,17 @@ from fief.crypto.token import get_token_hash
 from fief.db import AsyncSession
 from fief.models import Client
 from fief.repositories import AuthorizationCodeRepository, RefreshTokenRepository
-from tests.data import TestData, authorization_code_codes, refresh_token_tokens
-from tests.helpers import access_token_assertions, id_token_assertions
+from tests.data import (
+    TestData,
+    authorization_code_codes,
+    client_encryption_key,
+    refresh_token_tokens,
+)
+from tests.helpers import (
+    access_token_assertions,
+    encrypted_id_token_assertions,
+    id_token_assertions,
+)
 from tests.types import TenantParams
 
 AUTH_METHODS = ["client_secret_basic", "client_secret_post"]
@@ -494,6 +503,45 @@ class TestAuthTokenAuthorizationCode:
         )
 
         assert response.status_code == status.HTTP_200_OK
+
+    @pytest.mark.parametrize("auth_method", AUTH_METHODS)
+    async def test_valid_id_token_encryption(
+        self, auth_method: str, test_client_auth: httpx.AsyncClient, test_data: TestData
+    ):
+        authorization_code = test_data["authorization_codes"][
+            "default_id_token_encryption"
+        ]
+        client = authorization_code.client
+        tenant = client.tenant
+        path_prefix = tenant.slug if not tenant.default else ""
+
+        headers, data = get_authenticated_request_headers_data(auth_method, client)
+        response = await test_client_auth.post(
+            f"{path_prefix}/api/token",
+            headers=headers,
+            data={
+                **data,
+                "grant_type": "authorization_code",
+                "code": authorization_code_codes["default_id_token_encryption"][0],
+                "redirect_uri": authorization_code.redirect_uri,
+            },
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+
+        json = response.json()
+
+        await encrypted_id_token_assertions(
+            id_token=json["id_token"],
+            encrypt_jwk=client_encryption_key,
+            sign_jwk=tenant.get_sign_jwk(),
+            authenticated_at=authorization_code.authenticated_at,
+            authorization_code_tuple=(
+                authorization_code,
+                authorization_code_codes["default_id_token_encryption"][0],
+            ),
+            access_token=json["access_token"],
+        )
 
 
 @pytest.mark.asyncio

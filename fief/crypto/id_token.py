@@ -57,12 +57,18 @@ def generate_id_token(
     if access_token is not None:
         claims["at_hash"] = get_validation_hash(access_token)
 
-    signed_token = jwt.JWT(header={"alg": "RS256"}, claims=claims)
+    signed_token = jwt.JWT(
+        header={"alg": "RS256", "kid": signing_key.key_id}, claims=claims
+    )
     signed_token.make_signed_token(signing_key)
 
     if encryption_key is not None:
         encrypted_token = jwt.JWT(
-            header={"alg": "RSA-OAEP-256", "enc": "A256CBC-HS512"},
+            header={
+                "alg": "RSA-OAEP-256",
+                "enc": "A256CBC-HS512",
+                "kid": encryption_key.key_id,
+            },
             claims=signed_token.serialize(),
         )
         encrypted_token.make_encrypted_token(encryption_key)

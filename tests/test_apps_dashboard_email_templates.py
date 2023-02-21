@@ -128,7 +128,6 @@ class TestUpdateEmailTemplate:
 
         assert response.status_code == status.HTTP_200_OK
 
-        print(response.text)
         html = BeautifulSoup(response.text, features="html.parser")
         preview = html.find("div", id="preview")
         subject_output_field = preview.find("input")

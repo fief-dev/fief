@@ -100,6 +100,8 @@ tenants: ModelMapping[Tenant] = {
     ),
 }
 
+client_encryption_key = generate_jwk(secrets.token_urlsafe(), "enc")
+
 clients: ModelMapping[Client] = {
     "default_tenant": Client(
         name="Default",
@@ -148,7 +150,7 @@ clients: ModelMapping[Client] = {
         tenant=tenants["default"],
         client_id="ENCRYPTION_DEFAULT_TENANT_CLIENT_ID",
         client_secret="ENCRYPTION_DEFAULT_TENANT_CLIENT_SECRET",
-        encrypt_jwk=generate_jwk(secrets.token_urlsafe(), "enc").export_public(),
+        encrypt_jwk=client_encryption_key.export_public(),
         redirect_uris=["https://nantes.city/callback"],
         authorization_code_lifetime_seconds=settings.default_authorization_code_lifetime_seconds,
         access_id_token_lifetime_seconds=settings.default_access_id_token_lifetime_seconds,
@@ -555,6 +557,7 @@ authorization_code_codes: Mapping[str, tuple[str, str]] = {
     "expired": generate_token(),
     "default_public_regular_no_code_challenge": generate_token(),
     "default_public_regular_code_challenge_s256": generate_token(),
+    "default_id_token_encryption": generate_token(),
 }
 
 authorization_codes: ModelMapping[AuthorizationCode] = {
@@ -657,6 +660,20 @@ authorization_codes: ModelMapping[AuthorizationCode] = {
         code_challenge_method="S256",
         authenticated_at=now,
         expires_at=clients["public_default_tenant"].get_authorization_code_expires_at(),
+    ),
+    "default_id_token_encryption": AuthorizationCode(
+        code=authorization_code_codes["default_id_token_encryption"][1],
+        c_hash=get_validation_hash(
+            authorization_code_codes["default_id_token_encryption"][0]
+        ),
+        redirect_uri="https://bretagne.duchy/callback",
+        user=users["regular"],
+        client=clients["encryption_default_tenant"],
+        scope=["openid", "offline_access"],
+        authenticated_at=now,
+        expires_at=clients[
+            "encryption_default_tenant"
+        ].get_authorization_code_expires_at(),
     ),
 }
 

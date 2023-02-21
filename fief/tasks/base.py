@@ -7,6 +7,7 @@ from urllib.parse import urlparse
 import dramatiq
 import jinja2
 from dramatiq.brokers.redis import RedisBroker
+from dramatiq.middleware import CurrentMessage
 from pydantic import UUID4
 
 from fief.db import AsyncSession
@@ -39,6 +40,7 @@ redis_broker = RedisBroker(
     ssl=redis_parameters.scheme == "rediss",
     ssl_cert_reqs=None,
 )
+redis_broker.add_middleware(CurrentMessage())
 dramatiq.set_broker(redis_broker)
 
 

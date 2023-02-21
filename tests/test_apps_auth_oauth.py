@@ -209,7 +209,6 @@ class TestOAuthAuthorize:
             cookies=cookies,
         )
 
-        print(response.text)
         assert response.status_code == status.HTTP_302_FOUND
 
 

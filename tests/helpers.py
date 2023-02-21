@@ -37,6 +37,10 @@ def dashboard_unauthorized_alt_workspace_assertions(response: httpx.Response):
 
 async def access_token_assertions(*, access_token: str, jwk: jwk.JWK, user: User):
     access_token_jwt = jwt.JWT(jwt=access_token, algs=["RS256"], key=jwk)
+
+    access_token_header = json.loads(access_token_jwt.header)
+    assert access_token_header["kid"] == jwk.key_id
+
     access_token_claims = json.loads(access_token_jwt.claims)
 
     assert access_token_claims["sub"] == str(user.id)
@@ -62,6 +66,10 @@ async def id_token_assertions(
     access_token: str | None = None,
 ):
     id_token_jwt = jwt.JWT(jwt=id_token, algs=["RS256"], key=jwk)
+
+    id_token_header = json.loads(id_token_jwt.header)
+    assert id_token_header["kid"] == jwk.key_id
+
     id_token_claims = json.loads(id_token_jwt.claims)
 
     id_token_claims["auth_time"] == int(authenticated_at.timestamp())
@@ -78,6 +86,31 @@ async def id_token_assertions(
 
     if access_token is not None:
         assert "at_hash" in id_token_claims
+
+
+async def encrypted_id_token_assertions(
+    *,
+    id_token: str,
+    sign_jwk: jwk.JWK,
+    encrypt_jwk: jwk.JWK,
+    authenticated_at: datetime,
+    authorization_code_tuple: tuple[AuthorizationCode, str] | None = None,
+    access_token: str | None = None,
+):
+    encrypted_id_token_jwt = jwt.JWT(
+        jwt=id_token, algs=["RSA-OAEP-256", "A256CBC-HS512"], key=encrypt_jwk
+    )
+
+    encrypted_id_token_header = json.loads(encrypted_id_token_jwt.header)
+    assert encrypted_id_token_header["kid"] == encrypt_jwk.key_id
+
+    await id_token_assertions(
+        id_token=encrypted_id_token_jwt.claims,
+        jwk=sign_jwk,
+        authenticated_at=authenticated_at,
+        authorization_code_tuple=authorization_code_tuple,
+        access_token=access_token,
+    )
 
 
 def get_params_by_response_mode(
