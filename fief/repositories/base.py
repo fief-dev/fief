@@ -1,4 +1,3 @@
-import asyncio
 from collections.abc import Sequence
 from datetime import datetime, timezone
 from typing import Any, Generic, Protocol, TypeVar, cast
@@ -80,10 +79,10 @@ class BaseRepository(BaseRepositoryProtocol, Generic[M]):
         skip=0,
     ) -> tuple[list[M], int]:
         paginated_statement = statement.offset(skip).limit(limit)
-        async with asyncio.TaskGroup() as tg:
-            count_task = tg.create_task(self._count(statement))
-            query_task = tg.create_task(self.list(paginated_statement))
-        return query_task.result(), count_task.result()
+        # FIXME: running it concurrently causes issues with SQLite and SQLAlchemy2
+        count = await self._count(statement)
+        results = await self.list(paginated_statement)
+        return results, count
 
     def orderize(
         self, statement: Select, ordering: list[tuple[list[str], bool]]
