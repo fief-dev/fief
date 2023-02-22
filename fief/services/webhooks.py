@@ -7,6 +7,8 @@ from typing import Generic
 import httpx
 from pydantic.generics import GenericModel
 
+from fief.models import Webhook, WebhookLog
+from fief.repositories import WebhookLogRepository
 from fief.schemas.generics import PM
 
 
@@ -19,29 +21,20 @@ class WebhookEvent(GenericModel, Generic[PM]):
     object: PM
 
 
-class Webhook:
-    url: str
-    secret: str
-
-
-class WebhookLog:
-    attempt: int
-    status_code: str
-    payload: str
-
-
 class WebhookDeliveryError(Exception):
-    pass
+    def __init__(self, message: str, response: httpx.Response) -> None:
+        super().__init__(message)
+        self.response = response
 
 
 class WebhookDelivery:
-    def __init__(self) -> None:
-        pass
+    def __init__(self, webhook_log_repository: WebhookLogRepository) -> None:
+        self.webhook_log_repository = webhook_log_repository
 
-    async def send(self, webhook: Webhook, event: WebhookEvent, attempt=1):
+    async def send(self, webhook: Webhook, event: WebhookEvent, attempt: int = 1):
         async with httpx.AsyncClient() as client:
             payload = event.json()
-            signature, ts = self._get_signature(webhook.secret)
+            signature, ts = self._get_signature(payload, webhook.secret)
             response = await client.post(
                 webhook.url,
                 content=payload,
@@ -53,15 +46,21 @@ class WebhookDelivery:
                 follow_redirects=False,
             )
 
-            WebhookLog(
-                status_code=response.status_code, attempt=attempt, payload=payload
+            webhook_log = WebhookLog(
+                webhook_id=webhook.id,
+                attempt=attempt,
+                payload=payload,
+                status_code=response.status_code,
+                success=response.is_success,
             )
-            # await save_webhook_log()
+            await self.webhook_log_repository.create(webhook_log)
 
             if not response.is_success:
-                raise WebhookDeliveryError()
+                raise WebhookDeliveryError(
+                    "Received an non-success status code", response=response
+                )
 
-    def _get_signature(payload: str, secret: str) -> tuple[str, int]:
+    def _get_signature(self, payload: str, secret: str) -> tuple[str, int]:
         ts = int(time.time())
         message = f"{ts}.{payload}"
 

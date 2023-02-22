@@ -20,6 +20,8 @@ from fief.repositories.user import UserRepository
 from fief.repositories.user_field import UserFieldRepository
 from fief.repositories.user_permission import UserPermissionRepository
 from fief.repositories.user_role import UserRoleRepository
+from fief.repositories.webhook import WebhookRepository
+from fief.repositories.webhook_log import WebhookLogRepository
 from fief.repositories.workspace import WorkspaceRepository
 from fief.repositories.workspace_user import WorkspaceUserRepository
 
@@ -47,5 +49,7 @@ __all__ = [
     "UserFieldRepository",
     "UserPermissionRepository",
     "UserRoleRepository",
+    "WebhookRepository",
+    "WebhookLogRepository",
     "get_repository",
 ]

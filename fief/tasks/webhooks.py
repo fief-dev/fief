@@ -3,9 +3,10 @@ import uuid
 import dramatiq
 from dramatiq.middleware import CurrentMessage
 
-from fief.repositories import WebhookRepository
+from fief.repositories import WebhookLogRepository, WebhookRepository
 from fief.services.webhooks import WebhookDelivery, WebhookDeliveryError
 from fief.tasks.base import TaskBase, TaskError
+from fief.settings import settings
 
 
 class SendWebhookTask(TaskBase):
@@ -22,12 +23,16 @@ class SendWebhookTask(TaskBase):
 
             message = CurrentMessage.get_current_message()
             retries = message.options.get("retries", 0)
-            webhook_delivery = WebhookDelivery()
+
+            webhook_log_repository = WebhookLogRepository(session)
+            webhook_delivery = WebhookDelivery(webhook_log_repository)
             await webhook_delivery.send(webhook, event, attempt=retries + 1)
 
 
 def should_retry_send_webhook(retries_so_far, exception):
-    return retries_so_far < 5 and isinstance(exception, WebhookDeliveryError)
+    return retries_so_far < settings.webhooks_max_attempts and isinstance(
+        exception, WebhookDeliveryError
+    )
 
 
 send_webhook = dramatiq.actor(SendWebhookTask(), retry_when=should_retry_send_webhook)
