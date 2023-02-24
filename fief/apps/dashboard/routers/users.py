@@ -46,6 +46,7 @@ from fief.dependencies.users import (
     get_user_permissions,
     get_user_roles,
 )
+from fief.dependencies.webhook import get_trigger_webhooks
 from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.forms import FormHelper
 from fief.logger import AuditLogger
@@ -66,6 +67,7 @@ from fief.repositories import (
     UserPermissionRepository,
     UserRoleRepository,
 )
+from fief.services.webhooks.trigger import TriggerWebhooks
 from fief.tasks import SendTask
 from fief.templates import templates
 
@@ -152,6 +154,7 @@ async def create_user(
     session: AsyncSession = Depends(get_current_workspace_session),
     workspace: Workspace = Depends(get_current_workspace),
     send_task: SendTask = Depends(get_send_task),
+    trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ):
     form_class = await UserCreateForm.get_form_class(user_fields)
     form_helper = FormHelper(
@@ -173,7 +176,13 @@ async def create_user(
 
         user_db = SQLAlchemyUserTenantDatabase(session, tenant, User)
         user_manager = UserManager(
-            user_db, password_helper, workspace, tenant, send_task, audit_logger
+            user_db,
+            password_helper,
+            workspace,
+            tenant,
+            send_task,
+            audit_logger,
+            trigger_webhooks,
         )
         user_create = user_create_internal_model(**form.data, tenant_id=tenant.id)
 

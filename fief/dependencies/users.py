@@ -51,6 +51,7 @@ from fief.dependencies.user_field import (
     get_admin_user_update_model,
     get_user_update_model,
 )
+from fief.dependencies.webhook import get_trigger_webhooks
 from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.locale import gettext_lazy as _
 from fief.logger import AuditLogger
@@ -71,7 +72,9 @@ from fief.repositories import (
     UserRepository,
     UserRoleRepository,
 )
-from fief.schemas.user import UF, UserCreate, UserCreateInternal, UserUpdate
+from fief.schemas.user import UF, UserCreate, UserCreateInternal, UserRead, UserUpdate
+from fief.services.webhooks.models import WebhookEventType
+from fief.services.webhooks.trigger import TriggerWebhooks
 from fief.settings import settings
 from fief.tasks import SendTask, on_after_forgot_password, on_after_register
 
@@ -88,12 +91,14 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, UUID4]):
         tenant: Tenant,
         send_task: SendTask,
         audit_logger: AuditLogger,
+        trigger_webhooks: TriggerWebhooks,
     ):
         super().__init__(user_db, password_helper)
         self.workspace = workspace
         self.tenant = tenant
         self.send_task = send_task
         self.audit_logger = audit_logger
+        self.trigger_webhooks = trigger_webhooks
 
     async def validate_password(  # type: ignore
         self, password: str, user: UserCreate | User
@@ -173,6 +178,7 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, UUID4]):
 
     async def on_after_register(self, user: User, request: Request | None = None):
         self.audit_logger(AuditLogMessage.USER_REGISTERED, subject_user_id=user.id)
+        self.trigger_webhooks(WebhookEventType.USER_REGISTERED, user, UserRead)
         self.send_task(on_after_register, str(user.id), str(self.workspace.id))
 
     async def on_after_update(
@@ -269,9 +275,16 @@ async def get_user_manager(
     workspace: Workspace = Depends(get_current_workspace),
     send_task: SendTask = Depends(get_send_task),
     audit_logger: AuditLogger = Depends(get_audit_logger),
+    trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ):
     return UserManager(
-        user_db, password_helper, workspace, tenant, send_task, audit_logger
+        user_db,
+        password_helper,
+        workspace,
+        tenant,
+        send_task,
+        audit_logger,
+        trigger_webhooks,
     )
 
 
@@ -290,9 +303,16 @@ async def get_user_manager_from_create_user_internal(
     workspace: Workspace = Depends(get_current_workspace),
     send_task: SendTask = Depends(get_send_task),
     audit_logger: AuditLogger = Depends(get_audit_logger),
+    trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ):
     return UserManager(
-        user_db, password_helper, workspace, tenant, send_task, audit_logger
+        user_db,
+        password_helper,
+        workspace,
+        tenant,
+        send_task,
+        audit_logger,
+        trigger_webhooks,
     )
 
 
@@ -438,9 +458,16 @@ async def get_user_manager_from_user(
     workspace: Workspace = Depends(get_current_workspace),
     send_task: SendTask = Depends(get_send_task),
     audit_logger: AuditLogger = Depends(get_audit_logger),
+    trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ):
     return UserManager(
-        user_db, password_helper, workspace, user.tenant, send_task, audit_logger
+        user_db,
+        password_helper,
+        workspace,
+        user.tenant,
+        send_task,
+        audit_logger,
+        trigger_webhooks,
     )
 
 

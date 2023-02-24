@@ -35,6 +35,7 @@ from fief.models import (
     UserFieldValue,
     UserPermission,
     UserRole,
+    Webhook,
 )
 from fief.services.email_template.types import EmailTemplateType
 from fief.services.oauth_provider import AvailableOAuthProvider
@@ -79,6 +80,7 @@ class TestData(TypedDict):
     user_roles: ModelMapping[UserRole]
     email_templates: ModelMapping[EmailTemplate]
     themes: ModelMapping[Theme]
+    webhooks: ModelMapping[Webhook]
 
 
 oauth_providers: ModelMapping[OAuthProvider] = {
@@ -839,6 +841,10 @@ themes: ModelMapping[Theme] = {
     ),
 }
 
+webhooks: ModelMapping[Webhook] = {
+    "default": Webhook(url="https://internal.bretagne.duchy/webhook")
+}
+
 data_mapping: TestData = {
     "tenants": tenants,
     "clients": clients,
@@ -860,6 +866,7 @@ data_mapping: TestData = {
     "user_roles": user_roles,
     "email_templates": email_templates,
     "themes": themes,
+    "webhooks": webhooks,
 }
 
 __all__ = [

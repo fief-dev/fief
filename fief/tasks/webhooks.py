@@ -4,15 +4,16 @@ import dramatiq
 from dramatiq.middleware import CurrentMessage
 
 from fief.repositories import WebhookLogRepository, WebhookRepository
-from fief.services.webhooks import WebhookDelivery, WebhookDeliveryError
-from fief.tasks.base import TaskBase, TaskError
+from fief.services.webhooks.delivery import WebhookDelivery, WebhookDeliveryError
+from fief.services.webhooks.models import WebhookEvent
 from fief.settings import settings
+from fief.tasks.base import TaskBase, TaskError
 
 
-class SendWebhookTask(TaskBase):
-    __name__ = "send_webhook"
+class DeliverWebhookTask(TaskBase):
+    __name__ = "deliver_webhook"
 
-    async def run(self, workspace_id: str, webhook_id: str, event):
+    async def run(self, workspace_id: str, webhook_id: str, event: str):
         workspace = await self._get_workspace(uuid.UUID(workspace_id))
         async with self.get_workspace_session(workspace) as session:
             webhook_repository = WebhookRepository(session)
@@ -26,13 +27,36 @@ class SendWebhookTask(TaskBase):
 
             webhook_log_repository = WebhookLogRepository(session)
             webhook_delivery = WebhookDelivery(webhook_log_repository)
-            await webhook_delivery.send(webhook, event, attempt=retries + 1)
+            parsed_event = WebhookEvent.parse_raw(event)
+            await webhook_delivery.deliver(webhook, parsed_event, attempt=retries + 1)
 
 
-def should_retry_send_webhook(retries_so_far, exception):
+def should_retry_deliver_webhook(retries_so_far, exception):
     return retries_so_far < settings.webhooks_max_attempts and isinstance(
         exception, WebhookDeliveryError
     )
 
 
-send_webhook = dramatiq.actor(SendWebhookTask(), retry_when=should_retry_send_webhook)
+deliver_webhook = dramatiq.actor(
+    DeliverWebhookTask(), retry_when=should_retry_deliver_webhook
+)
+
+
+class TriggerWebhooksTask(TaskBase):
+    __name__ = "trigger_webhooks"
+
+    async def run(self, workspace_id: str, event: str):
+        workspace = await self._get_workspace(uuid.UUID(workspace_id))
+        async with self.get_workspace_session(workspace) as session:
+            webhook_repository = WebhookRepository(session)
+            webhooks = await webhook_repository.all()
+            for webhook in webhooks:
+                self.send_task(
+                    deliver_webhook,
+                    workspace_id=workspace_id,
+                    webhook_id=str(webhook.id),
+                    event=event,
+                )
+
+
+trigger_webhooks = dramatiq.actor(TriggerWebhooksTask())
