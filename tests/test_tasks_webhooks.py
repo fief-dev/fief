@@ -1,17 +1,17 @@
 from unittest.mock import MagicMock
 
+import httpx
 import pytest
 import respx
-import httpx
 from dramatiq.middleware import CurrentMessage
 from pytest_mock import MockerFixture
 
+from fief import schemas
 from fief.models import Workspace
+from fief.services.webhooks.delivery import WebhookDeliveryError
+from fief.services.webhooks.models import WebhookEvent, WebhookEventType
 from fief.tasks.webhooks import DeliverWebhookTask, TriggerWebhooksTask
 from tests.data import TestData
-from fief import schemas
-from fief.services.webhooks.models import WebhookEvent, WebhookEventType
-from fief.services.webhooks.delivery import WebhookDeliveryError
 
 
 @pytest.fixture

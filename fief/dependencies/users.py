@@ -51,7 +51,7 @@ from fief.dependencies.user_field import (
     get_admin_user_update_model,
     get_user_update_model,
 )
-from fief.dependencies.webhook import get_trigger_webhooks
+from fief.dependencies.webhooks import get_trigger_webhooks
 from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.locale import gettext_lazy as _
 from fief.logger import AuditLogger

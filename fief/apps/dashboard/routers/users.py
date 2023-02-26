@@ -46,7 +46,7 @@ from fief.dependencies.users import (
     get_user_permissions,
     get_user_roles,
 )
-from fief.dependencies.webhook import get_trigger_webhooks
+from fief.dependencies.webhooks import get_trigger_webhooks
 from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.forms import FormHelper
 from fief.logger import AuditLogger
