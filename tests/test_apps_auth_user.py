@@ -84,6 +84,16 @@ class TestUserUpdateProfile:
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
     @pytest.mark.access_token(from_tenant_params=True)
+    async def test_invalid_json_payload(
+        self, tenant_params: TenantParams, test_client_auth: httpx.AsyncClient
+    ):
+        response = await test_client_auth.patch(
+            f"{tenant_params.path_prefix}/api/profile", content='{"foo": "bar",}'
+        )
+
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+    @pytest.mark.access_token(from_tenant_params=True)
     async def test_authorized_invalid_password(
         self, tenant_params: TenantParams, test_client_auth: httpx.AsyncClient
     ):

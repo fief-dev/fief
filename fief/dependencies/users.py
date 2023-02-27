@@ -40,6 +40,7 @@ from fief.dependencies.pagination import (
     get_paginated_objects_getter,
     get_pagination,
 )
+from fief.dependencies.request import get_request_json
 from fief.dependencies.tasks import get_send_task
 from fief.dependencies.tenant import (
     get_current_tenant,
@@ -444,7 +445,7 @@ async def get_user_manager_from_user(
 
 
 async def get_user_create_internal(
-    request: Request,
+    json: dict[str, Any] = Depends(get_request_json),
     user_create_internal_model: type[UserCreateInternal[UF]] = Depends(
         get_admin_user_create_internal_model
     ),
@@ -454,7 +455,7 @@ async def get_user_create_internal(
         body=(user_create_internal_model, ...),
     )
     try:
-        validated_user_create_internal = body_model(body=await request.json())
+        validated_user_create_internal = body_model(body=json)
     except ValidationError as e:
         raise RequestValidationError(e.raw_errors) from e
     else:
@@ -462,7 +463,7 @@ async def get_user_create_internal(
 
 
 async def get_user_update(
-    request: Request,
+    json: dict[str, Any] = Depends(get_request_json),
     user_update_model: type[UserUpdate[UF]] = Depends(get_user_update_model),
 ) -> UserUpdate[UF]:
     body_model = create_model(
@@ -470,7 +471,7 @@ async def get_user_update(
         body=(user_update_model, ...),
     )
     try:
-        validated_user_update = body_model(body=await request.json())
+        validated_user_update = body_model(body=json)
     except ValidationError as e:
         raise RequestValidationError(e.raw_errors) from e
     else:
@@ -478,7 +479,7 @@ async def get_user_update(
 
 
 async def get_admin_user_update(
-    request: Request,
+    json: dict[str, Any] = Depends(get_request_json),
     user_update_model: type[UserUpdate[UF]] = Depends(get_admin_user_update_model),
 ) -> UserUpdate[UF]:
     body_model = create_model(
@@ -486,7 +487,7 @@ async def get_admin_user_update(
         body=(user_update_model, ...),
     )
     try:
-        validated_user_update = body_model(body=await request.json())
+        validated_user_update = body_model(body=json)
     except ValidationError as e:
         raise RequestValidationError(e.raw_errors) from e
     else:

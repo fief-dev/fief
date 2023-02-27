@@ -63,6 +63,12 @@ class TestCreateUser:
         unauthorized_api_assertions(response)
 
     @pytest.mark.authenticated_admin
+    async def test_invalid_json_payload(self, test_client_api: httpx.AsyncClient):
+        response = await test_client_api.post("/users/", content='{"foo": "bar",}')
+
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+    @pytest.mark.authenticated_admin
     async def test_unknown_tenant(
         self, test_client_api: httpx.AsyncClient, not_existing_uuid: uuid.UUID
     ):
@@ -202,6 +208,17 @@ class TestUpdateUser:
         response = await test_client_api.patch(f"/users/{not_existing_uuid}", json={})
 
         assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    @pytest.mark.authenticated_admin
+    async def test_invalid_json_payload(
+        self, test_client_api: httpx.AsyncClient, test_data: TestData
+    ):
+        user = test_data["users"]["regular"]
+        response = await test_client_api.patch(
+            f"/users/{user.id}", content='{"foo": "bar",}'
+        )
+
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
     @pytest.mark.authenticated_admin
     async def test_existing_email_address(
