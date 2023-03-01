@@ -8,11 +8,13 @@ from fief.dependencies.email_template import (
 )
 from fief.dependencies.logger import get_audit_logger
 from fief.dependencies.pagination import PaginatedObjects
+from fief.dependencies.webhooks import TriggerWebhooks, get_trigger_webhooks
 from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.logger import AuditLogger
 from fief.models import AuditLogMessage, EmailTemplate
 from fief.repositories.email_template import EmailTemplateRepository
 from fief.schemas.generics import PaginatedResults
+from fief.services.webhooks.models import WebhookEventType
 
 router = APIRouter(dependencies=[Depends(is_authenticated_admin_api)])
 
@@ -60,6 +62,7 @@ async def update_email_template(
         get_workspace_repository(EmailTemplateRepository)
     ),
     audit_logger: AuditLogger = Depends(get_audit_logger),
+    trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ) -> schemas.email_template.EmailTemplate:
     email_template_update_dict = email_template_update.dict(exclude_unset=True)
 
@@ -68,5 +71,10 @@ async def update_email_template(
 
     await repository.update(email_template)
     audit_logger.log_object_write(AuditLogMessage.OBJECT_UPDATED, email_template)
+    trigger_webhooks(
+        WebhookEventType.OBJECT_UPDATED,
+        email_template,
+        schemas.email_template.EmailTemplate,
+    )
 
     return schemas.email_template.EmailTemplate.from_orm(email_template)

@@ -7,12 +7,14 @@ from fief.dependencies.logger import get_audit_logger
 from fief.dependencies.pagination import PaginatedObjects
 from fief.dependencies.role import get_paginated_roles, get_role_by_id_or_404
 from fief.dependencies.tasks import get_send_task
+from fief.dependencies.webhooks import TriggerWebhooks, get_trigger_webhooks
 from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.errors import APIErrorCode
 from fief.logger import AuditLogger
 from fief.models import AuditLogMessage, Role, Workspace
 from fief.repositories import PermissionRepository, RoleRepository
 from fief.schemas.generics import PaginatedResults
+from fief.services.webhooks.models import WebhookEventType
 from fief.tasks import SendTask, on_role_updated
 
 router = APIRouter(dependencies=[Depends(is_authenticated_admin_api)])
@@ -46,6 +48,7 @@ async def create_role(
         get_workspace_repository(PermissionRepository)
     ),
     audit_logger: AuditLogger = Depends(get_audit_logger),
+    trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ) -> schemas.role.Role:
     role = Role(**role_create.dict(exclude={"permissions"}))
 
@@ -61,6 +64,7 @@ async def create_role(
 
     role = await repository.create(role)
     audit_logger.log_object_write(AuditLogMessage.OBJECT_CREATED, role)
+    trigger_webhooks(WebhookEventType.OBJECT_CREATED, role, schemas.role.Role)
 
     return schemas.role.Role.from_orm(role)
 
@@ -80,6 +84,7 @@ async def update_role(
     send_task: SendTask = Depends(get_send_task),
     workspace: Workspace = Depends(get_current_workspace),
     audit_logger: AuditLogger = Depends(get_audit_logger),
+    trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ) -> schemas.role.Role:
     role_update_dict = role_update.dict(exclude_unset=True, exclude={"permissions"})
     for field, value in role_update_dict.items():
@@ -101,6 +106,7 @@ async def update_role(
 
     await repository.update(role)
     audit_logger.log_object_write(AuditLogMessage.OBJECT_UPDATED, role)
+    trigger_webhooks(WebhookEventType.OBJECT_UPDATED, role, schemas.role.Role)
 
     added_permissions = new_permissions - old_permissions
     deleted_permissions = old_permissions - new_permissions
@@ -125,6 +131,8 @@ async def delete_role(
     role: Role = Depends(get_role_by_id_or_404),
     repository: RoleRepository = Depends(get_workspace_repository(RoleRepository)),
     audit_logger: AuditLogger = Depends(get_audit_logger),
+    trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ):
     await repository.delete(role)
     audit_logger.log_object_write(AuditLogMessage.OBJECT_DELETED, role)
+    trigger_webhooks(WebhookEventType.OBJECT_DELETED, role, schemas.role.Role)

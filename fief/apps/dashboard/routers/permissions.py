@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, Header, Request, status
 
+from fief import schemas
 from fief.apps.dashboard.dependencies import (
     BaseContext,
     DatatableColumn,
@@ -16,11 +17,13 @@ from fief.dependencies.permission import (
     get_paginated_permissions,
     get_permission_by_id_or_404,
 )
+from fief.dependencies.webhooks import TriggerWebhooks, get_trigger_webhooks
 from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.forms import FormHelper
 from fief.logger import AuditLogger
 from fief.models import AuditLogMessage, Permission
 from fief.repositories import PermissionRepository
+from fief.services.webhooks.models import WebhookEventType
 from fief.templates import templates
 
 router = APIRouter(dependencies=[Depends(is_authenticated_admin_session)])
@@ -82,6 +85,7 @@ async def list_permissions(
         get_workspace_repository(PermissionRepository)
     ),
     audit_logger: AuditLogger = Depends(get_audit_logger),
+    trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ):
     if await form_helper.is_submitted_and_valid():
         form = await form_helper.get_form()
@@ -100,6 +104,9 @@ async def list_permissions(
         form.populate_obj(permission)
         permission = await repository.create(permission)
         audit_logger.log_object_write(AuditLogMessage.OBJECT_CREATED, permission)
+        trigger_webhooks(
+            WebhookEventType.OBJECT_CREATED, permission, schemas.client.Client
+        )
 
         return HXRedirectResponse(
             request.url_for("dashboard.permissions:list"),

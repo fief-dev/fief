@@ -456,7 +456,7 @@ class TestUpdateUserField:
         updated_user_field = await user_field_repository.get_by_id(user_field.id)
         assert updated_user_field is not None
         assert updated_user_field.configuration["choices"] is not None
-        assert updated_user_field.configuration["choices"] == [["F", "Foo"]]
+        assert updated_user_field.configuration["choices"] == [("F", "Foo")]
 
 
 @pytest.mark.asyncio

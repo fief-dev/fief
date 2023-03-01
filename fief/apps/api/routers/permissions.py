@@ -8,12 +8,14 @@ from fief.dependencies.permission import (
     get_paginated_permissions,
     get_permission_by_id_or_404,
 )
+from fief.dependencies.webhooks import TriggerWebhooks, get_trigger_webhooks
 from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.errors import APIErrorCode
 from fief.logger import AuditLogger
 from fief.models import AuditLogMessage, Permission
 from fief.repositories import PermissionRepository
 from fief.schemas.generics import PaginatedResults
+from fief.services.webhooks.models import WebhookEventType
 
 router = APIRouter(dependencies=[Depends(is_authenticated_admin_api)])
 
@@ -50,6 +52,7 @@ async def create_permission(
         get_workspace_repository(PermissionRepository)
     ),
     audit_logger: AuditLogger = Depends(get_audit_logger),
+    trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ) -> schemas.permission.Permission:
     existing_permission = await repository.get_by_codename(permission_create.codename)
     if existing_permission is not None:
@@ -61,6 +64,9 @@ async def create_permission(
     permission = Permission(**permission_create.dict())
     permission = await repository.create(permission)
     audit_logger.log_object_write(AuditLogMessage.OBJECT_CREATED, permission)
+    trigger_webhooks(
+        WebhookEventType.OBJECT_CREATED, permission, schemas.permission.Permission
+    )
 
     return schemas.permission.Permission.from_orm(permission)
 
@@ -77,6 +83,7 @@ async def update_permission(
         get_workspace_repository(PermissionRepository)
     ),
     audit_logger: AuditLogger = Depends(get_audit_logger),
+    trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ) -> schemas.permission.Permission:
     updated_codename = permission_update.codename
     if updated_codename is not None and updated_codename != permission.codename:
@@ -93,6 +100,9 @@ async def update_permission(
 
     await repository.update(permission)
     audit_logger.log_object_write(AuditLogMessage.OBJECT_UPDATED, permission)
+    trigger_webhooks(
+        WebhookEventType.OBJECT_UPDATED, permission, schemas.permission.Permission
+    )
 
     return schemas.permission.Permission.from_orm(permission)
 
@@ -109,6 +119,10 @@ async def delete_permission(
         get_workspace_repository(PermissionRepository)
     ),
     audit_logger: AuditLogger = Depends(get_audit_logger),
+    trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ):
     await repository.delete(permission)
     audit_logger.log_object_write(AuditLogMessage.OBJECT_DELETED, permission)
+    trigger_webhooks(
+        WebhookEventType.OBJECT_DELETED, permission, schemas.permission.Permission
+    )

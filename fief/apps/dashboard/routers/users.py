@@ -46,7 +46,7 @@ from fief.dependencies.users import (
     get_user_permissions,
     get_user_roles,
 )
-from fief.dependencies.webhooks import get_trigger_webhooks
+from fief.dependencies.webhooks import TriggerWebhooks, get_trigger_webhooks
 from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.forms import FormHelper
 from fief.logger import AuditLogger
@@ -67,7 +67,7 @@ from fief.repositories import (
     UserPermissionRepository,
     UserRoleRepository,
 )
-from fief.services.webhooks.trigger import TriggerWebhooks
+from fief.services.webhooks.models import WebhookEventType
 from fief.tasks import SendTask
 from fief.templates import templates
 
@@ -191,6 +191,9 @@ async def create_user(
                 user_create, user_fields=user_fields, request=request
             )
             audit_logger.log_object_write(AuditLogMessage.OBJECT_CREATED, user)
+            trigger_webhooks(
+                WebhookEventType.OBJECT_CREATED, user, schemas.user.UserRead
+            )
         except UserAlreadyExists:
             form.email.errors.append(
                 "A user with this email address already exists on this tenant."
@@ -228,6 +231,7 @@ async def update_user(
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
     audit_logger: AuditLogger = Depends(get_audit_logger),
+    trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ):
     form_class = await UserUpdateForm.get_form_class(user_fields)
     form_helper = FormHelper(
@@ -252,6 +256,9 @@ async def update_user(
                 user_update, user, user_fields=user_fields, request=request
             )
             audit_logger.log_object_write(AuditLogMessage.OBJECT_UPDATED, user)
+            trigger_webhooks(
+                WebhookEventType.OBJECT_UPDATED, user, schemas.user.UserRead
+            )
         except UserAlreadyExists:
             form.email.errors.append(
                 "A user with this email address already exists on this tenant."
@@ -358,6 +365,7 @@ async def user_permissions(
         get_workspace_repository(UserPermissionRepository)
     ),
     audit_logger: AuditLogger = Depends(get_audit_logger),
+    trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ):
     form_helper = FormHelper(
         CreateUserPermissionForm,
@@ -405,6 +413,11 @@ async def user_permissions(
             subject_user_id=user.id,
             permission_id=str(permission.id),
         )
+        trigger_webhooks(
+            WebhookEventType.OBJECT_CREATED,
+            user_permission,
+            schemas.user_permission.UserPermission,
+        )
 
         return HXRedirectResponse(
             request.url_for("dashboard.users:permissions", id=user.id),
@@ -427,6 +440,7 @@ async def delete_user_permission(
         get_workspace_repository(UserPermissionRepository)
     ),
     audit_logger: AuditLogger = Depends(get_audit_logger),
+    trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ):
     user_permission = await user_permission_repository.get_by_permission_and_user(
         user.id, permission_id, direct_only=True
@@ -440,6 +454,11 @@ async def delete_user_permission(
         user_permission,
         subject_user_id=user.id,
         permission_id=str(permission_id),
+    )
+    trigger_webhooks(
+        WebhookEventType.OBJECT_DELETED,
+        user_permission,
+        schemas.user_permission.UserPermission,
     )
 
     return HXRedirectResponse(
@@ -464,6 +483,7 @@ async def user_roles(
     workspace: Workspace = Depends(get_current_workspace),
     send_task: SendTask = Depends(get_send_task),
     audit_logger: AuditLogger = Depends(get_audit_logger),
+    trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ):
     form_helper = FormHelper(
         CreateUserRoleForm,
@@ -504,6 +524,9 @@ async def user_roles(
             subject_user_id=user.id,
             role_id=str(role.id),
         )
+        trigger_webhooks(
+            WebhookEventType.OBJECT_CREATED, user_role, schemas.user_role.UserRole
+        )
 
         send_task(
             tasks.on_user_role_created, str(user.id), str(role.id), str(workspace.id)
@@ -529,6 +552,7 @@ async def delete_user_role(
     workspace: Workspace = Depends(get_current_workspace),
     send_task: SendTask = Depends(get_send_task),
     audit_logger: AuditLogger = Depends(get_audit_logger),
+    trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ):
     user_role = await user_role_repository.get_by_role_and_user(user.id, role_id)
     if user_role is None:
@@ -540,6 +564,9 @@ async def delete_user_role(
         user_role,
         subject_user_id=user.id,
         role_id=str(role_id),
+    )
+    trigger_webhooks(
+        WebhookEventType.OBJECT_DELETED, user_role, schemas.user_role.UserRole
     )
 
     send_task(tasks.on_user_role_deleted, str(user.id), str(role_id), str(workspace.id))

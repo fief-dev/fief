@@ -10,12 +10,14 @@ from fief.dependencies.user_field import (
     get_validated_user_field_create,
     get_validated_user_field_update,
 )
+from fief.dependencies.webhooks import TriggerWebhooks, get_trigger_webhooks
 from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.errors import APIErrorCode
 from fief.logger import AuditLogger
 from fief.models import AuditLogMessage, UserField
 from fief.repositories import UserFieldRepository
 from fief.schemas.generics import PaginatedResults
+from fief.services.webhooks.models import WebhookEventType
 
 router = APIRouter(dependencies=[Depends(is_authenticated_admin_api)])
 
@@ -54,6 +56,7 @@ async def create_user_field(
         get_workspace_repository(UserFieldRepository)
     ),
     audit_logger: AuditLogger = Depends(get_audit_logger),
+    trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ) -> schemas.user_field.UserField:
     existing_user_field = await repository.get_by_slug(user_field_create.slug)
     if existing_user_field is not None:
@@ -65,6 +68,9 @@ async def create_user_field(
     user_field = UserField(**user_field_create.dict())
     user_field = await repository.create(user_field)
     audit_logger.log_object_write(AuditLogMessage.OBJECT_CREATED, user_field)
+    trigger_webhooks(
+        WebhookEventType.OBJECT_CREATED, user_field, schemas.user_field.UserField
+    )
 
     return schemas.user_field.UserField.from_orm(user_field)
 
@@ -81,6 +87,7 @@ async def update_user_field(
         get_workspace_repository(UserFieldRepository)
     ),
     audit_logger: AuditLogger = Depends(get_audit_logger),
+    trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ) -> schemas.user_field.UserField:
     updated_slug = user_field_update.slug
     if updated_slug is not None and updated_slug != user_field.slug:
@@ -97,6 +104,9 @@ async def update_user_field(
 
     await repository.update(user_field)
     audit_logger.log_object_write(AuditLogMessage.OBJECT_UPDATED, user_field)
+    trigger_webhooks(
+        WebhookEventType.OBJECT_UPDATED, user_field, schemas.user_field.UserField
+    )
 
     return schemas.user_field.UserField.from_orm(user_field)
 
@@ -113,6 +123,10 @@ async def delete_user_field(
         get_workspace_repository(UserFieldRepository)
     ),
     audit_logger: AuditLogger = Depends(get_audit_logger),
+    trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ):
     await repository.delete(user_field)
     audit_logger.log_object_write(AuditLogMessage.OBJECT_DELETED, user_field)
+    trigger_webhooks(
+        WebhookEventType.OBJECT_DELETED, user_field, schemas.user_field.UserField
+    )

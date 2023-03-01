@@ -16,6 +16,7 @@ from fief.dependencies.oauth_provider import (
 )
 from fief.dependencies.pagination import PaginatedObjects
 from fief.dependencies.users import UserManager, get_user_manager
+from fief.dependencies.webhooks import TriggerWebhooks, get_trigger_webhooks
 from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.errors import APIErrorCode
 from fief.logger import AuditLogger
@@ -24,6 +25,7 @@ from fief.models.oauth_account import OAuthAccount
 from fief.repositories import OAuthAccountRepository, OAuthProviderRepository
 from fief.schemas.generics import PaginatedResults
 from fief.services.oauth_provider import get_oauth_provider_service
+from fief.services.webhooks.models import WebhookEventType
 
 router = APIRouter(dependencies=[Depends(is_authenticated_admin_api)])
 
@@ -60,10 +62,16 @@ async def create_oauth_provider(
         get_workspace_repository(OAuthProviderRepository)
     ),
     audit_logger: AuditLogger = Depends(get_audit_logger),
+    trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ) -> schemas.oauth_provider.OAuthProvider:
     oauth_provider = OAuthProvider(**oauth_provider_create.dict())
     oauth_provider = await repository.create(oauth_provider)
     audit_logger.log_object_write(AuditLogMessage.OBJECT_CREATED, oauth_provider)
+    trigger_webhooks(
+        WebhookEventType.OBJECT_CREATED,
+        oauth_provider,
+        schemas.oauth_provider.OAuthProvider,
+    )
 
     return schemas.oauth_provider.OAuthProvider.from_orm(oauth_provider)
 
@@ -80,6 +88,7 @@ async def update_oauth_provider(
         get_workspace_repository(OAuthProviderRepository)
     ),
     audit_logger: AuditLogger = Depends(get_audit_logger),
+    trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ) -> schemas.oauth_provider.OAuthProvider:
     oauth_provider_update_dict = oauth_provider_update.dict(exclude_unset=True)
 
@@ -100,6 +109,11 @@ async def update_oauth_provider(
 
     await repository.update(oauth_provider)
     audit_logger.log_object_write(AuditLogMessage.OBJECT_UPDATED, oauth_provider)
+    trigger_webhooks(
+        WebhookEventType.OBJECT_UPDATED,
+        oauth_provider,
+        schemas.oauth_provider.OAuthProvider,
+    )
 
     return schemas.oauth_provider.OAuthProvider.from_orm(oauth_provider)
 
@@ -116,9 +130,15 @@ async def delete_oauth_provider(
         get_workspace_repository(OAuthProviderRepository)
     ),
     audit_logger: AuditLogger = Depends(get_audit_logger),
+    trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ):
     await repository.delete(oauth_provider)
     audit_logger.log_object_write(AuditLogMessage.OBJECT_DELETED, oauth_provider)
+    trigger_webhooks(
+        WebhookEventType.OBJECT_DELETED,
+        oauth_provider,
+        schemas.oauth_provider.OAuthProvider,
+    )
 
 
 @router.get(

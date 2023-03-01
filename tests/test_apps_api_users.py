@@ -183,7 +183,7 @@ class TestCreateUser:
         assert json["fields"]["onboarding_done"] is True
         assert json["fields"]["last_seen"] == "2022-01-01T13:37:00+00:00"
 
-        trigger_webhooks_mock.assert_called_once()
+        assert trigger_webhooks_mock.call_count == 2
 
         send_task_mock.assert_called_once_with(
             on_after_register, json["id"], str(workspace.id)

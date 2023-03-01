@@ -2,6 +2,7 @@ import secrets
 
 from fastapi import APIRouter, Depends, Header, Request, status
 
+from fief import schemas
 from fief.apps.dashboard.dependencies import (
     BaseContext,
     DatatableColumn,
@@ -20,11 +21,13 @@ from fief.dependencies.admin_authentication import is_authenticated_admin_sessio
 from fief.dependencies.client import get_client_by_id_or_404, get_paginated_clients
 from fief.dependencies.logger import get_audit_logger
 from fief.dependencies.pagination import PaginatedObjects
+from fief.dependencies.webhooks import TriggerWebhooks, get_trigger_webhooks
 from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.forms import FormHelper
 from fief.logger import AuditLogger
 from fief.models import AuditLogMessage, Client
 from fief.repositories import ClientRepository, TenantRepository
+from fief.services.webhooks.models import WebhookEventType
 from fief.templates import templates
 
 router = APIRouter(dependencies=[Depends(is_authenticated_admin_session)])
@@ -94,6 +97,7 @@ async def client_lifetimes(
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
     audit_logger: AuditLogger = Depends(get_audit_logger),
+    trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ):
     form_helper = FormHelper(
         ClientLifetimesForm,
@@ -109,6 +113,7 @@ async def client_lifetimes(
 
         await repository.update(client)
         audit_logger.log_object_write(AuditLogMessage.OBJECT_UPDATED, client)
+        trigger_webhooks(WebhookEventType.OBJECT_UPDATED, client, schemas.client.Client)
 
         return HXRedirectResponse(
             request.url_for("dashboard.clients:lifetimes", id=client.id)
@@ -127,6 +132,7 @@ async def create_client(
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
     audit_logger: AuditLogger = Depends(get_audit_logger),
+    trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ):
     form_helper = FormHelper(
         ClientCreateForm,
@@ -150,6 +156,7 @@ async def create_client(
         form.populate_obj(client)
         client = await repository.create(client)
         audit_logger.log_object_write(AuditLogMessage.OBJECT_CREATED, client)
+        trigger_webhooks(WebhookEventType.OBJECT_CREATED, client, schemas.client.Client)
 
         return HXRedirectResponse(
             request.url_for("dashboard.clients:get", id=client.id),
@@ -172,6 +179,7 @@ async def update_client(
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
     audit_logger: AuditLogger = Depends(get_audit_logger),
+    trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ):
     form_helper = FormHelper(
         ClientUpdateForm,
@@ -187,6 +195,7 @@ async def update_client(
 
         await repository.update(client)
         audit_logger.log_object_write(AuditLogMessage.OBJECT_UPDATED, client)
+        trigger_webhooks(WebhookEventType.OBJECT_UPDATED, client, schemas.client.Client)
 
         return HXRedirectResponse(
             request.url_for("dashboard.clients:get", id=client.id)
@@ -204,11 +213,13 @@ async def create_encryption_key(
     repository: ClientRepository = Depends(get_workspace_repository(ClientRepository)),
     context: BaseContext = Depends(get_base_context),
     audit_logger: AuditLogger = Depends(get_audit_logger),
+    trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ):
     key = generate_jwk(secrets.token_urlsafe(), "enc")
     client.encrypt_jwk = key.export_public()
     await repository.update(client)
     audit_logger.log_object_write(AuditLogMessage.OBJECT_UPDATED, client)
+    trigger_webhooks(WebhookEventType.OBJECT_UPDATED, client, schemas.client.Client)
 
     return templates.TemplateResponse(
         "admin/clients/encryption_key.html",

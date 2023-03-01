@@ -51,7 +51,7 @@ from fief.dependencies.user_field import (
     get_admin_user_update_model,
     get_user_update_model,
 )
-from fief.dependencies.webhooks import get_trigger_webhooks
+from fief.dependencies.webhooks import TriggerWebhooks, get_trigger_webhooks
 from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.locale import gettext_lazy as _
 from fief.logger import AuditLogger
@@ -74,7 +74,6 @@ from fief.repositories import (
 )
 from fief.schemas.user import UF, UserCreate, UserCreateInternal, UserRead, UserUpdate
 from fief.services.webhooks.models import WebhookEventType
-from fief.services.webhooks.trigger import TriggerWebhooks
 from fief.settings import settings
 from fief.tasks import SendTask, on_after_forgot_password, on_after_register
 
@@ -143,7 +142,11 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, UUID4]):
         safe: bool = False,
         request: Request | None = None,
     ) -> User:
-        user = await self.update(user_update, user, safe, request)
+        if safe:
+            updated_user_data = user_update.create_update_dict()
+        else:
+            updated_user_data = user_update.create_update_dict_superuser()
+        user = await self._update(user, updated_user_data)
 
         if user_update.fields is not None:
             for user_field in user_fields:
@@ -172,7 +175,7 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, UUID4]):
 
             user = await self.user_db.update(user, {})
 
-        self.audit_logger(AuditLogMessage.USER_UPDATED, subject_user_id=user.id)
+        await self.on_after_update(user, updated_user_data, request)
 
         return user
 
@@ -185,12 +188,16 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, UUID4]):
         self, user: User, update_dict: dict[str, Any], request: Request | None = None
     ):
         self.audit_logger(AuditLogMessage.USER_UPDATED, subject_user_id=user.id)
+        self.trigger_webhooks(WebhookEventType.USER_UPDATED, user, UserRead)
 
     async def on_after_forgot_password(
         self, user: User, token: str, request: Request | None = None
     ):
         self.audit_logger(
             AuditLogMessage.USER_FORGOT_PASSWORD_REQUESTED, subject_user_id=user.id
+        )
+        self.trigger_webhooks(
+            WebhookEventType.USER_FORGOT_PASSWORD_REQUESTED, user, UserRead
         )
 
         reset_url = furl(self.tenant.url_for(cast(Request, request), "reset:reset"))
@@ -206,6 +213,7 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, UUID4]):
         self, user: User, request: Request | None = None
     ) -> None:
         self.audit_logger(AuditLogMessage.USER_PASSWORD_RESET, subject_user_id=user.id)
+        self.trigger_webhooks(WebhookEventType.USER_PASSWORD_RESET, user, UserRead)
 
     async def on_after_request_verify(
         self, user: User, token: str, request: Request | None = None

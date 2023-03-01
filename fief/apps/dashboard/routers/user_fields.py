@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, Header, Request, status
 
+from fief import schemas
 from fief.apps.dashboard.dependencies import (
     BaseContext,
     DatatableColumn,
@@ -20,11 +21,13 @@ from fief.dependencies.user_field import (
     get_paginated_user_fields,
     get_user_field_by_id_or_404,
 )
+from fief.dependencies.webhooks import TriggerWebhooks, get_trigger_webhooks
 from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.forms import FormHelper
 from fief.logger import AuditLogger
 from fief.models import AuditLogMessage, OAuthProvider, UserField
 from fief.repositories import UserFieldRepository
+from fief.services.webhooks.models import WebhookEventType
 from fief.templates import templates
 
 router = APIRouter(dependencies=[Depends(is_authenticated_admin_session)])
@@ -90,6 +93,7 @@ async def create_user_field(
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
     audit_logger: AuditLogger = Depends(get_audit_logger),
+    trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ):
     form_class = await UserFieldCreateForm.get_form_class(request)
     form_helper = FormHelper(
@@ -116,6 +120,9 @@ async def create_user_field(
         form.populate_obj(user_field)
         user_field = await repository.create(user_field)
         audit_logger.log_object_write(AuditLogMessage.OBJECT_CREATED, user_field)
+        trigger_webhooks(
+            WebhookEventType.OBJECT_CREATED, user_field, schemas.user_field.UserField
+        )
 
         return HXRedirectResponse(
             request.url_for("dashboard.user_fields:get", id=user_field.id),
@@ -141,6 +148,7 @@ async def update_user_field(
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
     audit_logger: AuditLogger = Depends(get_audit_logger),
+    trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ):
     form_class = await UserFieldUpdateForm.get_form_class(user_field)
     form_helper = FormHelper(
@@ -168,6 +176,9 @@ async def update_user_field(
 
         await repository.update(user_field)
         audit_logger.log_object_write(AuditLogMessage.OBJECT_UPDATED, user_field)
+        trigger_webhooks(
+            WebhookEventType.OBJECT_UPDATED, user_field, schemas.user_field.UserField
+        )
 
         return HXRedirectResponse(
             request.url_for("dashboard.user_fields:get", id=user_field.id)
@@ -190,10 +201,14 @@ async def delete_user_field(
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
     audit_logger: AuditLogger = Depends(get_audit_logger),
+    trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ):
     if request.method == "DELETE":
         await repository.delete(user_field)
         audit_logger.log_object_write(AuditLogMessage.OBJECT_DELETED, user_field)
+        trigger_webhooks(
+            WebhookEventType.OBJECT_DELETED, user_field, schemas.user_field.UserField
+        )
 
         return HXRedirectResponse(
             request.url_for("dashboard.user_fields:list"),

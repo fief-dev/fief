@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, Header, Request, status
 
+from fief import schemas
 from fief.apps.dashboard.dependencies import (
     BaseContext,
     DatatableColumn,
@@ -13,6 +14,7 @@ from fief.dependencies.admin_authentication import is_authenticated_admin_sessio
 from fief.dependencies.logger import get_audit_logger
 from fief.dependencies.pagination import PaginatedObjects
 from fief.dependencies.tenant import get_paginated_tenants, get_tenant_by_id_or_404
+from fief.dependencies.webhooks import TriggerWebhooks, get_trigger_webhooks
 from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.forms import FormHelper
 from fief.logger import AuditLogger
@@ -23,6 +25,7 @@ from fief.repositories import (
     TenantRepository,
     ThemeRepository,
 )
+from fief.services.webhooks.models import WebhookEventType
 from fief.templates import templates
 
 router = APIRouter(dependencies=[Depends(is_authenticated_admin_session)])
@@ -100,6 +103,7 @@ async def create_tenant(
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
     audit_logger: AuditLogger = Depends(get_audit_logger),
+    trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ):
     form_helper = FormHelper(
         TenantCreateForm,
@@ -140,6 +144,7 @@ async def create_tenant(
         tenant.slug = await repository.get_available_slug(tenant.name)
         tenant = await repository.create(tenant)
         audit_logger.log_object_write(AuditLogMessage.OBJECT_CREATED, tenant)
+        trigger_webhooks(WebhookEventType.OBJECT_CREATED, tenant, schemas.tenant.Tenant)
 
         client = Client(
             name=f"{tenant.name}'s client",
@@ -149,6 +154,7 @@ async def create_tenant(
         )
         await client_repository.create(client)
         audit_logger.log_object_write(AuditLogMessage.OBJECT_CREATED, client)
+        trigger_webhooks(WebhookEventType.OBJECT_CREATED, client, schemas.client.Client)
 
         return HXRedirectResponse(
             request.url_for("dashboard.tenants:get", id=tenant.id),
@@ -177,6 +183,7 @@ async def update_tenant(
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
     audit_logger: AuditLogger = Depends(get_audit_logger),
+    trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ):
     form_helper = FormHelper(
         TenantUpdateForm,
@@ -219,6 +226,7 @@ async def update_tenant(
 
         await repository.update(tenant)
         audit_logger.log_object_write(AuditLogMessage.OBJECT_UPDATED, tenant)
+        trigger_webhooks(WebhookEventType.OBJECT_UPDATED, tenant, schemas.tenant.Tenant)
 
         return HXRedirectResponse(
             request.url_for("dashboard.tenants:get", id=tenant.id)
