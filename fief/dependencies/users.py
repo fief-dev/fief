@@ -180,6 +180,7 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, UUID4]):
         return user
 
     async def on_after_register(self, user: User, request: Request | None = None):
+        await self.user_db.session.refresh(user)  # type: ignore
         self.audit_logger(AuditLogMessage.USER_REGISTERED, subject_user_id=user.id)
         self.trigger_webhooks(WebhookEventType.USER_REGISTERED, user, UserRead)
         self.send_task(on_after_register, str(user.id), str(self.workspace.id))

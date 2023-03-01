@@ -1,3 +1,4 @@
+import functools
 from fief.db.main import create_main_async_session_maker
 from fief.db.workspace import WorkspaceEngineManager, get_workspace_session
 from fief.dependencies.logger import get_audit_logger
@@ -14,6 +15,7 @@ from fief.schemas.workspace import WorkspaceCreate
 from fief.services.workspace_db import WorkspaceDatabase
 from fief.settings import settings
 from fief.tasks import send_task
+from fief.services.webhooks.trigger import trigger_webhooks
 
 
 class MainWorkspaceError(Exception):
@@ -126,6 +128,9 @@ async def create_main_fief_user(email: str, password: str | None = None) -> User
                 workspace,
                 send_task,
                 audit_logger,
+                functools.partial(
+                    trigger_webhooks, workspace_id=workspace.id, send_task=send_task
+                ),
             )
             if password is None:
                 password = user_manager.password_helper.generate()
