@@ -1,6 +1,6 @@
 import secrets
 
-from sqlalchemy import String
+from sqlalchemy import JSON, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from fief.models.base import WorkspaceBase
@@ -14,3 +14,5 @@ class Webhook(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
     secret: Mapped[str] = mapped_column(
         String(length=255), default=secrets.token_urlsafe, nullable=False
     )
+    events: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)
+    objects: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)

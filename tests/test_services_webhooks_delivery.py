@@ -35,7 +35,7 @@ class TestWebhookDelivery:
         test_data: TestData,
         workspace_session: AsyncSession,
     ):
-        webhook = test_data["webhooks"]["default"]
+        webhook = test_data["webhooks"]["all"]
         route_mock = respx_mock.post(webhook.url).mock(return_value=httpx.Response(200))
 
         await webhook_delivery.deliver(webhook, webhook_event)
@@ -67,7 +67,7 @@ class TestWebhookDelivery:
         test_data: TestData,
         workspace_session: AsyncSession,
     ):
-        webhook = test_data["webhooks"]["default"]
+        webhook = test_data["webhooks"]["all"]
         route_mock = respx_mock.post(webhook.url).mock(return_value=httpx.Response(400))
 
         with pytest.raises(WebhookDeliveryError):
@@ -94,7 +94,7 @@ class TestWebhookDelivery:
         test_data: TestData,
         workspace_session: AsyncSession,
     ):
-        webhook = test_data["webhooks"]["default"]
+        webhook = test_data["webhooks"]["all"]
         route_mock = respx_mock.post(webhook.url).mock(
             side_effect=httpx.HTTPError("Something went wrong")
         )

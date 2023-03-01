@@ -5,7 +5,7 @@ from dramatiq.middleware import CurrentMessage
 
 from fief.repositories import WebhookLogRepository, WebhookRepository
 from fief.services.webhooks.delivery import WebhookDelivery, WebhookDeliveryError
-from fief.services.webhooks.models import WebhookEvent
+from fief.services.webhooks.models import OBJECT_AGNOSTIC_WEBHOOK_EVENTS, WebhookEvent
 from fief.settings import settings
 from fief.tasks.base import TaskBase, TaskError
 
@@ -50,13 +50,18 @@ class TriggerWebhooksTask(TaskBase):
         async with self.get_workspace_session(workspace) as session:
             webhook_repository = WebhookRepository(session)
             webhooks = await webhook_repository.all()
+            parsed_event = WebhookEvent.parse_raw(event)
             for webhook in webhooks:
-                self.send_task(
-                    deliver_webhook,
-                    workspace_id=workspace_id,
-                    webhook_id=str(webhook.id),
-                    event=event,
-                )
+                if parsed_event.type in webhook.events and (
+                    parsed_event.type in OBJECT_AGNOSTIC_WEBHOOK_EVENTS
+                    or parsed_event.object in webhook.objects
+                ):
+                    self.send_task(
+                        deliver_webhook,
+                        workspace_id=workspace_id,
+                        webhook_id=str(webhook.id),
+                        event=event,
+                    )
 
 
 trigger_webhooks = dramatiq.actor(TriggerWebhooksTask())

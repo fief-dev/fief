@@ -1,8 +1,8 @@
 """Add Webhook and WebhookLog
 
-Revision ID: c7d3854614e5
+Revision ID: ff0874c20085
 Revises: 30bddbb1abd8
-Create Date: 2023-02-23 13:28:52.746064
+Create Date: 2023-03-01 10:05:44.375556
 
 """
 import sqlalchemy as sa
@@ -11,7 +11,7 @@ from alembic import op
 import fief
 
 # revision identifiers, used by Alembic.
-revision = "c7d3854614e5"
+revision = "ff0874c20085"
 down_revision = "30bddbb1abd8"
 branch_labels = None
 depends_on = None
@@ -23,17 +23,19 @@ def upgrade():
         "fief_webhooks",
         sa.Column("url", sa.String(length=255), nullable=False),
         sa.Column("secret", sa.String(length=255), nullable=False),
+        sa.Column("events", sa.JSON(), nullable=False),
+        sa.Column("objects", sa.JSON(), nullable=False),
         sa.Column("id", fief.models.generics.GUID(), nullable=False),
         sa.Column(
             "created_at",
             fief.models.generics.TIMESTAMPAware(timezone=True),
-            server_default=sa.text("now()"),
+            server_default=sa.func.now(),
             nullable=False,
         ),
         sa.Column(
             "updated_at",
             fief.models.generics.TIMESTAMPAware(timezone=True),
-            server_default=sa.text("now()"),
+            server_default=sa.func.now(),
             nullable=False,
         ),
         sa.PrimaryKeyConstraint("id"),
@@ -62,13 +64,13 @@ def upgrade():
         sa.Column(
             "created_at",
             fief.models.generics.TIMESTAMPAware(timezone=True),
-            server_default=sa.text("now()"),
+            server_default=sa.func.now(),
             nullable=False,
         ),
         sa.Column(
             "updated_at",
             fief.models.generics.TIMESTAMPAware(timezone=True),
-            server_default=sa.text("now()"),
+            server_default=sa.func.now(),
             nullable=False,
         ),
         sa.ForeignKeyConstraint(
