@@ -8,8 +8,8 @@ from fief.dependencies.admin_session import get_userinfo
 from fief.dependencies.current_workspace import get_current_workspace
 from fief.dependencies.pagination import (
     Ordering,
+    OrderingGetter,
     Pagination,
-    get_ordering,
     get_pagination,
 )
 from fief.dependencies.workspace import get_admin_user_workspaces
@@ -135,7 +135,7 @@ class DatatableQueryParametersGetter:
     def __call__(
         self,
         pagination: Pagination = Depends(get_pagination),
-        ordering: Ordering = Depends(get_ordering),
+        ordering: Ordering = Depends(OrderingGetter()),
         columns: str | None = Query(None),
     ) -> DatatableQueryParameters:
         columns_list = self.default_columns

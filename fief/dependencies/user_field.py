@@ -8,9 +8,9 @@ from sqlalchemy import select
 from fief.dependencies.pagination import (
     GetPaginatedObjects,
     Ordering,
+    OrderingGetter,
     PaginatedObjects,
     Pagination,
-    get_ordering,
     get_paginated_objects_getter,
     get_pagination,
 )
@@ -34,7 +34,7 @@ from fief.schemas.user_field import (
 
 async def get_paginated_user_fields(
     pagination: Pagination = Depends(get_pagination),
-    ordering: Ordering = Depends(get_ordering),
+    ordering: Ordering = Depends(OrderingGetter()),
     repository: UserFieldRepository = Depends(
         get_workspace_repository(UserFieldRepository)
     ),

@@ -52,7 +52,11 @@
     </div>
     <button
       type="button"
+      {% if client.encrypt_jwk %}
+      class="btn w-full bg-yellow-500 hover:bg-yellow-600 text-white"
+      {% else %}
       class="btn w-full border-slate-200 hover:border-slate-300"
+      {% endif %}
       hx-post="{{ url_for('dashboard.clients:encryption_key', id=client.id) }}"
       hx-trigger="click"
       hx-target="#modal"

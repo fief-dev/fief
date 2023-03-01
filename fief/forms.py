@@ -23,6 +23,7 @@ from wtforms import (
     StringField,
     TelField,
     validators,
+    widgets,
 )
 from wtforms.csrf.core import CSRF
 from wtforms.utils import unset_value
@@ -227,6 +228,11 @@ class ComboboxSelectMultipleField(SelectMultipleField):
             self.data = list(value)
         except (ValueError, TypeError):
             self.data = None
+
+
+class SelectMultipleFieldCheckbox(SelectMultipleField):
+    widget = widgets.ListWidget()
+    option_widget = widgets.CheckboxInput()
 
 
 class TimezoneField(SelectField):

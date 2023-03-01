@@ -1,0 +1,20 @@
+{% import "macros/alerts.html" as alerts %}
+{% import "macros/buttons.html" as buttons %}
+{% import "macros/modal.html" as modal %}
+{% import "macros/icons.html" as icons %}
+
+{% extends "admin/webhooks/list.html" %}
+
+{% block head_title_content %}{{ webhook.url }} · {{ super() }}{% endblock %}
+
+{% set open_modal = true %}
+
+{% block modal %}
+{{
+  modal.delete_modal(
+    "Delete the Webhook \"" ~ webhook.url ~ "\"?",
+    "If you delete this webhook, you won't receive any event anymore on this URL.",
+    url_for("dashboard.webhooks:delete", id=webhook.id),
+  )
+}}
+{% endblock %}

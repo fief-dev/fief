@@ -5,9 +5,9 @@ from sqlalchemy import select
 from fief.dependencies.pagination import (
     GetPaginatedObjects,
     Ordering,
+    OrderingGetter,
     PaginatedObjects,
     Pagination,
-    get_ordering,
     get_paginated_objects_getter,
     get_pagination,
 )
@@ -19,7 +19,7 @@ from fief.repositories import RoleRepository
 async def get_paginated_roles(
     query: str | None = Query(None),
     pagination: Pagination = Depends(get_pagination),
-    ordering: Ordering = Depends(get_ordering),
+    ordering: Ordering = Depends(OrderingGetter()),
     repository: RoleRepository = Depends(get_workspace_repository(RoleRepository)),
     get_paginated_objects: GetPaginatedObjects[Role] = Depends(
         get_paginated_objects_getter

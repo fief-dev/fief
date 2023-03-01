@@ -34,9 +34,9 @@ from fief.dependencies.logger import get_audit_logger
 from fief.dependencies.pagination import (
     GetPaginatedObjects,
     Ordering,
+    OrderingGetter,
     PaginatedObjects,
     Pagination,
-    get_ordering,
     get_paginated_objects_getter,
     get_pagination,
 )
@@ -351,7 +351,7 @@ authentication_backend = AuthenticationBackend[User, UUID4](
 
 async def get_paginated_users(
     pagination: Pagination = Depends(get_pagination),
-    ordering: Ordering = Depends(get_ordering),
+    ordering: Ordering = Depends(OrderingGetter()),
     repository: UserRepository = Depends(get_workspace_repository(UserRepository)),
     get_paginated_objects: GetPaginatedObjects[User] = Depends(
         get_paginated_objects_getter
@@ -375,7 +375,7 @@ async def get_user_by_id_or_404(
 
 async def get_paginated_user_permissions(
     pagination: Pagination = Depends(get_pagination),
-    ordering: Ordering = Depends(get_ordering),
+    ordering: Ordering = Depends(OrderingGetter()),
     user: User = Depends(get_user_by_id_or_404),
     user_permission_repository: UserPermissionRepository = Depends(
         get_workspace_repository(UserPermissionRepository)
@@ -402,7 +402,7 @@ async def get_user_permissions(
 
 async def get_paginated_user_roles(
     pagination: Pagination = Depends(get_pagination),
-    ordering: Ordering = Depends(get_ordering),
+    ordering: Ordering = Depends(OrderingGetter()),
     user: User = Depends(get_user_by_id_or_404),
     user_role_repository: UserRoleRepository = Depends(
         get_workspace_repository(UserRoleRepository)
@@ -429,7 +429,7 @@ async def get_user_roles(
 
 async def get_paginated_user_oauth_accounts(
     pagination: Pagination = Depends(get_pagination),
-    ordering: Ordering = Depends(get_ordering),
+    ordering: Ordering = Depends(OrderingGetter()),
     user: User = Depends(get_user_by_id_or_404),
     oauth_account_repository: OAuthAccountRepository = Depends(
         get_workspace_repository(OAuthAccountRepository)

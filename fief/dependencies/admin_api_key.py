@@ -9,9 +9,9 @@ from fief.dependencies.main_repositories import get_main_repository
 from fief.dependencies.pagination import (
     GetPaginatedObjects,
     Ordering,
+    OrderingGetter,
     PaginatedObjects,
     Pagination,
-    get_ordering,
     get_paginated_objects_getter,
     get_pagination,
 )
@@ -36,7 +36,7 @@ async def get_optional_admin_api_key(
 
 async def get_paginated_api_keys(
     pagination: Pagination = Depends(get_pagination),
-    ordering: Ordering = Depends(get_ordering),
+    ordering: Ordering = Depends(OrderingGetter()),
     repository: AdminAPIKeyRepository = Depends(
         get_main_repository(AdminAPIKeyRepository)
     ),
