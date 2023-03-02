@@ -18,10 +18,6 @@ module = "uvicorn.logging.*"
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
-module = "babel.*"
-ignore_missing_imports = true
-
-[[tool.mypy.overrides]]
 module = "postmarker.*"
 ignore_missing_imports = true
 

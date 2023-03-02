@@ -31,7 +31,7 @@ def get_babel_middleware_kwargs() -> Mapping[str, Any]:
 
 def get_translations(
     domain: str | None = None, locale: Locale | None = None
-) -> support.Translations:
+) -> support.NullTranslations:
     """
     Load and cache translations.
 
@@ -51,7 +51,7 @@ def get_translations(
     if (domain, locale_code) not in BABEL.translations:
         translations = None
         for path in reversed(BABEL.locales_dirs):
-            trans = support.Translations.load(path, locales=locale, domain=domain)
+            trans = support.Translations.load(path, locales=locale_code, domain=domain)
             if translations and not type(translations) == support.NullTranslations:
                 translations._catalog.update(trans._catalog)
             else:
