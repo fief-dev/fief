@@ -52,8 +52,8 @@ class TestWebhookDelivery:
         webhook_log_repository = WebhookLogRepository(workspace_session)
         webhook_logs = await webhook_log_repository.all()
 
-        assert len(webhook_logs) == 1
-        webhook_log = webhook_logs[0]
+        assert len(webhook_logs) == len(test_data["webhook_logs"]) + 1
+        webhook_log = webhook_logs[-1]
         assert webhook_log.webhook_id == webhook.id
         assert webhook_log.event == webhook_event.type
         assert webhook_log.response == "Ok"
@@ -82,8 +82,8 @@ class TestWebhookDelivery:
         webhook_log_repository = WebhookLogRepository(workspace_session)
         webhook_logs = await webhook_log_repository.all()
 
-        assert len(webhook_logs) == 1
-        webhook_log = webhook_logs[0]
+        assert len(webhook_logs) == len(test_data["webhook_logs"]) + 1
+        webhook_log = webhook_logs[-1]
         assert webhook_log.webhook_id == webhook.id
         assert webhook_log.event == webhook_event.type
         assert webhook_log.response == "Bad Request"
@@ -113,8 +113,8 @@ class TestWebhookDelivery:
         webhook_log_repository = WebhookLogRepository(workspace_session)
         webhook_logs = await webhook_log_repository.all()
 
-        assert len(webhook_logs) == 1
-        webhook_log = webhook_logs[0]
+        assert len(webhook_logs) == len(test_data["webhook_logs"]) + 1
+        webhook_log = webhook_logs[-1]
         assert webhook_log.webhook_id == webhook.id
         assert webhook_log.event == webhook_event.type
         assert webhook_log.response is None

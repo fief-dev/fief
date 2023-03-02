@@ -3,7 +3,7 @@ from typing import Any
 
 from pydantic import UUID4
 from sqlalchemy import Boolean, ForeignKey, Integer, String, Text
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from fief.models.base import WorkspaceBase
 from fief.models.generics import GUID, CreatedUpdatedAt, UUIDModel
@@ -23,6 +23,8 @@ class WebhookLog(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
     response: Mapped[str | None] = mapped_column(Text, nullable=True)
     error_type: Mapped[str | None] = mapped_column(String(255), nullable=True)
     error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    webhook: Mapped[Webhook] = relationship("Webhook")
 
     @property
     def payload_dict(self) -> dict[str, Any]:

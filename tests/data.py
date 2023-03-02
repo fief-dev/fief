@@ -36,6 +36,7 @@ from fief.models import (
     UserPermission,
     UserRole,
     Webhook,
+    WebhookLog,
 )
 from fief.services.email_template.types import EmailTemplateType
 from fief.services.oauth_provider import AvailableOAuthProvider
@@ -87,6 +88,7 @@ class TestData(TypedDict):
     email_templates: ModelMapping[EmailTemplate]
     themes: ModelMapping[Theme]
     webhooks: ModelMapping[Webhook]
+    webhook_logs: ModelMapping[WebhookLog]
 
 
 oauth_providers: ModelMapping[OAuthProvider] = {
@@ -862,6 +864,16 @@ webhooks: ModelMapping[Webhook] = {
     ),
 }
 
+webhook_logs: ModelMapping[WebhookLog] = {
+    "all_log1": WebhookLog(
+        webhook=webhooks["all"],
+        event=UserCreated.key(),
+        attempt=1,
+        payload="{}",
+        success=True,
+    ),
+}
+
 data_mapping: TestData = {
     "tenants": tenants,
     "clients": clients,
@@ -884,6 +896,7 @@ data_mapping: TestData = {
     "email_templates": email_templates,
     "themes": themes,
     "webhooks": webhooks,
+    "webhook_logs": webhook_logs,
 }
 
 __all__ = [
