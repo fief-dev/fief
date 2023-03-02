@@ -1,7 +1,7 @@
 from wtforms import URLField, validators
 
 from fief.forms import CSRFBaseForm, SelectMultipleFieldCheckbox
-from fief.services.webhooks.models import WEBHOOK_OBJECTS, WebhookEventType
+from fief.services.webhooks.models import WEBHOOK_EVENTS
 
 
 class BaseWebhookForm(CSRFBaseForm):
@@ -10,12 +10,7 @@ class BaseWebhookForm(CSRFBaseForm):
         validators=[validators.InputRequired(), validators.URL(require_tld=False)],
     )
     events = SelectMultipleFieldCheckbox(
-        "Events to notify", choices=WebhookEventType.get_choices()
-    )
-    objects = SelectMultipleFieldCheckbox(
-        "Objects to receive notifications for",
-        choices=WEBHOOK_OBJECTS,
-        description="Only applicable for Object Created, Updated and Deleted events.",
+        "Events to notify", choices=[event.key() for event in WEBHOOK_EVENTS]
     )
 
 

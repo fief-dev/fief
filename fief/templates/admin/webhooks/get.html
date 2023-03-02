@@ -12,26 +12,11 @@
 <div class="mt-6">
   <div class="text-sm font-semibold text-slate-800 mb-1">Events</div>
   <ul>
-    {% for event in webhook.get_events_display_names() %}
+    {% for event in webhook.events %}
       <li class="flex items-center justify-between py-3 border-b border-slate-200">
         <div class="text-sm text-slate-800 ml-2 truncate">{{ event }}</div>
       </li>
     {% endfor %}
-  </ul>
-</div>
-<div class="mt-6">
-  <div class="text-sm font-semibold text-slate-800 mb-1">Objects</div>
-  <ul>
-    {% for object in webhook.objects %}
-      <li class="flex items-center justify-between py-3 border-b border-slate-200">
-        <div class="text-sm text-slate-800 ml-2 truncate">{{ object }}</div>
-      </li>
-    {% endfor %}
-    {% if webhook.objects | length == 0 %}
-      <li class="flex items-center justify-between py-3 border-b border-slate-200">
-        <div class="text-sm text-slate-800 ml-2 truncate">—</div>
-      </li>
-    {% endif %}
   </ul>
 </div>
 <div class="mt-6">

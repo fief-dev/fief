@@ -73,7 +73,12 @@ from fief.repositories import (
     UserRoleRepository,
 )
 from fief.schemas.user import UF, UserCreate, UserCreateInternal, UserRead, UserUpdate
-from fief.services.webhooks.models import WebhookEventType
+from fief.services.webhooks.models import (
+    UserCreated,
+    UserForgotPasswordRequested,
+    UserPasswordReset,
+    UserUpdated,
+)
 from fief.settings import settings
 from fief.tasks import SendTask, on_after_forgot_password, on_after_register
 
@@ -182,14 +187,14 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, UUID4]):
     async def on_after_register(self, user: User, request: Request | None = None):
         await self.user_db.session.refresh(user)  # type: ignore
         self.audit_logger(AuditLogMessage.USER_REGISTERED, subject_user_id=user.id)
-        self.trigger_webhooks(WebhookEventType.USER_REGISTERED, user, UserRead)
+        self.trigger_webhooks(UserCreated, user, UserRead)
         self.send_task(on_after_register, str(user.id), str(self.workspace.id))
 
     async def on_after_update(
         self, user: User, update_dict: dict[str, Any], request: Request | None = None
     ):
         self.audit_logger(AuditLogMessage.USER_UPDATED, subject_user_id=user.id)
-        self.trigger_webhooks(WebhookEventType.USER_UPDATED, user, UserRead)
+        self.trigger_webhooks(UserUpdated, user, UserRead)
 
     async def on_after_forgot_password(
         self, user: User, token: str, request: Request | None = None
@@ -197,9 +202,7 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, UUID4]):
         self.audit_logger(
             AuditLogMessage.USER_FORGOT_PASSWORD_REQUESTED, subject_user_id=user.id
         )
-        self.trigger_webhooks(
-            WebhookEventType.USER_FORGOT_PASSWORD_REQUESTED, user, UserRead
-        )
+        self.trigger_webhooks(UserForgotPasswordRequested, user, UserRead)
 
         reset_url = furl(self.tenant.url_for(cast(Request, request), "reset:reset"))
         reset_url.add(query_params={"token": token})
@@ -214,7 +217,7 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, UUID4]):
         self, user: User, request: Request | None = None
     ) -> None:
         self.audit_logger(AuditLogMessage.USER_PASSWORD_RESET, subject_user_id=user.id)
-        self.trigger_webhooks(WebhookEventType.USER_PASSWORD_RESET, user, UserRead)
+        self.trigger_webhooks(UserPasswordReset, user, UserRead)
 
     async def on_after_request_verify(
         self, user: User, token: str, request: Request | None = None

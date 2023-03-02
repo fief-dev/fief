@@ -31,7 +31,7 @@ from fief.services.email_template.renderers import (
     EmailTemplateRenderer,
 )
 from fief.services.email_template.types import EmailTemplateType
-from fief.services.webhooks.models import WebhookEventType
+from fief.services.webhooks.models import EmailTemplateUpdated
 from fief.templates import templates
 
 router = APIRouter(dependencies=[Depends(is_authenticated_admin_session)])
@@ -111,7 +111,7 @@ async def update_email_template(
                 AuditLogMessage.OBJECT_UPDATED, email_template
             )
             trigger_webhooks(
-                WebhookEventType.OBJECT_UPDATED,
+                EmailTemplateUpdated,
                 email_template,
                 schemas.email_template.EmailTemplate,
             )

@@ -25,7 +25,11 @@ class WebhookDelivery:
             signature, ts = self._get_signature(payload, webhook.secret)
 
             webhook_log = WebhookLog(
-                webhook_id=webhook.id, attempt=attempt, payload=payload, success=False
+                webhook_id=webhook.id,
+                event=event.type,
+                attempt=attempt,
+                payload=payload,
+                success=False,
             )
 
             try:
@@ -40,6 +44,7 @@ class WebhookDelivery:
                     },
                     follow_redirects=False,
                 )
+                webhook_log.response = response.text
                 response.raise_for_status()
                 webhook_log.success = True
             except httpx.HTTPError as e:

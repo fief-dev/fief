@@ -17,7 +17,7 @@ from fief.repositories import (
     ThemeRepository,
 )
 from fief.schemas.generics import PaginatedResults
-from fief.services.webhooks.models import WebhookEventType
+from fief.services.webhooks.models import ClientCreated, TenantCreated, TenantUpdated
 
 router = APIRouter(dependencies=[Depends(is_authenticated_admin_api)])
 
@@ -86,7 +86,7 @@ async def create_tenant(
 
     tenant = await repository.create(tenant)
     audit_logger.log_object_write(AuditLogMessage.OBJECT_CREATED, tenant)
-    trigger_webhooks(WebhookEventType.OBJECT_CREATED, tenant, schemas.tenant.Tenant)
+    trigger_webhooks(TenantCreated, tenant, schemas.tenant.Tenant)
 
     client = Client(
         name=f"{tenant.name}'s client",
@@ -96,7 +96,7 @@ async def create_tenant(
     )
     await client_repository.create(client)
     audit_logger.log_object_write(AuditLogMessage.OBJECT_CREATED, client)
-    trigger_webhooks(WebhookEventType.OBJECT_CREATED, client, schemas.client.Client)
+    trigger_webhooks(ClientCreated, client, schemas.client.Client)
 
     return schemas.tenant.Tenant.from_orm(tenant)
 
@@ -144,6 +144,6 @@ async def update_tenant(
 
     await repository.update(tenant)
     audit_logger.log_object_write(AuditLogMessage.OBJECT_UPDATED, tenant)
-    trigger_webhooks(WebhookEventType.OBJECT_UPDATED, tenant, schemas.tenant.Tenant)
+    trigger_webhooks(TenantUpdated, tenant, schemas.tenant.Tenant)
 
     return schemas.tenant.Tenant.from_orm(tenant)

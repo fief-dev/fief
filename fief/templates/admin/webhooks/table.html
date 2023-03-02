@@ -17,11 +17,7 @@
 {% endmacro %}
 
 {% macro events_column(webhook) %}
-{{ webhook.get_events_display_names() | join(', ') }}
-{% endmacro %}
-
-{% macro objects_column(webhook) %}
-{{ webhook.objects | join(', ') }}
+{{ webhook.events | join(', ') }}
 {% endmacro %}
 
 {% macro actions_column(webhook) %}

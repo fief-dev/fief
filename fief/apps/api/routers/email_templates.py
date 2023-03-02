@@ -14,7 +14,7 @@ from fief.logger import AuditLogger
 from fief.models import AuditLogMessage, EmailTemplate
 from fief.repositories.email_template import EmailTemplateRepository
 from fief.schemas.generics import PaginatedResults
-from fief.services.webhooks.models import WebhookEventType
+from fief.services.webhooks.models import EmailTemplateUpdated
 
 router = APIRouter(dependencies=[Depends(is_authenticated_admin_api)])
 
@@ -72,7 +72,7 @@ async def update_email_template(
     await repository.update(email_template)
     audit_logger.log_object_write(AuditLogMessage.OBJECT_UPDATED, email_template)
     trigger_webhooks(
-        WebhookEventType.OBJECT_UPDATED,
+        EmailTemplateUpdated,
         email_template,
         schemas.email_template.EmailTemplate,
     )

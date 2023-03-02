@@ -1,8 +1,8 @@
 """Add Webhook and WebhookLog
 
-Revision ID: ff0874c20085
+Revision ID: ac62100e37c4
 Revises: 30bddbb1abd8
-Create Date: 2023-03-01 10:05:44.375556
+Create Date: 2023-03-02 15:14:05.476824
 
 """
 import sqlalchemy as sa
@@ -11,7 +11,7 @@ from alembic import op
 import fief
 
 # revision identifiers, used by Alembic.
-revision = "ff0874c20085"
+revision = "ac62100e37c4"
 down_revision = "30bddbb1abd8"
 branch_labels = None
 depends_on = None
@@ -24,7 +24,6 @@ def upgrade():
         sa.Column("url", sa.String(length=255), nullable=False),
         sa.Column("secret", sa.String(length=255), nullable=False),
         sa.Column("events", sa.JSON(), nullable=False),
-        sa.Column("objects", sa.JSON(), nullable=False),
         sa.Column("id", fief.models.generics.GUID(), nullable=False),
         sa.Column(
             "created_at",
@@ -55,9 +54,11 @@ def upgrade():
     op.create_table(
         "fief_webhook_logs",
         sa.Column("webhook_id", fief.models.generics.GUID(), nullable=False),
+        sa.Column("event", sa.String(length=255), nullable=False),
         sa.Column("attempt", sa.Integer(), nullable=False),
         sa.Column("payload", sa.Text(), nullable=False),
         sa.Column("success", sa.Boolean(), nullable=False),
+        sa.Column("response", sa.Text(), nullable=True),
         sa.Column("error_type", sa.String(length=255), nullable=True),
         sa.Column("error_message", sa.Text(), nullable=True),
         sa.Column("id", fief.models.generics.GUID(), nullable=False),

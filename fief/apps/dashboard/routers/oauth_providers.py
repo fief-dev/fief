@@ -26,7 +26,11 @@ from fief.forms import FormHelper
 from fief.logger import AuditLogger
 from fief.models import AuditLogMessage, OAuthProvider
 from fief.repositories import OAuthProviderRepository
-from fief.services.webhooks.models import WebhookEventType
+from fief.services.webhooks.models import (
+    OAuthProviderCreated,
+    OAuthProviderDeleted,
+    OAuthProviderUpdated,
+)
 from fief.templates import templates
 
 router = APIRouter(dependencies=[Depends(is_authenticated_admin_session)])
@@ -113,7 +117,7 @@ async def create_oauth_provider(
         oauth_provider = await repository.create(oauth_provider)
         audit_logger.log_object_write(AuditLogMessage.OBJECT_CREATED, oauth_provider)
         trigger_webhooks(
-            WebhookEventType.OBJECT_CREATED,
+            OAuthProviderCreated,
             oauth_provider,
             schemas.oauth_provider.OAuthProvider,
         )
@@ -158,7 +162,7 @@ async def update_oauth_provider(
         await repository.update(oauth_provider)
         audit_logger.log_object_write(AuditLogMessage.OBJECT_UPDATED, oauth_provider)
         trigger_webhooks(
-            WebhookEventType.OBJECT_UPDATED,
+            OAuthProviderUpdated,
             oauth_provider,
             schemas.oauth_provider.OAuthProvider,
         )
@@ -190,7 +194,7 @@ async def delete_oauth_provider(
         await repository.delete(oauth_provider)
         audit_logger.log_object_write(AuditLogMessage.OBJECT_DELETED, oauth_provider)
         trigger_webhooks(
-            WebhookEventType.OBJECT_DELETED,
+            OAuthProviderDeleted,
             oauth_provider,
             schemas.oauth_provider.OAuthProvider,
         )

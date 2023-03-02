@@ -221,7 +221,7 @@ class TestCreateUser:
         assert user.fields["onboarding_done"] is True
         assert user.fields["last_seen"] is not None
 
-        assert trigger_webhooks_mock.call_count == 2
+        assert trigger_webhooks_mock.call_count == 1
 
         send_task_mock.assert_called_once_with(
             on_after_register, str(user.id), str(workspace.id)

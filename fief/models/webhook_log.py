@@ -16,9 +16,11 @@ class WebhookLog(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
     webhook_id: Mapped[UUID4] = mapped_column(
         GUID, ForeignKey(Webhook.id, ondelete="CASCADE"), nullable=False
     )
+    event: Mapped[str] = mapped_column(String(255), nullable=False)
     attempt: Mapped[int] = mapped_column(Integer, nullable=False)
     payload: Mapped[str] = mapped_column(Text, nullable=False)
     success: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    response: Mapped[str | None] = mapped_column(Text, nullable=True)
     error_type: Mapped[str | None] = mapped_column(String(255), nullable=True)
     error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
 

@@ -35,7 +35,6 @@ async def get_columns() -> list[DatatableColumn]:
             "Created at", "created_at", "created_at_column", ordering="created_at"
         ),
         DatatableColumn("Events", "events", "events_column"),
-        DatatableColumn("Objects", "objects", "objects_column"),
         DatatableColumn("Actions", "actions", "actions_column"),
     ]
 
@@ -43,9 +42,7 @@ async def get_columns() -> list[DatatableColumn]:
 async def get_list_context(
     columns: list[DatatableColumn] = Depends(get_columns),
     datatable_query_parameters: DatatableQueryParameters = Depends(
-        DatatableQueryParametersGetter(
-            ["url", "created_at", "events", "objects", "actions"]
-        )
+        DatatableQueryParametersGetter(["url", "created_at", "events", "actions"])
     ),
     paginated_webhooks: PaginatedObjects[Webhook] = Depends(get_paginated_webhooks),
 ):
@@ -205,6 +202,7 @@ async def get_logs_columns() -> list[DatatableColumn]:
         DatatableColumn(
             "Delivered at", "delivered_at", "created_at_column", ordering="created_at"
         ),
+        DatatableColumn("Event", "event", "event_column", ordering="event"),
         DatatableColumn("Success", "success", "success_column", ordering="success"),
         DatatableColumn("Attempt", "attempt", "attempt_column", ordering="attempt"),
         DatatableColumn("Error", "error", "error_column", ordering="error_type"),
@@ -216,7 +214,7 @@ async def get_logs_list_context(
     columns: list[DatatableColumn] = Depends(get_logs_columns),
     datatable_query_parameters: DatatableQueryParameters = Depends(
         DatatableQueryParametersGetter(
-            ["delivered_at", "success", "attempt", "errora", "actions"]
+            ["delivered_at", "event", "success", "attempt", "error", "actions"]
         )
     ),
     paginated_webhook_logs: PaginatedObjects[WebhookLog] = Depends(

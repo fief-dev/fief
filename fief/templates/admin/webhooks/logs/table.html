@@ -4,6 +4,10 @@
   {{ webhook_log.created_at.strftime('%x %X') }}
 {% endmacro %}
 
+{% macro event_column(webhook_log) %}
+  {{ webhook_log.event }}
+{% endmacro %}
+
 {% macro success_column(webhook_log) %}
 {% if webhook_log.success %}
 {{ icons.check('w-4 h-4 text-green-500') }}

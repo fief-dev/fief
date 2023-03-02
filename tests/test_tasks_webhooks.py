@@ -9,7 +9,12 @@ from pytest_mock import MockerFixture
 from fief import schemas
 from fief.models import Workspace
 from fief.services.webhooks.delivery import WebhookDeliveryError
-from fief.services.webhooks.models import WebhookEvent, WebhookEventType
+from fief.services.webhooks.models import (
+    ClientCreated,
+    UserCreated,
+    UserRoleDeleted,
+    WebhookEvent,
+)
 from fief.tasks.webhooks import DeliverWebhookTask, TriggerWebhooksTask
 from tests.data import TestData
 
@@ -18,9 +23,7 @@ from tests.data import TestData
 def webhook_event(test_data: TestData) -> WebhookEvent:
     object = test_data["clients"]["default_tenant"]
     return WebhookEvent(
-        type=WebhookEventType.OBJECT_CREATED,
-        object=type(object).__name__,
-        data=schemas.client.Client.from_orm(object).dict(),
+        type=ClientCreated.key(), data=schemas.client.Client.from_orm(object).dict()
     )
 
 
@@ -88,9 +91,7 @@ class TestTasksTriggerWebhooks:
     ):
         object = test_data["clients"]["default_tenant"]
         webhook_event = WebhookEvent(
-            type=WebhookEventType.OBJECT_CREATED,
-            object=type(object).__name__,
-            data=schemas.client.Client.from_orm(object).dict(),
+            type=ClientCreated.key(), data=schemas.client.Client.from_orm(object).dict()
         )
 
         trigger_webhooks = TriggerWebhooksTask(
@@ -114,9 +115,7 @@ class TestTasksTriggerWebhooks:
     ):
         object = test_data["users"]["regular"]
         webhook_event = WebhookEvent(
-            type=WebhookEventType.USER_REGISTERED,
-            object=type(object).__name__,
-            data=schemas.user.UserRead.from_orm(object).dict(),
+            type=UserCreated.key(), data=schemas.user.UserRead.from_orm(object).dict()
         )
 
         trigger_webhooks = TriggerWebhooksTask(
@@ -130,7 +129,7 @@ class TestTasksTriggerWebhooks:
             test_data["webhooks"]["all"].id
         )
         assert send_task_mock.call_args_list[1][1]["webhook_id"] == str(
-            test_data["webhooks"]["user_registered"].id
+            test_data["webhooks"]["user_created"].id
         )
 
     async def test_user_role_deleted_event(
@@ -143,8 +142,7 @@ class TestTasksTriggerWebhooks:
     ):
         object = test_data["user_roles"]["default_castles_visitor"]
         webhook_event = WebhookEvent(
-            type=WebhookEventType.OBJECT_DELETED,
-            object=type(object).__name__,
+            type=UserRoleDeleted.key(),
             data=schemas.user_role.UserRole.from_orm(object).dict(),
         )
 

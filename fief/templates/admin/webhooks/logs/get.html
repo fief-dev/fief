@@ -32,6 +32,12 @@
         </li>
       </ul>
     </div>
+    {% if webhook_log.response %}
+    <div class="mt-6">
+      <div class="text-sm font-semibold text-slate-800">Response</div>
+      <pre class="relative overflow-scroll p-1 bg-slate-100 rounded border border-slate-300">{{ webhook_log.response | trim }}</pre>
+    </div>
+    {% endif %}
     {% if webhook_log.error_message %}
     <div class="mt-6">
       <div class="text-sm font-semibold text-slate-800">Error message</div>

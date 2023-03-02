@@ -15,7 +15,7 @@ from fief.logger import AuditLogger
 from fief.models import AuditLogMessage, Client
 from fief.repositories import ClientRepository, TenantRepository
 from fief.schemas.generics import PaginatedResults
-from fief.services.webhooks.models import WebhookEventType
+from fief.services.webhooks.models import ClientCreated, ClientUpdated
 
 router = APIRouter(dependencies=[Depends(is_authenticated_admin_api)])
 
@@ -58,7 +58,7 @@ async def create_client(
     client = Client(**client_create.dict())
     client = await repository.create(client)
     audit_logger.log_object_write(AuditLogMessage.OBJECT_CREATED, client)
-    trigger_webhooks(WebhookEventType.OBJECT_CREATED, client, schemas.client.Client)
+    trigger_webhooks(ClientCreated, client, schemas.client.Client)
 
     return schemas.client.Client.from_orm(client)
 
@@ -77,7 +77,7 @@ async def update_client(
 
     await repository.update(client)
     audit_logger.log_object_write(AuditLogMessage.OBJECT_UPDATED, client)
-    trigger_webhooks(WebhookEventType.OBJECT_UPDATED, client, schemas.client.Client)
+    trigger_webhooks(ClientUpdated, client, schemas.client.Client)
 
     return schemas.client.Client.from_orm(client)
 
@@ -97,6 +97,6 @@ async def create_encryption_key(
     client.encrypt_jwk = key.export_public()
     await repository.update(client)
     audit_logger.log_object_write(AuditLogMessage.OBJECT_UPDATED, client)
-    trigger_webhooks(WebhookEventType.OBJECT_UPDATED, client, schemas.client.Client)
+    trigger_webhooks(ClientUpdated, client, schemas.client.Client)
 
     return key.export(as_dict=True)

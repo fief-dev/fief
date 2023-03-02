@@ -14,7 +14,7 @@ from fief.logger import AuditLogger
 from fief.models import AuditLogMessage, Role, Workspace
 from fief.repositories import PermissionRepository, RoleRepository
 from fief.schemas.generics import PaginatedResults
-from fief.services.webhooks.models import WebhookEventType
+from fief.services.webhooks.models import RoleCreated, RoleDeleted, RoleUpdated
 from fief.tasks import SendTask, on_role_updated
 
 router = APIRouter(dependencies=[Depends(is_authenticated_admin_api)])
@@ -64,7 +64,7 @@ async def create_role(
 
     role = await repository.create(role)
     audit_logger.log_object_write(AuditLogMessage.OBJECT_CREATED, role)
-    trigger_webhooks(WebhookEventType.OBJECT_CREATED, role, schemas.role.Role)
+    trigger_webhooks(RoleCreated, role, schemas.role.Role)
 
     return schemas.role.Role.from_orm(role)
 
@@ -106,7 +106,7 @@ async def update_role(
 
     await repository.update(role)
     audit_logger.log_object_write(AuditLogMessage.OBJECT_UPDATED, role)
-    trigger_webhooks(WebhookEventType.OBJECT_UPDATED, role, schemas.role.Role)
+    trigger_webhooks(RoleUpdated, role, schemas.role.Role)
 
     added_permissions = new_permissions - old_permissions
     deleted_permissions = old_permissions - new_permissions
@@ -135,4 +135,4 @@ async def delete_role(
 ):
     await repository.delete(role)
     audit_logger.log_object_write(AuditLogMessage.OBJECT_DELETED, role)
-    trigger_webhooks(WebhookEventType.OBJECT_DELETED, role, schemas.role.Role)
+    trigger_webhooks(RoleDeleted, role, schemas.role.Role)

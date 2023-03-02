@@ -44,7 +44,12 @@ from fief.repositories import (
     UserRoleRepository,
 )
 from fief.schemas.generics import PaginatedResults
-from fief.services.webhooks.models import WebhookEventType
+from fief.services.webhooks.models import (
+    UserPermissionCreated,
+    UserPermissionDeleted,
+    UserRoleCreated,
+    UserRoleDeleted,
+)
 from fief.tasks import SendTask
 
 router = APIRouter(dependencies=[Depends(is_authenticated_admin_api)])
@@ -90,9 +95,6 @@ async def create_user(
             user_create, user_fields=user_fields, request=request
         )
         audit_logger.log_object_write(AuditLogMessage.OBJECT_CREATED, created_user)
-        trigger_webhooks(
-            WebhookEventType.OBJECT_CREATED, created_user, schemas.user.UserRead
-        )
     except UserAlreadyExists as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -132,7 +134,6 @@ async def update_user(
             request=request,
         )
         audit_logger.log_object_write(AuditLogMessage.OBJECT_UPDATED, user)
-        trigger_webhooks(WebhookEventType.OBJECT_UPDATED, user, schemas.user.UserRead)
     except UserAlreadyExists as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -217,7 +218,7 @@ async def create_user_permission(
         permission_id=str(permission.id),
     )
     trigger_webhooks(
-        WebhookEventType.OBJECT_CREATED,
+        UserPermissionCreated,
         user_permission,
         schemas.user_permission.UserPermission,
     )
@@ -252,7 +253,7 @@ async def delete_user_permission(
         permission_id=str(permission_id),
     )
     trigger_webhooks(
-        WebhookEventType.OBJECT_DELETED,
+        UserPermissionDeleted,
         user_permission,
         schemas.user_permission.UserPermission,
     )
@@ -318,9 +319,7 @@ async def create_user_role(
         subject_user_id=user.id,
         role_id=str(role.id),
     )
-    trigger_webhooks(
-        WebhookEventType.OBJECT_CREATED, user_role, schemas.user_role.UserRole
-    )
+    trigger_webhooks(UserRoleCreated, user_role, schemas.user_role.UserRole)
 
     send_task(tasks.on_user_role_created, str(user.id), str(role.id), str(workspace.id))
 
@@ -353,9 +352,7 @@ async def delete_user_role(
         subject_user_id=user.id,
         role_id=str(role_id),
     )
-    trigger_webhooks(
-        WebhookEventType.OBJECT_DELETED, user_role, schemas.user_role.UserRole
-    )
+    trigger_webhooks(UserRoleDeleted, user_role, schemas.user_role.UserRole)
 
     send_task(tasks.on_user_role_deleted, str(user.id), str(role_id), str(workspace.id))
 

@@ -39,7 +39,12 @@ from fief.models import (
 )
 from fief.services.email_template.types import EmailTemplateType
 from fief.services.oauth_provider import AvailableOAuthProvider
-from fief.services.webhooks.models import WEBHOOK_OBJECTS, WebhookEventType
+from fief.services.webhooks.models import (
+    WEBHOOK_EVENTS,
+    UserCreated,
+    UserRoleCreated,
+    UserRoleDeleted,
+)
 from fief.settings import settings
 
 ModelMapping = Mapping[str, M]
@@ -845,22 +850,15 @@ themes: ModelMapping[Theme] = {
 webhooks: ModelMapping[Webhook] = {
     "all": Webhook(
         url="https://internal.bretagne.duchy/webhook",
-        events=list(map(str, WebhookEventType)),
-        objects=WEBHOOK_OBJECTS,
+        events=[event.key() for event in WEBHOOK_EVENTS],
     ),
-    "user_registered": Webhook(
+    "user_created": Webhook(
         url="https://internal.bretagne.duchy/webhook",
-        events=[str(WebhookEventType.USER_REGISTERED)],
-        objects=[],
+        events=[UserCreated.key()],
     ),
     "object_user_role": Webhook(
         url="https://internal.bretagne.duchy/webhook",
-        events=[
-            str(WebhookEventType.OBJECT_CREATED),
-            str(WebhookEventType.OBJECT_UPDATED),
-            str(WebhookEventType.OBJECT_DELETED),
-        ],
-        objects=["UserRole"],
+        events=[UserRoleCreated.key(), UserRoleDeleted.key()],
     ),
 }
 

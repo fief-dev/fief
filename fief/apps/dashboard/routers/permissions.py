@@ -23,7 +23,10 @@ from fief.forms import FormHelper
 from fief.logger import AuditLogger
 from fief.models import AuditLogMessage, Permission
 from fief.repositories import PermissionRepository
-from fief.services.webhooks.models import WebhookEventType
+from fief.services.webhooks.models import (
+    PermissionCreated,
+    PermissionDeleted,
+)
 from fief.templates import templates
 
 router = APIRouter(dependencies=[Depends(is_authenticated_admin_session)])
@@ -104,9 +107,7 @@ async def list_permissions(
         form.populate_obj(permission)
         permission = await repository.create(permission)
         audit_logger.log_object_write(AuditLogMessage.OBJECT_CREATED, permission)
-        trigger_webhooks(
-            WebhookEventType.OBJECT_CREATED, permission, schemas.client.Client
-        )
+        trigger_webhooks(PermissionCreated, permission, schemas.permission.Permission)
 
         return HXRedirectResponse(
             request.url_for("dashboard.permissions:list"),
@@ -128,10 +129,12 @@ async def delete_permission(
         get_workspace_repository(PermissionRepository)
     ),
     audit_logger: AuditLogger = Depends(get_audit_logger),
+    trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ):
     if request.method == "DELETE":
         await repository.delete(permission)
         audit_logger.log_object_write(AuditLogMessage.OBJECT_DELETED, permission)
+        trigger_webhooks(PermissionDeleted, permission, schemas.permission.Permission)
 
         return HXRedirectResponse(
             request.url_for("dashboard.permissions:list"),

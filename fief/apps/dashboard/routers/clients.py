@@ -27,7 +27,7 @@ from fief.forms import FormHelper
 from fief.logger import AuditLogger
 from fief.models import AuditLogMessage, Client
 from fief.repositories import ClientRepository, TenantRepository
-from fief.services.webhooks.models import WebhookEventType
+from fief.services.webhooks.models import ClientCreated, ClientUpdated
 from fief.templates import templates
 
 router = APIRouter(dependencies=[Depends(is_authenticated_admin_session)])
@@ -113,7 +113,7 @@ async def client_lifetimes(
 
         await repository.update(client)
         audit_logger.log_object_write(AuditLogMessage.OBJECT_UPDATED, client)
-        trigger_webhooks(WebhookEventType.OBJECT_UPDATED, client, schemas.client.Client)
+        trigger_webhooks(ClientUpdated, client, schemas.client.Client)
 
         return HXRedirectResponse(
             request.url_for("dashboard.clients:lifetimes", id=client.id)
@@ -156,7 +156,7 @@ async def create_client(
         form.populate_obj(client)
         client = await repository.create(client)
         audit_logger.log_object_write(AuditLogMessage.OBJECT_CREATED, client)
-        trigger_webhooks(WebhookEventType.OBJECT_CREATED, client, schemas.client.Client)
+        trigger_webhooks(ClientCreated, client, schemas.client.Client)
 
         return HXRedirectResponse(
             request.url_for("dashboard.clients:get", id=client.id),
@@ -195,7 +195,7 @@ async def update_client(
 
         await repository.update(client)
         audit_logger.log_object_write(AuditLogMessage.OBJECT_UPDATED, client)
-        trigger_webhooks(WebhookEventType.OBJECT_UPDATED, client, schemas.client.Client)
+        trigger_webhooks(ClientUpdated, client, schemas.client.Client)
 
         return HXRedirectResponse(
             request.url_for("dashboard.clients:get", id=client.id)
@@ -219,7 +219,7 @@ async def create_encryption_key(
     client.encrypt_jwk = key.export_public()
     await repository.update(client)
     audit_logger.log_object_write(AuditLogMessage.OBJECT_UPDATED, client)
-    trigger_webhooks(WebhookEventType.OBJECT_UPDATED, client, schemas.client.Client)
+    trigger_webhooks(ClientUpdated, client, schemas.client.Client)
 
     return templates.TemplateResponse(
         "admin/clients/encryption_key.html",

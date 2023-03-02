@@ -17,7 +17,11 @@ from fief.logger import AuditLogger
 from fief.models import AuditLogMessage, UserField
 from fief.repositories import UserFieldRepository
 from fief.schemas.generics import PaginatedResults
-from fief.services.webhooks.models import WebhookEventType
+from fief.services.webhooks.models import (
+    UserFieldCreated,
+    UserFieldDeleted,
+    UserFieldUpdated,
+)
 
 router = APIRouter(dependencies=[Depends(is_authenticated_admin_api)])
 
@@ -68,9 +72,7 @@ async def create_user_field(
     user_field = UserField(**user_field_create.dict())
     user_field = await repository.create(user_field)
     audit_logger.log_object_write(AuditLogMessage.OBJECT_CREATED, user_field)
-    trigger_webhooks(
-        WebhookEventType.OBJECT_CREATED, user_field, schemas.user_field.UserField
-    )
+    trigger_webhooks(UserFieldCreated, user_field, schemas.user_field.UserField)
 
     return schemas.user_field.UserField.from_orm(user_field)
 
@@ -104,9 +106,7 @@ async def update_user_field(
 
     await repository.update(user_field)
     audit_logger.log_object_write(AuditLogMessage.OBJECT_UPDATED, user_field)
-    trigger_webhooks(
-        WebhookEventType.OBJECT_UPDATED, user_field, schemas.user_field.UserField
-    )
+    trigger_webhooks(UserFieldUpdated, user_field, schemas.user_field.UserField)
 
     return schemas.user_field.UserField.from_orm(user_field)
 
@@ -127,6 +127,4 @@ async def delete_user_field(
 ):
     await repository.delete(user_field)
     audit_logger.log_object_write(AuditLogMessage.OBJECT_DELETED, user_field)
-    trigger_webhooks(
-        WebhookEventType.OBJECT_DELETED, user_field, schemas.user_field.UserField
-    )
+    trigger_webhooks(UserFieldDeleted, user_field, schemas.user_field.UserField)

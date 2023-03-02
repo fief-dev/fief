@@ -10,7 +10,7 @@ from fief.tasks import trigger_webhooks as trigger_webhooks_task
 
 
 def trigger_webhooks(
-    event_type: WebhookEventType,
+    event_type: type[WebhookEventType],
     object: M,
     schema_class: type[PM],
     *,
@@ -18,15 +18,13 @@ def trigger_webhooks(
     send_task: SendTask,
 ) -> None:
     event: WebhookEvent = WebhookEvent(
-        type=event_type,
-        object=type(object).__name__,
-        data=schema_class.from_orm(object).dict(),
+        type=event_type.key(), data=schema_class.from_orm(object).dict()
     )
     send_task(trigger_webhooks_task, workspace_id=str(workspace_id), event=event.json())
 
 
 class TriggerWebhooks(Protocol):
     def __call__(
-        self, event_type: WebhookEventType, object: M, schema_class: type[PM]
+        self, event_type: type[WebhookEventType], object: M, schema_class: type[PM]
     ) -> None:
         ...

@@ -27,7 +27,11 @@ from fief.forms import FormHelper
 from fief.logger import AuditLogger
 from fief.models import AuditLogMessage, OAuthProvider, UserField
 from fief.repositories import UserFieldRepository
-from fief.services.webhooks.models import WebhookEventType
+from fief.services.webhooks.models import (
+    UserFieldCreated,
+    UserFieldDeleted,
+    UserFieldUpdated,
+)
 from fief.templates import templates
 
 router = APIRouter(dependencies=[Depends(is_authenticated_admin_session)])
@@ -120,9 +124,7 @@ async def create_user_field(
         form.populate_obj(user_field)
         user_field = await repository.create(user_field)
         audit_logger.log_object_write(AuditLogMessage.OBJECT_CREATED, user_field)
-        trigger_webhooks(
-            WebhookEventType.OBJECT_CREATED, user_field, schemas.user_field.UserField
-        )
+        trigger_webhooks(UserFieldCreated, user_field, schemas.user_field.UserField)
 
         return HXRedirectResponse(
             request.url_for("dashboard.user_fields:get", id=user_field.id),
@@ -176,9 +178,7 @@ async def update_user_field(
 
         await repository.update(user_field)
         audit_logger.log_object_write(AuditLogMessage.OBJECT_UPDATED, user_field)
-        trigger_webhooks(
-            WebhookEventType.OBJECT_UPDATED, user_field, schemas.user_field.UserField
-        )
+        trigger_webhooks(UserFieldUpdated, user_field, schemas.user_field.UserField)
 
         return HXRedirectResponse(
             request.url_for("dashboard.user_fields:get", id=user_field.id)
@@ -206,9 +206,7 @@ async def delete_user_field(
     if request.method == "DELETE":
         await repository.delete(user_field)
         audit_logger.log_object_write(AuditLogMessage.OBJECT_DELETED, user_field)
-        trigger_webhooks(
-            WebhookEventType.OBJECT_DELETED, user_field, schemas.user_field.UserField
-        )
+        trigger_webhooks(UserFieldDeleted, user_field, schemas.user_field.UserField)
 
         return HXRedirectResponse(
             request.url_for("dashboard.user_fields:list"),

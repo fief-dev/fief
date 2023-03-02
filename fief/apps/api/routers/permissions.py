@@ -15,7 +15,11 @@ from fief.logger import AuditLogger
 from fief.models import AuditLogMessage, Permission
 from fief.repositories import PermissionRepository
 from fief.schemas.generics import PaginatedResults
-from fief.services.webhooks.models import WebhookEventType
+from fief.services.webhooks.models import (
+    PermissionCreated,
+    PermissionDeleted,
+    PermissionUpdated,
+)
 
 router = APIRouter(dependencies=[Depends(is_authenticated_admin_api)])
 
@@ -64,9 +68,7 @@ async def create_permission(
     permission = Permission(**permission_create.dict())
     permission = await repository.create(permission)
     audit_logger.log_object_write(AuditLogMessage.OBJECT_CREATED, permission)
-    trigger_webhooks(
-        WebhookEventType.OBJECT_CREATED, permission, schemas.permission.Permission
-    )
+    trigger_webhooks(PermissionCreated, permission, schemas.permission.Permission)
 
     return schemas.permission.Permission.from_orm(permission)
 
@@ -100,9 +102,7 @@ async def update_permission(
 
     await repository.update(permission)
     audit_logger.log_object_write(AuditLogMessage.OBJECT_UPDATED, permission)
-    trigger_webhooks(
-        WebhookEventType.OBJECT_UPDATED, permission, schemas.permission.Permission
-    )
+    trigger_webhooks(PermissionUpdated, permission, schemas.permission.Permission)
 
     return schemas.permission.Permission.from_orm(permission)
 
@@ -123,6 +123,4 @@ async def delete_permission(
 ):
     await repository.delete(permission)
     audit_logger.log_object_write(AuditLogMessage.OBJECT_DELETED, permission)
-    trigger_webhooks(
-        WebhookEventType.OBJECT_DELETED, permission, schemas.permission.Permission
-    )
+    trigger_webhooks(PermissionDeleted, permission, schemas.permission.Permission)
