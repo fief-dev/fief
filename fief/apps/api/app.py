@@ -10,6 +10,7 @@ from fief.apps.api.routers.roles import router as roles_router
 from fief.apps.api.routers.tenants import router as tenants_router
 from fief.apps.api.routers.user_fields import router as user_fields_router
 from fief.apps.api.routers.users import router as users_router
+from fief.apps.api.routers.webhooks import router as webhooks_router
 from fief.middlewares.security_headers import SecurityHeadersMiddleware
 from fief.services.localhost import is_localhost
 from fief.settings import settings
@@ -57,5 +58,6 @@ app.include_router(roles_router, prefix="/roles", tags=["Roles"])
 app.include_router(tenants_router, prefix="/tenants", tags=["Tenants"])
 app.include_router(users_router, prefix="/users", tags=["Users"])
 app.include_router(user_fields_router, prefix="/user-fields", tags=["User fields"])
+app.include_router(webhooks_router, prefix="/webhooks", tags=["Webhooks"])
 
 __all__ = ["app"]
