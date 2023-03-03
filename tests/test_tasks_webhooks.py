@@ -3,10 +3,10 @@ from unittest.mock import MagicMock
 import httpx
 import pytest
 import respx
+from dramatiq import Message
 from dramatiq.middleware import CurrentMessage
 from pytest_mock import MockerFixture
 
-from fief import schemas
 from fief.models import Workspace
 from fief.services.webhooks.delivery import WebhookDeliveryError
 from fief.services.webhooks.models import (
@@ -20,11 +20,8 @@ from tests.data import TestData
 
 
 @pytest.fixture
-def webhook_event(test_data: TestData) -> WebhookEvent:
-    object = test_data["clients"]["default_tenant"]
-    return WebhookEvent(
-        type=ClientCreated.key(), data=schemas.client.Client.from_orm(object).dict()
-    )
+def webhook_event() -> WebhookEvent:
+    return WebhookEvent(type=ClientCreated.key(), data={})
 
 
 @pytest.mark.asyncio
@@ -39,7 +36,10 @@ class TestTasksDeliverWebhook:
         workspace_session_manager,
         test_data: TestData,
     ):
-        mocker.patch.object(CurrentMessage, "get_current_message")
+        get_current_message_mock = mocker.patch.object(
+            CurrentMessage, "get_current_message"
+        )
+        get_current_message_mock.return_value = Message("queue", "actor", (), {}, {})
 
         webhook = test_data["webhooks"]["all"]
         route_mock = respx_mock.post(webhook.url).mock(return_value=httpx.Response(200))
@@ -64,7 +64,10 @@ class TestTasksDeliverWebhook:
         workspace_session_manager,
         test_data: TestData,
     ):
-        mocker.patch.object(CurrentMessage, "get_current_message")
+        get_current_message_mock = mocker.patch.object(
+            CurrentMessage, "get_current_message"
+        )
+        get_current_message_mock.return_value = Message("queue", "actor", (), {}, {})
 
         webhook = test_data["webhooks"]["all"]
         respx_mock.post(webhook.url).mock(return_value=httpx.Response(400))
@@ -89,10 +92,7 @@ class TestTasksTriggerWebhooks:
         test_data: TestData,
         send_task_mock: MagicMock,
     ):
-        object = test_data["clients"]["default_tenant"]
-        webhook_event = WebhookEvent(
-            type=ClientCreated.key(), data=schemas.client.Client.from_orm(object).dict()
-        )
+        webhook_event = WebhookEvent(type=ClientCreated.key(), data={})
 
         trigger_webhooks = TriggerWebhooksTask(
             main_session_manager, workspace_session_manager, send_task=send_task_mock
@@ -113,10 +113,7 @@ class TestTasksTriggerWebhooks:
         test_data: TestData,
         send_task_mock: MagicMock,
     ):
-        object = test_data["users"]["regular"]
-        webhook_event = WebhookEvent(
-            type=UserCreated.key(), data=schemas.user.UserRead.from_orm(object).dict()
-        )
+        webhook_event = WebhookEvent(type=UserCreated.key(), data={})
 
         trigger_webhooks = TriggerWebhooksTask(
             main_session_manager, workspace_session_manager, send_task=send_task_mock
@@ -140,11 +137,7 @@ class TestTasksTriggerWebhooks:
         test_data: TestData,
         send_task_mock: MagicMock,
     ):
-        object = test_data["user_roles"]["default_castles_visitor"]
-        webhook_event = WebhookEvent(
-            type=UserRoleDeleted.key(),
-            data=schemas.user_role.UserRole.from_orm(object).dict(),
-        )
+        webhook_event = WebhookEvent(type=UserRoleDeleted.key(), data={})
 
         trigger_webhooks = TriggerWebhooksTask(
             main_session_manager, workspace_session_manager, send_task=send_task_mock

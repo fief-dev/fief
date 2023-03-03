@@ -1,9 +1,11 @@
 import httpx
 import pytest
 import respx
+from sqlalchemy import select
 
 from fief import __version__, schemas
 from fief.db import AsyncSession
+from fief.models import WebhookLog
 from fief.repositories import WebhookLogRepository
 from fief.services.webhooks.delivery import WebhookDelivery, WebhookDeliveryError
 from fief.services.webhooks.models import ClientCreated, WebhookEvent
@@ -80,10 +82,12 @@ class TestWebhookDelivery:
         assert route_mock.called
 
         webhook_log_repository = WebhookLogRepository(workspace_session)
-        webhook_logs = await webhook_log_repository.all()
+        webhook_logs = await webhook_log_repository.list(
+            select(WebhookLog).order_by(WebhookLog.created_at.desc())
+        )
 
         assert len(webhook_logs) == len(test_data["webhook_logs"]) + 1
-        webhook_log = webhook_logs[-1]
+        webhook_log = webhook_logs[0]
         assert webhook_log.webhook_id == webhook.id
         assert webhook_log.event == webhook_event.type
         assert webhook_log.response == "Bad Request"
@@ -111,10 +115,12 @@ class TestWebhookDelivery:
         assert route_mock.called
 
         webhook_log_repository = WebhookLogRepository(workspace_session)
-        webhook_logs = await webhook_log_repository.all()
+        webhook_logs = await webhook_log_repository.list(
+            select(WebhookLog).order_by(WebhookLog.created_at.desc())
+        )
 
         assert len(webhook_logs) == len(test_data["webhook_logs"]) + 1
-        webhook_log = webhook_logs[-1]
+        webhook_log = webhook_logs[0]
         assert webhook_log.webhook_id == webhook.id
         assert webhook_log.event == webhook_event.type
         assert webhook_log.response is None
