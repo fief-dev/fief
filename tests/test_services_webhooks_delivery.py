@@ -52,10 +52,12 @@ class TestWebhookDelivery:
         assert request.headers["user-agent"] == f"fief-server-webhooks/{__version__}"
 
         webhook_log_repository = WebhookLogRepository(workspace_session)
-        webhook_logs = await webhook_log_repository.all()
+        webhook_logs = await webhook_log_repository.list(
+            select(WebhookLog).order_by(WebhookLog.created_at.desc())
+        )
 
         assert len(webhook_logs) == len(test_data["webhook_logs"]) + 1
-        webhook_log = webhook_logs[-1]
+        webhook_log = webhook_logs[0]
         assert webhook_log.webhook_id == webhook.id
         assert webhook_log.event == webhook_event.type
         assert webhook_log.response == "Ok"
