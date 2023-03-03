@@ -6,7 +6,7 @@ on:
       fief_version:
         description: 'Fief version'
         required: true
-        default: '0.22.2'
+        default: 'v0.22.2'
 
 jobs:
   docker-release:
