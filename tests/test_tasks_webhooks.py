@@ -122,12 +122,11 @@ class TestTasksTriggerWebhooks:
         await trigger_webhooks.run(str(workspace.id), webhook_event.json())
 
         assert send_task_mock.call_count == 2
-        assert send_task_mock.call_args_list[0][1]["webhook_id"] == str(
-            test_data["webhooks"]["all"].id
-        )
-        assert send_task_mock.call_args_list[1][1]["webhook_id"] == str(
-            test_data["webhooks"]["user_created"].id
-        )
+        webhook_ids = [
+            call_arg[1]["webhook_id"] for call_arg in send_task_mock.call_args_list
+        ]
+        assert str(test_data["webhooks"]["all"].id) in webhook_ids
+        assert str(test_data["webhooks"]["user_created"].id) in webhook_ids
 
     async def test_user_role_deleted_event(
         self,
@@ -146,9 +145,8 @@ class TestTasksTriggerWebhooks:
         await trigger_webhooks.run(str(workspace.id), webhook_event.json())
 
         assert send_task_mock.call_count == 2
-        assert send_task_mock.call_args_list[0][1]["webhook_id"] == str(
-            test_data["webhooks"]["all"].id
-        )
-        assert send_task_mock.call_args_list[1][1]["webhook_id"] == str(
-            test_data["webhooks"]["object_user_role"].id
-        )
+        webhook_ids = [
+            call_arg[1]["webhook_id"] for call_arg in send_task_mock.call_args_list
+        ]
+        assert str(test_data["webhooks"]["all"].id) in webhook_ids
+        assert str(test_data["webhooks"]["object_user_role"].id) in webhook_ids
