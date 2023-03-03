@@ -5,9 +5,9 @@ from sqlalchemy import select
 from fief.dependencies.pagination import (
     GetPaginatedObjects,
     Ordering,
+    OrderingGetter,
     PaginatedObjects,
     Pagination,
-    get_ordering,
     get_paginated_objects_getter,
     get_pagination,
 )
@@ -25,7 +25,7 @@ from fief.services.theme_preview import ThemePreview
 async def get_paginated_themes(
     query: str | None = Query(None),
     pagination: Pagination = Depends(get_pagination),
-    ordering: Ordering = Depends(get_ordering),
+    ordering: Ordering = Depends(OrderingGetter()),
     repository: ThemeRepository = Depends(get_workspace_repository(ThemeRepository)),
     get_paginated_objects: GetPaginatedObjects[Theme] = Depends(
         get_paginated_objects_getter

@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, Header, Request, status
 
+from fief import schemas
 from fief.apps.dashboard.dependencies import (
     BaseContext,
     DatatableColumn,
@@ -19,11 +20,17 @@ from fief.dependencies.oauth_provider import (
     get_paginated_oauth_providers,
 )
 from fief.dependencies.pagination import PaginatedObjects
+from fief.dependencies.webhooks import TriggerWebhooks, get_trigger_webhooks
 from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.forms import FormHelper
 from fief.logger import AuditLogger
 from fief.models import AuditLogMessage, OAuthProvider
 from fief.repositories import OAuthProviderRepository
+from fief.services.webhooks.models import (
+    OAuthProviderCreated,
+    OAuthProviderDeleted,
+    OAuthProviderUpdated,
+)
 from fief.templates import templates
 
 router = APIRouter(dependencies=[Depends(is_authenticated_admin_session)])
@@ -93,6 +100,7 @@ async def create_oauth_provider(
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
     audit_logger: AuditLogger = Depends(get_audit_logger),
+    trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ):
     form_helper = FormHelper(
         OAuthProviderCreateForm,
@@ -108,6 +116,11 @@ async def create_oauth_provider(
         form.populate_obj(oauth_provider)
         oauth_provider = await repository.create(oauth_provider)
         audit_logger.log_object_write(AuditLogMessage.OBJECT_CREATED, oauth_provider)
+        trigger_webhooks(
+            OAuthProviderCreated,
+            oauth_provider,
+            schemas.oauth_provider.OAuthProvider,
+        )
 
         return HXRedirectResponse(
             request.url_for("dashboard.oauth_providers:get", id=oauth_provider.id),
@@ -132,6 +145,7 @@ async def update_oauth_provider(
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
     audit_logger: AuditLogger = Depends(get_audit_logger),
+    trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ):
     form_helper = FormHelper(
         OAuthProviderUpdateForm,
@@ -147,6 +161,11 @@ async def update_oauth_provider(
 
         await repository.update(oauth_provider)
         audit_logger.log_object_write(AuditLogMessage.OBJECT_UPDATED, oauth_provider)
+        trigger_webhooks(
+            OAuthProviderUpdated,
+            oauth_provider,
+            schemas.oauth_provider.OAuthProvider,
+        )
 
         return HXRedirectResponse(
             request.url_for("dashboard.oauth_providers:get", id=oauth_provider.id)
@@ -169,10 +188,16 @@ async def delete_oauth_provider(
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
     audit_logger: AuditLogger = Depends(get_audit_logger),
+    trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ):
     if request.method == "DELETE":
         await repository.delete(oauth_provider)
         audit_logger.log_object_write(AuditLogMessage.OBJECT_DELETED, oauth_provider)
+        trigger_webhooks(
+            OAuthProviderDeleted,
+            oauth_provider,
+            schemas.oauth_provider.OAuthProvider,
+        )
 
         return HXRedirectResponse(
             request.url_for("dashboard.oauth_providers:list"),

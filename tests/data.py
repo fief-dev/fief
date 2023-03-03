@@ -35,9 +35,17 @@ from fief.models import (
     UserFieldValue,
     UserPermission,
     UserRole,
+    Webhook,
+    WebhookLog,
 )
 from fief.services.email_template.types import EmailTemplateType
 from fief.services.oauth_provider import AvailableOAuthProvider
+from fief.services.webhooks.models import (
+    WEBHOOK_EVENTS,
+    UserCreated,
+    UserRoleCreated,
+    UserRoleDeleted,
+)
 from fief.settings import settings
 
 ModelMapping = Mapping[str, M]
@@ -79,6 +87,8 @@ class TestData(TypedDict):
     user_roles: ModelMapping[UserRole]
     email_templates: ModelMapping[EmailTemplate]
     themes: ModelMapping[Theme]
+    webhooks: ModelMapping[Webhook]
+    webhook_logs: ModelMapping[WebhookLog]
 
 
 oauth_providers: ModelMapping[OAuthProvider] = {
@@ -839,6 +849,31 @@ themes: ModelMapping[Theme] = {
     ),
 }
 
+webhooks: ModelMapping[Webhook] = {
+    "all": Webhook(
+        url="https://internal.bretagne.duchy/webhook",
+        events=[event.key() for event in WEBHOOK_EVENTS],
+    ),
+    "user_created": Webhook(
+        url="https://internal.bretagne.duchy/webhook",
+        events=[UserCreated.key()],
+    ),
+    "object_user_role": Webhook(
+        url="https://internal.bretagne.duchy/webhook",
+        events=[UserRoleCreated.key(), UserRoleDeleted.key()],
+    ),
+}
+
+webhook_logs: ModelMapping[WebhookLog] = {
+    "all_log1": WebhookLog(
+        webhook=webhooks["all"],
+        event=UserCreated.key(),
+        attempt=1,
+        payload="{}",
+        success=True,
+    ),
+}
+
 data_mapping: TestData = {
     "tenants": tenants,
     "clients": clients,
@@ -860,6 +895,8 @@ data_mapping: TestData = {
     "user_roles": user_roles,
     "email_templates": email_templates,
     "themes": themes,
+    "webhooks": webhooks,
+    "webhook_logs": webhook_logs,
 }
 
 __all__ = [

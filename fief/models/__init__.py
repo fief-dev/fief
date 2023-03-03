@@ -26,6 +26,8 @@ from fief.models.user_field import UserField, UserFieldConfiguration, UserFieldT
 from fief.models.user_field_value import UserFieldValue
 from fief.models.user_permission import UserPermission
 from fief.models.user_role import UserRole
+from fief.models.webhook import Webhook
+from fief.models.webhook_log import WebhookLog
 from fief.models.workspace import Workspace
 from fief.models.workspace_user import WorkspaceUser
 
@@ -65,4 +67,6 @@ __all__ = [
     "UserFieldValue",
     "UserPermission",
     "UserRole",
+    "Webhook",
+    "WebhookLog",
 ]

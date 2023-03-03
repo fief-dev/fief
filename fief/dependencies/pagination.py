@@ -53,14 +53,23 @@ async def get_raw_ordering(ordering: str = Query(None)) -> RawOrdering:
     return ordering.split(",") if ordering else []
 
 
-async def get_ordering(
-    raw_ordering: RawOrdering = Depends(get_raw_ordering),
-) -> Ordering:
-    ordering_fields = []
-    for field in raw_ordering:
-        is_desc = False
-        if field.startswith("-"):
-            is_desc = True
-            field = field[1:]
-        ordering_fields.append((field.split("."), is_desc))
-    return ordering_fields
+class OrderingGetter:
+    def __init__(self, default: Ordering | None = None) -> None:
+        self.default = default if default else []
+
+    async def __call__(
+        self,
+        raw_ordering: RawOrdering = Depends(get_raw_ordering),
+    ) -> Ordering:
+        ordering_fields = []
+        for field in raw_ordering:
+            is_desc = False
+            if field.startswith("-"):
+                is_desc = True
+                field = field[1:]
+            ordering_fields.append((field.split("."), is_desc))
+
+        if len(ordering_fields) == 0:
+            return self.default
+
+        return ordering_fields

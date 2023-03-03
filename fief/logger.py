@@ -152,15 +152,12 @@ class InterceptHandler(logging.Handler):
         )
 
 
-logger.configure(
-    handlers=[
-        dict(
-            sink=sys.stdout,
-            level=LOG_LEVEL,
-            format=stdout_format,
-            filter=lambda record: "audit" not in record["extra"],
-        )
-    ],
+logger.remove()
+logger.add(
+    sys.stdout,
+    level=LOG_LEVEL,
+    format=stdout_format,
+    filter=lambda record: "audit" not in record["extra"],
 )
 
 logging.basicConfig(handlers=[InterceptHandler()], level=LOG_LEVEL, force=True)

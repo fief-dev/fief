@@ -12,6 +12,8 @@ from fief.schemas import (
     user_field,
     user_permission,
     user_role,
+    webhook,
+    webhook_log,
     well_known,
     workspace,
 )
@@ -31,5 +33,7 @@ __all__ = [
     "user_field",
     "user_permission",
     "user_role",
+    "webhook",
+    "webhook_log",
     "well_known",
 ]

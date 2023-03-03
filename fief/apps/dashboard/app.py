@@ -16,6 +16,7 @@ from fief.apps.dashboard.routers.tenants import router as tenants_router
 from fief.apps.dashboard.routers.themes import router as themes_router
 from fief.apps.dashboard.routers.user_fields import router as user_fields_router
 from fief.apps.dashboard.routers.users import router as users_router
+from fief.apps.dashboard.routers.webhooks import router as webhooks_router
 from fief.apps.dashboard.routers.workspaces import router as workspaces_router
 from fief.dependencies.admin_authentication import is_authenticated_admin_session
 from fief.middlewares.csrf import CSRFCookieSetterMiddleware
@@ -48,6 +49,7 @@ app.include_router(oauth_providers_router, prefix="/oauth-providers")
 app.include_router(tenants_router, prefix="/tenants")
 app.include_router(user_fields_router, prefix="/user-fields")
 app.include_router(users_router, prefix="/users")
+app.include_router(webhooks_router, prefix="/webhooks")
 app.include_router(workspaces_router, prefix="/workspaces")
 app.mount("/static", StaticFiles(directory=STATIC_DIRECTORY), name="dashboard:static")
 

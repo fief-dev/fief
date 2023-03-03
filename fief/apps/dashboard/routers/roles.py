@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, Header, Request, status
 
+from fief import schemas
 from fief.apps.dashboard.dependencies import (
     BaseContext,
     DatatableColumn,
@@ -15,11 +16,13 @@ from fief.dependencies.logger import get_audit_logger
 from fief.dependencies.pagination import PaginatedObjects
 from fief.dependencies.role import get_paginated_roles, get_role_by_id_or_404
 from fief.dependencies.tasks import get_send_task
+from fief.dependencies.webhooks import TriggerWebhooks, get_trigger_webhooks
 from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.forms import FormHelper
 from fief.logger import AuditLogger
 from fief.models import AuditLogMessage, Role, Workspace
 from fief.repositories import PermissionRepository, RoleRepository
+from fief.services.webhooks.models import RoleCreated, RoleDeleted, RoleUpdated
 from fief.tasks import SendTask, on_role_updated
 from fief.templates import templates
 
@@ -91,6 +94,7 @@ async def create_role(
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
     audit_logger: AuditLogger = Depends(get_audit_logger),
+    trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ):
     form_helper = FormHelper(
         RoleCreateForm,
@@ -116,6 +120,7 @@ async def create_role(
 
         role = await repository.create(role)
         audit_logger.log_object_write(AuditLogMessage.OBJECT_CREATED, role)
+        trigger_webhooks(RoleCreated, role, schemas.role.Role)
 
         return HXRedirectResponse(
             request.url_for("dashboard.roles:get", id=role.id),
@@ -143,6 +148,7 @@ async def update_role(
     send_task: SendTask = Depends(get_send_task),
     workspace: Workspace = Depends(get_current_workspace),
     audit_logger: AuditLogger = Depends(get_audit_logger),
+    trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ):
     form_helper = FormHelper(
         RoleUpdateForm,
@@ -175,6 +181,7 @@ async def update_role(
 
         await repository.update(role)
         audit_logger.log_object_write(AuditLogMessage.OBJECT_UPDATED, role)
+        trigger_webhooks(RoleUpdated, role, schemas.role.Role)
 
         added_permissions = new_permissions - old_permissions
         deleted_permissions = old_permissions - new_permissions
@@ -203,10 +210,12 @@ async def delete_role(
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
     audit_logger: AuditLogger = Depends(get_audit_logger),
+    trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ):
     if request.method == "DELETE":
         await repository.delete(role)
         audit_logger.log_object_write(AuditLogMessage.OBJECT_DELETED, role)
+        trigger_webhooks(RoleDeleted, role, schemas.role.Role)
 
         return HXRedirectResponse(
             request.url_for("dashboard.roles:list"),

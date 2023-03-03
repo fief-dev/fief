@@ -1,0 +1,37 @@
+{% import "macros/buttons.html" as buttons %}
+{% import "macros/forms.html" as forms %}
+{% import "macros/modal.html" as modal %}
+{% import "macros/icons.html" as icons %}
+
+{% extends "admin/webhooks/list.html" %}
+
+{% block head_title_content %}Create Webhook · {{ super() }}{% endblock %}
+
+{% set open_modal = true %}
+
+{% block modal %}
+  <form
+    hx-boost="true"
+    hx-target="#modal"
+    method="POST"
+    action="{{ url_for('dashboard.webhooks:create') }}"
+    _="on fief:closeModal go back"
+  >
+  {% call modal.header() %}
+    {% call modal.title() %}Create Webhook{% endcall %}
+  {% endcall %}
+  {% call modal.body() %}
+    <div class="space-y-4">
+      {{ forms.form_field(form.url) }}
+      {{ forms.form_field(form.events) }}
+      {{ forms.form_csrf_token(form) }}
+    </div>
+  {% endcall %}
+  {% call modal.footer() %}
+    <button type="button" class="btn-sm border-slate-200 hover:border-slate-300 text-slate-600" _="install CloseModalButton()">Cancel</button>
+    {% call buttons.submit('btn-sm') %}
+      Create
+    {% endcall %}
+  {% endcall %}
+  </form>
+{% endblock %}

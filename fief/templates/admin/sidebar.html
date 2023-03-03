@@ -208,6 +208,13 @@
                   }}
                   {{
                     menu_item(
+                      "Webhooks",
+                      url_for('dashboard.webhooks:list'),
+                      '<svg xmlns="http://www.w3.org/2000/svg" class="shrink-0 h-6 w-6" height="48" width="48" viewBox="0 0 48 48"><g class="nc-icon-wrapper"><path d="M17.366,8.219a6.988,6.988,0,0,1-.355-2A21.019,21.019,0,0,0,3,26a20.777,20.777,0,0,0,2.242,9.45l.45.894,1.787-.9-.452-.892A18.824,18.824,0,0,1,5,26,19.013,19.013,0,0,1,17.366,8.219Z" class="fill-current text-slate-600"></path><path d="M40.959,34.634l-.5.865a18.975,18.975,0,0,1-28.544,5.14,6.948,6.948,0,0,1-1.558,1.308A20.981,20.981,0,0,0,42.189,36.5l.5-.866Z" class="fill-current text-slate-600"></path><circle cx="6.679" cy="36" r="5" class="fill-current text-slate-400"></circle><path d="M43,26a19.122,19.122,0,0,1-.273,3.157,6.981,6.981,0,0,1,1.911.691A20.968,20.968,0,0,0,24,5H23V7h1A19.021,19.021,0,0,1,43,26Z" class="fill-current text-slate-600"></path><circle cx="41.321" cy="36" r="5" class="fill-current text-slate-400"></circle><circle cx="24" cy="6" r="5" class="fill-current text-slate-400"></circle></g></svg>',
+                    )
+                  }}
+                  {{
+                    menu_item(
                       "API Keys",
                       url_for('dashboard.api_keys:list'),
                       '<svg xmlns="http://www.w3.org/2000/svg" class="shrink-0 h-6 w-6" viewBox="0 0 48 48"><g class="nc-icon-wrapper"><path d="M38,23a1,1,0,0,1-.707-.293l-6-6a1,1,0,0,1,0-1.414l8-8a1,1,0,0,1,1.414,0l6,6a1,1,0,0,1,0,1.414l-2,2a1,1,0,0,1-1.414,0L41,14.414,38.414,17l2.293,2.293a1,1,0,0,1,0,1.414l-2,2A1,1,0,0,1,38,23Z" class="fill-current text-slate-600"></path><path d="M44.061,3.939a1.5,1.5,0,0,0-2.122,0L17.923,27.956a10.027,10.027,0,1,0,2.121,2.121L44.061,6.061A1.5,1.5,0,0,0,44.061,3.939ZM12,43a7,7,0,1,1,4.914-11.978c.011.012.014.027.025.039s.027.014.039.025A6.995,6.995,0,0,1,12,43Z" class="fill-current text-slate-400"></path></g></svg>',

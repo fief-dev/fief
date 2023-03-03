@@ -5,6 +5,7 @@ from fief.tasks.forgot_password import on_after_forgot_password
 from fief.tasks.register import on_after_register
 from fief.tasks.roles import on_role_updated
 from fief.tasks.user_permissions import on_user_role_created, on_user_role_deleted
+from fief.tasks.webhooks import deliver_webhook, trigger_webhooks
 
 __all__ = [
     "send_task",
@@ -18,4 +19,6 @@ __all__ = [
     "on_role_updated",
     "on_user_role_created",
     "on_user_role_deleted",
+    "deliver_webhook",
+    "trigger_webhooks",
 ]

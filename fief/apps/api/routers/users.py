@@ -23,6 +23,7 @@ from fief.dependencies.users import (
     get_user_manager_from_create_user_internal,
     get_user_manager_from_user,
 )
+from fief.dependencies.webhooks import TriggerWebhooks, get_trigger_webhooks
 from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.errors import APIErrorCode
 from fief.logger import AuditLogger
@@ -43,6 +44,12 @@ from fief.repositories import (
     UserRoleRepository,
 )
 from fief.schemas.generics import PaginatedResults
+from fief.services.webhooks.models import (
+    UserPermissionCreated,
+    UserPermissionDeleted,
+    UserRoleCreated,
+    UserRoleDeleted,
+)
 from fief.tasks import SendTask
 
 router = APIRouter(dependencies=[Depends(is_authenticated_admin_api)])
@@ -81,6 +88,7 @@ async def create_user(
     user_manager: UserManager = Depends(get_user_manager_from_create_user_internal),
     user_repository: UserRepository = Depends(get_workspace_repository(UserRepository)),
     audit_logger: AuditLogger = Depends(get_audit_logger),
+    trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ):
     try:
         created_user = await user_manager.create_with_fields(
@@ -115,6 +123,7 @@ async def update_user(
     user_fields: list[UserField] = Depends(get_user_fields),
     user_manager: UserManager = Depends(get_user_manager_from_user),
     audit_logger: AuditLogger = Depends(get_audit_logger),
+    trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ):
     try:
         user = await user_manager.update_with_fields(
@@ -178,6 +187,7 @@ async def create_user_permission(
         get_workspace_repository(UserPermissionRepository)
     ),
     audit_logger: AuditLogger = Depends(get_audit_logger),
+    trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ) -> None:
     permission_id = user_permission_create.id
     permission = await permission_repository.get_by_id(permission_id)
@@ -207,6 +217,11 @@ async def create_user_permission(
         subject_user_id=user.id,
         permission_id=str(permission.id),
     )
+    trigger_webhooks(
+        UserPermissionCreated,
+        user_permission,
+        schemas.user_permission.UserPermission,
+    )
 
 
 @router.delete(
@@ -222,6 +237,7 @@ async def delete_user_permission(
         get_workspace_repository(UserPermissionRepository)
     ),
     audit_logger: AuditLogger = Depends(get_audit_logger),
+    trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ) -> None:
     user_permission = await user_permission_repository.get_by_permission_and_user(
         user.id, permission_id, direct_only=True
@@ -235,6 +251,11 @@ async def delete_user_permission(
         user_permission,
         subject_user_id=user.id,
         permission_id=str(permission_id),
+    )
+    trigger_webhooks(
+        UserPermissionDeleted,
+        user_permission,
+        schemas.user_permission.UserPermission,
     )
 
 
@@ -270,6 +291,7 @@ async def create_user_role(
     workspace: Workspace = Depends(get_current_workspace),
     send_task: SendTask = Depends(get_send_task),
     audit_logger: AuditLogger = Depends(get_audit_logger),
+    trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ) -> None:
     role_id = user_role_create.id
     role = await role_repository.get_by_id(role_id)
@@ -297,6 +319,7 @@ async def create_user_role(
         subject_user_id=user.id,
         role_id=str(role.id),
     )
+    trigger_webhooks(UserRoleCreated, user_role, schemas.user_role.UserRole)
 
     send_task(tasks.on_user_role_created, str(user.id), str(role.id), str(workspace.id))
 
@@ -316,6 +339,7 @@ async def delete_user_role(
     workspace: Workspace = Depends(get_current_workspace),
     send_task: SendTask = Depends(get_send_task),
     audit_logger: AuditLogger = Depends(get_audit_logger),
+    trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ) -> None:
     user_role = await user_role_repository.get_by_role_and_user(user.id, role_id)
     if user_role is None:
@@ -328,6 +352,7 @@ async def delete_user_role(
         subject_user_id=user.id,
         role_id=str(role_id),
     )
+    trigger_webhooks(UserRoleDeleted, user_role, schemas.user_role.UserRole)
 
     send_task(tasks.on_user_role_deleted, str(user.id), str(role_id), str(workspace.id))
 

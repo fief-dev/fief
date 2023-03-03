@@ -5,6 +5,7 @@ from fief.dependencies.admin_authentication import is_authenticated_admin_api
 from fief.dependencies.logger import get_audit_logger
 from fief.dependencies.pagination import PaginatedObjects
 from fief.dependencies.tenant import get_paginated_tenants, get_tenant_by_id_or_404
+from fief.dependencies.webhooks import TriggerWebhooks, get_trigger_webhooks
 from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.errors import APIErrorCode
 from fief.logger import AuditLogger
@@ -16,6 +17,7 @@ from fief.repositories import (
     ThemeRepository,
 )
 from fief.schemas.generics import PaginatedResults
+from fief.services.webhooks.models import ClientCreated, TenantCreated, TenantUpdated
 
 router = APIRouter(dependencies=[Depends(is_authenticated_admin_api)])
 
@@ -52,6 +54,7 @@ async def create_tenant(
         get_workspace_repository(OAuthProviderRepository)
     ),
     audit_logger: AuditLogger = Depends(get_audit_logger),
+    trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ) -> schemas.tenant.Tenant:
     if tenant_create.theme_id is not None:
         theme = await theme_repository.get_by_id(tenant_create.theme_id)
@@ -83,6 +86,7 @@ async def create_tenant(
 
     tenant = await repository.create(tenant)
     audit_logger.log_object_write(AuditLogMessage.OBJECT_CREATED, tenant)
+    trigger_webhooks(TenantCreated, tenant, schemas.tenant.Tenant)
 
     client = Client(
         name=f"{tenant.name}'s client",
@@ -92,6 +96,7 @@ async def create_tenant(
     )
     await client_repository.create(client)
     audit_logger.log_object_write(AuditLogMessage.OBJECT_CREATED, client)
+    trigger_webhooks(ClientCreated, client, schemas.client.Client)
 
     return schemas.tenant.Tenant.from_orm(tenant)
 
@@ -108,6 +113,7 @@ async def update_tenant(
         get_workspace_repository(OAuthProviderRepository)
     ),
     audit_logger: AuditLogger = Depends(get_audit_logger),
+    trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ) -> schemas.tenant.Tenant:
     if tenant_update.theme_id is not None:
         theme = await theme_repository.get_by_id(tenant_update.theme_id)
@@ -138,5 +144,6 @@ async def update_tenant(
 
     await repository.update(tenant)
     audit_logger.log_object_write(AuditLogMessage.OBJECT_UPDATED, tenant)
+    trigger_webhooks(TenantUpdated, tenant, schemas.tenant.Tenant)
 
     return schemas.tenant.Tenant.from_orm(tenant)

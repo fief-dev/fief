@@ -8,12 +8,14 @@ from fief.dependencies.admin_authentication import is_authenticated_admin_api
 from fief.dependencies.client import get_client_by_id_or_404, get_paginated_clients
 from fief.dependencies.logger import get_audit_logger
 from fief.dependencies.pagination import PaginatedObjects
+from fief.dependencies.webhooks import TriggerWebhooks, get_trigger_webhooks
 from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.errors import APIErrorCode
 from fief.logger import AuditLogger
 from fief.models import AuditLogMessage, Client
 from fief.repositories import ClientRepository, TenantRepository
 from fief.schemas.generics import PaginatedResults
+from fief.services.webhooks.models import ClientCreated, ClientUpdated
 
 router = APIRouter(dependencies=[Depends(is_authenticated_admin_api)])
 
@@ -44,6 +46,7 @@ async def create_client(
         get_workspace_repository(TenantRepository)
     ),
     audit_logger: AuditLogger = Depends(get_audit_logger),
+    trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ) -> schemas.client.Client:
     tenant = await tenant_repository.get_by_id(client_create.tenant_id)
     if tenant is None:
@@ -55,6 +58,7 @@ async def create_client(
     client = Client(**client_create.dict())
     client = await repository.create(client)
     audit_logger.log_object_write(AuditLogMessage.OBJECT_CREATED, client)
+    trigger_webhooks(ClientCreated, client, schemas.client.Client)
 
     return schemas.client.Client.from_orm(client)
 
@@ -65,6 +69,7 @@ async def update_client(
     client: Client = Depends(get_client_by_id_or_404),
     repository: ClientRepository = Depends(get_workspace_repository(ClientRepository)),
     audit_logger: AuditLogger = Depends(get_audit_logger),
+    trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ) -> schemas.client.Client:
     client_update_dict = client_update.dict(exclude_unset=True)
     for field, value in client_update_dict.items():
@@ -72,6 +77,7 @@ async def update_client(
 
     await repository.update(client)
     audit_logger.log_object_write(AuditLogMessage.OBJECT_UPDATED, client)
+    trigger_webhooks(ClientUpdated, client, schemas.client.Client)
 
     return schemas.client.Client.from_orm(client)
 
@@ -85,10 +91,12 @@ async def create_encryption_key(
     client: Client = Depends(get_client_by_id_or_404),
     repository: ClientRepository = Depends(get_workspace_repository(ClientRepository)),
     audit_logger: AuditLogger = Depends(get_audit_logger),
+    trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ):
     key = generate_jwk(secrets.token_urlsafe(), "enc")
     client.encrypt_jwk = key.export_public()
     await repository.update(client)
     audit_logger.log_object_write(AuditLogMessage.OBJECT_UPDATED, client)
+    trigger_webhooks(ClientUpdated, client, schemas.client.Client)
 
     return key.export(as_dict=True)

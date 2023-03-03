@@ -34,9 +34,9 @@ from fief.dependencies.logger import get_audit_logger
 from fief.dependencies.pagination import (
     GetPaginatedObjects,
     Ordering,
+    OrderingGetter,
     PaginatedObjects,
     Pagination,
-    get_ordering,
     get_paginated_objects_getter,
     get_pagination,
 )
@@ -51,6 +51,7 @@ from fief.dependencies.user_field import (
     get_admin_user_update_model,
     get_user_update_model,
 )
+from fief.dependencies.webhooks import TriggerWebhooks, get_trigger_webhooks
 from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.locale import gettext_lazy as _
 from fief.logger import AuditLogger
@@ -71,7 +72,13 @@ from fief.repositories import (
     UserRepository,
     UserRoleRepository,
 )
-from fief.schemas.user import UF, UserCreate, UserCreateInternal, UserUpdate
+from fief.schemas.user import UF, UserCreate, UserCreateInternal, UserRead, UserUpdate
+from fief.services.webhooks.models import (
+    UserCreated,
+    UserForgotPasswordRequested,
+    UserPasswordReset,
+    UserUpdated,
+)
 from fief.settings import settings
 from fief.tasks import SendTask, on_after_forgot_password, on_after_register
 
@@ -88,12 +95,14 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, UUID4]):
         tenant: Tenant,
         send_task: SendTask,
         audit_logger: AuditLogger,
+        trigger_webhooks: TriggerWebhooks,
     ):
         super().__init__(user_db, password_helper)
         self.workspace = workspace
         self.tenant = tenant
         self.send_task = send_task
         self.audit_logger = audit_logger
+        self.trigger_webhooks = trigger_webhooks
 
     async def validate_password(  # type: ignore
         self, password: str, user: UserCreate | User
@@ -138,7 +147,11 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, UUID4]):
         safe: bool = False,
         request: Request | None = None,
     ) -> User:
-        user = await self.update(user_update, user, safe, request)
+        if safe:
+            updated_user_data = user_update.create_update_dict()
+        else:
+            updated_user_data = user_update.create_update_dict_superuser()
+        user = await self._update(user, updated_user_data)
 
         if user_update.fields is not None:
             for user_field in user_fields:
@@ -167,18 +180,21 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, UUID4]):
 
             user = await self.user_db.update(user, {})
 
-        self.audit_logger(AuditLogMessage.USER_UPDATED, subject_user_id=user.id)
+        await self.on_after_update(user, updated_user_data, request)
 
         return user
 
     async def on_after_register(self, user: User, request: Request | None = None):
+        await self.user_db.session.refresh(user)  # type: ignore
         self.audit_logger(AuditLogMessage.USER_REGISTERED, subject_user_id=user.id)
+        self.trigger_webhooks(UserCreated, user, UserRead)
         self.send_task(on_after_register, str(user.id), str(self.workspace.id))
 
     async def on_after_update(
         self, user: User, update_dict: dict[str, Any], request: Request | None = None
     ):
         self.audit_logger(AuditLogMessage.USER_UPDATED, subject_user_id=user.id)
+        self.trigger_webhooks(UserUpdated, user, UserRead)
 
     async def on_after_forgot_password(
         self, user: User, token: str, request: Request | None = None
@@ -186,6 +202,7 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, UUID4]):
         self.audit_logger(
             AuditLogMessage.USER_FORGOT_PASSWORD_REQUESTED, subject_user_id=user.id
         )
+        self.trigger_webhooks(UserForgotPasswordRequested, user, UserRead)
 
         reset_url = furl(self.tenant.url_for(cast(Request, request), "reset:reset"))
         reset_url.add(query_params={"token": token})
@@ -200,6 +217,7 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, UUID4]):
         self, user: User, request: Request | None = None
     ) -> None:
         self.audit_logger(AuditLogMessage.USER_PASSWORD_RESET, subject_user_id=user.id)
+        self.trigger_webhooks(UserPasswordReset, user, UserRead)
 
     async def on_after_request_verify(
         self, user: User, token: str, request: Request | None = None
@@ -269,9 +287,16 @@ async def get_user_manager(
     workspace: Workspace = Depends(get_current_workspace),
     send_task: SendTask = Depends(get_send_task),
     audit_logger: AuditLogger = Depends(get_audit_logger),
+    trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ):
     return UserManager(
-        user_db, password_helper, workspace, tenant, send_task, audit_logger
+        user_db,
+        password_helper,
+        workspace,
+        tenant,
+        send_task,
+        audit_logger,
+        trigger_webhooks,
     )
 
 
@@ -290,9 +315,16 @@ async def get_user_manager_from_create_user_internal(
     workspace: Workspace = Depends(get_current_workspace),
     send_task: SendTask = Depends(get_send_task),
     audit_logger: AuditLogger = Depends(get_audit_logger),
+    trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ):
     return UserManager(
-        user_db, password_helper, workspace, tenant, send_task, audit_logger
+        user_db,
+        password_helper,
+        workspace,
+        tenant,
+        send_task,
+        audit_logger,
+        trigger_webhooks,
     )
 
 
@@ -322,7 +354,7 @@ authentication_backend = AuthenticationBackend[User, UUID4](
 
 async def get_paginated_users(
     pagination: Pagination = Depends(get_pagination),
-    ordering: Ordering = Depends(get_ordering),
+    ordering: Ordering = Depends(OrderingGetter()),
     repository: UserRepository = Depends(get_workspace_repository(UserRepository)),
     get_paginated_objects: GetPaginatedObjects[User] = Depends(
         get_paginated_objects_getter
@@ -346,7 +378,7 @@ async def get_user_by_id_or_404(
 
 async def get_paginated_user_permissions(
     pagination: Pagination = Depends(get_pagination),
-    ordering: Ordering = Depends(get_ordering),
+    ordering: Ordering = Depends(OrderingGetter()),
     user: User = Depends(get_user_by_id_or_404),
     user_permission_repository: UserPermissionRepository = Depends(
         get_workspace_repository(UserPermissionRepository)
@@ -373,7 +405,7 @@ async def get_user_permissions(
 
 async def get_paginated_user_roles(
     pagination: Pagination = Depends(get_pagination),
-    ordering: Ordering = Depends(get_ordering),
+    ordering: Ordering = Depends(OrderingGetter()),
     user: User = Depends(get_user_by_id_or_404),
     user_role_repository: UserRoleRepository = Depends(
         get_workspace_repository(UserRoleRepository)
@@ -400,7 +432,7 @@ async def get_user_roles(
 
 async def get_paginated_user_oauth_accounts(
     pagination: Pagination = Depends(get_pagination),
-    ordering: Ordering = Depends(get_ordering),
+    ordering: Ordering = Depends(OrderingGetter()),
     user: User = Depends(get_user_by_id_or_404),
     oauth_account_repository: OAuthAccountRepository = Depends(
         get_workspace_repository(OAuthAccountRepository)
@@ -438,9 +470,16 @@ async def get_user_manager_from_user(
     workspace: Workspace = Depends(get_current_workspace),
     send_task: SendTask = Depends(get_send_task),
     audit_logger: AuditLogger = Depends(get_audit_logger),
+    trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ):
     return UserManager(
-        user_db, password_helper, workspace, user.tenant, send_task, audit_logger
+        user_db,
+        password_helper,
+        workspace,
+        user.tenant,
+        send_task,
+        audit_logger,
+        trigger_webhooks,
     )
 
 

@@ -101,6 +101,8 @@ class Settings(BaseSettings):
     default_access_id_token_lifetime_seconds: int = 3600 * 24
     default_refresh_token_lifetime_seconds: int = 3600 * 24 * 30
 
+    webhooks_max_attempts = 5
+
     fief_domain: str = "localhost:8000"
     fief_client_id: str
     fief_client_secret: str

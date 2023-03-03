@@ -191,6 +191,7 @@ class TestCreateUser:
         test_data: TestData,
         csrf_token: str,
         send_task_mock: MagicMock,
+        trigger_webhooks_mock: MagicMock,
         workspace: Workspace,
         workspace_session: AsyncSession,
     ):
@@ -219,6 +220,8 @@ class TestCreateUser:
 
         assert user.fields["onboarding_done"] is True
         assert user.fields["last_seen"] is not None
+
+        assert trigger_webhooks_mock.call_count == 1
 
         send_task_mock.assert_called_once_with(
             on_after_register, str(user.id), str(workspace.id)
@@ -557,6 +560,9 @@ class TestUserPermissions:
 
         assert response.status_code == status.HTTP_201_CREATED
 
+        # Force session to expire objects because trigger_webhooks MagicMock retain them in memory
+        workspace_session.expire_all()
+
         user_permission_repository = UserPermissionRepository(workspace_session)
         user_permissions = await user_permission_repository.list(
             user_permission_repository.get_by_user_statement(user.id, direct_only=True)
@@ -733,6 +739,9 @@ class TestUserRoles:
         )
 
         assert response.status_code == status.HTTP_201_CREATED
+
+        # Force session to expire objects because trigger_webhooks MagicMock retain them in memory
+        workspace_session.expire_all()
 
         user_role_repository = UserRoleRepository(workspace_session)
         user_roles = await user_role_repository.list(
