@@ -47,7 +47,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
       <td align="center" valign="top" width="14.28%"><a href="http://joehamman.com"><img src="https://avatars.githubusercontent.com/u/2443309?v=4?s=100" width="100px;" alt="Joe Hamman"/><br /><sub><b>Joe Hamman</b></sub></a><br /><a href="#security-jhamman" title="Security">🛡️</a></td>
     </tr>
     <tr>
-      <td align="center" valign="top" width="14.28%"><a href="https://github.com/zfei"><img src="https://avatars.githubusercontent.com/u/1736058?v=4?s=100" width="100px;" alt="zfei"/><br /><sub><b>zfei</b></sub></a><br /><a href="#translation-zfei" title="Translation">🌍</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/zfei"><img src="https://avatars.githubusercontent.com/u/1736058?v=4?s=100" width="100px;" alt="zfei"/><br /><sub><b>zfei</b></sub></a><br /><a href="#translation-zfei" title="Translation">🌍</a> <a href="https://github.com/fief-dev/fief/commits?author=zfei" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>
