@@ -36,7 +36,7 @@ async def get_paginated_objects_noop(
 
 
 async def get_paginated_objects_getter(
-    hx_target: str | None = Header(None),
+    hx_target: str | None = Header(None, include_in_schema=False),
 ) -> GetPaginatedObjects[M]:
     if hx_target == "aside-content":
         return get_paginated_objects_noop
