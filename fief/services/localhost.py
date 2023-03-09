@@ -1,9 +1,7 @@
 import ipaddress
 import re
 
-LOCALHOST_HOST_PATTERN = re.compile(
-    r"([^\.]+\.)?localhost(\d+)?", flags=re.IGNORECASE
-)
+LOCALHOST_HOST_PATTERN = re.compile(r"([^\.]+\.)?localhost(\d+)?", flags=re.IGNORECASE)
 
 
 def is_localhost(host: str) -> bool:
