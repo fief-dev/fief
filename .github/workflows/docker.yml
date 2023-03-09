@@ -1,0 +1,22 @@
+name: Manual Docker build
+
+on:
+  workflow_dispatch:
+    inputs:
+      fief_version:
+        description: "Fief version"
+        required: true
+
+jobs:
+    docker-build:
+      runs-on: ubuntu-latest
+
+      steps:
+        - uses: actions/checkout@v3
+        - name: Build Docker image
+          uses: ./.github/actions/docker-build
+          with:
+            fief_version: ${{ inputs.fief_version }}
+            registry: ghcr.io
+            image_name: ${{ github.repository }}
+            github_token: ${{ secrets.GITHUB_TOKEN }}
