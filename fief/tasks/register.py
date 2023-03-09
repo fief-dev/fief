@@ -2,6 +2,7 @@ import uuid
 
 import dramatiq
 
+from fief import schemas
 from fief.models import UserRole
 from fief.repositories import RoleRepository, UserRoleRepository
 from fief.services.email_template.contexts import WelcomeContext
@@ -41,7 +42,10 @@ class OnAfterRegisterTask(TaskBase):
                 )
 
         # Send welcome email
-        context = WelcomeContext(tenant=tenant, user=user)
+        context = WelcomeContext(
+            tenant=schemas.tenant.Tenant.from_orm(tenant),
+            user=schemas.user.UserEmailContext.from_orm(user),
+        )
         async with self._get_email_subject_renderer(
             workspace
         ) as email_subject_renderer:

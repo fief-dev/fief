@@ -36,7 +36,7 @@ UF = TypeVar("UF", bound=UserFields)
 
 
 class UserCreate(GenericModel, Generic[UF], schemas.BaseUserCreate):
-    fields: UF = Field(default_factory=dict, exclude=True)
+    fields: UF = Field(default_factory=dict, exclude=True)  # type: ignore
 
 
 class UserCreateInternal(UserCreate[UF], Generic[UF]):
@@ -69,7 +69,6 @@ class UserEmailContext(schemas.BaseUser, CreatedUpdatedAt):
             created_at=datetime.now(timezone.utc),
             updated_at=datetime.now(timezone.utc),
             tenant_id=tenant.id,
-            tenant=tenant,
             fields={
                 "first_name": "Anne",
                 "last_name": "De Bretagne",

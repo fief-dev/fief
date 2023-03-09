@@ -52,13 +52,13 @@ def validate_ssl_mode(ssl_mode, values):
 
 class WorkspaceCreate(BaseModel):
     name: str
-    database_type: DatabaseType | None
-    database_host: str | None
-    database_port: int | None
-    database_username: str | None
-    database_password: str | None
-    database_name: str | None
-    database_ssl_mode: str | None
+    database_type: DatabaseType | None = None
+    database_host: str | None = None
+    database_port: int | None = None
+    database_username: str | None = None
+    database_password: str | None = None
+    database_name: str | None = None
+    database_ssl_mode: str | None = None
 
     _validate_all_database_settings = root_validator(allow_reuse=True)(
         validate_all_database_settings

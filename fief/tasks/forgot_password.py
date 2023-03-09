@@ -2,6 +2,7 @@ import uuid
 
 import dramatiq
 
+from fief import schemas
 from fief.services.email_template.contexts import ForgotPasswordContext
 from fief.services.email_template.types import EmailTemplateType
 from fief.tasks.base import TaskBase
@@ -15,7 +16,11 @@ class OnAfterForgotPasswordTask(TaskBase):
         user = await self._get_user(uuid.UUID(user_id), workspace)
         tenant = await self._get_tenant(user.tenant_id, workspace)
 
-        context = ForgotPasswordContext(tenant=tenant, user=user, reset_url=reset_url)
+        context = ForgotPasswordContext(
+            tenant=schemas.tenant.Tenant.from_orm(tenant),
+            user=schemas.user.UserEmailContext.from_orm(user),
+            reset_url=reset_url,
+        )
 
         async with self._get_email_subject_renderer(
             workspace

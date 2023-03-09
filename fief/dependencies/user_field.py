@@ -70,7 +70,7 @@ async def get_user_fields(
 
 async def get_user_field_create_internal_model(user_field_create: UserFieldCreate):
     user_field_type = user_field_create.type
-    configuration_type = UserFieldConfigurationBase
+    configuration_type: type[UserFieldConfigurationBase] = UserFieldConfigurationBase
     if user_field_type == UserFieldType.CHOICE:
         configuration_type = UserFieldConfigurationChoice
     elif USER_FIELD_CAN_HAVE_DEFAULT[user_field_type]:
@@ -108,7 +108,7 @@ async def get_user_field_update_internal_model(
     user_field: UserField = Depends(get_user_field_by_id_or_404),
 ):
     user_field_type = user_field.type
-    configuration_type = UserFieldConfigurationBase
+    configuration_type: type[UserFieldConfigurationBase] = UserFieldConfigurationBase
     if user_field_type == UserFieldType.CHOICE:
         configuration_type = UserFieldConfigurationChoice
     elif USER_FIELD_CAN_HAVE_DEFAULT[user_field_type]:
