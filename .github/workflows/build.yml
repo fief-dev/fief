@@ -153,6 +153,9 @@ jobs:
         uses: ./.github/actions/docker-build
         with:
           fief_version: ${{ env.RAW_VERSION }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
           registry: ghcr.io
           image_name: ${{ github.repository }}
           github_token: ${{ secrets.GITHUB_TOKEN }}

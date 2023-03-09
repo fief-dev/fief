@@ -6,6 +6,9 @@ on:
       fief_version:
         description: "Fief version"
         required: true
+      tags:
+        description: "Tags (following Docker metadata syntax)"
+        required: true
 
 jobs:
     docker-build:
@@ -17,6 +20,7 @@ jobs:
           uses: ./.github/actions/docker-build
           with:
             fief_version: ${{ inputs.fief_version }}
+            tags: ${{ inputs.tags }}
             registry: ghcr.io
             image_name: ${{ github.repository }}
             github_token: ${{ secrets.GITHUB_TOKEN }}

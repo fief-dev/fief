@@ -5,6 +5,9 @@ inputs:
   fief_version:
     description: "Fief version"
     required: true
+  tags:
+    description: "Tags (following Docker metadata syntax)"
+    required: true
   registry:
     description: "Docker registry"
     required: true
@@ -43,9 +46,7 @@ runs:
       uses: docker/metadata-action@v4
       with:
         images: ${{ inputs.registry }}/${{ inputs.image_name }}
-        tags: |
-          type=semver,pattern={{version}}
-          type=semver,pattern={{major}}.{{minor}}
+        tags: ${{ inputs.tags }}
     - name: Build and push
       uses: docker/build-push-action@v4
       with:
