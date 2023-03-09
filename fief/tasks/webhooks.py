@@ -3,11 +3,12 @@ import uuid
 import dramatiq
 from dramatiq.middleware import CurrentMessage
 
+from fief.models import Webhook
 from fief.repositories import WebhookLogRepository, WebhookRepository
 from fief.services.webhooks.delivery import WebhookDelivery, WebhookDeliveryError
 from fief.services.webhooks.models import WebhookEvent
 from fief.settings import settings
-from fief.tasks.base import TaskBase, TaskError
+from fief.tasks.base import ObjectDoesNotExistTaskError, TaskBase
 
 
 class DeliverWebhookTask(TaskBase):
@@ -20,7 +21,7 @@ class DeliverWebhookTask(TaskBase):
             webhook = await webhook_repository.get_by_id(uuid.UUID(webhook_id))
 
             if webhook is None:
-                raise TaskError(f"Webhook {webhook_id} doesn't exist.")
+                raise ObjectDoesNotExistTaskError(Webhook, webhook_id)
 
             message = CurrentMessage.get_current_message()
             retries = message.options.get("retries", 0)

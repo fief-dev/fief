@@ -10,7 +10,7 @@ class WebhookEventType:
     event: str
 
     def __new__(cls):
-        raise TypeError("WebhookEventType can't be instantiated.")  # noqa: TC003
+        raise TypeError("WebhookEventType can't be instantiated.")  # noqa: TRY003
 
     @classmethod
     def key(cls) -> str:

@@ -62,9 +62,9 @@ module = "sqlalchemy_utils.*"
 ignore_missing_imports = true
 
 [tool.ruff]
-extend-select = ["I"]
+extend-select = ["I", "TRY"]
 ignore = ["E501"]
-per-file-ignores = {"conftest.py" = ["E731"], "fief/repositories/*" = ["E711", "E712"], "fief/alembic/*" = ["F401"]}
+per-file-ignores = {"conftest.py" = ["E731"], "tests/*" = ["TRY"], "fief/repositories/*" = ["E711", "E712"], "fief/alembic/*" = ["F401"]}
 
 [tool.coverage.run]
 concurrency = ["thread", "gevent"]
@@ -117,7 +117,6 @@ dependencies = [
   "pytest-mock",
   "respx",
   "ruff",
-  "tryceratops",
   "types-python-slugify",
   "types-pytz",
 ]
@@ -130,13 +129,11 @@ lint = [
   "black . ",
   "ruff --fix .",
   "mypy fief/",
-  "tryceratops fief/",
 ]
 lint-check = [
   "black --check .",
   "ruff .",
   "mypy fief/",
-  "tryceratops fief/",
 ]
 
 "translations.add" = [

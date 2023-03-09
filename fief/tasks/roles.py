@@ -2,13 +2,13 @@ import uuid
 
 import dramatiq
 
-from fief.models import UserPermission
+from fief.models import Role, UserPermission
 from fief.repositories import (
     RoleRepository,
     UserPermissionRepository,
     UserRoleRepository,
 )
-from fief.tasks.base import TaskBase, TaskError
+from fief.tasks.base import ObjectDoesNotExistTaskError, TaskBase
 
 
 class OnRoleUpdated(TaskBase):
@@ -31,7 +31,7 @@ class OnRoleUpdated(TaskBase):
             role = await role_repository.get_by_id(uuid.UUID(role_id))
 
             if role is None:
-                raise TaskError(f"Role {role_id} doesn't exist.")
+                raise ObjectDoesNotExistTaskError(Role, role_id)
 
             # Add newly added permissions to users with this role
             user_roles = await user_role_repository.get_by_role(role.id)

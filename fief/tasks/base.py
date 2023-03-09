@@ -16,6 +16,7 @@ from fief.db.workspace import WorkspaceEngineManager, get_workspace_session
 from fief.locale import BabelMiddleware, get_babel_middleware_kwargs
 from fief.logger import init_audit_logger, logger
 from fief.models import Tenant, User, Workspace
+from fief.models.generics import BaseModel
 from fief.paths import EMAIL_TEMPLATES_DIRECTORY
 from fief.repositories import (
     EmailTemplateRepository,
@@ -71,6 +72,11 @@ email_provider = settings.get_email_provider()
 
 class TaskError(Exception):
     pass
+
+
+class ObjectDoesNotExistTaskError(TaskError):
+    def __init__(self, object_type: type[BaseModel], id: str):
+        super().__init__(f"{object_type.__name__} with id {id} does not exist.")
 
 
 class TaskBase:
