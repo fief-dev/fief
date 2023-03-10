@@ -9,7 +9,7 @@ from fastapi_users.authentication import (
     BearerTransport,
     Strategy,
 )
-from fastapi_users.exceptions import UserNotExists
+from fastapi_users.exceptions import UserAlreadyExists, UserNotExists
 from fastapi_users.manager import UUIDIDMixin
 from fastapi_users.password import PasswordHelperProtocol
 from fastapi_users_db_sqlalchemy import (
@@ -120,7 +120,21 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, UUID4]):
         safe: bool = False,
         request: Request | None = None,
     ) -> User:
-        user = await self.create(user_create, safe, request)
+        await self.validate_password(user_create.password, user_create)
+
+        existing_user = await self.user_db.get_by_email(user_create.email)
+        if existing_user is not None:
+            raise UserAlreadyExists()
+
+        user_dict = (
+            user_create.create_update_dict()
+            if safe
+            else user_create.create_update_dict_superuser()
+        )
+        password = user_dict.pop("password")
+        user_dict["hashed_password"] = self.password_helper.hash(password)
+
+        user = await self.user_db.create(user_dict)
         await self.user_db.session.refresh(user)  # type: ignore
 
         for user_field in user_fields:
@@ -136,7 +150,11 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, UUID4]):
                     user_field_value.value = default
                     user.user_field_values.append(user_field_value)
 
-        return await self.user_db.update(user, {})
+        user = await self.user_db.update(user, {})
+
+        await self.on_after_register(user, request)
+
+        return user
 
     async def update_with_fields(
         self,

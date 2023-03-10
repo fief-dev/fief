@@ -135,8 +135,9 @@ async def create_main_fief_user(email: str, password: str | None = None) -> User
             )
             if password is None:
                 password = user_manager.password_helper.generate()
-            user = await user_manager.create(
-                UserCreateInternal(email=email, password=password, tenant_id=tenant.id)
+            user = await user_manager.create_with_fields(
+                UserCreateInternal(email=email, password=password, tenant_id=tenant.id),
+                user_fields=[],
             )
 
         workspace_user = WorkspaceUser(workspace_id=workspace.id, user_id=user.id)
