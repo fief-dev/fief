@@ -406,6 +406,7 @@ async def user_permissions(
 
         user_permission = UserPermission(user_id=user.id, permission_id=permission_id)
         await user_permission_repository.create(user_permission)
+        await user_permission_repository.session.refresh(user_permission)
         audit_logger.log_object_write(
             AuditLogMessage.OBJECT_CREATED,
             user_permission,
@@ -517,6 +518,7 @@ async def user_roles(
 
         user_role = UserRole(user_id=user.id, role_id=role_id)
         await user_role_repository.create(user_role)
+        await user_role_repository.session.refresh(user_role)
         audit_logger.log_object_write(
             AuditLogMessage.OBJECT_CREATED,
             user_role,

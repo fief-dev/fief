@@ -20,8 +20,8 @@ class UserRole(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
         GUID, ForeignKey(Role.id, ondelete="CASCADE"), nullable=False
     )
 
-    user: Mapped[User] = relationship("User")
-    role: Mapped[Role] = relationship("Role")
+    user: Mapped[User] = relationship("User", lazy="joined")
+    role: Mapped[Role] = relationship("Role", lazy="joined")
 
     def __repr__(self) -> str:
         return f"UserRole(id={self.id}, user_id={self.user_id}, role_id={self.role_id})"

@@ -24,9 +24,11 @@ class UserPermission(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
         GUID, ForeignKey(Role.id, ondelete="CASCADE"), nullable=True
     )
 
-    user: Mapped[User] = relationship("User")
-    permission: Mapped[Permission] = relationship("Permission")
-    from_role: Mapped[Role] = relationship("Role", back_populates="user_permissions")
+    user: Mapped[User] = relationship("User", lazy="joined")
+    permission: Mapped[Permission] = relationship("Permission", lazy="joined")
+    from_role: Mapped[Role] = relationship(
+        "Role", back_populates="user_permissions", lazy="joined"
+    )
 
     def __repr__(self) -> str:
         return f"UserPermission(id={self.id}, user_id={self.user_id}, permission_id={self.permission_id}), from_role_id={self.from_role_id}"
