@@ -11,7 +11,7 @@ from dramatiq.middleware import CurrentMessage
 from pydantic import UUID4
 
 from fief.db import AsyncSession
-from fief.db.main import create_main_async_session_maker
+from fief.db.engine import create_async_session_maker, create_engine
 from fief.db.workspace import WorkspaceEngineManager, get_workspace_session
 from fief.locale import BabelMiddleware, get_babel_middleware_kwargs
 from fief.logger import init_audit_logger, logger
@@ -53,8 +53,13 @@ def send_task(task: dramatiq.Actor, *args, **kwargs):
     task.send(*args, **kwargs)
 
 
-def get_main_session_task() -> AsyncContextManager[AsyncSession]:
-    return create_main_async_session_maker()()
+@contextlib.asynccontextmanager
+async def get_main_session_task():
+    main_engine = create_engine(settings.get_database_connection_parameters())
+    session_maker = create_async_session_maker(main_engine)
+    async with session_maker() as session:
+        yield session
+    await main_engine.dispose()
 
 
 @contextlib.asynccontextmanager
@@ -104,20 +109,15 @@ class TaskBase:
         self.jinja_env.add_extension("jinja2.ext.i18n")
 
     def __call__(self, *args, **kwargs):
-        try:
-            loop = asyncio.get_running_loop()
-        except RuntimeError:
-            # The default policy doesn't create a loop by default for threads (only for main process)
-            # Thus, we create one here and set it for future works.
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-
-        init_audit_logger(self.get_main_session, self.get_workspace_session, loop)
-        BabelMiddleware(app=None, **get_babel_middleware_kwargs())
-        logger.info("Start task", task=self.__name__)
-        result = loop.run_until_complete(self.run(*args, **kwargs))
-        logger.info("Done task", task=self.__name__)
-        return result
+        with asyncio.Runner() as runner:
+            init_audit_logger(
+                self.get_main_session, self.get_workspace_session, runner.get_loop()
+            )
+            BabelMiddleware(app=None, **get_babel_middleware_kwargs())
+            logger.info("Start task", task=self.__name__)
+            result = runner.run(self.run(*args, **kwargs))
+            logger.info("Done task", task=self.__name__)
+            return result
 
     async def _get_workspace(self, workspace_id: UUID4) -> Workspace:
         async with self.get_main_session() as session:
