@@ -82,12 +82,7 @@ class CountryCode(str):
     def __modify_schema__(cls, field_schema: dict[str, Any]) -> None:
         countries = sorted(pycountry.countries, key=lambda c: c.name)
         field_schema.update(
-            type="enum",
             enum=[country.alpha_2 for country in countries],
-            countries=[
-                {"name": country.name, "alpha_2": country.alpha_2}
-                for country in countries
-            ],
         )
 
     @classmethod
@@ -118,9 +113,7 @@ class TimezoneError(PydanticValueError):
 class Timezone(str):
     @classmethod
     def __modify_schema__(cls, field_schema: dict[str, Any]) -> None:
-        field_schema.update(
-            type="enum", enum=sorted(pytz.common_timezones), title="timezone"
-        )
+        field_schema.update(enum=sorted(pytz.common_timezones), title="timezone")
 
     @classmethod
     def __get_validators__(cls):

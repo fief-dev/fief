@@ -63,8 +63,12 @@ class UserFieldConfigurationBase(BaseModel):
     at_update: bool
 
 
+class ChoiceTupleType(tuple[str, str]):
+    pass
+
+
 class UserFieldConfiguration(UserFieldConfigurationBase):
-    choices: list[tuple[str, str]] | None
+    choices: list[ChoiceTupleType] | None
     default: Timezone | StrictBool | StrictInt | StrictStr | None
 
 
@@ -75,7 +79,7 @@ class UserFieldConfigurationDefault(
 
 
 class UserFieldConfigurationChoice(UserFieldConfigurationDefault[str]):
-    choices: list[tuple[str, str]] | None
+    choices: list[ChoiceTupleType] | None
 
 
 class UserFieldCreate(BaseModel):

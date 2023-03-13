@@ -18,9 +18,9 @@ class ClientCreate(BaseModel):
     first_party: bool
     client_type: ClientType
     redirect_uris: list[AnyUrl] = Field(..., min_items=1)
-    authorization_code_lifetime_seconds: int | None = Field(None, min=0)
-    access_id_token_lifetime_seconds: int | None = Field(None, min=0)
-    refresh_token_lifetime_seconds: int | None = Field(None, min=0)
+    authorization_code_lifetime_seconds: int | None = Field(None, ge=0)
+    access_id_token_lifetime_seconds: int | None = Field(None, ge=0)
+    refresh_token_lifetime_seconds: int | None = Field(None, ge=0)
     tenant_id: UUID4
 
     _validate_redirect_uri = validator(
@@ -33,9 +33,9 @@ class ClientUpdate(BaseModel):
     first_party: bool | None
     client_type: ClientType | None
     redirect_uris: list[AnyUrl] | None = Field(None, min_items=1)
-    authorization_code_lifetime_seconds: int | None = Field(None, min=0)
-    access_id_token_lifetime_seconds: int | None = Field(None, min=0)
-    refresh_token_lifetime_seconds: int | None = Field(None, min=0)
+    authorization_code_lifetime_seconds: int | None = Field(None, ge=0)
+    access_id_token_lifetime_seconds: int | None = Field(None, ge=0)
+    refresh_token_lifetime_seconds: int | None = Field(None, ge=0)
 
     _validate_redirect_uri = validator(
         "redirect_uris", each_item=True, allow_reuse=True

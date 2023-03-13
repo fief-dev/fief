@@ -18,6 +18,15 @@ from fief.settings import settings
 app = FastAPI(
     title="Fief Administration API",
     version=__version__,
+    contact={
+        "name": "Fief",
+        "url": "https://docs.fief.dev",
+        "email": "contact@fief.dev",
+    },
+    license_info={
+        "name": "Elastic License 2.0 (ELv2)",
+        "url": "https://github.com/fief-dev/fief/blob/main/LICENSE.md",
+    },
     servers=[
         {
             "url": "{scheme}://{host}/admin/api",
