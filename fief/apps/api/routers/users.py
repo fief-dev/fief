@@ -45,6 +45,7 @@ from fief.repositories import (
 )
 from fief.schemas.generics import PaginatedResults
 from fief.services.webhooks.models import (
+    UserDeleted,
     UserPermissionCreated,
     UserPermissionDeleted,
     UserRoleCreated,
@@ -123,7 +124,6 @@ async def update_user(
     user_fields: list[UserField] = Depends(get_user_fields),
     user_manager: UserManager = Depends(get_user_manager_from_user),
     audit_logger: AuditLogger = Depends(get_audit_logger),
-    trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ):
     try:
         user = await user_manager.update_with_fields(
@@ -150,6 +150,23 @@ async def update_user(
         )
 
     return schemas.user.UserRead.from_orm(user)
+
+
+@router.delete(
+    "/{id:uuid}",
+    name="users:delete",
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
+)
+async def delete_user(
+    user: User = Depends(get_user_by_id_or_404),
+    repository: UserRepository = Depends(get_workspace_repository(UserRepository)),
+    audit_logger: AuditLogger = Depends(get_audit_logger),
+    trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
+):
+    await repository.delete(user)
+    audit_logger.log_object_write(AuditLogMessage.OBJECT_DELETED, user)
+    trigger_webhooks(UserDeleted, user, schemas.user.UserRead)
 
 
 @router.get(

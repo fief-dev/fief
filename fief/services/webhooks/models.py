@@ -133,6 +133,13 @@ class UserUpdated(WebhookEventType):
     event = "updated"
 
 
+class UserDeleted(WebhookEventType):
+    """Occurs whenever a User is deleted."""
+
+    object = "user"
+    event = "deleted"
+
+
 class UserForgotPasswordRequested(WebhookEventType):
     """Occurs whenever a User requested to reset their password."""
 
