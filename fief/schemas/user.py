@@ -16,9 +16,7 @@ if TYPE_CHECKING:  # pragma: no cover
 class UserRead(schemas.BaseUser, CreatedUpdatedAt):
     tenant_id: UUID4
     tenant: TenantEmbedded
-    fields: dict[
-        str, Address | Timezone | StrictBool | StrictInt | StrictStr | datetime | date
-    ]
+    fields: dict[str, Any]
 
     class Config:
         orm_mode = True
