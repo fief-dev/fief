@@ -25,7 +25,7 @@
 <div class="mt-6 space-y-4">
   <a
     href="{{ url_for('dashboard.users:access_token', id=user.id) }}"
-    class="btn w-full btn bg-primary-500 hover:bg-primary-600 text-white"
+    class="btn w-full btn bg-yellow-500 hover:bg-yellow-600 text-white"
     hx-boost="true"
     hx-target="#modal"
     _="install OpenModal"
@@ -40,6 +40,15 @@
     _="install OpenModal"
   >
     Edit User
+  </a>
+  <a
+    href="{{ url_for('dashboard.users:delete', id=user.id) }}"
+    class="btn w-full bg-red-500 hover:bg-red-600 text-white"
+    hx-boost="true"
+    hx-target="#modal"
+    _="install OpenModal"
+  >
+    Delete User
   </a>
 </div>
 {% endblock %}

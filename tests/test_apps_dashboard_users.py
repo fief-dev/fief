@@ -454,6 +454,66 @@ class TestCreateUserAccessToken:
 
 @pytest.mark.asyncio
 @pytest.mark.workspace_host
+class TestDeleteUser:
+    async def test_unauthorized(
+        self,
+        unauthorized_dashboard_assertions: HTTPXResponseAssertion,
+        test_client_dashboard: httpx.AsyncClient,
+        test_data: TestData,
+    ):
+        user = test_data["users"]["regular"]
+        response = await test_client_dashboard.delete(f"/users/{user.id}/delete")
+
+        unauthorized_dashboard_assertions(response)
+
+    @pytest.mark.authenticated_admin(mode="session")
+    @pytest.mark.htmx(target="modal")
+    async def test_not_existing(
+        self,
+        test_client_dashboard: httpx.AsyncClient,
+        not_existing_uuid: uuid.UUID,
+    ):
+        response = await test_client_dashboard.delete(
+            f"/users/{not_existing_uuid}/delete"
+        )
+
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    @pytest.mark.authenticated_admin(mode="session")
+    @pytest.mark.htmx(target="modal")
+    async def test_valid_get(
+        self,
+        test_client_dashboard: httpx.AsyncClient,
+        test_data: TestData,
+        workspace: Workspace,
+    ):
+        user = test_data["users"]["regular"]
+        response = await test_client_dashboard.get(f"/users/{user.id}/delete")
+
+        assert response.status_code == status.HTTP_200_OK
+
+        html = BeautifulSoup(response.text, features="html.parser")
+        submit_button = html.find(
+            "button",
+            attrs={"hx-delete": f"http://{workspace.domain}/users/{user.id}/delete"},
+        )
+        assert submit_button is not None
+
+    @pytest.mark.authenticated_admin(mode="session")
+    @pytest.mark.htmx(target="modal")
+    async def test_valid_delete(
+        self,
+        test_client_dashboard: httpx.AsyncClient,
+        test_data: TestData,
+    ):
+        user = test_data["users"]["regular"]
+        response = await test_client_dashboard.delete(f"/users/{user.id}/delete")
+
+        assert response.status_code == status.HTTP_204_NO_CONTENT
+
+
+@pytest.mark.asyncio
+@pytest.mark.workspace_host
 class TestUserPermissions:
     async def test_unauthorized(
         self,

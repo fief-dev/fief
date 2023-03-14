@@ -1,0 +1,20 @@
+{% import "macros/alerts.html" as alerts %}
+{% import "macros/buttons.html" as buttons %}
+{% import "macros/modal.html" as modal %}
+{% import "macros/icons.html" as icons %}
+
+{% extends "admin/users/list.html" %}
+
+{% block head_title_content %}{{ user.email }} · {{ super() }}{% endblock %}
+
+{% set open_modal = true %}
+
+{% block modal %}
+{{
+  modal.delete_modal(
+    "Delete the User \"" ~ user.email ~ "\"?",
+    "If you delete this user, they won't be able to access your application anymore. All their data will be deleted.",
+    url_for("dashboard.users:delete", id=user.id),
+  )
+}}
+{% endblock %}

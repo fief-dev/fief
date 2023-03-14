@@ -65,9 +65,11 @@ from fief.repositories import (
     RoleRepository,
     TenantRepository,
     UserPermissionRepository,
+    UserRepository,
     UserRoleRepository,
 )
 from fief.services.webhooks.models import (
+    UserDeleted,
     UserPermissionCreated,
     UserPermissionDeleted,
     UserRoleCreated,
@@ -344,6 +346,35 @@ async def create_user_access_token(
         )
 
     return await form_helper.get_response()
+
+
+@router.api_route(
+    "/{id:uuid}/delete",
+    methods=["GET", "DELETE"],
+    name="dashboard.users:delete",
+)
+async def delete_user(
+    request: Request,
+    user: User = Depends(get_user_by_id_or_404),
+    repository: UserRepository = Depends(get_workspace_repository(UserRepository)),
+    list_context=Depends(get_list_context),
+    context: BaseContext = Depends(get_base_context),
+    audit_logger: AuditLogger = Depends(get_audit_logger),
+    trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
+):
+    if request.method == "DELETE":
+        await repository.delete(user)
+        audit_logger.log_object_write(AuditLogMessage.OBJECT_DELETED, user)
+        trigger_webhooks(UserDeleted, user, schemas.user.UserRead)
+
+        return HXRedirectResponse(
+            request.url_for("dashboard.users:list"),
+            status_code=status.HTTP_204_NO_CONTENT,
+        )
+    else:
+        return templates.TemplateResponse(
+            "admin/users/delete.html", {**context, **list_context, "user": user}
+        )
 
 
 @router.api_route(
