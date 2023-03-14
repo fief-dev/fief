@@ -10,7 +10,6 @@ from httpx_oauth.clients.linkedin import LinkedInOAuth2
 from httpx_oauth.clients.microsoft import MicrosoftGraphOAuth2
 from httpx_oauth.clients.openid import OpenID
 from httpx_oauth.clients.reddit import RedditOAuth2
-from httpx_oauth.errors import GetIdEmailError
 from httpx_oauth.oauth2 import BaseOAuth2
 
 if TYPE_CHECKING:
@@ -74,17 +73,3 @@ def get_oauth_provider_service(oauth_provider: "OAuthProvider") -> BaseOAuth2:
             "openid_configuration_endpoint"
         ] = oauth_provider.openid_configuration_endpoint
     return oauth_provider_class(**oauth_provider_class_kwargs)
-
-
-async def get_oauth_id_email(
-    oauth_provider: "OAuthProvider", access_token: str
-) -> tuple[str, str | None]:
-    oauth_provider_service = get_oauth_provider_service(oauth_provider)
-
-    try:
-        return await oauth_provider_service.get_id_email(access_token)
-    except (NotImplementedError, GetIdEmailError):
-        raise
-
-
-__all__ = ["OAUTH_PROVIDERS", "AvailableOAuthProvider", "BaseOAuth2"]

@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, Query, Request, status
 from fastapi.responses import RedirectResponse
+from httpx_oauth.errors import GetIdEmailError
 from httpx_oauth.oauth2 import GetAccessTokenError
 
 from fief.dependencies.authentication_flow import get_authentication_flow
@@ -28,7 +29,7 @@ from fief.models import (
 from fief.repositories import OAuthAccountRepository, OAuthSessionRepository
 from fief.schemas.oauth import OAuthError
 from fief.services.authentication_flow import AuthenticationFlow
-from fief.services.oauth_provider import get_oauth_id_email, get_oauth_provider_service
+from fief.services.oauth_provider import get_oauth_provider_service
 from fief.services.registration_flow import RegistrationFlow
 
 router = APIRouter(prefix="/oauth")
@@ -134,7 +135,22 @@ async def callback(
     except KeyError:
         expires_at = None
 
-    account_id, account_email = await get_oauth_id_email(oauth_provider, access_token)
+    try:
+        account_id, account_email = await oauth_provider_service.get_id_email(
+            access_token
+        )
+    except GetIdEmailError as e:
+        raise OAuthException(
+            OAuthError.get_id_email_error(
+                _(
+                    "An error occurred while querying the provider API. Original error message: %(message)s",
+                    message=str(e),
+                )
+            ),
+            oauth_providers=oauth_providers,
+            tenant=tenant,
+        ) from e
+
     oauth_account = await oauth_account_repository.get_by_provider_and_account_id(
         oauth_provider.id, account_id
     )

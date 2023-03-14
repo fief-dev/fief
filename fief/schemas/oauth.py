@@ -7,7 +7,7 @@ from pydantic.fields import Field
 class OAuthError(BaseModel):
     error: str = Field(
         ...,
-        regex="invalid_tenant|invalid_provider|oauth_error|invalid_session|missing_code|access_token_error|inactive_user|user_already_exists",
+        regex="invalid_tenant|invalid_provider|oauth_error|invalid_session|missing_code|access_token_error|id_email_error|inactive_user|user_already_exists",
     )
     error_description: Any | None = None
     error_uri: str | None = None
@@ -35,6 +35,10 @@ class OAuthError(BaseModel):
     @classmethod
     def get_access_token_error(cls, error_description: Any | None = None):
         return cls(error="access_token_error", error_description=error_description)
+
+    @classmethod
+    def get_id_email_error(cls, error_description: Any | None = None):
+        return cls(error="id_email_error", error_description=error_description)
 
     @classmethod
     def get_inactive_user(cls, error_description: Any | None = None):

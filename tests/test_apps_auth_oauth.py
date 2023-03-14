@@ -6,6 +6,7 @@ from unittest.mock import AsyncMock, MagicMock
 import httpx
 import pytest
 from fastapi import status
+from httpx_oauth.errors import GetIdEmailError
 from httpx_oauth.oauth2 import BaseOAuth2, GetAccessTokenError
 from pytest_mock import MockerFixture
 
@@ -298,6 +299,49 @@ class TestOAuthCallback:
         headers = response.headers
         assert headers["X-Fief-Error"] == "access_token_error"
 
+    async def test_get_id_email_error(
+        self,
+        mocker: MockerFixture,
+        test_client_auth: httpx.AsyncClient,
+        test_data: TestData,
+    ):
+        login_session = test_data["login_sessions"]["default"]
+        oauth_session = test_data["oauth_sessions"]["default_google"]
+
+        cookies = {}
+        cookies[settings.login_session_cookie_name] = login_session.token
+
+        oauth_provider_service_mock = MagicMock(spec=BaseOAuth2)
+        oauth_provider_service_mock.get_access_token.side_effect = AsyncMock(
+            return_value={
+                "access_token": "ACCESS_TOKEN",
+                "expires_in": 3600,
+                "expires_at": int(datetime.now(timezone.utc).timestamp() + 3600),
+                "refresh_token": "REFRESH_TOKEN",
+            }
+        )
+        oauth_provider_service_mock.get_id_email.side_effect = GetIdEmailError(
+            {"error": "error_message"}
+        )
+        mocker.patch(
+            "fief.apps.auth.routers.oauth.get_oauth_provider_service"
+        ).return_value = oauth_provider_service_mock
+
+        response = await test_client_auth.get(
+            "/oauth/callback",
+            params={
+                "code": "CODE",
+                "redirect_uri": oauth_session.redirect_uri,
+                "state": oauth_session.token,
+            },
+            cookies=cookies,
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+        headers = response.headers
+        assert headers["X-Fief-Error"] == "id_email_error"
+
     async def test_existing_oauth_account_inactive(
         self,
         mocker: MockerFixture,
@@ -321,14 +365,12 @@ class TestOAuthCallback:
                 "refresh_token": "REFRESH_TOKEN",
             }
         )
+        oauth_provider_service_mock.get_id_email.side_effect = AsyncMock(
+            return_value=(oauth_account.account_id, oauth_account.account_email)
+        )
         mocker.patch(
             "fief.apps.auth.routers.oauth.get_oauth_provider_service"
         ).return_value = oauth_provider_service_mock
-        mocker.patch(
-            "fief.apps.auth.routers.oauth.get_oauth_id_email"
-        ).side_effect = AsyncMock(
-            return_value=(oauth_account.account_id, oauth_account.account_email)
-        )
 
         response = await test_client_auth.get(
             "/oauth/callback",
@@ -372,14 +414,12 @@ class TestOAuthCallback:
                 "refresh_token": "REFRESH_TOKEN",
             }
         )
+        oauth_provider_service_mock.get_id_email.side_effect = AsyncMock(
+            return_value=(oauth_account.account_id, oauth_account.account_email)
+        )
         mocker.patch(
             "fief.apps.auth.routers.oauth.get_oauth_provider_service"
         ).return_value = oauth_provider_service_mock
-        mocker.patch(
-            "fief.apps.auth.routers.oauth.get_oauth_id_email"
-        ).side_effect = AsyncMock(
-            return_value=(oauth_account.account_id, oauth_account.account_email)
-        )
 
         response = await test_client_auth.get(
             "/oauth/callback",
@@ -440,12 +480,12 @@ class TestOAuthCallback:
                 "refresh_token": "REFRESH_TOKEN",
             }
         )
+        oauth_provider_service_mock.get_id_email.side_effect = AsyncMock(
+            return_value=("NEW_ACCOUNT", "louis@bretagne.duchy")
+        )
         mocker.patch(
             "fief.apps.auth.routers.oauth.get_oauth_provider_service"
         ).return_value = oauth_provider_service_mock
-        mocker.patch(
-            "fief.apps.auth.routers.oauth.get_oauth_id_email"
-        ).side_effect = AsyncMock(return_value=("NEW_ACCOUNT", "louis@bretagne.duchy"))
 
         response = await test_client_auth.get(
             "/oauth/callback",
