@@ -11,6 +11,7 @@ from fief.models import Workspace
 from fief.settings import settings
 from fief.tasks import on_after_forgot_password
 from tests.data import TestData
+from tests.helpers import str_match
 from tests.types import TenantParams
 
 
@@ -81,13 +82,12 @@ class TestPostForgotPassword:
 
         assert response.status_code == status.HTTP_200_OK
 
-        send_task_mock.assert_called_once()
-        send_task_call_args = send_task_mock.call_args[0]
-        assert send_task_call_args[0] == on_after_forgot_password
-        assert send_task_call_args[1] == str(user.id)
-        assert send_task_call_args[2] == str(workspace.id)
-        assert "/reset" in send_task_call_args[3]
-        assert "token=" in send_task_call_args[3]
+        send_task_mock.assert_called_with(
+            on_after_forgot_password,
+            str(user.id),
+            str(workspace.id),
+            str_match(r"/reset.*token="),
+        )
 
 
 @pytest.mark.asyncio

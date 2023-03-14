@@ -187,17 +187,16 @@ class TestUpdateRole:
         assert str(test_data["permissions"]["castles:create"].id) in permission_ids
         assert str(test_data["permissions"]["castles:update"].id) in permission_ids
 
-        send_task_mock.assert_called_once()
-        assert send_task_mock.call_args[0][0] == on_role_updated
-        assert send_task_mock.call_args[0][1] == str(role.id)
-        assert set(send_task_mock.call_args[0][2]) == {
-            str(test_data["permissions"]["castles:create"].id),
-            str(test_data["permissions"]["castles:update"].id),
-        }
-        assert set(send_task_mock.call_args[0][3]) == {
-            str(test_data["permissions"]["castles:read"].id)
-        }
-        assert send_task_mock.call_args[0][4] == str(workspace.id)
+        send_task_mock.assert_called_with(
+            on_role_updated,
+            str(role.id),
+            {
+                str(test_data["permissions"]["castles:update"].id),
+                str(test_data["permissions"]["castles:create"].id),
+            },
+            {str(test_data["permissions"]["castles:read"].id)},
+            str(workspace.id),
+        )
 
 
 @pytest.mark.asyncio

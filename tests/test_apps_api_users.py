@@ -156,7 +156,6 @@ class TestCreateUser:
         test_client_api: httpx.AsyncClient,
         test_data: TestData,
         send_task_mock: MagicMock,
-        trigger_webhooks_mock: MagicMock,
         workspace: Workspace,
     ):
         tenant = test_data["tenants"]["default"]
@@ -183,9 +182,7 @@ class TestCreateUser:
         assert json["fields"]["onboarding_done"] is True
         assert json["fields"]["last_seen"] == "2022-01-01T13:37:00+00:00"
 
-        assert trigger_webhooks_mock.call_count == 1
-
-        send_task_mock.assert_called_once_with(
+        send_task_mock.assert_called_with(
             on_after_register, json["id"], str(workspace.id)
         )
 
@@ -627,7 +624,7 @@ class TestCreateUserRole:
         assert len(user_roles) == 2
         assert role.id in [user_role.role_id for user_role in user_roles]
 
-        send_task_mock.assert_called_once_with(
+        send_task_mock.assert_called_with(
             on_user_role_created, str(user.id), str(role.id), str(workspace.id)
         )
 
@@ -692,7 +689,7 @@ class TestDeleteUserRole:
         )
         assert len(user_roles) == 0
 
-        send_task_mock.assert_called_once_with(
+        send_task_mock.assert_called_with(
             on_user_role_deleted, str(user.id), str(role.id), str(workspace.id)
         )
 

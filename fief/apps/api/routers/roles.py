@@ -113,8 +113,8 @@ async def update_role(
     send_task(
         on_role_updated,
         str(role.id),
-        list(map(str, added_permissions)),
-        list(map(str, deleted_permissions)),
+        set(map(str, added_permissions)),
+        set(map(str, deleted_permissions)),
         str(workspace.id),
     )
 

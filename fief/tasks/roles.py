@@ -17,8 +17,8 @@ class OnRoleUpdated(TaskBase):
     async def run(
         self,
         role_id: str,
-        added_permissions: list[str],
-        deleted_permissions: list[str],
+        added_permissions: set[str],
+        deleted_permissions: set[str],
         workspace_id: str,
     ):
         workspace = await self._get_workspace(uuid.UUID(workspace_id))

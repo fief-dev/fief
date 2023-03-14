@@ -1,4 +1,5 @@
 import json
+import re
 from collections.abc import Callable
 from datetime import datetime
 
@@ -15,6 +16,20 @@ from fief.models import AuthorizationCode, LoginSession, SessionToken, User
 from fief.repositories import AuthorizationCodeRepository
 
 HTTPXResponseAssertion = Callable[[httpx.Response], None]
+
+
+class StringMatch:
+    def __init__(self, pattern: str) -> None:
+        self.pattern = re.compile(pattern, re.IGNORECASE)
+
+    def __eq__(self, o: object) -> bool:
+        if not isinstance(o, str):
+            return False
+        return self.pattern.search(o) is not None
+
+
+def str_match(s: str):
+    return StringMatch(s)
 
 
 def api_unauthorized_assertions(response: httpx.Response):

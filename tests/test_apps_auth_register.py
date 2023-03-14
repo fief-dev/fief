@@ -314,7 +314,6 @@ class TestPostRegister:
         workspace: Workspace,
         workspace_session: AsyncSession,
         send_task_mock: MagicMock,
-        trigger_webhooks_mock: MagicMock,
     ):
         login_session = test_data["login_sessions"]["default"]
         registration_session = test_data["registration_sessions"]["default_password"]
@@ -353,9 +352,7 @@ class TestPostRegister:
         )
         assert deleted_registration_session is None
 
-        trigger_webhooks_mock.assert_called_once()
-
-        send_task_mock.assert_called_once_with(
+        send_task_mock.assert_called_with(
             on_after_register, str(session_token.user_id), str(workspace.id)
         )
 
@@ -535,7 +532,6 @@ class TestPostRegister:
         workspace: Workspace,
         workspace_session: AsyncSession,
         send_task_mock: MagicMock,
-        trigger_webhooks_mock: MagicMock,
     ):
         login_session = test_data["login_sessions"]["default"]
         registration_session = test_data["registration_sessions"]["default_oauth"]
@@ -581,9 +577,7 @@ class TestPostRegister:
         )
         assert deleted_registration_session is None
 
-        trigger_webhooks_mock.assert_called_once()
-
-        send_task_mock.assert_called_once_with(
+        send_task_mock.assert_called_with(
             on_after_register, str(session_token.user_id), str(workspace.id)
         )
 

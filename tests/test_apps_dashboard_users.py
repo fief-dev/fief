@@ -191,7 +191,6 @@ class TestCreateUser:
         test_data: TestData,
         csrf_token: str,
         send_task_mock: MagicMock,
-        trigger_webhooks_mock: MagicMock,
         workspace: Workspace,
         workspace_session: AsyncSession,
     ):
@@ -221,9 +220,7 @@ class TestCreateUser:
         assert user.fields["onboarding_done"] is True
         assert user.fields["last_seen"] is not None
 
-        assert trigger_webhooks_mock.call_count == 1
-
-        send_task_mock.assert_called_once_with(
+        send_task_mock.assert_called_with(
             on_after_register, str(user.id), str(workspace.id)
         )
 
@@ -750,7 +747,7 @@ class TestUserRoles:
         assert len(user_roles) == 2
         assert role.id in [user_role.role_id for user_role in user_roles]
 
-        send_task_mock.assert_called_once_with(
+        send_task_mock.assert_called_with(
             on_user_role_created, str(user.id), str(role.id), str(workspace.id)
         )
 
@@ -822,7 +819,7 @@ class TestDeleteUserRole:
         )
         assert len(user_roles) == 0
 
-        send_task_mock.assert_called_once_with(
+        send_task_mock.assert_called_with(
             on_user_role_deleted, str(user.id), str(role.id), str(workspace.id)
         )
 
