@@ -32,8 +32,16 @@ class UserPermissionRepository(
     async def get_by_permission_and_user(
         self, user: UUID4, permission: UUID4, *, direct_only: bool = False
     ) -> UserPermission | None:
-        statement = select(UserPermission).where(
-            UserPermission.user_id == user, UserPermission.permission_id == permission
+        statement = (
+            select(UserPermission)
+            .where(
+                UserPermission.user_id == user,
+                UserPermission.permission_id == permission,
+            )
+            .options(
+                joinedload(UserPermission.permission),
+                joinedload(UserPermission.from_role),
+            )
         )
 
         if direct_only:

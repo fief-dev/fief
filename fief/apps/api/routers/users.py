@@ -226,9 +226,8 @@ async def create_user_permission(
             detail=APIErrorCode.USER_PERMISSION_CREATE_ALREADY_ADDED_PERMISSION,
         )
 
-    user_permission = UserPermission(user_id=user.id, permission_id=permission_id)
+    user_permission = UserPermission(user_id=user.id, permission=permission)
     await user_permission_repository.create(user_permission)
-    await user_permission_repository.session.refresh(user_permission)
     audit_logger.log_object_write(
         AuditLogMessage.OBJECT_CREATED,
         user_permission,
@@ -329,9 +328,8 @@ async def create_user_role(
             detail=APIErrorCode.USER_ROLE_CREATE_ALREADY_ADDED_ROLE,
         )
 
-    user_role = UserRole(user_id=user.id, role_id=role_id)
+    user_role = UserRole(user_id=user.id, role=role)
     await user_role_repository.create(user_role)
-    await user_role_repository.session.refresh(user_role)
     audit_logger.log_object_write(
         AuditLogMessage.OBJECT_CREATED,
         user_role,

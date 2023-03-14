@@ -21,7 +21,9 @@ class UserRoleRepository(BaseRepository[UserRole], UUIDRepositoryMixin[UserRole]
 
     async def get_by_role_and_user(self, user: UUID4, role: UUID4) -> UserRole | None:
         return await self.get_one_or_none(
-            select(UserRole).where(UserRole.user_id == user, UserRole.role_id == role)
+            select(UserRole)
+            .where(UserRole.user_id == user, UserRole.role_id == role)
+            .options(joinedload(UserRole.role))
         )
 
     async def get_by_role(self, role: UUID4) -> list[UserRole]:
