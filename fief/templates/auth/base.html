@@ -29,11 +29,11 @@
           }
         </style>
       {% endif %}
+      {% block javascripts_modules %}{% endblock %}
     {% endblock %}
   </head>
   <body class="antialiased">
-    {% block main %}
-
-    {% endblock %}
+    {% block hyperscripts %}{% endblock %}
+    {% block body %}{% endblock %}
   </body>
 </html>
