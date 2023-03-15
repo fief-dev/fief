@@ -1,7 +1,7 @@
-from enum import Enum
+from enum import StrEnum
 
 
-class EmailTemplateType(str, Enum):
+class EmailTemplateType(StrEnum):
     BASE = "BASE"
     WELCOME = "WELCOME"
     FORGOT_PASSWORD = "FORGOT_PASSWORD"

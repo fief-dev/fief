@@ -1,7 +1,7 @@
-from enum import Enum
+from enum import StrEnum
 
 
-class APIErrorCode(str, Enum):
+class APIErrorCode(StrEnum):
     CANT_DETERMINE_VALID_WORKSPACE = "CANT_DETERMINE_VALID_WORKSPACE"
 
     WORKSPACE_CREATE_MISSING_DATABASE_SETTINGS = (

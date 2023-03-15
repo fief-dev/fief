@@ -1,6 +1,6 @@
-import enum
 import secrets
 from datetime import datetime, timedelta, timezone
+from enum import StrEnum
 
 from jwcrypto import jwk
 from pydantic import UUID4
@@ -19,7 +19,7 @@ def get_default_redirect_uris() -> list[str]:
     return ["http://localhost:8000/docs/oauth2-redirect"]
 
 
-class ClientType(str, enum.Enum):
+class ClientType(StrEnum):
     PUBLIC = "public"
     CONFIDENTIAL = "confidential"
 
@@ -31,8 +31,12 @@ class ClientType(str, enum.Enum):
         return display_names[self]
 
     @classmethod
-    def get_choices(cls) -> list[tuple[str, str]]:
+    def choices(cls) -> list[tuple[str, str]]:
         return [(member.value, member.get_display_name()) for member in cls]
+
+    @classmethod
+    def coerce(cls, item):
+        return cls(str(item)) if not isinstance(item, cls) else item
 
 
 class Client(UUIDModel, CreatedUpdatedAt, WorkspaceBase):

@@ -1,5 +1,5 @@
 import secrets
-from enum import Enum
+from enum import StrEnum
 
 from pydantic import UUID4
 from sqlalchemy import ForeignKey
@@ -13,7 +13,7 @@ from fief.models.tenant import Tenant
 from fief.settings import settings
 
 
-class RegistrationSessionFlow(str, Enum):
+class RegistrationSessionFlow(StrEnum):
     PASSWORD = "PASSWORD"
     OAUTH = "OAUTH"
 

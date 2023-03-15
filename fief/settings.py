@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import StrEnum
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
@@ -22,7 +22,7 @@ from fief.db.types import (
 from fief.services.email import EMAIL_PROVIDERS, AvailableEmailProvider, EmailProvider
 
 
-class Environment(str, Enum):
+class Environment(StrEnum):
     DEVELOPMENT = "development"
     STAGING = "staging"
     PRODUCTION = "production"

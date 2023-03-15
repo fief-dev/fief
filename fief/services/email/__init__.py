@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import StrEnum
 
 from fief.services.email.base import EmailError, EmailProvider, SendEmailError
 from fief.services.email.null import Null
@@ -7,7 +7,7 @@ from fief.services.email.sendgrid import Sendgrid
 from fief.services.email.smtp import SMTP
 
 
-class AvailableEmailProvider(str, Enum):
+class AvailableEmailProvider(StrEnum):
     NULL = "NULL"
     POSTMARK = "POSTMARK"
     SMTP = "SMTP"

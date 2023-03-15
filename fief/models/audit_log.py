@@ -1,5 +1,5 @@
 from datetime import datetime
-from enum import Enum
+from enum import StrEnum
 
 from pydantic import UUID4
 from sqlalchemy import JSON, String, Text
@@ -10,7 +10,7 @@ from fief.models.generics import GUID, TIMESTAMPAware, UUIDModel
 from fief.models.user import User
 
 
-class AuditLogMessage(str, Enum):
+class AuditLogMessage(StrEnum):
     OBJECT_CREATED = "OBJECT_CREATED"
     OBJECT_UPDATED = "OBJECT_UPDATED"
     OBJECT_DELETED = "OBJECT_DELETED"

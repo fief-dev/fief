@@ -17,7 +17,8 @@ class BaseClientForm(CSRFBaseForm):
     first_party = BooleanField("First-party")
     client_type = SelectField(
         "Type",
-        choices=ClientType.get_choices(),
+        choices=ClientType.choices(),
+        coerce=ClientType.coerce,
         default=ClientType.CONFIDENTIAL.value,
         validators=[validators.InputRequired()],
     )

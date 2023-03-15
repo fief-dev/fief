@@ -1,5 +1,5 @@
 import base64
-from enum import Enum
+from enum import StrEnum
 from typing import TYPE_CHECKING, Any
 
 from httpx_oauth.clients.discord import DiscordOAuth2
@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from fief.models import OAuthProvider
 
 
-class AvailableOAuthProvider(str, Enum):
+class AvailableOAuthProvider(StrEnum):
     DISCORD = "DISCORD"
     FACEBOOK = "FACEBOOK"
     GITHUB = "GITHUB"
@@ -32,8 +32,12 @@ class AvailableOAuthProvider(str, Enum):
         return getattr(OAUTH_PROVIDERS[self], "display_name", "")
 
     @classmethod
-    def get_choices(cls) -> list[tuple[str, str]]:
+    def choices(cls) -> list[tuple[str, str]]:
         return [(member.value, member.get_display_name()) for member in cls]
+
+    @classmethod
+    def coerce(cls, item):
+        return cls(str(item)) if not isinstance(item, cls) else item
 
 
 OAUTH_PROVIDERS: dict[AvailableOAuthProvider, type[BaseOAuth2]] = {

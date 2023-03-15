@@ -144,7 +144,8 @@ class BaseUserFieldForm(CSRFBaseForm):
 class UserFieldCreateForm(BaseUserFieldForm):
     type = SelectField(
         "Type",
-        choices=UserFieldType.get_choices(),
+        choices=UserFieldType.choices(),
+        coerce=UserFieldType.coerce,
         default=UserFieldType.STRING.value,
         validators=[validators.InputRequired()],
     )

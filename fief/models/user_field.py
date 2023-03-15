@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import StrEnum
 from typing import TYPE_CHECKING, Any, TypedDict
 
 from sqlalchemy import JSON, String
@@ -20,7 +20,7 @@ class UserFieldChoiceNotExistingValue(ValueError):
     pass
 
 
-class UserFieldType(str, Enum):
+class UserFieldType(StrEnum):
     STRING = "STRING"
     INTEGER = "INTEGER"
     BOOLEAN = "BOOLEAN"
@@ -46,8 +46,12 @@ class UserFieldType(str, Enum):
         return display_names[self]
 
     @classmethod
-    def get_choices(cls) -> list[tuple[str, str]]:
+    def choices(cls) -> list[tuple[str, str]]:
         return [(member.value, member.get_display_name()) for member in cls]
+
+    @classmethod
+    def coerce(cls, item):
+        return cls(str(item)) if not isinstance(item, cls) else item
 
 
 class UserFieldConfiguration(TypedDict):

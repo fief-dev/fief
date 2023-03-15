@@ -7,7 +7,8 @@ from fief.services.oauth_provider import AvailableOAuthProvider
 class BaseOAuthProviderForm(CSRFBaseForm):
     provider = SelectField(
         "Provider",
-        choices=AvailableOAuthProvider.get_choices(),
+        choices=AvailableOAuthProvider.choices(),
+        coerce=AvailableOAuthProvider.coerce,
         validators=[validators.InputRequired()],
     )
     name = StringField("Name")

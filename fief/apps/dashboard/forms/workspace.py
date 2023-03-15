@@ -28,7 +28,8 @@ class WorkspaceCreateStep2Form(CSRFBaseForm):
 class WorkspaceCreateStep3Form(CSRFBaseForm):
     database_type = SelectField(
         label="Database type",
-        choices=DatabaseType.get_choices(),
+        choices=DatabaseType.choices(),
+        coerce=DatabaseType.coerce,
         default=DatabaseType.POSTGRESQL.value,
         validators=[validators.InputRequired()],
     )
@@ -52,7 +53,7 @@ class WorkspaceCreateStep3Form(CSRFBaseForm):
     def prefill_from_database_type(self):
         database_type = DatabaseType[self.database_type.data]
         ssl_modes_enum = SSL_MODES[database_type]
-        self.database_ssl_mode.choices = ssl_modes_enum.get_choices()
+        self.database_ssl_mode.choices = ssl_modes_enum.choices()
         if not self.database_ssl_mode.data:
             self.database_ssl_mode.process_data(self.database_ssl_mode.choices[0][0])
 

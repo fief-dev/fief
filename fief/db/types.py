@@ -1,12 +1,12 @@
 import ssl
-from enum import Enum
+from enum import StrEnum
 from pathlib import Path
 from typing import Union
 
 from sqlalchemy import engine
 
 
-class DatabaseType(str, Enum):
+class DatabaseType(StrEnum):
     POSTGRESQL = "POSTGRESQL"
     MYSQL = "MYSQL"
     SQLITE = "SQLITE"
@@ -20,15 +20,19 @@ class DatabaseType(str, Enum):
         return display_names[self]
 
     @classmethod
-    def get_choices(cls) -> list[tuple[str, str]]:
+    def choices(cls) -> list[tuple[str, str]]:
         return [
             (member.value, member.get_display_name())
             for member in cls
             if member != DatabaseType.SQLITE
         ]
 
+    @classmethod
+    def coerce(cls, item):
+        return cls(str(item)) if not isinstance(item, cls) else item
 
-class PostreSQLSSLMode(str, Enum):
+
+class PostreSQLSSLMode(StrEnum):
     DISABLE = "disable"
     ALLOW = "allow"
     PREFER = "prefer"
@@ -48,11 +52,15 @@ class PostreSQLSSLMode(str, Enum):
         return display_names[self]
 
     @classmethod
-    def get_choices(cls) -> list[tuple[str, str]]:
+    def choices(cls) -> list[tuple[str, str]]:
         return [(member.value, member.get_display_name()) for member in cls]
 
+    @classmethod
+    def coerce(cls, item):
+        return cls(str(item)) if not isinstance(item, cls) else item
 
-class MySQLSSLMode(str, Enum):
+
+class MySQLSSLMode(StrEnum):
     DISABLED = "DISABLED"
     PREFERRED = "PREFERRED"
     REQUIRED = "REQUIRED"
@@ -70,8 +78,12 @@ class MySQLSSLMode(str, Enum):
         return display_names[self]
 
     @classmethod
-    def get_choices(cls) -> list[tuple[str, str]]:
+    def choices(cls) -> list[tuple[str, str]]:
         return [(member.value, member.get_display_name()) for member in cls]
+
+    @classmethod
+    def coerce(cls, item):
+        return cls(str(item)) if not isinstance(item, cls) else item
 
 
 SSLMode = Union[PostreSQLSSLMode, MySQLSSLMode]
