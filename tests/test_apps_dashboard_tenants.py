@@ -7,7 +7,7 @@ from fastapi import status
 from sqlalchemy import select
 
 from fief.db import AsyncSession
-from fief.models import Client
+from fief.models import Client, Workspace
 from fief.repositories import ClientRepository, TenantRepository
 from tests.data import TestData
 from tests.helpers import HTTPXResponseAssertion
@@ -394,3 +394,65 @@ class TestUpdateTenant:
 
         assert len(updated_tenant.oauth_providers) == 1
         assert updated_tenant.oauth_providers[0].id == oauth_provider.id
+
+
+@pytest.mark.asyncio
+@pytest.mark.workspace_host
+class TestDeleteTenant:
+    async def test_unauthorized(
+        self,
+        unauthorized_dashboard_assertions: HTTPXResponseAssertion,
+        test_client_dashboard: httpx.AsyncClient,
+        test_data: TestData,
+    ):
+        tenant = test_data["tenants"]["default"]
+        response = await test_client_dashboard.delete(f"/tenants/{tenant.id}/delete")
+
+        unauthorized_dashboard_assertions(response)
+
+    @pytest.mark.authenticated_admin(mode="session")
+    @pytest.mark.htmx(target="modal")
+    async def test_not_existing(
+        self,
+        test_client_dashboard: httpx.AsyncClient,
+        not_existing_uuid: uuid.UUID,
+    ):
+        response = await test_client_dashboard.delete(
+            f"/tenants/{not_existing_uuid}/delete"
+        )
+
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    @pytest.mark.authenticated_admin(mode="session")
+    @pytest.mark.htmx(target="modal")
+    async def test_valid_get(
+        self,
+        test_client_dashboard: httpx.AsyncClient,
+        test_data: TestData,
+        workspace: Workspace,
+    ):
+        tenant = test_data["tenants"]["default"]
+        response = await test_client_dashboard.get(f"/tenants/{tenant.id}/delete")
+
+        assert response.status_code == status.HTTP_200_OK
+
+        html = BeautifulSoup(response.text, features="html.parser")
+        submit_button = html.find(
+            "button",
+            attrs={
+                "hx-delete": f"http://{workspace.domain}/tenants/{tenant.id}/delete"
+            },
+        )
+        assert submit_button is not None
+
+    @pytest.mark.authenticated_admin(mode="session")
+    @pytest.mark.htmx(target="modal")
+    async def test_valid_delete(
+        self,
+        test_client_dashboard: httpx.AsyncClient,
+        test_data: TestData,
+    ):
+        tenant = test_data["tenants"]["default"]
+        response = await test_client_dashboard.delete(f"/tenants/{tenant.id}/delete")
+
+        assert response.status_code == status.HTTP_204_NO_CONTENT

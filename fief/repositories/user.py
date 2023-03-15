@@ -20,3 +20,7 @@ class UserRepository(BaseRepository[User], UUIDRepositoryMixin[User]):
     async def count_all(self) -> int:
         statement = select(User)
         return await self._count(statement)
+
+    async def count_by_tenant(self, tenant: UUID4) -> int:
+        statement = select(User).where(User.tenant_id == tenant)
+        return await self._count(statement)

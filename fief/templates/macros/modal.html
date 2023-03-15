@@ -28,13 +28,14 @@
 <div class="p-5 flex flex-wrap justify-end space-x-2">{{ caller() }}</div>
 {% endmacro %}
 
-{% macro delete_modal(modal_title, notice, delete_url) %}
+{% macro delete_modal_core(modal_title, delete_url) %}
 <div _="on fief:closeModal go back">
   {% call header() %}
     {% call title() %}{{ modal_title }}{% endcall %}
   {% endcall %}
+  {% set body_content = caller() %}
   {% call body() %}
-    <p class="text-justify">{{ notice }}</p>
+    {{ body_content }}
   {% endcall %}
   {% call footer() %}
     <button type="button" class="btn-sm border-slate-200 hover:border-slate-300 text-slate-600" _="install CloseModalButton()">Cancel</button>
@@ -48,4 +49,10 @@
     </button>
   {% endcall %}
 </div>
+{% endmacro %}
+
+{% macro delete_modal(modal_title, notice, delete_url) %}
+  {% call delete_modal_core(modal_title, delete_url) %}
+    <p class="text-justify">{{ notice }}</p>
+  {% endcall %}
 {% endmacro %}

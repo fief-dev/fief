@@ -24,8 +24,14 @@ from fief.repositories import (
     OAuthProviderRepository,
     TenantRepository,
     ThemeRepository,
+    UserRepository,
 )
-from fief.services.webhooks.models import ClientCreated, TenantCreated, TenantUpdated
+from fief.services.webhooks.models import (
+    ClientCreated,
+    TenantCreated,
+    TenantDeleted,
+    TenantUpdated,
+)
 from fief.templates import templates
 
 router = APIRouter(dependencies=[Depends(is_authenticated_admin_session)])
@@ -233,3 +239,45 @@ async def update_tenant(
         )
 
     return await form_helper.get_response()
+
+
+@router.api_route(
+    "/{id:uuid}/delete",
+    methods=["GET", "DELETE"],
+    name="dashboard.tenants:delete",
+)
+async def delete_tenant(
+    request: Request,
+    tenant: Tenant = Depends(get_tenant_by_id_or_404),
+    repository: TenantRepository = Depends(get_workspace_repository(TenantRepository)),
+    user_repository: UserRepository = Depends(get_workspace_repository(UserRepository)),
+    client_repository: ClientRepository = Depends(
+        get_workspace_repository(ClientRepository)
+    ),
+    list_context=Depends(get_list_context),
+    context: BaseContext = Depends(get_base_context),
+    audit_logger: AuditLogger = Depends(get_audit_logger),
+    trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
+):
+    if request.method == "DELETE":
+        await repository.delete(tenant)
+        audit_logger.log_object_write(AuditLogMessage.OBJECT_DELETED, tenant)
+        trigger_webhooks(TenantDeleted, tenant, schemas.tenant.Tenant)
+
+        return HXRedirectResponse(
+            request.url_for("dashboard.tenants:list"),
+            status_code=status.HTTP_204_NO_CONTENT,
+        )
+
+    users_count = await user_repository.count_by_tenant(tenant.id)
+    clients_count = await client_repository.count_by_tenant(tenant.id)
+    return templates.TemplateResponse(
+        "admin/tenants/delete.html",
+        {
+            **context,
+            **list_context,
+            "tenant": tenant,
+            "users_count": users_count,
+            "clients_count": clients_count,
+        },
+    )

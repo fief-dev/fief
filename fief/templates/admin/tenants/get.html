@@ -59,7 +59,7 @@
     {% endfor %}
   </ul>
 </div>
-<div class="mt-6">
+<div class="mt-6 space-y-4">
   <a
     href="{{ url_for('dashboard.tenants:update', id=tenant.id) }}"
     class="btn w-full border-slate-200 hover:border-slate-300"
@@ -68,6 +68,15 @@
     _="install OpenModal"
   >
     Edit Tenant
+  </a>
+  <a
+    href="{{ url_for('dashboard.tenants:delete', id=tenant.id) }}"
+    class="btn w-full bg-red-500 hover:bg-red-600 text-white"
+    hx-boost="true"
+    hx-target="#modal"
+    _="install OpenModal"
+  >
+    Delete Tenant
   </a>
 </div>
 {% endblock %}

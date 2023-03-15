@@ -28,3 +28,7 @@ class ClientRepository(BaseRepository[Client], UUIDRepositoryMixin[Client]):
             Client.client_id == client_id, Client.client_secret == client_secret
         )
         return await self.get_one_or_none(statement)
+
+    async def count_by_tenant(self, tenant: uuid.UUID) -> int:
+        statement = select(Client).where(Client.tenant_id == tenant)
+        return await self._count(statement)
