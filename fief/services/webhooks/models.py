@@ -220,6 +220,7 @@ class UserRoleDeleted(WebhookEventType):
 WEBHOOK_EVENTS: list[type[WebhookEventType]] = [
     ClientCreated,
     ClientUpdated,
+    ClientDeleted,
     EmailTemplateUpdated,
     OAuthProviderCreated,
     OAuthProviderUpdated,
@@ -232,8 +233,10 @@ WEBHOOK_EVENTS: list[type[WebhookEventType]] = [
     RoleDeleted,
     TenantCreated,
     TenantUpdated,
+    TenantDeleted,
     UserCreated,
     UserUpdated,
+    UserDeleted,
     UserForgotPasswordRequested,
     UserPasswordReset,
     UserFieldCreated,
