@@ -126,6 +126,13 @@ class TenantUpdated(WebhookEventType):
     event = "updated"
 
 
+class TenantDeleted(WebhookEventType):
+    """Occurs whenever a Tenant is deleted."""
+
+    object = "tenant"
+    event = "deleted"
+
+
 class UserCreated(WebhookEventType):
     """Occurs whenever a User is created."""
 

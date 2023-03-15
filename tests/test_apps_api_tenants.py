@@ -314,3 +314,33 @@ class TestUpdateTenant:
         json = response.json()
         assert len(json["oauth_providers"]) == 1
         assert json["oauth_providers"][0]["id"] == str(oauth_provider_id)
+
+
+@pytest.mark.asyncio
+@pytest.mark.workspace_host
+class TestDeleteTenant:
+    async def test_unauthorized(
+        self,
+        unauthorized_api_assertions: HTTPXResponseAssertion,
+        test_client_api: httpx.AsyncClient,
+        test_data: TestData,
+    ):
+        tenant = test_data["tenants"]["default"]
+        response = await test_client_api.delete(f"/tenants/{tenant.id}")
+
+        unauthorized_api_assertions(response)
+
+    @pytest.mark.authenticated_admin
+    async def test_not_existing(
+        self, test_client_api: httpx.AsyncClient, not_existing_uuid: uuid.UUID
+    ):
+        response = await test_client_api.delete(f"/tenants/{not_existing_uuid}")
+
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    @pytest.mark.authenticated_admin
+    async def test_valid(self, test_client_api: httpx.AsyncClient, test_data: TestData):
+        tenant = test_data["tenants"]["default"]
+        response = await test_client_api.delete(f"/tenants/{tenant.id}")
+
+        assert response.status_code == status.HTTP_204_NO_CONTENT

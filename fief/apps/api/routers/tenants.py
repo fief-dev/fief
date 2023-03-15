@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 
 from fief import schemas
 from fief.dependencies.admin_authentication import is_authenticated_admin_api
@@ -17,7 +17,12 @@ from fief.repositories import (
     ThemeRepository,
 )
 from fief.schemas.generics import PaginatedResults
-from fief.services.webhooks.models import ClientCreated, TenantCreated, TenantUpdated
+from fief.services.webhooks.models import (
+    ClientCreated,
+    TenantCreated,
+    TenantDeleted,
+    TenantUpdated,
+)
 
 router = APIRouter(dependencies=[Depends(is_authenticated_admin_api)])
 
@@ -152,3 +157,20 @@ async def update_tenant(
     trigger_webhooks(TenantUpdated, tenant, schemas.tenant.Tenant)
 
     return schemas.tenant.Tenant.from_orm(tenant)
+
+
+@router.delete(
+    "/{id:uuid}",
+    name="tenants:delete",
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
+)
+async def delete_tenant(
+    tenant: Tenant = Depends(get_tenant_by_id_or_404),
+    repository: TenantRepository = Depends(get_workspace_repository(TenantRepository)),
+    audit_logger: AuditLogger = Depends(get_audit_logger),
+    trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
+):
+    await repository.delete(tenant)
+    audit_logger.log_object_write(AuditLogMessage.OBJECT_DELETED, tenant)
+    trigger_webhooks(TenantDeleted, tenant, schemas.tenant.Tenant)
