@@ -4,7 +4,7 @@ from fastapi_users.exceptions import InvalidPasswordException, UserAlreadyExists
 from fastapi_users.router import ErrorCode
 
 from fief.apps.auth.forms.register import RF, get_register_form_class
-from fief.dependencies.auth import get_login_session
+from fief.dependencies.auth import get_optional_login_session
 from fief.dependencies.authentication_flow import get_authentication_flow
 from fief.dependencies.oauth_provider import get_oauth_providers
 from fief.dependencies.register import (
@@ -17,6 +17,7 @@ from fief.exceptions import LoginException
 from fief.forms import FormHelper
 from fief.locale import gettext_lazy as _
 from fief.models import (
+    LoginSession,
     OAuthProvider,
     RegistrationSession,
     RegistrationSessionFlow,
@@ -30,14 +31,10 @@ from fief.services.registration_flow import RegistrationFlow
 router = APIRouter()
 
 
-@router.api_route(
-    "/register",
-    methods=["GET", "POST"],
-    name="register:register",
-    dependencies=[Depends(get_login_session)],
-)
+@router.api_route("/register", methods=["GET", "POST"], name="register:register")
 async def register(
     request: Request,
+    login_session: LoginSession | None = Depends(get_optional_login_session),
     register_form_class: type[RF] = Depends(get_register_form_class),
     registration_flow: RegistrationFlow = Depends(get_registration_flow),
     authentication_flow: AuthenticationFlow = Depends(get_authentication_flow),
@@ -89,10 +86,16 @@ async def register(
             form.password.errors.append(e.reason)
             return await form_helper.get_error_response(e.reason, "invalid_password")
         else:
-            response = RedirectResponse(
-                tenant.url_path_for(request, "auth:consent"),
-                status_code=status.HTTP_302_FOUND,
-            )
+            if login_session is not None:
+                response = RedirectResponse(
+                    tenant.url_path_for(request, "auth:consent"),
+                    status_code=status.HTTP_302_FOUND,
+                )
+            else:
+                response = RedirectResponse(
+                    tenant.url_path_for(request, "auth.dashboard:index"),
+                    status_code=status.HTTP_302_FOUND,
+                )
             response = await authentication_flow.create_session_token(response, user.id)
             response = await registration_flow.delete_registration_session(
                 response, registration_session

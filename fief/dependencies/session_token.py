@@ -1,4 +1,4 @@
-from fastapi import Cookie, Depends, HTTPException, status
+from fastapi import Cookie, Depends, HTTPException, Request, status
 
 from fief.crypto.token import get_token_hash
 from fief.dependencies.workspace_repositories import get_workspace_repository
@@ -20,8 +20,11 @@ async def get_session_token(
 
 
 async def get_user_from_session_token(
-    session_token: SessionToken | None = Depends(get_session_token),
+    request: Request, session_token: SessionToken | None = Depends(get_session_token)
 ) -> User:
     if session_token is None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+        raise HTTPException(
+            status_code=status.HTTP_307_TEMPORARY_REDIRECT,
+            headers={"Location": request.url_for("auth:login")},
+        )
     return session_token.user

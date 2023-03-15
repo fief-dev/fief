@@ -417,16 +417,11 @@ class TestAuthAuthorize:
 @pytest.mark.asyncio
 @pytest.mark.workspace_host
 class TestAuthGetLogin:
-    @pytest.mark.parametrize("cookie", [None, "INVALID_LOGIN_SESSION"])
     async def test_invalid_login_session(
-        self,
-        cookie: str | None,
-        tenant_params: TenantParams,
-        test_client_auth: httpx.AsyncClient,
+        self, tenant_params: TenantParams, test_client_auth: httpx.AsyncClient
     ):
         cookies = {}
-        if cookie is not None:
-            cookies[settings.login_session_cookie_name] = cookie
+        cookies[settings.login_session_cookie_name] = "INVALID_LOGIN_SESSION"
 
         response = await test_client_auth.get(
             f"{tenant_params.path_prefix}/login", cookies=cookies
@@ -436,6 +431,13 @@ class TestAuthGetLogin:
 
         headers = response.headers
         assert headers["X-Fief-Error"] == "invalid_session"
+
+    async def test_missing_login_session(
+        self, tenant_params: TenantParams, test_client_auth: httpx.AsyncClient
+    ):
+        response = await test_client_auth.get(f"{tenant_params.path_prefix}/login")
+
+        assert response.status_code == status.HTTP_200_OK
 
     async def test_valid(
         self, test_client_auth: httpx.AsyncClient, test_data: TestData
@@ -456,16 +458,13 @@ class TestAuthGetLogin:
 @pytest.mark.asyncio
 @pytest.mark.workspace_host
 class TestAuthPostLogin:
-    @pytest.mark.parametrize("cookie", [None, "INVALID_LOGIN_SESSION"])
     async def test_invalid_login_session(
         self,
-        cookie: str | None,
         tenant_params: TenantParams,
         test_client_auth_csrf: httpx.AsyncClient,
     ):
         cookies = {}
-        if cookie is not None:
-            cookies[settings.login_session_cookie_name] = cookie
+        cookies[settings.login_session_cookie_name] = "INVALID_LOGIN_SESSION"
 
         response = await test_client_auth_csrf.post(
             f"{tenant_params.path_prefix}/login", cookies=cookies
@@ -585,14 +584,41 @@ class TestAuthPostLogin:
         old_session_token = await session_token_repository.get_by_id(session_token.id)
         assert old_session_token is None
 
+    async def test_valid_without_login_session(
+        self,
+        test_client_auth_csrf: httpx.AsyncClient,
+        csrf_token: str,
+        test_data: TestData,
+    ):
+        tenant = test_data["tenants"]["default"]
+        path_prefix = tenant.slug if not tenant.default else ""
+
+        response = await test_client_auth_csrf.post(
+            f"{path_prefix}/login",
+            data={
+                "email": "anne@bretagne.duchy",
+                "password": "hermine",
+                "csrf_token": csrf_token,
+            },
+        )
+
+        assert response.status_code == status.HTTP_302_FOUND
+
+        redirect_uri = response.headers["Location"]
+        assert redirect_uri.endswith(f"{path_prefix}/")
+
 
 @pytest.mark.asyncio
 @pytest.mark.workspace_host
 class TestAuthGetConsent:
-    @pytest.mark.parametrize("cookie", [None, "INVALID_LOGIN_SESSION"])
-    async def test_invalid_login_session(
+    @pytest.mark.parametrize(
+        "cookie,error",
+        [(None, "missing_session"), ("INVALID_LOGIN_SESSION", "invalid_session")],
+    )
+    async def test_missing_invalid_login_session(
         self,
         cookie: str | None,
+        error: str,
         tenant_params: TenantParams,
         test_client_auth: httpx.AsyncClient,
     ):
@@ -607,7 +633,7 @@ class TestAuthGetConsent:
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 
         headers = response.headers
-        assert headers["X-Fief-Error"] == "invalid_session"
+        assert headers["X-Fief-Error"] == error
 
     @pytest.mark.parametrize("cookie", [None, "INVALID_SESSION_TOKEN"])
     async def test_invalid_session_token(
@@ -783,10 +809,14 @@ class TestAuthGetConsent:
 @pytest.mark.asyncio
 @pytest.mark.workspace_host
 class TestAuthPostConsent:
-    @pytest.mark.parametrize("cookie", [None, "INVALID_LOGIN_SESSION"])
-    async def test_invalid_login_session(
+    @pytest.mark.parametrize(
+        "cookie,error",
+        [(None, "missing_session"), ("INVALID_LOGIN_SESSION", "invalid_session")],
+    )
+    async def test_missing_invalid_login_session(
         self,
         cookie: str | None,
+        error: str,
         tenant_params: TenantParams,
         test_client_auth_csrf: httpx.AsyncClient,
         csrf_token: str,
@@ -804,7 +834,7 @@ class TestAuthPostConsent:
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 
         headers = response.headers
-        assert headers["X-Fief-Error"] == "invalid_session"
+        assert headers["X-Fief-Error"] == error
 
     @pytest.mark.parametrize("cookie", [None, "INVALID_SESSION_TOKEN"])
     async def test_invalid_session_token(

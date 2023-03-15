@@ -17,6 +17,7 @@ from fief.dependencies.auth import (
     get_login_session,
     get_needs_consent,
     get_nonce,
+    get_optional_login_session,
     has_valid_session_token,
 )
 from fief.dependencies.authentication_flow import get_authentication_flow
@@ -97,14 +98,10 @@ async def authorize(
     return response
 
 
-@router.api_route(
-    "/login",
-    methods=["GET", "POST"],
-    name="auth:login",
-    dependencies=[Depends(get_login_session)],
-)
+@router.api_route("/login", methods=["GET", "POST"], name="auth:login")
 async def login(
     request: Request,
+    login_session: LoginSession | None = Depends(get_optional_login_session),
     user_manager: UserManager = Depends(get_user_manager),
     authentication_flow: AuthenticationFlow = Depends(get_authentication_flow),
     session_token: SessionToken | None = Depends(get_session_token),
@@ -127,10 +124,17 @@ async def login(
                 _("Invalid email or password"), "bad_credentials"
             )
 
-        response = RedirectResponse(
-            tenant.url_path_for(request, "auth:consent"),
-            status_code=status.HTTP_302_FOUND,
-        )
+        if login_session is not None:
+            response = RedirectResponse(
+                tenant.url_path_for(request, "auth:consent"),
+                status_code=status.HTTP_302_FOUND,
+            )
+        else:
+            response = RedirectResponse(
+                tenant.url_path_for(request, "auth.dashboard:index"),
+                status_code=status.HTTP_302_FOUND,
+            )
+
         response = await authentication_flow.rotate_session_token(
             response, user.id, session_token=session_token
         )
