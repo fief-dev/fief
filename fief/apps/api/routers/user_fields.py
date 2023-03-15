@@ -46,6 +46,15 @@ async def list_user_fields(
     )
 
 
+@router.get(
+    "/{id:uuid}", name="user_fields:get", response_model=schemas.user_field.UserField
+)
+async def get_user_field(
+    user_field: UserField = Depends(get_user_field_by_id_or_404),
+) -> UserField:
+    return user_field
+
+
 @router.post(
     "/",
     name="user_fields:create",

@@ -34,6 +34,36 @@ class TestListUserFields:
 
 @pytest.mark.asyncio
 @pytest.mark.workspace_host
+class TestGetUserField:
+    async def test_unauthorized(
+        self,
+        unauthorized_api_assertions: HTTPXResponseAssertion,
+        test_client_api: httpx.AsyncClient,
+        test_data: TestData,
+    ):
+        user_field = test_data["user_fields"]["given_name"]
+        response = await test_client_api.get(f"/user-fields/{user_field.id}")
+
+        unauthorized_api_assertions(response)
+
+    @pytest.mark.authenticated_admin
+    async def test_not_existing(
+        self, test_client_api: httpx.AsyncClient, not_existing_uuid: uuid.UUID
+    ):
+        response = await test_client_api.get(f"/user-fields/{not_existing_uuid}")
+
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    @pytest.mark.authenticated_admin
+    async def test_valid(self, test_client_api: httpx.AsyncClient, test_data: TestData):
+        user_field = test_data["user_fields"]["given_name"]
+        response = await test_client_api.get(f"/user-fields/{user_field.id}")
+
+        assert response.status_code == status.HTTP_200_OK
+
+
+@pytest.mark.asyncio
+@pytest.mark.workspace_host
 class TestCreateUserField:
     async def test_unauthorized(
         self,

@@ -33,6 +33,11 @@ async def list_clients(
     )
 
 
+@router.get("/{id:uuid}", name="clients:get", response_model=schemas.client.Client)
+async def get_webhook(client: Client = Depends(get_client_by_id_or_404)) -> Client:
+    return client
+
+
 @router.post(
     "/",
     name="clients:create",

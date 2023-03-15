@@ -35,6 +35,11 @@ async def list_roles(
     )
 
 
+@router.get("/{id:uuid}", name="roles:get", response_model=schemas.role.Role)
+async def get_role(role: Role = Depends(get_role_by_id_or_404)) -> Role:
+    return role
+
+
 @router.post(
     "/",
     name="roles:create",

@@ -52,6 +52,36 @@ class TestListTenants:
 
 @pytest.mark.asyncio
 @pytest.mark.workspace_host
+class TestGetTenant:
+    async def test_unauthorized(
+        self,
+        unauthorized_api_assertions: HTTPXResponseAssertion,
+        test_client_api: httpx.AsyncClient,
+        test_data: TestData,
+    ):
+        tenant = test_data["tenants"]["default"]
+        response = await test_client_api.get(f"/tenants/{tenant.id}")
+
+        unauthorized_api_assertions(response)
+
+    @pytest.mark.authenticated_admin
+    async def test_not_existing(
+        self, test_client_api: httpx.AsyncClient, not_existing_uuid: uuid.UUID
+    ):
+        response = await test_client_api.get(f"/tenants/{not_existing_uuid}")
+
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    @pytest.mark.authenticated_admin
+    async def test_valid(self, test_client_api: httpx.AsyncClient, test_data: TestData):
+        tenant = test_data["tenants"]["default"]
+        response = await test_client_api.get(f"/tenants/{tenant.id}")
+
+        assert response.status_code == status.HTTP_200_OK
+
+
+@pytest.mark.asyncio
+@pytest.mark.workspace_host
 class TestCreateTenant:
     async def test_unauthorized(
         self,

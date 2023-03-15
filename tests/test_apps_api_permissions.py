@@ -47,6 +47,36 @@ class TestListPermissions:
 
 @pytest.mark.asyncio
 @pytest.mark.workspace_host
+class TestGetPermission:
+    async def test_unauthorized(
+        self,
+        unauthorized_api_assertions: HTTPXResponseAssertion,
+        test_client_api: httpx.AsyncClient,
+        test_data: TestData,
+    ):
+        permission = test_data["permissions"]["castles:create"]
+        response = await test_client_api.get(f"/permissions/{permission.id}")
+
+        unauthorized_api_assertions(response)
+
+    @pytest.mark.authenticated_admin
+    async def test_not_existing(
+        self, test_client_api: httpx.AsyncClient, not_existing_uuid: uuid.UUID
+    ):
+        response = await test_client_api.get(f"/permissions/{not_existing_uuid}")
+
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    @pytest.mark.authenticated_admin
+    async def test_valid(self, test_client_api: httpx.AsyncClient, test_data: TestData):
+        permission = test_data["permissions"]["castles:create"]
+        response = await test_client_api.get(f"/permissions/{permission.id}")
+
+        assert response.status_code == status.HTTP_200_OK
+
+
+@pytest.mark.asyncio
+@pytest.mark.workspace_host
 class TestCreatePermission:
     async def test_unauthorized(
         self,

@@ -44,6 +44,15 @@ async def list_permissions(
     )
 
 
+@router.get(
+    "/{id:uuid}", name="permissions:get", response_model=schemas.permission.Permission
+)
+async def get_permission(
+    permission: Permission = Depends(get_permission_by_id_or_404),
+) -> Permission:
+    return permission
+
+
 @router.post(
     "/",
     name="permissions:create",

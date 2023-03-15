@@ -45,6 +45,43 @@ class TestListClients:
 
 @pytest.mark.asyncio
 @pytest.mark.workspace_host
+class TestGetClient:
+    async def test_unauthorized(
+        self,
+        unauthorized_api_assertions: HTTPXResponseAssertion,
+        test_client_api: httpx.AsyncClient,
+        test_data: TestData,
+    ):
+        client = test_data["clients"]["default_tenant"]
+        response = await test_client_api.get(f"/clients/{client.id}")
+
+        unauthorized_api_assertions(response)
+
+    @pytest.mark.authenticated_admin
+    async def test_not_existing(
+        self, test_client_api: httpx.AsyncClient, not_existing_uuid: uuid.UUID
+    ):
+        response = await test_client_api.get(f"/clients/{not_existing_uuid}")
+
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    @pytest.mark.authenticated_admin
+    async def test_valid(self, test_client_api: httpx.AsyncClient, test_data: TestData):
+        client = test_data["clients"]["default_tenant"]
+        response = await test_client_api.get(f"/clients/{client.id}")
+
+        assert response.status_code == status.HTTP_200_OK
+
+        json = response.json()
+        assert json["encrypt_jwk"] in [None, "**********"]
+
+        assert "authorization_code_lifetime_seconds" in json
+        assert "access_id_token_lifetime_seconds" in json
+        assert "refresh_token_lifetime_seconds" in json
+
+
+@pytest.mark.asyncio
+@pytest.mark.workspace_host
 class TestCreateClient:
     async def test_unauthorized(
         self,

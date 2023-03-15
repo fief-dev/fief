@@ -44,6 +44,36 @@ class TestListOAuthProviders:
 
 @pytest.mark.asyncio
 @pytest.mark.workspace_host
+class TestGetOAuthProvider:
+    async def test_unauthorized(
+        self,
+        unauthorized_api_assertions: HTTPXResponseAssertion,
+        test_client_api: httpx.AsyncClient,
+        test_data: TestData,
+    ):
+        oauth_provider = test_data["oauth_providers"]["google"]
+        response = await test_client_api.get(f"/oauth-providers/{oauth_provider.id}")
+
+        unauthorized_api_assertions(response)
+
+    @pytest.mark.authenticated_admin
+    async def test_not_existing(
+        self, test_client_api: httpx.AsyncClient, not_existing_uuid: uuid.UUID
+    ):
+        response = await test_client_api.get(f"/oauth-providers/{not_existing_uuid}")
+
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    @pytest.mark.authenticated_admin
+    async def test_valid(self, test_client_api: httpx.AsyncClient, test_data: TestData):
+        oauth_provider = test_data["oauth_providers"]["google"]
+        response = await test_client_api.get(f"/oauth-providers/{oauth_provider.id}")
+
+        assert response.status_code == status.HTTP_200_OK
+
+
+@pytest.mark.asyncio
+@pytest.mark.workspace_host
 class TestCreateOAuthProvider:
     async def test_unauthorized(
         self,

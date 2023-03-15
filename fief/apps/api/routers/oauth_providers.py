@@ -54,6 +54,17 @@ async def list_oauth_providers(
     )
 
 
+@router.get(
+    "/{id:uuid}",
+    name="oauth_providers:get",
+    response_model=schemas.oauth_provider.OAuthProvider,
+)
+async def get_oauth_provider(
+    oauth_provider: OAuthProvider = Depends(get_oauth_provider_by_id_or_404),
+) -> OAuthProvider:
+    return oauth_provider
+
+
 @router.post(
     "/",
     name="oauth_providers:create",

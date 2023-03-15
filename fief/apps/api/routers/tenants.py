@@ -35,6 +35,11 @@ async def list_tenants(
     )
 
 
+@router.get("/{id:uuid}", name="tenants:get", response_model=schemas.tenant.Tenant)
+async def get_tenant(tenant: Tenant = Depends(get_tenant_by_id_or_404)) -> Tenant:
+    return tenant
+
+
 @router.post(
     "/",
     name="tenants:create",

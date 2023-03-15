@@ -59,6 +59,36 @@ class TestListRoles:
 
 @pytest.mark.asyncio
 @pytest.mark.workspace_host
+class TestGetRole:
+    async def test_unauthorized(
+        self,
+        unauthorized_api_assertions: HTTPXResponseAssertion,
+        test_client_api: httpx.AsyncClient,
+        test_data: TestData,
+    ):
+        role = test_data["roles"]["castles_visitor"]
+        response = await test_client_api.get(f"/roles/{role.id}")
+
+        unauthorized_api_assertions(response)
+
+    @pytest.mark.authenticated_admin
+    async def test_not_existing(
+        self, test_client_api: httpx.AsyncClient, not_existing_uuid: uuid.UUID
+    ):
+        response = await test_client_api.get(f"/roles/{not_existing_uuid}")
+
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    @pytest.mark.authenticated_admin
+    async def test_valid(self, test_client_api: httpx.AsyncClient, test_data: TestData):
+        role = test_data["roles"]["castles_visitor"]
+        response = await test_client_api.get(f"/roles/{role.id}")
+
+        assert response.status_code == status.HTTP_200_OK
+
+
+@pytest.mark.asyncio
+@pytest.mark.workspace_host
 class TestCreateRole:
     async def test_unauthorized(
         self,
