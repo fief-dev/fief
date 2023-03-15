@@ -35,6 +35,13 @@ class ClientUpdated(WebhookEventType):
     event = "updated"
 
 
+class ClientDeleted(WebhookEventType):
+    """Occurs whenever a Client is deleted."""
+
+    object = "client"
+    event = "deleted"
+
+
 class EmailTemplateUpdated(WebhookEventType):
     """Occurs whenever an Email Template is updated."""
 

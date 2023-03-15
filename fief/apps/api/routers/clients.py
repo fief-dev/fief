@@ -1,6 +1,6 @@
 import secrets
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 
 from fief import schemas
 from fief.crypto.jwk import generate_jwk
@@ -15,7 +15,7 @@ from fief.logger import AuditLogger
 from fief.models import AuditLogMessage, Client
 from fief.repositories import ClientRepository, TenantRepository
 from fief.schemas.generics import PaginatedResults
-from fief.services.webhooks.models import ClientCreated, ClientUpdated
+from fief.services.webhooks.models import ClientCreated, ClientDeleted, ClientUpdated
 
 router = APIRouter(dependencies=[Depends(is_authenticated_admin_api)])
 
@@ -105,3 +105,20 @@ async def create_encryption_key(
     trigger_webhooks(ClientUpdated, client, schemas.client.Client)
 
     return key.export(as_dict=True)
+
+
+@router.delete(
+    "/{id:uuid}",
+    name="clients:delete",
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
+)
+async def delete_client(
+    client: Client = Depends(get_client_by_id_or_404),
+    repository: ClientRepository = Depends(get_workspace_repository(ClientRepository)),
+    audit_logger: AuditLogger = Depends(get_audit_logger),
+    trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
+):
+    await repository.delete(client)
+    audit_logger.log_object_write(AuditLogMessage.OBJECT_DELETED, client)
+    trigger_webhooks(ClientDeleted, client, schemas.client.Client)

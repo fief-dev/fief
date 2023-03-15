@@ -340,3 +340,33 @@ class TestCreateEncryptionKey:
         tenant_key = jwk.JWK.from_json(updated_client.encrypt_jwk)
         assert tenant_key.has_private is False
         assert tenant_key.has_public is True
+
+
+@pytest.mark.asyncio
+@pytest.mark.workspace_host
+class TestDeleteClient:
+    async def test_unauthorized(
+        self,
+        unauthorized_api_assertions: HTTPXResponseAssertion,
+        test_client_api: httpx.AsyncClient,
+        test_data: TestData,
+    ):
+        client = test_data["clients"]["default_tenant"]
+        response = await test_client_api.delete(f"/clients/{client.id}")
+
+        unauthorized_api_assertions(response)
+
+    @pytest.mark.authenticated_admin
+    async def test_not_existing(
+        self, test_client_api: httpx.AsyncClient, not_existing_uuid: uuid.UUID
+    ):
+        response = await test_client_api.delete(f"/clients/{not_existing_uuid}")
+
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    @pytest.mark.authenticated_admin
+    async def test_valid(self, test_client_api: httpx.AsyncClient, test_data: TestData):
+        client = test_data["clients"]["default_tenant"]
+        response = await test_client_api.delete(f"/clients/{client.id}")
+
+        assert response.status_code == status.HTTP_204_NO_CONTENT
