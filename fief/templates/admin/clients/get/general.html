@@ -78,5 +78,16 @@
       {% endif %}
     </button>
   </div>
+  <div class="mt-6">
+    <a
+      href="{{ url_for('dashboard.clients:delete', id=client.id) }}"
+      class="btn w-full bg-red-500 hover:bg-red-600 text-white"
+      hx-boost="true"
+      hx-target="#modal"
+      _="install OpenModal"
+    >
+      Delete Client
+    </a>
+  </div>
 </div>
 {% endblock %}

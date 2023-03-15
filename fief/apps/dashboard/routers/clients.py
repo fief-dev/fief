@@ -27,7 +27,7 @@ from fief.forms import FormHelper
 from fief.logger import AuditLogger
 from fief.models import AuditLogMessage, Client
 from fief.repositories import ClientRepository, TenantRepository
-from fief.services.webhooks.models import ClientCreated, ClientUpdated
+from fief.services.webhooks.models import ClientCreated, ClientDeleted, ClientUpdated
 from fief.templates import templates
 
 router = APIRouter(dependencies=[Depends(is_authenticated_admin_session)])
@@ -225,3 +225,33 @@ async def create_encryption_key(
         "admin/clients/encryption_key.html",
         {**context, "client": client, "key": key.export(as_dict=True)},
     )
+
+
+@router.api_route(
+    "/{id:uuid}/delete",
+    methods=["GET", "DELETE"],
+    name="dashboard.clients:delete",
+)
+async def delete_client(
+    request: Request,
+    client: Client = Depends(get_client_by_id_or_404),
+    repository: ClientRepository = Depends(get_workspace_repository(ClientRepository)),
+    list_context=Depends(get_list_context),
+    context: BaseContext = Depends(get_base_context),
+    audit_logger: AuditLogger = Depends(get_audit_logger),
+    trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
+):
+    if request.method == "DELETE":
+        await repository.delete(client)
+        audit_logger.log_object_write(AuditLogMessage.OBJECT_DELETED, client)
+        trigger_webhooks(ClientDeleted, client, schemas.client.Client)
+
+        return HXRedirectResponse(
+            request.url_for("dashboard.clients:list"),
+            status_code=status.HTTP_204_NO_CONTENT,
+        )
+    else:
+        return templates.TemplateResponse(
+            "admin/clients/delete.html",
+            {**context, **list_context, "client": client},
+        )
