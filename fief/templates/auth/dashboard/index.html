@@ -1,7 +1,28 @@
+{% import "macros/alerts.html" as alerts %}
+{% import "macros/buttons.html" as buttons %}
+{% import "macros/forms.html" as forms %}
+
 {% extends "auth/dashboard/layout.html" %}
 
 {% block head_title_content %}{{ _("Profile") }}{% endblock %}
 
 {% block content %}
-    Hello {{ user.email }}!
+<h2 class="text-2xl text-slate-800 font-bold mb-5">{{ _("Profile") }}</h2>
+<form hx-boost="true" method="POST" class="w-full md:w-1/2">
+  <div class="space-y-4">
+    {% if success %}
+      {% call alerts.success() %}
+        {{ success }}
+      {% endcall %}
+    {% endif %}
+    {{ forms.form_field(form.email) }}
+    {% for field in form.fields %}
+      {{ forms.form_field(field) }}
+    {% endfor %}
+    {{ forms.form_csrf_token(form) }}
+    {% call buttons.submit('btn') %}
+    {{ _("Update profile") }}
+    {% endcall %}
+  </div>
+</form>
 {% endblock %}

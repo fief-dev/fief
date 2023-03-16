@@ -1,17 +1,19 @@
 from typing import TypedDict
 
 from fastapi import APIRouter, Depends, Request
-from fastapi_users.exceptions import InvalidPasswordException
+from fastapi_users.exceptions import InvalidPasswordException, UserAlreadyExists
 
+from fief import schemas
 from fief.apps.auth.forms.password import ChangePasswordForm
+from fief.apps.auth.forms.profile import PF, get_profile_form_class
 from fief.dependencies.session_token import get_user_from_session_token
 from fief.dependencies.tenant import get_current_tenant
 from fief.dependencies.theme import get_current_theme
-from fief.dependencies.users import UserManager, get_user_manager
+from fief.dependencies.user_field import get_user_fields
+from fief.dependencies.users import UserManager, get_user_manager, get_user_update_model
 from fief.forms import FormHelper
 from fief.locale import gettext_lazy as _
-from fief.models import Tenant, Theme, User
-from fief.templates import templates
+from fief.models import Tenant, Theme, User, UserField
 
 router = APIRouter()
 
@@ -32,12 +34,47 @@ async def get_base_context(
     return {"request": request, "user": user, "tenant": tenant, "theme": theme}
 
 
-@router.get("/", name="auth.dashboard:index")
-async def get_index(context: BaseContext = Depends(get_base_context)):
-    return templates.TemplateResponse(
+@router.api_route("/", methods=["GET", "POST"], name="auth.dashboard:index")
+async def get_index(
+    request: Request,
+    user: User = Depends(get_user_from_session_token),
+    user_manager: UserManager = Depends(get_user_manager),
+    profile_form_class: type[PF] = Depends(get_profile_form_class),
+    user_update_model: type[schemas.user.UserUpdate[schemas.user.UF]] = Depends(
+        get_user_update_model
+    ),
+    user_fields: list[UserField] = Depends(get_user_fields),
+    context: BaseContext = Depends(get_base_context),
+):
+    form_helper = FormHelper(
+        profile_form_class,
         "auth/dashboard/index.html",
-        {**context, "current_route": "auth.dashboard.index"},
+        request=request,
+        object=user,
+        context={**context, "current_route": "auth.dashboard:index"},
     )
+
+    if await form_helper.is_submitted_and_valid():
+        form = await form_helper.get_form()
+        data = form.data
+        user_update = user_update_model(**data)
+
+        try:
+            user = await user_manager.update_with_fields(
+                user_update, user, user_fields=user_fields, request=request
+            )
+        except UserAlreadyExists:
+            form.email.errors.append("A user with this email address already exists.")
+            return await form_helper.get_error_response(
+                "A user with this email address already exists.",
+                "user_already_exists",
+            )
+
+        form_helper.context["success"] = _(
+            "Your profile has successfully been updated."
+        )
+
+    return await form_helper.get_response()
 
 
 @router.api_route("/password", methods=["GET", "POST"], name="auth.dashboard:password")
@@ -51,7 +88,7 @@ async def get_password(
         ChangePasswordForm,
         "auth/dashboard/password.html",
         request=request,
-        context={**context, "current_route": "auth.dashboard.password"},
+        context={**context, "current_route": "auth.dashboard:password"},
     )
 
     if await form_helper.is_submitted_and_valid():
