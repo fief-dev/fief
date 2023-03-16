@@ -25,7 +25,7 @@ async def get_user_from_session_token(
     session_token: SessionToken | None = Depends(get_session_token),
     tenant: Tenant = Depends(get_current_tenant),
 ) -> User:
-    if session_token is None:
+    if session_token is None or session_token.user.tenant_id != tenant.id:
         raise HTTPException(
             status_code=status.HTTP_307_TEMPORARY_REDIRECT,
             headers={"Location": tenant.url_for(request, "auth:login")},
