@@ -6,10 +6,11 @@ from fastapi_users.exceptions import InvalidPasswordException
 from fief.apps.auth.forms.password import ChangePasswordForm
 from fief.dependencies.session_token import get_user_from_session_token
 from fief.dependencies.tenant import get_current_tenant
+from fief.dependencies.theme import get_current_theme
 from fief.dependencies.users import UserManager, get_user_manager
 from fief.forms import FormHelper
 from fief.locale import gettext_lazy as _
-from fief.models import Tenant, User
+from fief.models import Tenant, Theme, User
 from fief.templates import templates
 
 router = APIRouter()
@@ -19,14 +20,16 @@ class BaseContext(TypedDict):
     request: Request
     user: User
     tenant: Tenant
+    theme: Theme
 
 
 async def get_base_context(
     request: Request,
     user: User = Depends(get_user_from_session_token),
     tenant: Tenant = Depends(get_current_tenant),
+    theme: Theme = Depends(get_current_theme),
 ) -> BaseContext:
-    return {"request": request, "user": user, "tenant": tenant}
+    return {"request": request, "user": user, "tenant": tenant, "theme": theme}
 
 
 @router.get("/", name="auth.dashboard:index")

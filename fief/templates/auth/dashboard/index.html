@@ -1,5 +1,7 @@
 {% extends "auth/dashboard/layout.html" %}
 
+{% block head_title_content %}{{ _("Profile") }}{% endblock %}
+
 {% block content %}
     Hello {{ user.email }}!
 {% endblock %}

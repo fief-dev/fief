@@ -2,7 +2,9 @@
 <html lang="en">
   <head>
     {% block head %}
-      <title>{% block head_title %}{% endblock %} - {{ tenant.name if tenant is defined else "Fief" }}</title>
+      {% block head_title %}
+        <title id="head-title" hx-swap-oob="true">{% block head_title_content %}{% endblock %} · {{ tenant.name if tenant is defined else "Fief" }}</title>
+      {% endblock %}
       <meta name="viewport" content="width=device-width, initial-scale=1">
       <link rel="icon" href="{{ url_for('auth:static', path='/favicon.svg') }}" />
       <link href="{{ url_for('auth:static', path='/auth.css') }}" rel="stylesheet">
