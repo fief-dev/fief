@@ -1,3 +1,5 @@
+{% import "macros/branding.html" as branding %}
+
 {% extends "auth/base.html" %}
 
 {% block javascripts_modules %}
@@ -27,6 +29,8 @@
       </div>
     </div>
   </div>
+
+  {{ branding.branding() }}
 </main>
 {% endblock %}
 
