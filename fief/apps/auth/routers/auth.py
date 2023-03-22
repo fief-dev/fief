@@ -131,7 +131,7 @@ async def login(
             )
         else:
             response = RedirectResponse(
-                tenant.url_path_for(request, "auth.dashboard:index"),
+                tenant.url_path_for(request, "auth.dashboard:profile"),
                 status_code=status.HTTP_302_FOUND,
             )
 

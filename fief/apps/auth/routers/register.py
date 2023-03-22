@@ -93,7 +93,7 @@ async def register(
                 )
             else:
                 response = RedirectResponse(
-                    tenant.url_path_for(request, "auth.dashboard:index"),
+                    tenant.url_path_for(request, "auth.dashboard:profile"),
                     status_code=status.HTTP_302_FOUND,
                 )
             response = await authentication_flow.create_session_token(response, user.id)

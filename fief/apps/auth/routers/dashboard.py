@@ -34,8 +34,8 @@ async def get_base_context(
     return {"request": request, "user": user, "tenant": tenant, "theme": theme}
 
 
-@router.api_route("/", methods=["GET", "POST"], name="auth.dashboard:index")
-async def get_index(
+@router.api_route("/", methods=["GET", "POST"], name="auth.dashboard:profile")
+async def update_profile(
     request: Request,
     user: User = Depends(get_user_from_session_token),
     user_manager: UserManager = Depends(get_user_manager),
@@ -51,7 +51,7 @@ async def get_index(
         "auth/dashboard/index.html",
         request=request,
         object=user,
-        context={**context, "current_route": "auth.dashboard:index"},
+        context={**context, "current_route": "auth.dashboard:profile"},
     )
 
     if await form_helper.is_submitted_and_valid():
@@ -78,7 +78,7 @@ async def get_index(
 
 
 @router.api_route("/password", methods=["GET", "POST"], name="auth.dashboard:password")
-async def get_password(
+async def update_password(
     request: Request,
     user: User = Depends(get_user_from_session_token),
     user_manager: UserManager = Depends(get_user_manager),
