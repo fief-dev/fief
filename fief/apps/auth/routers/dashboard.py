@@ -64,11 +64,9 @@ async def update_profile(
                 user_update, user, user_fields=user_fields, request=request
             )
         except UserAlreadyExists:
-            form.email.errors.append("A user with this email address already exists.")
-            return await form_helper.get_error_response(
-                "A user with this email address already exists.",
-                "user_already_exists",
-            )
+            message = _("A user with this email address already exists.")
+            form.email.errors.append(message)
+            return await form_helper.get_error_response(message, "user_already_exists")
 
         form_helper.context["success"] = _(
             "Your profile has successfully been updated."
