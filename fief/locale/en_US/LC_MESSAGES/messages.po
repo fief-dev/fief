@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  Fief\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2023-02-21 14:14+0100\n"
+"POT-Creation-Date: 2023-03-28 15:09+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en_us\n"
@@ -12,50 +12,52 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.11.0\n"
+"Generated-By: Babel 2.12.1\n"
 
-#: fief/forms.py:64
+#: fief/forms.py:65
 msgid "CSRF failed."
 msgstr "CSRF failed."
 
-#: fief/forms.py:262
+#: fief/forms.py:268
 msgid "The country code is missing."
 msgstr "The country code is missing."
 
-#: fief/forms.py:264
+#: fief/forms.py:270
 msgid "This phone number is invalid."
 msgstr "This phone number is invalid."
 
-#: fief/forms.py:282
+#: fief/forms.py:288
 msgid "Address line 1"
 msgstr "Address line 1"
 
-#: fief/forms.py:284
+#: fief/forms.py:290
 msgid "Address line 2"
 msgstr "Address line 2"
 
-#: fief/forms.py:288
+#: fief/forms.py:294
 msgid "Postal code"
 msgstr "Postal code"
 
-#: fief/forms.py:289
+#: fief/forms.py:295
 msgid "City"
 msgstr "City"
 
-#: fief/forms.py:291
+#: fief/forms.py:297
 msgid "State"
 msgstr "State"
 
-#: fief/forms.py:293
+#: fief/forms.py:299
 msgid "Country"
 msgstr "Country"
 
-#: fief/apps/auth/forms/auth.py:12 fief/forms.py:315
+#: fief/apps/auth/forms/auth.py:12 fief/forms.py:321
+#: fief/templates/auth/dashboard/password.html:7
+#: fief/templates/auth/dashboard/sidebar.html:40
 msgid "Password"
 msgstr "Password"
 
-#: fief/apps/auth/forms/auth.py:10 fief/apps/auth/forms/register.py:15
-#: fief/apps/auth/forms/reset.py:9
+#: fief/apps/auth/forms/auth.py:10 fief/apps/auth/forms/profile.py:14
+#: fief/apps/auth/forms/register.py:15 fief/apps/auth/forms/reset.py:9
 msgid "Email address"
 msgstr "Email address"
 
@@ -67,43 +69,82 @@ msgstr "Allow"
 msgid "Deny"
 msgstr "Deny"
 
-#: fief/apps/auth/forms/reset.py:14
+#: fief/apps/auth/forms/password.py:9
+#, fuzzy
+msgid "Old password"
+msgstr "Password"
+
+#: fief/apps/auth/forms/password.py:12 fief/apps/auth/forms/reset.py:14
 msgid "New password"
 msgstr "New password"
 
-#: fief/apps/auth/routers/auth.py:127
+#: fief/apps/auth/forms/password.py:15
+#, fuzzy
+msgid "Confirm new password"
+msgstr "New password"
+
+#: fief/apps/auth/routers/auth.py:124
 msgid "Invalid email or password"
 msgstr "Invalid email or password"
 
-#: fief/apps/auth/routers/auth.py:210
+#: fief/apps/auth/routers/auth.py:214
 msgid "The user denied access to their data."
 msgstr "The user denied access to their data."
 
-#: fief/apps/auth/routers/auth.py:233 fief/dependencies/auth.py:51
+#: fief/apps/auth/routers/auth.py:237 fief/dependencies/auth.py:51
 msgid "redirect_uri is missing"
 msgstr "redirect_uri is missing"
 
-#: fief/apps/auth/routers/oauth.py:94
+#: fief/apps/auth/routers/dashboard.py:67
+#, fuzzy
+msgid "A user with this email address already exists."
+msgstr "A user with the same email address already exists."
+
+#: fief/apps/auth/routers/dashboard.py:71
+msgid "Your profile has successfully been updated."
+msgstr ""
+
+#: fief/apps/auth/routers/dashboard.py:104
+#, fuzzy
+msgid "Old password is invalid."
+msgstr "This phone number is invalid."
+
+#: fief/apps/auth/routers/dashboard.py:112
+msgid "Passwords don't match."
+msgstr ""
+
+#: fief/apps/auth/routers/dashboard.py:122
+msgid "Your password has been changed successfully."
+msgstr ""
+
+#: fief/apps/auth/routers/oauth.py:95
 msgid "Missing authorization code."
 msgstr "Missing authorization code."
 
-#: fief/apps/auth/routers/oauth.py:106
+#: fief/apps/auth/routers/oauth.py:107
 msgid "Invalid OAuth session."
 msgstr "Invalid OAuth session."
 
-#: fief/apps/auth/routers/oauth.py:122
+#: fief/apps/auth/routers/oauth.py:123
 msgid "An error occurred while getting the access token."
 msgstr "An error occurred while getting the access token."
 
 #: fief/apps/auth/routers/oauth.py:147
+#, python-format
+msgid ""
+"An error occurred while querying the provider API. Original error "
+"message: %(message)s"
+msgstr ""
+
+#: fief/apps/auth/routers/oauth.py:163
 msgid "Your account is inactive."
 msgstr "Your account is inactive."
 
-#: fief/apps/auth/routers/register.py:52
+#: fief/apps/auth/routers/register.py:49
 msgid "Registration is disabled"
 msgstr "Registration is disabled"
 
-#: fief/apps/auth/routers/register.py:85
+#: fief/apps/auth/routers/register.py:82
 msgid "A user with the same email address already exists."
 msgstr "A user with the same email address already exists."
 
@@ -175,11 +216,18 @@ msgstr "screen should either be \"login\" or \"register\""
 msgid "Unsupported code_challenge_method"
 msgstr "Unsupported code_challenge_method"
 
-#: fief/dependencies/auth.py:275
+#: fief/dependencies/auth.py:263
 msgid "Invalid login session"
 msgstr "Invalid login session"
 
-#: fief/dependencies/auth.py:317
+#: fief/dependencies/auth.py:276
+#, python-format
+msgid ""
+"Missing login session. You should return to %(tenant)s and try to login "
+"again"
+msgstr ""
+
+#: fief/dependencies/auth.py:323
 msgid "User consent is required for this scope"
 msgstr "User consent is required for this scope"
 
@@ -195,7 +243,7 @@ msgstr "Invalid login session."
 msgid "Unknown OAuth provider"
 msgstr "Unknown OAuth provider"
 
-#: fief/dependencies/users.py:102
+#: fief/dependencies/users.py:112
 msgid "The password should be at least 8 characters."
 msgstr "The password should be at least 8 characters."
 
@@ -229,10 +277,6 @@ msgstr "I remember my password"
 #: fief/templates/auth/forgot_password.html:19
 msgid "Send me a reset link"
 msgstr "Send me a reset link"
-
-#: fief/templates/auth/layout.html:50
-msgid "Powered and secured by"
-msgstr "Powered and secured by"
 
 #: fief/templates/auth/login.html:5 fief/templates/auth/login.html:20
 msgid "Sign in"
@@ -286,4 +330,28 @@ msgstr "Reset password"
 #: fief/templates/auth/reset_password.html:18
 msgid "Reset my password"
 msgstr "Reset my password"
+
+#: fief/templates/auth/dashboard/index.html:7
+#: fief/templates/auth/dashboard/index.html:10
+#: fief/templates/auth/dashboard/sidebar.html:31
+msgid "Profile"
+msgstr ""
+
+#: fief/templates/auth/dashboard/index.html:24
+msgid "Update profile"
+msgstr ""
+
+#: fief/templates/auth/dashboard/password.html:10
+#: fief/templates/auth/dashboard/password.html:23
+#, fuzzy
+msgid "Change password"
+msgstr "New password"
+
+#: fief/templates/auth/dashboard/sidebar.html:16
+msgid "Back to application"
+msgstr ""
+
+#: fief/templates/macros/branding.html:3
+msgid "Powered and secured by"
+msgstr "Powered and secured by"
 

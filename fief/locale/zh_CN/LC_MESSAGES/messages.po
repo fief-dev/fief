@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  Fief\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2023-02-21 14:14+0100\n"
+"POT-Creation-Date: 2023-03-28 15:09+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: zh_Hans\n"
@@ -12,50 +12,52 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.11.0\n"
+"Generated-By: Babel 2.12.1\n"
 
-#: fief/forms.py:64
+#: fief/forms.py:65
 msgid "CSRF failed."
 msgstr "CSRF失败"
 
-#: fief/forms.py:262
+#: fief/forms.py:268
 msgid "The country code is missing."
 msgstr "国家编号缺失"
 
-#: fief/forms.py:264
+#: fief/forms.py:270
 msgid "This phone number is invalid."
 msgstr "该号码不正确"
 
-#: fief/forms.py:282
+#: fief/forms.py:288
 msgid "Address line 1"
 msgstr "地址栏 1"
 
-#: fief/forms.py:284
+#: fief/forms.py:290
 msgid "Address line 2"
 msgstr "地址栏 2"
 
-#: fief/forms.py:288
+#: fief/forms.py:294
 msgid "Postal code"
 msgstr "邮编"
 
-#: fief/forms.py:289
+#: fief/forms.py:295
 msgid "City"
 msgstr "城市"
 
-#: fief/forms.py:291
+#: fief/forms.py:297
 msgid "State"
 msgstr "省/州"
 
-#: fief/forms.py:293
+#: fief/forms.py:299
 msgid "Country"
 msgstr "国家"
 
-#: fief/apps/auth/forms/auth.py:12 fief/forms.py:315
+#: fief/apps/auth/forms/auth.py:12 fief/forms.py:321
+#: fief/templates/auth/dashboard/password.html:7
+#: fief/templates/auth/dashboard/sidebar.html:40
 msgid "Password"
 msgstr "密码"
 
-#: fief/apps/auth/forms/auth.py:10 fief/apps/auth/forms/register.py:15
-#: fief/apps/auth/forms/reset.py:9
+#: fief/apps/auth/forms/auth.py:10 fief/apps/auth/forms/profile.py:14
+#: fief/apps/auth/forms/register.py:15 fief/apps/auth/forms/reset.py:9
 msgid "Email address"
 msgstr "电子邮箱地址"
 
@@ -67,43 +69,82 @@ msgstr "允许"
 msgid "Deny"
 msgstr "拒绝"
 
-#: fief/apps/auth/forms/reset.py:14
+#: fief/apps/auth/forms/password.py:9
+#, fuzzy
+msgid "Old password"
+msgstr "密码"
+
+#: fief/apps/auth/forms/password.py:12 fief/apps/auth/forms/reset.py:14
 msgid "New password"
 msgstr "新的密码"
 
-#: fief/apps/auth/routers/auth.py:127
+#: fief/apps/auth/forms/password.py:15
+#, fuzzy
+msgid "Confirm new password"
+msgstr "新的密码"
+
+#: fief/apps/auth/routers/auth.py:124
 msgid "Invalid email or password"
 msgstr "电子邮箱地址或密码出错"
 
-#: fief/apps/auth/routers/auth.py:210
+#: fief/apps/auth/routers/auth.py:214
 msgid "The user denied access to their data."
 msgstr "用户拒绝授权其数据"
 
-#: fief/apps/auth/routers/auth.py:233 fief/dependencies/auth.py:51
+#: fief/apps/auth/routers/auth.py:237 fief/dependencies/auth.py:51
 msgid "redirect_uri is missing"
 msgstr "缺失redirect_uri"
 
-#: fief/apps/auth/routers/oauth.py:94
+#: fief/apps/auth/routers/dashboard.py:67
+#, fuzzy
+msgid "A user with this email address already exists."
+msgstr "该电子邮箱地址已被注册"
+
+#: fief/apps/auth/routers/dashboard.py:71
+msgid "Your profile has successfully been updated."
+msgstr ""
+
+#: fief/apps/auth/routers/dashboard.py:104
+#, fuzzy
+msgid "Old password is invalid."
+msgstr "该号码不正确"
+
+#: fief/apps/auth/routers/dashboard.py:112
+msgid "Passwords don't match."
+msgstr ""
+
+#: fief/apps/auth/routers/dashboard.py:122
+msgid "Your password has been changed successfully."
+msgstr ""
+
+#: fief/apps/auth/routers/oauth.py:95
 msgid "Missing authorization code."
 msgstr "authorization code缺失"
 
-#: fief/apps/auth/routers/oauth.py:106
+#: fief/apps/auth/routers/oauth.py:107
 msgid "Invalid OAuth session."
 msgstr "OAuth session不正确"
 
-#: fief/apps/auth/routers/oauth.py:122
+#: fief/apps/auth/routers/oauth.py:123
 msgid "An error occurred while getting the access token."
 msgstr "获取access token时出错"
 
 #: fief/apps/auth/routers/oauth.py:147
+#, python-format
+msgid ""
+"An error occurred while querying the provider API. Original error "
+"message: %(message)s"
+msgstr ""
+
+#: fief/apps/auth/routers/oauth.py:163
 msgid "Your account is inactive."
 msgstr "该账号未激活"
 
-#: fief/apps/auth/routers/register.py:52
+#: fief/apps/auth/routers/register.py:49
 msgid "Registration is disabled"
 msgstr "已停止注册"
 
-#: fief/apps/auth/routers/register.py:85
+#: fief/apps/auth/routers/register.py:82
 msgid "A user with the same email address already exists."
 msgstr "该电子邮箱地址已被注册"
 
@@ -173,11 +214,18 @@ msgstr "screen应为\"login\"或\"register\""
 msgid "Unsupported code_challenge_method"
 msgstr "不支持该code_challenge_method"
 
-#: fief/dependencies/auth.py:275
+#: fief/dependencies/auth.py:263
 msgid "Invalid login session"
 msgstr "login session不正确"
 
-#: fief/dependencies/auth.py:317
+#: fief/dependencies/auth.py:276
+#, python-format
+msgid ""
+"Missing login session. You should return to %(tenant)s and try to login "
+"again"
+msgstr ""
+
+#: fief/dependencies/auth.py:323
 msgid "User consent is required for this scope"
 msgstr "该scope需要用户许可"
 
@@ -193,7 +241,7 @@ msgstr "login session不正确"
 msgid "Unknown OAuth provider"
 msgstr "未知OAuth provider"
 
-#: fief/dependencies/users.py:102
+#: fief/dependencies/users.py:112
 msgid "The password should be at least 8 characters."
 msgstr "密码最少应包含8个字符"
 
@@ -227,10 +275,6 @@ msgstr "已想起密码"
 #: fief/templates/auth/forgot_password.html:19
 msgid "Send me a reset link"
 msgstr "发送重置密码链接"
-
-#: fief/templates/auth/layout.html:50
-msgid "Powered and secured by"
-msgstr "用户认证方案"
 
 #: fief/templates/auth/login.html:5 fief/templates/auth/login.html:20
 msgid "Sign in"
@@ -284,4 +328,28 @@ msgstr "重置密码"
 #: fief/templates/auth/reset_password.html:18
 msgid "Reset my password"
 msgstr "重置密码"
+
+#: fief/templates/auth/dashboard/index.html:7
+#: fief/templates/auth/dashboard/index.html:10
+#: fief/templates/auth/dashboard/sidebar.html:31
+msgid "Profile"
+msgstr ""
+
+#: fief/templates/auth/dashboard/index.html:24
+msgid "Update profile"
+msgstr ""
+
+#: fief/templates/auth/dashboard/password.html:10
+#: fief/templates/auth/dashboard/password.html:23
+#, fuzzy
+msgid "Change password"
+msgstr "新的密码"
+
+#: fief/templates/auth/dashboard/sidebar.html:16
+msgid "Back to application"
+msgstr ""
+
+#: fief/templates/macros/branding.html:3
+msgid "Powered and secured by"
+msgstr "用户认证方案"
 
