@@ -44,6 +44,10 @@ class Tenant(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
         Boolean, default=True, nullable=False
     )
 
+    application_url: Mapped[str | None] = mapped_column(
+        String(length=512), default=None, nullable=True
+    )
+
     theme_id: Mapped[UUID4 | None] = mapped_column(
         GUID, ForeignKey(Theme.id, ondelete="SET NULL"), nullable=True
     )
