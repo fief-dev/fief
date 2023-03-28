@@ -62,6 +62,17 @@ async def callback(
 
 
 @router.get(
+    "/profile",
+    name="dashboard.auth:profile",
+    dependencies=[Depends(is_authenticated_admin_session)],
+)
+async def profile():
+    return RedirectResponse(
+        url=f"//{settings.fief_domain}", status_code=status.HTTP_302_FOUND
+    )
+
+
+@router.get(
     "/logout",
     name="dashboard.auth:logout",
     dependencies=[Depends(is_authenticated_admin_session)],
