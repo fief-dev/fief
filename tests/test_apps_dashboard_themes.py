@@ -157,6 +157,7 @@ class TestUpdateTheme:
             ("register",),
             ("forgot_password",),
             ("reset_password",),
+            ("profile",),
         ],
     )
     @pytest.mark.authenticated_admin(mode="session")

@@ -14,6 +14,7 @@ class ThemePagePreviewForm(Form):
             ("register", "Sign up"),
             ("forgot_password", "Forgot password"),
             ("reset_password", "Reset password"),
+            ("profile", "Profile"),
         ]
     )
 

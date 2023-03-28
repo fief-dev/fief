@@ -79,6 +79,28 @@ class TestAuthCallback:
 
 @pytest.mark.asyncio
 @pytest.mark.workspace_host
+class TestAuthProfile:
+    async def test_unauthorized(
+        self,
+        unauthorized_dashboard_assertions: HTTPXResponseAssertion,
+        test_client_dashboard: httpx.AsyncClient,
+    ):
+        response = await test_client_dashboard.get("/auth/profile")
+
+        unauthorized_dashboard_assertions(response)
+
+    @pytest.mark.authenticated_admin(mode="session")
+    async def test_valid(self, test_client_dashboard: httpx.AsyncClient):
+        response = await test_client_dashboard.get("/auth/profile")
+
+        assert response.status_code == status.HTTP_302_FOUND
+
+        location = response.headers["Location"]
+        assert location == f"//{settings.fief_domain}"
+
+
+@pytest.mark.asyncio
+@pytest.mark.workspace_host
 class TestAuthLogout:
     async def test_unauthorized(
         self,

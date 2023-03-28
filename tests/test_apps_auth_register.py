@@ -23,16 +23,11 @@ from tests.types import TenantParams
 @pytest.mark.asyncio
 @pytest.mark.workspace_host
 class TestGetRegister:
-    @pytest.mark.parametrize("cookie", [None, "INVALID_LOGIN_SESSION"])
     async def test_invalid_login_session(
-        self,
-        cookie: str | None,
-        tenant_params: TenantParams,
-        test_client_auth: httpx.AsyncClient,
+        self, tenant_params: TenantParams, test_client_auth: httpx.AsyncClient
     ):
         cookies = {}
-        if cookie is not None:
-            cookies[settings.login_session_cookie_name] = cookie
+        cookies[settings.login_session_cookie_name] = "INVALID_LOGIN_SESSION"
 
         response = await test_client_auth.get(
             f"{tenant_params.path_prefix}/register", cookies=cookies
@@ -62,6 +57,35 @@ class TestGetRegister:
 
         headers = response.headers
         assert headers["X-Fief-Error"] == "registration_disabled"
+
+    async def test_valid_no_login_session(
+        self,
+        test_client_auth: httpx.AsyncClient,
+        test_data: TestData,
+        workspace_session: AsyncSession,
+    ):
+        tenant = test_data["tenants"]["default"]
+        path_prefix = tenant.slug if not tenant.default else ""
+
+        response = await test_client_auth.get(f"{path_prefix}/register")
+
+        assert response.status_code == status.HTTP_200_OK
+
+        html = response.text
+        assert 'name="password"' in html
+
+        registration_session_cookie = response.cookies[
+            settings.registration_session_cookie_name
+        ]
+        registration_session_repository = RegistrationSessionRepository(
+            workspace_session
+        )
+        registration_session = await registration_session_repository.get_by_token(
+            registration_session_cookie
+        )
+        assert registration_session is not None
+        assert registration_session.flow == RegistrationSessionFlow.PASSWORD
+        assert registration_session.tenant_id == tenant.id
 
     async def test_valid_no_registration_session(
         self,
@@ -164,17 +188,14 @@ class TestGetRegister:
 @pytest.mark.asyncio
 @pytest.mark.workspace_host
 class TestPostRegister:
-    @pytest.mark.parametrize("cookie", [None, "INVALID_LOGIN_SESSION"])
     async def test_invalid_login_session(
         self,
-        cookie: str | None,
         tenant_params: TenantParams,
         test_client_auth_csrf: httpx.AsyncClient,
         csrf_token: str,
     ):
         cookies = {}
-        if cookie is not None:
-            cookies[settings.login_session_cookie_name] = cookie
+        cookies[settings.login_session_cookie_name] = "INVALID_LOGIN_SESSION"
 
         response = await test_client_auth_csrf.post(
             f"{tenant_params.path_prefix}/register",
@@ -355,6 +376,32 @@ class TestPostRegister:
         send_task_mock.assert_called_with(
             on_after_register, str(session_token.user_id), str(workspace.id)
         )
+
+    async def test_new_user_no_login_session(
+        self,
+        test_client_auth_csrf: httpx.AsyncClient,
+        csrf_token: str,
+        test_data: TestData,
+    ):
+        registration_session = test_data["registration_sessions"]["default_password"]
+        cookies = {}
+        cookies[settings.registration_session_cookie_name] = registration_session.token
+
+        response = await test_client_auth_csrf.post(
+            "/register",
+            data={
+                "email": "louis@bretagne.duchy",
+                "password": "hermine1",
+                "csrf_token": csrf_token,
+            },
+            cookies=cookies,
+        )
+
+        assert response.status_code == status.HTTP_302_FOUND
+
+        redirect_uri = response.headers["Location"]
+        redirect_uri = response.headers["Location"]
+        assert redirect_uri.endswith("/")
 
     async def test_no_email_conflict_on_another_tenant(
         self,

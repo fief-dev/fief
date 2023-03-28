@@ -1,0 +1,51 @@
+{% import "macros/branding.html" as branding %}
+
+{% extends "auth/base.html" %}
+
+{% block javascripts_modules %}
+<script src="https://unpkg.com/htmx.org@1.8.4"></script>
+<script src="https://unpkg.com/hyperscript.org@0.9.7"></script>
+{% endblock %}
+
+{% block body %}
+<main>
+  <div class="flex items-center justify-between h-16 py-2 px-4 sm:px-6 lg:px-8">
+    {% if tenant.logo_url %}
+    <img src="{{ tenant.logo_url }}" alt="{{ tenant.name }}" class="max-h-full max-w-[100px]" />
+    {% else %}
+    <span class="text-3xl text-accent font-bold">{{ tenant.name }}</span>
+    {% endif %}
+  </div>
+
+  <div class="w-full px-4 sm:px-6 lg:px-8 my-0 lg:my-8">
+    <div class="shadow-lg rounded-sm border border-slate-200 mb-8">
+      <div class="flex flex-col md:flex-row md:-mr-px">
+        {% include "auth/dashboard/sidebar.html" %}
+        <div class="grow">
+          <div class="p-6 space-y-6">
+            {% block content %}{% endblock %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {{ branding.branding() }}
+</main>
+{% endblock %}
+
+{% block hyperscripts %}
+<script type="text/hyperscript">
+    on htmx:beforeSwap from document
+      if event.detail.xhr.status == 400
+        set event.detail.shouldSwap to true
+      end
+    end
+
+    on every htmx:beforeSend from <form />
+      for submitButton in <button[type='submit'] /> in it
+        toggle @disabled on submitButton until htmx:afterOnLoad
+      end
+    end
+  </script>
+{% endblock %}

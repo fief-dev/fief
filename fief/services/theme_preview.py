@@ -1,6 +1,7 @@
 from fastapi import Request
 
 from fief.apps.auth.forms.auth import LoginForm
+from fief.apps.auth.forms.profile import ProfileFormBase, get_profile_form_class
 from fief.apps.auth.forms.register import RegisterFormBase, get_register_form_class
 from fief.apps.auth.forms.reset import ForgotPasswordForm, ResetPasswordForm
 from fief.models import Tenant, Theme
@@ -25,6 +26,7 @@ class ThemePreview:
             "register": self.preview_register,
             "forgot_password": self.preview_forgot_password,
             "reset_password": self.preview_reset_password,
+            "profile": self.preview_profile,
         }
         return await page_functions[page](theme, tenant=tenant, request=request)
 
@@ -89,4 +91,22 @@ class ThemePreview:
             "theme": theme,
         }
         template = templates.get_template("auth/reset_password.html")
+        return template.render(context)
+
+    async def preview_profile(
+        self, theme: Theme, *, tenant: Tenant, request: Request
+    ) -> str:
+        update_user_fields = await self.user_field_repository.get_update_fields()
+        profile_form_class: type[ProfileFormBase] = await get_profile_form_class(
+            update_user_fields
+        )
+        form = profile_form_class(meta={"request": request, "csrf": False})
+        context = {
+            "request": request,
+            "form": form,
+            "tenant": tenant,
+            "theme": theme,
+            "current_route": "auth.dashboard:profile",
+        }
+        template = templates.get_template("auth/dashboard/index.html")
         return template.render(context)

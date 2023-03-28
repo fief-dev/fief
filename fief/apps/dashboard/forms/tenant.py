@@ -17,6 +17,12 @@ class BaseTenantForm(CSRFBaseForm):
         filters=[empty_string_to_none],
         description="It will be shown on the top left of authentication pages.",
     )
+    application_url = URLField(
+        "Application URL",
+        validators=[validators.Optional(), validators.URL(require_tld=False)],
+        filters=[empty_string_to_none],
+        description="URL to your application. Used to show a link going back to your application on the user dashboard.",
+    )
     theme = ComboboxSelectField(
         "UI Theme",
         query_endpoint_path="/admin/customization/themes/",

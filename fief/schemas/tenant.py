@@ -9,6 +9,7 @@ class TenantCreate(BaseModel):
     registration_allowed: bool = True
     theme_id: UUID4 | None
     logo_url: AnyHttpUrl | None
+    application_url: AnyHttpUrl | None
     oauth_providers: list[UUID4] | None
 
 
@@ -17,6 +18,7 @@ class TenantUpdate(BaseModel):
     registration_allowed: bool | None
     theme_id: UUID4 | None
     logo_url: AnyHttpUrl | None
+    application_url: AnyHttpUrl | None
     oauth_providers: list[UUID4] | None
 
 
@@ -27,6 +29,7 @@ class BaseTenant(UUIDSchema, CreatedUpdatedAt):
     registration_allowed: bool
     theme_id: UUID4 | None
     logo_url: AnyHttpUrl | None
+    application_url: AnyHttpUrl | None
 
 
 class Tenant(BaseTenant):

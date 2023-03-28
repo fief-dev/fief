@@ -258,21 +258,27 @@ async def get_optional_login_session(
         return None
 
     login_session = await login_session_repository.get_by_token(token)
-    if login_session is None:
-        return None
-
-    if login_session.client.tenant_id != tenant.id:
-        return None
+    if login_session is None or login_session.client.tenant_id != tenant.id:
+        raise LoginException(
+            LoginError.get_invalid_session(_("Invalid login session")), fatal=True
+        )
 
     return login_session
 
 
 async def get_login_session(
     login_session: LoginSession | None = Depends(get_optional_login_session),
+    tenant: Tenant = Depends(get_current_tenant),
 ) -> LoginSession:
     if login_session is None:
         raise LoginException(
-            LoginError.get_invalid_session(_("Invalid login session")), fatal=True
+            LoginError.get_missing_session(
+                _(
+                    "Missing login session. You should return to %(tenant)s and try to login again",
+                    tenant=tenant.name,
+                )
+            ),
+            fatal=True,
         )
 
     return login_session
