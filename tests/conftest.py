@@ -19,9 +19,9 @@ from fief.crypto.token import generate_token
 from fief.db import AsyncConnection, AsyncEngine, AsyncSession
 from fief.db.engine import create_engine
 from fief.db.types import DatabaseConnectionParameters, DatabaseType, get_driver
-from fief.db.workspace import get_connection
+from fief.db.workspace import WorkspaceEngineManager, get_connection
 from fief.dependencies.current_workspace import get_current_workspace_session
-from fief.dependencies.db import get_main_async_session
+from fief.dependencies.db import get_main_async_session, get_workspace_engine_manager
 from fief.dependencies.fief import FiefAsyncRelativeEndpoints, get_fief
 from fief.dependencies.tasks import get_send_task
 from fief.dependencies.theme import get_theme_preview
@@ -511,6 +511,9 @@ async def test_client_generator(
             get_current_workspace_session
         ] = lambda: workspace_session
         app.dependency_overrides[get_workspace_db] = lambda: workspace_db_mock
+        app.dependency_overrides[
+            get_workspace_engine_manager
+        ] = lambda: WorkspaceEngineManager()
         app.dependency_overrides[
             get_workspace_creation
         ] = lambda: workspace_creation_mock
