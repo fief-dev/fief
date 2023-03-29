@@ -1,3 +1,5 @@
+import urllib.parse
+
 import httpx
 import pytest
 from fastapi import status
@@ -413,6 +415,36 @@ class TestAuthAuthorize:
         assert response.status_code == status.HTTP_302_FOUND
         assert response.cookies[settings.user_locale_cookie_name] == "fr_FR"
 
+    @pytest.mark.parametrize(
+        "login_hint", ["anne@bretagne.duchy", "b0133c88-04fa-4653-8dcc-4bf6c49d2d25"]
+    )
+    async def test_set_login_hint_by_query(
+        self,
+        login_hint: str,
+        tenant_params: TenantParams,
+        test_client_auth: httpx.AsyncClient,
+    ):
+        params = {
+            "login_hint": login_hint,
+            "response_type": "code",
+            "client_id": tenant_params.client.client_id,
+            "redirect_uri": "https://nantes.city/callback",
+            "scope": "openid",
+        }
+
+        cookies = {}
+        cookies[settings.session_cookie_name] = tenant_params.session_token_token[0]
+
+        response = await test_client_auth.get(
+            f"{tenant_params.path_prefix}/authorize", params=params, cookies=cookies
+        )
+
+        assert response.status_code == status.HTTP_302_FOUND
+        assert (
+            urllib.parse.unquote(response.cookies[settings.login_hint_cookie_name])
+            == login_hint
+        )
+
 
 @pytest.mark.asyncio
 @pytest.mark.workspace_host
@@ -540,6 +572,9 @@ class TestAuthPostLogin:
             get_token_hash(session_cookie)
         )
         assert session_token is not None
+
+        login_hint_cookie = response.cookies[settings.login_hint_cookie_name]
+        assert urllib.parse.unquote(login_hint_cookie) == "anne@bretagne.duchy"
 
     async def test_valid_with_session(
         self,

@@ -1,3 +1,5 @@
+import urllib.parse
+
 from fastapi import APIRouter, Depends, Query, Request, status
 from fastapi.responses import RedirectResponse
 from pydantic import AnyUrl
@@ -59,6 +61,7 @@ async def authorize(
     | None = Depends(get_authorize_code_challenge),
     nonce: str | None = Depends(get_nonce),
     state: str | None = Query(None),
+    login_hint: str | None = Query(None),
     lang: str | None = Query(None),
     authentication_flow: AuthenticationFlow = Depends(get_authentication_flow),
     has_valid_session_token: bool = Depends(has_valid_session_token),
@@ -84,6 +87,16 @@ async def authorize(
         code_challenge_tuple=code_challenge_tuple,
         client=client,
     )
+
+    if login_hint is not None:
+        response.set_cookie(
+            settings.login_hint_cookie_name,
+            urllib.parse.quote(login_hint),
+            max_age=settings.login_hint_cookie_lifetime_seconds,
+            domain=settings.login_hint_cookie_domain,
+            secure=settings.login_hint_cookie_secure,
+            httponly=True,
+        )
 
     if lang is not None:
         response.set_cookie(
@@ -138,6 +151,8 @@ async def login(
         response = await authentication_flow.rotate_session_token(
             response, user.id, session_token=session_token
         )
+        response = await authentication_flow.set_login_hint(response, str(user.email))
+
         return response
 
     return await form_helper.get_response()

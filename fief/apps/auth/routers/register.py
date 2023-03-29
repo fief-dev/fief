@@ -97,6 +97,9 @@ async def register(
                     status_code=status.HTTP_302_FOUND,
                 )
             response = await authentication_flow.create_session_token(response, user.id)
+            response = await registration_flow.set_login_hint(
+                response, registration_session
+            )
             response = await registration_flow.delete_registration_session(
                 response, registration_session
             )

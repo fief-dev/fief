@@ -80,6 +80,11 @@ class Settings(BaseSettings):
     user_locale_cookie_secure: bool = True
     user_locale_lifetime_seconds: int = 86400 * 30
 
+    login_hint_cookie_name: str = "fief_login_hint"
+    login_hint_cookie_domain: str = ""
+    login_hint_cookie_secure: bool = True
+    login_hint_cookie_lifetime_seconds: int = 86400 * 30
+
     login_session_cookie_name: str = "fief_login_session"
     login_session_cookie_domain: str = ""
     login_session_cookie_secure: bool = True

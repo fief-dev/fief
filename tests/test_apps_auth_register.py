@@ -1,3 +1,4 @@
+import urllib.parse
 from typing import Any
 from unittest.mock import MagicMock
 
@@ -365,6 +366,9 @@ class TestPostRegister:
         )
         assert session_token is not None
 
+        login_hint_cookie = response.cookies[settings.login_hint_cookie_name]
+        assert urllib.parse.unquote(login_hint_cookie) == "louis@bretagne.duchy"
+
         registration_session_repository = RegistrationSessionRepository(
             workspace_session
         )
@@ -615,6 +619,9 @@ class TestPostRegister:
         )
         assert oauth_account is not None
         assert oauth_account.user_id == session_token.user_id
+
+        login_hint_cookie = response.cookies[settings.login_hint_cookie_name]
+        assert login_hint_cookie == str(oauth_account.oauth_provider_id)
 
         registration_session_repository = RegistrationSessionRepository(
             workspace_session

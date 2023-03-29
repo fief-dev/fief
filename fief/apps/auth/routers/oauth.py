@@ -179,6 +179,9 @@ async def callback(
         response = await authentication_flow.rotate_session_token(
             response, user.id, session_token=session_token
         )
+        response = await authentication_flow.set_login_hint(
+            response, str(oauth_provider.id)
+        )
         return response
 
     # New account to create

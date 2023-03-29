@@ -1,3 +1,4 @@
+import urllib.parse
 from typing import Any, TypeVar
 
 from fastapi import Request, Response
@@ -76,6 +77,28 @@ class RegistrationFlow:
         await self.registration_session_repository.delete(registration_session)
         return response
 
+    async def set_login_hint(
+        self, response: ResponseType, registration_session: RegistrationSession
+    ) -> ResponseType:
+        login_hint = registration_session.email
+
+        if registration_session.oauth_account:
+            login_hint = str(registration_session.oauth_account.oauth_provider_id)
+
+        if login_hint is None:
+            return response
+
+        response.set_cookie(
+            settings.login_hint_cookie_name,
+            value=urllib.parse.quote(login_hint),
+            max_age=settings.login_hint_cookie_lifetime_seconds,
+            domain=settings.login_hint_cookie_domain,
+            secure=settings.login_hint_cookie_secure,
+            httponly=True,
+        )
+
+        return response
+
     async def create_user(
         self,
         data: dict[str, Any],
@@ -93,6 +116,9 @@ class RegistrationFlow:
             safe=True,
             request=request,
         )
+
+        registration_session.email = user.email
+        await self.registration_session_repository.update(registration_session)
 
         if registration_session.oauth_account is not None:
             registration_session.oauth_account.user = user

@@ -1,3 +1,4 @@
+import urllib.parse
 from datetime import datetime
 from typing import TypeVar
 
@@ -135,6 +136,20 @@ class AuthenticationFlow:
                 Grant(scope=scope, user_id=user_id, client=client)
             )
         return grant
+
+    async def set_login_hint(
+        self, response: ResponseType, login_hint: str
+    ) -> ResponseType:
+        response.set_cookie(
+            settings.login_hint_cookie_name,
+            value=urllib.parse.quote(login_hint),
+            max_age=settings.login_hint_cookie_lifetime_seconds,
+            domain=settings.login_hint_cookie_domain,
+            secure=settings.login_hint_cookie_secure,
+            httponly=True,
+        )
+
+        return response
 
     async def get_authorization_code_success_redirect(
         self,

@@ -443,6 +443,9 @@ class TestOAuthCallback:
         )
         assert session_token is not None
 
+        login_hint_cookie = response.cookies[settings.login_hint_cookie_name]
+        assert login_hint_cookie == str(oauth_account.oauth_provider_id)
+
         oauth_account_repository = OAuthAccountRepository(workspace_session)
         updated_oauth_account = await oauth_account_repository.get_by_id(
             oauth_account.id
