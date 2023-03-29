@@ -24,6 +24,7 @@ from fief.dependencies.auth import (
 )
 from fief.dependencies.authentication_flow import get_authentication_flow
 from fief.dependencies.current_workspace import get_current_workspace
+from fief.dependencies.login_hint import LoginHint, get_login_hint
 from fief.dependencies.oauth_provider import get_oauth_providers
 from fief.dependencies.session_token import get_session_token
 from fief.dependencies.tenant import get_current_tenant
@@ -118,15 +119,29 @@ async def login(
     user_manager: UserManager = Depends(get_user_manager),
     authentication_flow: AuthenticationFlow = Depends(get_authentication_flow),
     session_token: SessionToken | None = Depends(get_session_token),
-    oauth_providers: list[OAuthProvider] | None = Depends(get_oauth_providers),
+    oauth_providers: list[OAuthProvider] = Depends(get_oauth_providers),
+    login_hint: LoginHint | None = Depends(get_login_hint),
     tenant: Tenant = Depends(get_current_tenant),
     theme: Theme = Depends(get_current_theme),
 ):
+    # Prefill email with login_hint if it's a string
+    initial_form_data = None
+    if isinstance(login_hint, str):
+        initial_form_data = {"email": login_hint}
+
     form_helper = FormHelper(
         LoginForm,
         "auth/login.html",
         request=request,
-        context={"oauth_providers": oauth_providers, "tenant": tenant, "theme": theme},
+        data=initial_form_data,
+        context={
+            "oauth_providers": oauth_providers,
+            "oauth_provider_login_hint": login_hint
+            if isinstance(login_hint, OAuthProvider)
+            else None,
+            "tenant": tenant,
+            "theme": theme,
+        },
     )
     form = await form_helper.get_form()
 
