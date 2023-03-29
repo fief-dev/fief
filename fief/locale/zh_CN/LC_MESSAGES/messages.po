@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  Fief\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2023-03-28 15:09+0200\n"
+"POT-Creation-Date: 2023-03-29 14:35+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: zh_Hans\n"
@@ -83,15 +83,15 @@ msgstr "新的密码"
 msgid "Confirm new password"
 msgstr "新的密码"
 
-#: fief/apps/auth/routers/auth.py:124
+#: fief/apps/auth/routers/auth.py:152
 msgid "Invalid email or password"
 msgstr "电子邮箱地址或密码出错"
 
-#: fief/apps/auth/routers/auth.py:214
+#: fief/apps/auth/routers/auth.py:244
 msgid "The user denied access to their data."
 msgstr "用户拒绝授权其数据"
 
-#: fief/apps/auth/routers/auth.py:237 fief/dependencies/auth.py:51
+#: fief/apps/auth/routers/auth.py:267 fief/dependencies/auth.py:51
 msgid "redirect_uri is missing"
 msgstr "缺失redirect_uri"
 
@@ -276,7 +276,7 @@ msgstr "已想起密码"
 msgid "Send me a reset link"
 msgstr "发送重置密码链接"
 
-#: fief/templates/auth/login.html:5 fief/templates/auth/login.html:20
+#: fief/templates/auth/login.html:5 fief/templates/auth/login.html:30
 msgid "Sign in"
 msgstr "登录"
 
@@ -284,20 +284,24 @@ msgstr "登录"
 msgid "Welcome back!"
 msgstr "欢迎回来！"
 
-#: fief/templates/auth/login.html:18
-msgid "I forgot my password"
-msgstr "忘记密码"
-
-#: fief/templates/auth/login.html:31
+#: fief/templates/auth/login.html:15
 #, python-format
 msgid "Sign in with %(provider)s"
 msgstr "通过%(provider)s登录"
 
-#: fief/templates/auth/login.html:39
+#: fief/templates/auth/login.html:28
+msgid "I forgot my password"
+msgstr "忘记密码"
+
+#: fief/templates/auth/login.html:38
+msgid "Used last"
+msgstr ""
+
+#: fief/templates/auth/login.html:51
 msgid "Don't have an account?"
 msgstr "尚未注册？"
 
-#: fief/templates/auth/login.html:40 fief/templates/auth/register.html:9
+#: fief/templates/auth/login.html:52 fief/templates/auth/register.html:9
 #: fief/templates/auth/register.html:17 fief/templates/auth/register.html:42
 msgid "Sign up"
 msgstr "注册"

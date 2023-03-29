@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  Fief\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2023-03-28 15:09+0200\n"
+"POT-Creation-Date: 2023-03-29 14:35+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: de\n"
@@ -83,15 +83,15 @@ msgstr "Neues Passwort"
 msgid "Confirm new password"
 msgstr "Neues Passwort"
 
-#: fief/apps/auth/routers/auth.py:124
+#: fief/apps/auth/routers/auth.py:152
 msgid "Invalid email or password"
 msgstr "Ungültige E-Mail oder Passwort"
 
-#: fief/apps/auth/routers/auth.py:214
+#: fief/apps/auth/routers/auth.py:244
 msgid "The user denied access to their data."
 msgstr "Der Benutzer hat den Zugriff auf dessen Daten verweigert."
 
-#: fief/apps/auth/routers/auth.py:237 fief/dependencies/auth.py:51
+#: fief/apps/auth/routers/auth.py:267 fief/dependencies/auth.py:51
 msgid "redirect_uri is missing"
 msgstr "redirect_uri fehlt"
 
@@ -284,7 +284,7 @@ msgstr "Ich weiß mein Passwort"
 msgid "Send me a reset link"
 msgstr "Sende mir einen Wiederherstellungs-Link"
 
-#: fief/templates/auth/login.html:5 fief/templates/auth/login.html:20
+#: fief/templates/auth/login.html:5 fief/templates/auth/login.html:30
 msgid "Sign in"
 msgstr "Einloggen"
 
@@ -292,22 +292,26 @@ msgstr "Einloggen"
 msgid "Welcome back!"
 msgstr "Willkommen zurück!"
 
-#: fief/templates/auth/login.html:18
-#, fuzzy
-msgid "I forgot my password"
-msgstr "Passwort vergessen?"
-
-#: fief/templates/auth/login.html:31
+#: fief/templates/auth/login.html:15
 #, python-format
 msgid "Sign in with %(provider)s"
 msgstr "Logge dich mit %(provider)s ein"
 
-#: fief/templates/auth/login.html:39
+#: fief/templates/auth/login.html:28
+#, fuzzy
+msgid "I forgot my password"
+msgstr "Passwort vergessen?"
+
+#: fief/templates/auth/login.html:38
+msgid "Used last"
+msgstr ""
+
+#: fief/templates/auth/login.html:51
 #, fuzzy
 msgid "Don't have an account?"
 msgstr "Noch kein Account?"
 
-#: fief/templates/auth/login.html:40 fief/templates/auth/register.html:9
+#: fief/templates/auth/login.html:52 fief/templates/auth/register.html:9
 #: fief/templates/auth/register.html:17 fief/templates/auth/register.html:42
 msgid "Sign up"
 msgstr "Registrieren"
