@@ -31,7 +31,7 @@ async def get_openid_configuration(
         host = x_forwarded_host if x_forwarded_host else request.base_url.netloc
         base_url = request.base_url.replace(netloc=host)
 
-        return url_path.make_absolute_url(base_url)
+        return str(url_path.make_absolute_url(base_url))
 
     configuration = OpenIDProviderMetadata(
         issuer=tenant.get_host(workspace.domain),

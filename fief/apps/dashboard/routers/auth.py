@@ -22,7 +22,7 @@ async def login(
     fief: FiefAsyncRelativeEndpoints = Depends(get_fief),
 ):
     url = await fief.auth_url(
-        redirect_uri=request.url_for("dashboard.auth:callback"),
+        redirect_uri=str(request.url_for("dashboard.auth:callback")),
         scope=["openid"],
         extras_params={"screen": screen},
     )
@@ -39,7 +39,7 @@ async def callback(
     ),
 ):
     tokens, userinfo = await fief.auth_callback(
-        code, request.url_for("dashboard.auth:callback")
+        code, str(request.url_for("dashboard.auth:callback"))
     )
     token, token_hash = generate_token()
     session_token = AdminSessionToken(

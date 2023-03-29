@@ -45,7 +45,7 @@ async def authorize(
         get_workspace_repository(OAuthSessionRepository)
     ),
 ):
-    redirect_uri = request.url_for("oauth:callback")
+    redirect_uri = str(request.url_for("oauth:callback"))
 
     oauth_session = OAuthSession(
         redirect_uri=redirect_uri,

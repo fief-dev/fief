@@ -1,4 +1,4 @@
-from fastapi import Depends, HTTPException, Query, status
+from fastapi import Depends, HTTPException, Query, Request, status
 from pydantic import UUID4
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
@@ -20,9 +20,10 @@ from fief.repositories import TenantRepository
 
 
 async def get_current_tenant(
-    tenant_slug: str | None = Query(None),
+    request: Request,
     repository: TenantRepository = Depends(get_workspace_repository(TenantRepository)),
 ) -> Tenant:
+    tenant_slug = request.path_params.get("tenant_slug")
     if tenant_slug is None:
         tenant = await repository.get_default()
     else:

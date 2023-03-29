@@ -1,7 +1,7 @@
 from fastapi import Depends, HTTPException, Request, status
 
 from fief.dependencies.admin_api_key import get_optional_admin_api_key
-from fief.dependencies.admin_session import get_optional_admin_session_token
+from fief.dependencies.admin_session import get_admin_session_token
 from fief.dependencies.current_workspace import get_current_workspace
 from fief.dependencies.main_repositories import get_main_repository
 from fief.models import AdminAPIKey, AdminSessionToken, Workspace
@@ -10,7 +10,7 @@ from fief.repositories import WorkspaceRepository, WorkspaceUserRepository
 
 async def is_authenticated_admin_session(
     request: Request,
-    session_token: AdminSessionToken | None = Depends(get_optional_admin_session_token),
+    session_token: AdminSessionToken = Depends(get_admin_session_token),
     current_workspace: Workspace = Depends(get_current_workspace),
     workspace_user_repository: WorkspaceUserRepository = Depends(
         get_main_repository(WorkspaceUserRepository)
@@ -19,12 +19,6 @@ async def is_authenticated_admin_session(
         get_main_repository(WorkspaceRepository)
     ),
 ):
-    if session_token is None:
-        raise HTTPException(
-            status_code=status.HTTP_307_TEMPORARY_REDIRECT,
-            headers={"Location": request.url_for("dashboard.auth:login")},
-        )
-
     workspace_user = await workspace_user_repository.get_by_workspace_and_user(
         current_workspace.id, session_token.user_id
     )
@@ -35,7 +29,9 @@ async def is_authenticated_admin_session(
         if len(admin_user_workspaces) == 0:
             raise HTTPException(
                 status_code=status.HTTP_307_TEMPORARY_REDIRECT,
-                headers={"Location": request.url_for("dashboard.workspaces:create")},
+                headers={
+                    "Location": str(request.url_for("dashboard.workspaces:create"))
+                },
             )
         else:
             workspace = admin_user_workspaces[0]
