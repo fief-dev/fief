@@ -4,7 +4,6 @@ from typing import TYPE_CHECKING, Any
 
 from httpx_oauth.clients.discord import DiscordOAuth2
 from httpx_oauth.clients.facebook import FacebookOAuth2
-from httpx_oauth.clients.franceconnect import FranceConnectOAuth2
 from httpx_oauth.clients.github import GitHubOAuth2
 from httpx_oauth.clients.google import GoogleOAuth2
 from httpx_oauth.clients.linkedin import LinkedInOAuth2
@@ -25,7 +24,6 @@ class AvailableOAuthProvider(StrEnum):
     LINKEDIN = "LINKEDIN"
     MICROSOFT = "MICROSOFT"
     REDDIT = "REDDIT"
-    FRANCECONNECT = "FRANCECONNECT"
     OPENID = "OPENID"
 
     def get_display_name(self) -> str:
@@ -50,7 +48,6 @@ OAUTH_PROVIDERS: dict[AvailableOAuthProvider, type[BaseOAuth2]] = {
     AvailableOAuthProvider.LINKEDIN: LinkedInOAuth2,
     AvailableOAuthProvider.MICROSOFT: MicrosoftGraphOAuth2,
     AvailableOAuthProvider.REDDIT: RedditOAuth2,
-    AvailableOAuthProvider.FRANCECONNECT: FranceConnectOAuth2,
     AvailableOAuthProvider.OPENID: OpenID,
 }
 
