@@ -82,7 +82,7 @@ class UserField(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
         return self.configuration["required"]
 
     def get_default(self) -> Any | None:
-        return self.configuration["default"]
+        return self.configuration.get("default")
 
     def get_type_display_name(self) -> str:
         return UserFieldType[self.type].get_display_name()
