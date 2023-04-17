@@ -144,6 +144,15 @@
         "translation",
         "code"
       ]
+    },
+    {
+      "login": "bartosz121",
+      "name": "Bartosz Magiera",
+      "avatar_url": "https://avatars.githubusercontent.com/u/28759224?v=4",
+      "profile": "https://bartoszmagiera.live/",
+      "contributions": [
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
