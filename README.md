@@ -14,7 +14,7 @@
 ## Contributing
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-15-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-16-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 All contributions to improve the project are welcome! In particular, bug and documentation fixes are really appreciated.
@@ -48,6 +48,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     </tr>
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/zfei"><img src="https://avatars.githubusercontent.com/u/1736058?v=4?s=100" width="100px;" alt="zfei"/><br /><sub><b>zfei</b></sub></a><br /><a href="#translation-zfei" title="Translation">🌍</a> <a href="https://github.com/fief-dev/fief/commits?author=zfei" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://bartoszmagiera.live/"><img src="https://avatars.githubusercontent.com/u/28759224?v=4?s=100" width="100px;" alt="Bartosz Magiera"/><br /><sub><b>Bartosz Magiera</b></sub></a><br /><a href="https://github.com/fief-dev/fief/commits?author=bartosz121" title="Documentation">📖</a></td>
     </tr>
   </tbody>
 </table>
