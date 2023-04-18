@@ -175,20 +175,18 @@ lint-check = [
 "dev.db.start" = "docker start fief-dev-db"
 "dev.redis.create" = "docker run -d -p 6379:6379 --name fief-dev-redis redis:alpine"
 "dev.redis.start" = "docker start fief-dev-redis"
-"dev.server.start" = [
+"dev.env.start" = [
   "hatch run dev.db.start",
   "hatch run dev.redis.start",
+]
+"dev.server.start" = [
   "hatch run translations.compile",
   "hatch run static.build",
   "uvicorn --host 0.0.0.0 --port 8000 fief.app:app"
 ]
-"dev.server.watch" = "watchexec -r --exts po,py,html,mjs -- hatch run dev.server.start"
-"dev.worker.start" = [
-  "hatch run dev.db.start",
-  "hatch run dev.redis.start",
-  "dramatiq fief.worker -p 1 -t 1 -f fief.scheduler:schedule",
-]
-"dev.worker.watch" = "watchexec -r --exts po,py,html,mjs -- hatch run dev.worker.start"
+"dev.server.watch" = "watchfiles --ignore-paths fief/static,fief/locale 'hatch run dev.server.start' fief js styles"
+"dev.worker.start" = "dramatiq fief.worker -p 1 -t 1 -f fief.scheduler:schedule"
+"dev.worker.watch" = "watchfiles --ignore-paths fief/static,fief/locale 'hatch run dev.worker.start' fief"
 
 [build-system]
 requires = ["hatchling", "hatch-regex-commit"]
