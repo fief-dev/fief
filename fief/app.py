@@ -1,3 +1,5 @@
+from os import environ
+
 import sentry_sdk
 from fastapi import FastAPI, status
 from fastapi.responses import RedirectResponse
@@ -7,6 +9,7 @@ from sentry_sdk.integrations.redis import RedisIntegration
 from fief import __version__
 from fief.apps import api_app, auth_app, dashboard_app
 from fief.lifespan import lifespan
+from fief.middlewares.x_forwarded_host import XForwardedHostMiddleware
 from fief.settings import settings
 
 sentry_sdk.init(
@@ -20,6 +23,10 @@ sentry_sdk.init(
 app = FastAPI(lifespan=lifespan, openapi_url=None)
 
 app.add_middleware(SentryAsgiMiddleware)
+app.add_middleware(
+    XForwardedHostMiddleware,
+    trusted_hosts=environ.get("FORWARDED_ALLOW_IPS", "127.0.0.1"),
+)
 
 
 @app.get("/admin")
