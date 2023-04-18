@@ -58,6 +58,35 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
+## Development
+
+To get started quickly, we recommend you to use [GitHub Codespaces](https://github.com/features/codespaces). We have a complete configuration allowing you to start working on Fief right away, including pre-configured PostgreSQL and Redis servers.
+
+<p align="center">
+<a href="https://github.com/codespaces/new?hide_repo_select=true&ref=main&repo=444125382"><img src="https://github.com/codespaces/badge.svg" alt="Open in GitHub Codespaces"></a>
+</p>
+
+When the Codespace is built, a main workspace and a main user are automatically created.
+
+> **Main user credentials**
+>
+> Email: `anne@bretagne.duchy`
+>
+> Password: `hermine1`
+
+Run the Fief server in development mode with the following command:
+
+```sh
+hatch run dev.server.start
+```
+
+The worker can also be started with the following command:
+
+```sh
+hatch run dev.worker.start
+```
+
+
 ## License
 
 Fief is [fair-code](http://faircode.io) distributed under [**Elastic License 2.0 (ELv2)**](https://github.com/fief-dev/fief/blob/main/LICENSE.md).
