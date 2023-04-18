@@ -12,3 +12,5 @@ set +e
 hatch run python -m fief.cli workspaces create-main
 hatch run python -m fief.cli workspaces create-main-user --user-email anne@bretagne.duchy --user-password hermine1
 set -e
+
+export FORWARDED_ALLOW_IPS=*
