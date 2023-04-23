@@ -2,15 +2,18 @@ from collections.abc import AsyncGenerator
 
 from fastapi import Header, HTTPException, status
 from fastapi.param_functions import Depends
+from posthog import Posthog
 
 from fief.db import AsyncSession
 from fief.db.workspace import WorkspaceEngineManager, get_workspace_session
 from fief.dependencies.db import get_workspace_engine_manager
 from fief.dependencies.main_repositories import get_main_repository
+from fief.dependencies.telemetry import get_posthog
 from fief.dependencies.workspace_db import get_workspace_db
 from fief.errors import APIErrorCode
 from fief.models import Workspace
 from fief.repositories import WorkspaceRepository
+from fief.services.posthog import get_workspace_properties
 from fief.services.workspace_db import WorkspaceDatabase
 
 
@@ -24,6 +27,7 @@ async def get_current_workspace(
     host: str | None = Depends(get_host),
     repository: WorkspaceRepository = Depends(get_main_repository(WorkspaceRepository)),
     workspace_db: WorkspaceDatabase = Depends(get_workspace_db),
+    posthog: Posthog = Depends(get_posthog),
 ) -> Workspace:
     workspace = None
     if host is not None:
@@ -41,6 +45,10 @@ async def get_current_workspace(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail=APIErrorCode.WORKSPACE_DB_OUTDATED_MIGRATION,
         )
+
+    posthog.group_identify(
+        "workspace", str(workspace.id), properties=get_workspace_properties(workspace)
+    )
 
     return workspace
 

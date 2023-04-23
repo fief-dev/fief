@@ -1,3 +1,4 @@
+from posthog import Posthog
 from pydantic import UUID4
 
 from fief.db.workspace import WorkspaceEngineManager, get_workspace_session
@@ -14,6 +15,7 @@ from fief.schemas.workspace import WorkspaceCreate
 from fief.services.email_template.initializer import EmailTemplateInitializer
 from fief.services.localhost import is_localhost
 from fief.services.main_workspace import get_main_fief_client, get_main_fief_workspace
+from fief.services.posthog import get_server_id
 from fief.services.theme import init_default_theme
 from fief.services.workspace_db import (
     WorkspaceDatabase,
@@ -28,11 +30,13 @@ class WorkspaceCreation:
         workspace_user_repository: WorkspaceUserRepository,
         workspace_db: WorkspaceDatabase,
         workspace_engine_manager: WorkspaceEngineManager,
+        posthog: Posthog,
     ) -> None:
         self.workspace_repository = workspace_repository
         self.workspace_user_repository = workspace_user_repository
         self.workspace_db = workspace_db
         self.workspace_engine_manager = workspace_engine_manager
+        self.posthog = posthog
 
     async def create(
         self,
@@ -118,6 +122,14 @@ class WorkspaceCreation:
 
         # Allow a redirect URI on this workspace on the main Fief client
         await self._add_fief_redirect_uri(workspace)
+
+        # Inform telemetry
+        event_user_id = str(user_id) if user_id is not None else get_server_id()
+        self.posthog.capture(
+            event_user_id,
+            "Workspace Created",
+            groups={"server": get_server_id(), "workspace": str(workspace.id)},
+        )
 
         return workspace
 

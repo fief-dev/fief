@@ -13,6 +13,7 @@ from fief.repositories import (
 )
 from fief.schemas.user import UserCreateInternal
 from fief.schemas.workspace import WorkspaceCreate
+from fief.services.posthog import posthog
 from fief.services.webhooks.trigger import trigger_webhooks
 from fief.services.workspace_db import WorkspaceDatabase
 from fief.settings import settings
@@ -88,6 +89,7 @@ async def create_main_fief_workspace() -> Workspace:
             workspace_user_repository,
             workspace_db,
             workspace_engine_manager,
+            posthog,
         )
 
         workspace = await workspace_creation.create(
