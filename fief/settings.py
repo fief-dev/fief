@@ -33,11 +33,12 @@ class InvalidEncryptionKeyError(ValueError):
 
 
 class Settings(BaseSettings):
-    environment: Environment = Environment.DEVELOPMENT
+    environment: Environment = Environment.PRODUCTION
     log_level: str = "INFO"
     unit_tests: bool = False
     sentry_dsn_server: str | None = None
     sentry_dsn_worker: str | None = None
+    telemetry_enabled: bool = True
     root_domain: str = "localhost:8000"
     allow_origin_regex: str = "http://.*localhost:[0-9]+"
     port: int = 8000
