@@ -9,6 +9,8 @@ from starlette.routing import Router
 from fief.locale import get_translations
 from fief.paths import TEMPLATES_DIRECTORY
 from fief.services.oauth_provider import get_oauth_provider_branding
+from fief.services.posthog import POSTHOG_API_KEY
+from fief.settings import settings
 
 
 @pass_context
@@ -29,6 +31,9 @@ class LocaleJinja2Templates(Jinja2Templates):
 
         env.globals["url_path_for"] = url_path_for
         env.globals["get_oauth_provider_branding"] = get_oauth_provider_branding
+        env.globals["posthog_api_key"] = (
+            POSTHOG_API_KEY if settings.telemetry_enabled else None
+        )
         env.filters["get_column_macro"] = get_column_macro
         env.install_gettext_translations(get_translations(), newstyle=True)  # type: ignore
 

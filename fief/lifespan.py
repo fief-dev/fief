@@ -15,6 +15,7 @@ from fief.settings import settings
 
 class LifespanState(TypedDict):
     workspace_engine_manager: WorkspaceEngineManager
+    server_id: str
 
 
 @contextlib.asynccontextmanager
@@ -40,6 +41,9 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[LifespanState, None]:
             "server", get_server_id(), properties=get_server_properties()
         )
 
-    yield {"workspace_engine_manager": workspace_engine_manager}
+    yield {
+        "workspace_engine_manager": workspace_engine_manager,
+        "server_id": get_server_id(),
+    }
 
     await workspace_engine_manager.close_all()

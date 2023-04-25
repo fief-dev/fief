@@ -41,6 +41,8 @@ async def is_authenticated_admin_session(
                 headers={"Location": redirection},
             )
 
+    request.state.user_id = str(session_token.user_id)
+
 
 async def is_authenticated_admin_api(
     admin_api_key: AdminAPIKey | None = Depends(get_optional_admin_api_key),

@@ -1,6 +1,6 @@
 from collections.abc import AsyncGenerator
 
-from fastapi import Header, HTTPException, status
+from fastapi import Header, HTTPException, Request, status
 from fastapi.param_functions import Depends
 from posthog import Posthog
 
@@ -24,6 +24,7 @@ async def get_host(
 
 
 async def get_current_workspace(
+    request: Request,
     host: str | None = Depends(get_host),
     repository: WorkspaceRepository = Depends(get_main_repository(WorkspaceRepository)),
     workspace_db: WorkspaceDatabase = Depends(get_workspace_db),
@@ -49,6 +50,7 @@ async def get_current_workspace(
     posthog.group_identify(
         "workspace", str(workspace.id), properties=get_workspace_properties(workspace)
     )
+    request.state.workspace = workspace
 
     return workspace
 

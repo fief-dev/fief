@@ -11,8 +11,10 @@ from fief.settings import settings
 if TYPE_CHECKING:
     from fief.models import Workspace
 
+POSTHOG_API_KEY = "__POSTHOG_API_KEY__"
+
 posthog = Posthog(
-    "__POSTHOG_API_KEY__",
+    POSTHOG_API_KEY,
     host="https://eu.posthog.com",
     disabled=not settings.telemetry_enabled,
 )
