@@ -115,11 +115,14 @@ jobs:
         shell: bash
         run: |
           npm ci
-      - name: Compile translations and build assets
+      - name: Compile translations, build assets and set telemetry key
         shell: bash
+        env:
+          POSTHOG_API_KEY: ${{ secrets.POSTHOG_API_KEY }}
         run: |
           hatch run translations.compile
           hatch run static.build
+          hatch run telemetry.set-posthog-key $POSTHOG_API_KEY
       - name: Build and publish on PyPI
         env:
           HATCH_INDEX_USER: ${{ secrets.HATCH_INDEX_USER }}
