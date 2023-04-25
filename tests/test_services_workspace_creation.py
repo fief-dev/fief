@@ -1,6 +1,6 @@
 import re
 from collections.abc import AsyncGenerator
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 import pytest_asyncio
@@ -74,6 +74,7 @@ def workspace_creation(
         workspace_user_repository,
         workspace_db,
         workspace_engine_manager,
+        MagicMock(),
     )
 
 

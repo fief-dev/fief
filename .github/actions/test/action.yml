@@ -46,6 +46,7 @@ runs:
       env:
         ENVIRONMENT: development
         UNIT_TESTS: "1"
+        TELEMETRY_ENABLED: "0"
         SECRET: ThisShouldBeChangedInProduction
         ENCRYPTION_KEY: uSieBJ_695D2NA7bOPUJqFGCS2_qI8G4aI6L42WhjjM=
         GENERATED_JWK_SIZE: "512"
