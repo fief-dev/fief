@@ -17,7 +17,9 @@
 
           posthog.init('{{ posthog_api_key }}', { api_host: 'https://eu.posthog.com' });
           posthog.group('server', '{{ request.state.server_id }}');
-          posthog.group('workspace', '{{ request.state.workspace.id }}');
+          {% if request.state.workspace_id %}
+            posthog.group('workspace', '{{ request.state.workspace_id }}');
+          {% endif %}
           {% if request.state.user_id %}
             posthog.identify('{{ request.state.user_id }}');
           {% endif %}

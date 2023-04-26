@@ -50,7 +50,7 @@ async def get_current_workspace(
     posthog.group_identify(
         "workspace", str(workspace.id), properties=get_workspace_properties(workspace)
     )
-    request.state.workspace = workspace
+    request.state.workspace_id = str(workspace.id)
 
     return workspace
 
