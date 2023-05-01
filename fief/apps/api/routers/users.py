@@ -5,10 +5,15 @@ from pydantic import UUID4
 from sqlalchemy.orm import joinedload
 
 from fief import schemas, tasks
+from fief.crypto.access_token import generate_access_token
 from fief.dependencies.admin_authentication import is_authenticated_admin_api
 from fief.dependencies.current_workspace import get_current_workspace
 from fief.dependencies.logger import get_audit_logger
 from fief.dependencies.pagination import PaginatedObjects
+from fief.dependencies.permission import (
+    UserPermissionsGetter,
+    get_user_permissions_getter,
+)
 from fief.dependencies.tasks import get_send_task
 from fief.dependencies.user_field import get_user_fields
 from fief.dependencies.users import (
@@ -37,6 +42,7 @@ from fief.models import (
     Workspace,
 )
 from fief.repositories import (
+    ClientRepository,
     PermissionRepository,
     RoleRepository,
     UserPermissionRepository,
@@ -186,6 +192,55 @@ async def list_user_permissions(
             schemas.user_permission.UserPermission.from_orm(user_permission)
             for user_permission in user_permissions
         ],
+    )
+
+
+@router.post(
+    "/{id:uuid}/access-token",
+    name="users:access_token",
+    response_model=schemas.user.AccessTokenResponse,
+)
+async def create_user_access_token(
+    create_access_token: schemas.user.CreateAccessToken,
+    user: User = Depends(get_user_by_id_or_404),
+    get_user_permissions: UserPermissionsGetter = Depends(get_user_permissions_getter),
+    client_repository: ClientRepository = Depends(
+        get_workspace_repository(ClientRepository)
+    ),
+    workspace: Workspace = Depends(get_current_workspace),
+    audit_logger: AuditLogger = Depends(get_audit_logger),
+) -> schemas.user.AccessTokenResponse:
+    tenant = user.tenant
+
+    client = await client_repository.get_by_id(create_access_token.client_id)
+    if client is None or client.tenant_id != tenant.id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=APIErrorCode.USER_CREATE_ACCESS_TOKEN_UNKNOWN_CLIENT,
+        )
+
+    tenant_host = tenant.get_host(workspace.domain)
+    permissions = await get_user_permissions(user)
+
+    access_token = generate_access_token(
+        user.tenant.get_sign_jwk(),
+        tenant_host,
+        client,
+        user,
+        create_access_token.scopes,
+        permissions,
+        client.access_id_token_lifetime_seconds,
+    )
+
+    audit_logger(
+        AuditLogMessage.USER_TOKEN_GENERATED_BY_ADMIN,
+        subject_user_id=user.id,
+        scope=create_access_token.scopes,
+    )
+
+    return schemas.user.AccessTokenResponse(
+        access_token=access_token,
+        expires_in=client.access_id_token_lifetime_seconds,
     )
 
 
