@@ -16,7 +16,7 @@ from fief.settings import settings
 
 class OAuthSession(UUIDModel, CreatedUpdatedAt, ExpiresAt, WorkspaceBase):
     __tablename__ = "oauth_sessions"
-    __lifetime_seconds__ = settings.login_session_lifetime_seconds
+    __lifetime_seconds__ = settings.oauth_session_lifetime_seconds
 
     token: Mapped[str] = mapped_column(
         String(length=255),
