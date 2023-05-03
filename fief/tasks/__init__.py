@@ -1,3 +1,4 @@
+from fief.tasks.audit_log import write_audit_log
 from fief.tasks.base import SendTask, send_task
 from fief.tasks.cleanup import cleanup, cleanup_workspace
 from fief.tasks.count_users import count_users, count_users_workspace
@@ -21,4 +22,5 @@ __all__ = [
     "on_user_role_deleted",
     "deliver_webhook",
     "trigger_webhooks",
+    "write_audit_log",
 ]

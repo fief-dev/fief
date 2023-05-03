@@ -1,14 +1,12 @@
 import contextlib
-import functools
 from collections.abc import AsyncGenerator
 from typing import TypedDict
 
 from fastapi import FastAPI
 
 from fief import __version__
-from fief.db.workspace import WorkspaceEngineManager, get_workspace_session
-from fief.dependencies.db import main_async_session_maker
-from fief.logger import init_audit_logger, logger
+from fief.db.workspace import WorkspaceEngineManager
+from fief.logger import init_logger, logger
 from fief.services.posthog import get_server_id, get_server_properties, posthog
 from fief.settings import settings
 
@@ -20,14 +18,10 @@ class LifespanState(TypedDict):
 
 @contextlib.asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[LifespanState, None]:
+    init_logger()
+
     workspace_engine_manager = WorkspaceEngineManager()
 
-    init_audit_logger(
-        main_async_session_maker,
-        functools.partial(
-            get_workspace_session, workspace_engine_manager=workspace_engine_manager
-        ),
-    )
     logger.info("Fief Server started", version=__version__)
 
     if settings.telemetry_enabled:

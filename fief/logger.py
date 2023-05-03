@@ -2,22 +2,19 @@ import json
 import logging
 import sys
 import uuid
-from asyncio import AbstractEventLoop
-from collections.abc import Callable
 from datetime import timezone
-from typing import TYPE_CHECKING, AsyncContextManager, Literal
+from typing import TYPE_CHECKING, Literal
 
 from loguru import logger
 from pydantic import UUID4
 
-from fief.db import AsyncSession
-from fief.models import AuditLog, AuditLogMessage, Workspace
+from fief.models import AuditLogMessage
 from fief.models.generics import M_UUID
-from fief.repositories import WorkspaceRepository
 from fief.settings import settings
 
 if TYPE_CHECKING:
-    from loguru import Logger, Record
+    from dramatiq import Actor
+    from loguru import Logger, Message, Record
 
 LOG_LEVEL = settings.log_level
 
@@ -83,54 +80,29 @@ class AuditLogger:
         )
 
 
-class DatabaseAuditLogSink:
-    def __init__(
-        self,
-        get_main_session: Callable[..., AsyncContextManager[AsyncSession]],
-        get_workspace_session: Callable[..., AsyncContextManager[AsyncSession]],
-    ):
-        self.get_main_session = get_main_session
-        self.get_workspace_session = get_workspace_session
+class AuditLogSink:
+    def __init__(self, task: "Actor") -> None:
+        self.task = task
 
-    async def __call__(self, message):
-        record = message.record
-        extra = record["extra"]
-        workspace_id = extra.get("workspace_id")
+    async def __call__(self, message: "Message"):
+        record: "Record" = message.record
+        self.task.send(
+            json.dumps(
+                {
+                    "time": record["time"].astimezone(timezone.utc).isoformat(),
+                    "level": record["level"].name,
+                    "message": record["message"],
+                    "extra": record["extra"],
+                },
+                cls=AuditLogSink.Encoder,
+            ),
+        )
 
-        if workspace_id is None:
-            return
-
-        workspace = await self._get_workspace(uuid.UUID(workspace_id))
-
-        if workspace is None:
-            return
-
-        async with self.get_workspace_session(workspace) as session:
-            extra.pop("workspace_id")
-            extra.pop("audit")
-            subject_user_id = extra.pop("subject_user_id", None)
-            object_id = extra.pop("object_id", None)
-            object_class = extra.pop("object_class", None)
-            admin_user_id = extra.pop("admin_user_id", None)
-            admin_api_key_id = extra.pop("admin_api_key_id", None)
-            log = AuditLog(
-                timestamp=record["time"].astimezone(timezone.utc),
-                level=record["level"].name,
-                message=record["message"],
-                subject_user_id=subject_user_id,
-                object_id=object_id,
-                object_class=object_class,
-                admin_user_id=admin_user_id,
-                admin_api_key_id=admin_api_key_id,
-                extra=extra,
-            )
-            session.add(log)
-            await session.commit()
-
-    async def _get_workspace(self, workspace_id: uuid.UUID) -> Workspace | None:
-        async with self.get_main_session() as session:
-            repository = WorkspaceRepository(session)
-            return await repository.get_by_id(workspace_id)
+    class Encoder(json.JSONEncoder):
+        def default(self, obj):
+            if isinstance(obj, uuid.UUID):
+                return str(obj)
+            return json.JSONEncoder.default(self, obj)
 
 
 class InterceptHandler(logging.Handler):
@@ -152,42 +124,31 @@ class InterceptHandler(logging.Handler):
         )
 
 
-logger.remove()
-logger.add(
-    sys.stdout,
-    level=LOG_LEVEL,
-    format=stdout_format,
-    filter=lambda record: "audit" not in record["extra"],
-)
+def init_logger():
+    from fief.tasks import write_audit_log
 
-logging.basicConfig(handlers=[InterceptHandler()], level=LOG_LEVEL, force=True)
-for uvicorn_logger_name in ["uvicorn", "uvicorn.error"]:
-    uvicorn_logger = logging.getLogger(uvicorn_logger_name)
-    uvicorn_logger.setLevel(LOG_LEVEL)
-    uvicorn_logger.handlers = []
-for uvicorn_logger_name in ["uvicorn.access"]:
-    uvicorn_logger = logging.getLogger(uvicorn_logger_name)
-    uvicorn_logger.setLevel(LOG_LEVEL)
-    uvicorn_logger.handlers = [InterceptHandler()]
-
-
-def init_audit_logger(
-    get_main_session: Callable[..., AsyncContextManager[AsyncSession]],
-    get_workspace_session: Callable[..., AsyncContextManager[AsyncSession]],
-    loop: AbstractEventLoop | None = None,
-):
-    """
-    Initialize the audit logger.
-
-    Needs to be deferred because it relies on a running event loop.
-    """
+    logger.remove()
     logger.add(
-        DatabaseAuditLogSink(get_main_session, get_workspace_session),
+        sys.stdout,
         level=LOG_LEVEL,
-        enqueue=True,
-        loop=loop,
+        format=stdout_format,
+        filter=lambda record: "audit" not in record["extra"],
+    )
+    logger.add(
+        AuditLogSink(write_audit_log),
+        level=LOG_LEVEL,
         filter=lambda r: r["extra"].get("audit") is True,
     )
 
+    logging.basicConfig(handlers=[InterceptHandler()], level=LOG_LEVEL, force=True)
+    for uvicorn_logger_name in ["uvicorn", "uvicorn.error"]:
+        uvicorn_logger = logging.getLogger(uvicorn_logger_name)
+        uvicorn_logger.setLevel(LOG_LEVEL)
+        uvicorn_logger.handlers = []
+    for uvicorn_logger_name in ["uvicorn.access"]:
+        uvicorn_logger = logging.getLogger(uvicorn_logger_name)
+        uvicorn_logger.setLevel(LOG_LEVEL)
+        uvicorn_logger.handlers = [InterceptHandler()]
 
-__all__ = ["init_audit_logger", "logger"]
+
+__all__ = ["init_logger", "logger"]

@@ -14,7 +14,7 @@ from fief.db import AsyncSession
 from fief.db.engine import create_async_session_maker, create_engine
 from fief.db.workspace import WorkspaceEngineManager, get_workspace_session
 from fief.locale import BabelMiddleware, get_babel_middleware_kwargs
-from fief.logger import init_audit_logger, logger
+from fief.logger import logger
 from fief.models import Tenant, User, Workspace
 from fief.models.generics import BaseModel
 from fief.paths import EMAIL_TEMPLATES_DIRECTORY
@@ -110,9 +110,6 @@ class TaskBase:
 
     def __call__(self, *args, **kwargs):
         with asyncio.Runner() as runner:
-            init_audit_logger(
-                self.get_main_session, self.get_workspace_session, runner.get_loop()
-            )
             BabelMiddleware(app=None, **get_babel_middleware_kwargs())
             logger.info("Start task", task=self.__name__)
             result = runner.run(self.run(*args, **kwargs))

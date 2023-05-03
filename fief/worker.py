@@ -3,7 +3,7 @@ import sentry_sdk
 from sentry_sdk.integrations.redis import RedisIntegration
 
 from fief import __version__
-from fief.logger import logger
+from fief.logger import init_logger, logger
 from fief.settings import settings
 
 sentry_sdk.init(
@@ -15,6 +15,7 @@ sentry_sdk.init(
 
 from fief import tasks  # noqa: E402
 
+init_logger()
 logger.info("Fief Worker started", version=__version__)
 
 __all__ = ["tasks"]

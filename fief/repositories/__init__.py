@@ -1,5 +1,6 @@
 from fief.repositories.admin_api_key import AdminAPIKeyRepository
 from fief.repositories.admin_session_token import AdminSessionTokenRepository
+from fief.repositories.audit_log import AuditLogRepository
 from fief.repositories.authorization_code import AuthorizationCodeRepository
 from fief.repositories.base import get_repository
 from fief.repositories.client import ClientRepository
@@ -30,6 +31,7 @@ __all__ = [
     "WorkspaceUserRepository",
     "AdminAPIKeyRepository",
     "AdminSessionTokenRepository",
+    "AuditLogRepository",
     "AuthorizationCodeRepository",
     "ClientRepository",
     "EmailTemplateRepository",
