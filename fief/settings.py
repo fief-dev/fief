@@ -114,6 +114,7 @@ class Settings(BaseSettings):
     fief_encryption_key: str | None = None
     fief_main_user_email: EmailStr | None = None
     fief_main_user_password: SecretStr | None = None
+    fief_main_admin_api_key: SecretStr | None = None
 
     fief_admin_session_cookie_name: str = "fief_admin_session"
     fief_admin_session_cookie_domain: str = ""

@@ -1,11 +1,13 @@
 import functools
 
+from fief.crypto.token import get_token_hash
 from fief.db.main import create_main_async_session_maker
 from fief.db.workspace import WorkspaceEngineManager, get_workspace_session
 from fief.dependencies.logger import get_audit_logger
 from fief.dependencies.users import get_user_db, get_user_manager
-from fief.models import Client, User, Workspace, WorkspaceUser
+from fief.models import AdminAPIKey, Client, User, Workspace, WorkspaceUser
 from fief.repositories import (
+    AdminAPIKeyRepository,
     ClientRepository,
     TenantRepository,
     WorkspaceRepository,
@@ -41,6 +43,10 @@ class MainWorkspaceClientDoesNotExist(MainWorkspaceError):
 
 
 class CreateMainFiefUserError(MainWorkspaceError):
+    pass
+
+
+class MainFiefAdminApiKeyAlreadyExists(MainWorkspaceError):
     pass
 
 
@@ -146,3 +152,28 @@ async def create_main_fief_user(email: str, password: str | None = None) -> User
         await workspace_user_repository.create(workspace_user)
 
     return user
+
+
+async def create_main_fief_admin_api_key(token: str) -> AdminAPIKey:
+    workspace = await get_main_fief_workspace()
+    main_async_session_maker = create_main_async_session_maker()
+    async with main_async_session_maker() as session:
+        admin_api_key_repository = AdminAPIKeyRepository(session)
+
+        token_hash = get_token_hash(token)
+        admin_api_key = await admin_api_key_repository.get_by_token(token_hash)
+
+        if admin_api_key is not None:
+            raise MainFiefAdminApiKeyAlreadyExists()
+
+        async with get_workspace_session(
+            workspace, WorkspaceEngineManager()
+        ) as session:
+            admin_api_key = AdminAPIKey(
+                name="Environment variable key",
+                token=token_hash,
+                workspace_id=workspace.id,
+            )
+            await admin_api_key_repository.create(admin_api_key)
+
+    return admin_api_key
