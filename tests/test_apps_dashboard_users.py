@@ -139,10 +139,18 @@ class TestCreateUser:
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert response.headers["X-Fief-Error"] == "user_already_exists"
 
+    @pytest.mark.parametrize(
+        "password",
+        [
+            pytest.param("h", id="Too short password"),
+            pytest.param("h" * 512, id="Too long password"),
+        ],
+    )
     @pytest.mark.authenticated_admin(mode="session")
     @pytest.mark.htmx(target="modal")
     async def test_invalid_password(
         self,
+        password: str,
         test_client_dashboard: httpx.AsyncClient,
         test_data: TestData,
         csrf_token: str,
@@ -152,7 +160,7 @@ class TestCreateUser:
             "/users/create",
             data={
                 "email": "louis@bretagne.duchy",
-                "password": "h",
+                "password": password,
                 "tenant": str(tenant.id),
                 "csrf_token": csrf_token,
             },

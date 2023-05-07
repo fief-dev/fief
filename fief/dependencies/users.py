@@ -111,6 +111,12 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, UUID4]):
             raise InvalidPasswordException(
                 reason=_("The password should be at least 8 characters.")
             )
+        # Avoid long password denial of service
+        # Ref: https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html#implement-proper-password-strength-controls
+        if len(password) > 128:
+            raise InvalidPasswordException(
+                reason=_("The password should be at most 128 characters.")
+            )
 
     async def create_with_fields(
         self,

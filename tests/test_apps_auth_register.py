@@ -276,7 +276,12 @@ class TestPostRegister:
             pytest.param({"password": "hermine1"}, id="Missing email"),
             pytest.param({"email": "anne", "password": "hermine1"}, id="Invalid email"),
             pytest.param(
-                {"email": "anne@bretagne.duchy", "password": "h"}, id="Invalid password"
+                {"email": "anne@bretagne.duchy", "password": "h"},
+                id="Too short password",
+            ),
+            pytest.param(
+                {"email": "anne@bretagne.duchy", "password": "h" * 512},
+                id="Too long password",
             ),
         ],
     )

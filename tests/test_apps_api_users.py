@@ -107,16 +107,23 @@ class TestCreateUser:
         json = response.json()
         assert json["detail"] == APIErrorCode.USER_CREATE_ALREADY_EXISTS
 
+    @pytest.mark.parametrize(
+        "password",
+        [
+            pytest.param("h", id="Too short password"),
+            pytest.param("h" * 512, id="Too long password"),
+        ],
+    )
     @pytest.mark.authenticated_admin
     async def test_invalid_password(
-        self, test_client_api: httpx.AsyncClient, test_data: TestData
+        self, password: str, test_client_api: httpx.AsyncClient, test_data: TestData
     ):
         tenant = test_data["tenants"]["default"]
         response = await test_client_api.post(
             "/users/",
             json={
                 "email": "louis@bretagne.duchy",
-                "password": "h",
+                "password": password,
                 "fields": {},
                 "tenant_id": str(tenant.id),
             },
