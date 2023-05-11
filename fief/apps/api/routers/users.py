@@ -95,7 +95,6 @@ async def create_user(
     user_manager: UserManager = Depends(get_user_manager_from_create_user_internal),
     user_repository: UserRepository = Depends(get_workspace_repository(UserRepository)),
     audit_logger: AuditLogger = Depends(get_audit_logger),
-    trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ):
     try:
         created_user = await user_manager.create_with_fields(
@@ -112,7 +111,7 @@ async def create_user(
         return JSONResponse(
             content={
                 "detail": APIErrorCode.USER_CREATE_INVALID_PASSWORD,
-                "reason": str(e.reason),
+                "reason": [str(message) for message in e.reason],
             },
             status_code=status.HTTP_400_BAD_REQUEST,
         )
@@ -150,7 +149,7 @@ async def update_user(
         return JSONResponse(
             content={
                 "detail": APIErrorCode.USER_UPDATE_INVALID_PASSWORD,
-                "reason": str(e.reason),
+                "reason": [str(message) for message in e.reason],
             },
             status_code=status.HTTP_400_BAD_REQUEST,
         )

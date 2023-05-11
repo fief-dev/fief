@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Query, Request, status
+from fastapi import APIRouter, Depends, Header, Query, Request, status
 from fastapi.responses import RedirectResponse
 from fastapi_users.exceptions import (
     InvalidPasswordException,
@@ -51,6 +51,7 @@ async def forgot_password(
 @router.api_route("/reset", methods=["GET", "POST"], name="reset:reset")
 async def reset_password(
     request: Request,
+    hx_trigger: str | None = Header(None),
     token: str | None = Query(None),
     user_manager: UserManager = Depends(get_user_manager),
     login_session: LoginSession | None = Depends(get_optional_login_session),
@@ -73,7 +74,7 @@ async def reset_password(
         else:
             form.token.data = token
 
-    if await form_helper.is_submitted_and_valid():
+    if await form_helper.is_submitted_and_valid() and hx_trigger is None:
         try:
             await user_manager.reset_password(
                 form.token.data, form.password.data, request

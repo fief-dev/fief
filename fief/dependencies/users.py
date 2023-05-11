@@ -53,7 +53,6 @@ from fief.dependencies.user_field import (
 )
 from fief.dependencies.webhooks import TriggerWebhooks, get_trigger_webhooks
 from fief.dependencies.workspace_repositories import get_workspace_repository
-from fief.locale import gettext_lazy as _
 from fief.logger import AuditLogger
 from fief.models import (
     AuditLogMessage,
@@ -73,6 +72,7 @@ from fief.repositories import (
     UserRoleRepository,
 )
 from fief.schemas.user import UF, UserCreate, UserCreateInternal, UserRead, UserUpdate
+from fief.services.password import PasswordValidation
 from fief.services.webhooks.models import (
     UserCreated,
     UserForgotPasswordRequested,
@@ -107,16 +107,9 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, UUID4]):
     async def validate_password(  # type: ignore
         self, password: str, user: UserCreate | User
     ) -> None:
-        if len(password) < 8:
-            raise InvalidPasswordException(
-                reason=_("The password should be at least 8 characters.")
-            )
-        # Avoid long password denial of service
-        # Ref: https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html#implement-proper-password-strength-controls
-        if len(password) > 128:
-            raise InvalidPasswordException(
-                reason=_("The password should be at most 128 characters.")
-            )
+        password_validation = PasswordValidation.validate(password)
+        if not password_validation.valid:
+            raise InvalidPasswordException(password_validation.messages)
 
     async def create_with_fields(
         self,

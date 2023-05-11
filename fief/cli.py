@@ -206,7 +206,7 @@ async def create_main_user(
         typer.secho("User already exists", fg="red")
         raise typer.Exit(code=1) from e
     except InvalidPasswordException as e:
-        typer.secho(f"Invalid password: {e.reason}", fg=typer.colors.RED)
+        typer.secho(f"Invalid password: {', '.join(e.reason)}", fg=typer.colors.RED)
         raise typer.Exit(code=1) from e
 
 
@@ -411,7 +411,7 @@ def run_server(
                     raise typer.Exit(code=1) from e
                 except InvalidPasswordException as e:
                     typer.secho(
-                        f"Invalid main Fief user password: {e.reason}",
+                        f"Invalid main Fief user password: {', '.join(e.reason)}",
                         fg=typer.colors.RED,
                     )
                     raise typer.Exit(code=1) from e

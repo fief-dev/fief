@@ -31,11 +31,27 @@
           }
         </style>
       {% endif %}
+      <script src="https://unpkg.com/htmx.org@1.8.4"></script>
+      <script src="https://unpkg.com/hyperscript.org@0.9.7"></script>
       {% block javascripts_modules %}{% endblock %}
     {% endblock %}
   </head>
   <body class="antialiased">
-    {% block hyperscripts %}{% endblock %}
+    {% block hyperscripts %}
+    <script type="text/hyperscript">
+        on htmx:beforeSwap from document
+          if event.detail.xhr.status == 400
+            set event.detail.shouldSwap to true
+          end
+        end
+
+        on every htmx:beforeSend from <form />
+          for submitButton in <button[type='submit'] /> in it
+            toggle @disabled on submitButton until htmx:afterOnLoad
+          end
+        end
+      </script>
+    {% endblock %}
     {% block body %}{% endblock %}
   </body>
 </html>

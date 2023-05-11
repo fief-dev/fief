@@ -1,6 +1,6 @@
 from wtforms import PasswordField, validators
 
-from fief.forms import CSRFBaseForm
+from fief.forms import CSRFBaseForm, PasswordValidator
 from fief.locale import gettext_lazy as _
 
 
@@ -9,7 +9,7 @@ class ChangePasswordForm(CSRFBaseForm):
         _("Old password"), validators=[validators.InputRequired()]
     )
     new_password = PasswordField(
-        _("New password"), validators=[validators.InputRequired()]
+        _("New password"), validators=[validators.InputRequired(), PasswordValidator()]
     )
     new_password_confirm = PasswordField(
         _("Confirm new password"), validators=[validators.InputRequired()]

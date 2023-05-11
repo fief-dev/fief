@@ -179,6 +179,28 @@ class TestAuthUpdatePassword:
         assert len(password_inputs) == 3
 
     @pytest.mark.htmx()
+    async def test_update_invalid_new_password(
+        self,
+        tenant_params: TenantParams,
+        csrf_token: str,
+        test_client_auth_csrf: httpx.AsyncClient,
+    ):
+        cookies = {}
+        cookies[settings.session_cookie_name] = tenant_params.session_token_token[0]
+        response = await test_client_auth_csrf.post(
+            f"{tenant_params.path_prefix}/password",
+            cookies=cookies,
+            data={
+                "old_password": "herminetincture",
+                "new_password": "a",
+                "new_password_confirm": "a",
+                "csrf_token": csrf_token,
+            },
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    @pytest.mark.htmx()
     async def test_update_invalid_old_password(
         self,
         tenant_params: TenantParams,
@@ -192,8 +214,8 @@ class TestAuthUpdatePassword:
             cookies=cookies,
             data={
                 "old_password": "INVALID_PASSWORD",
-                "new_password": "NEW_PASSWORD",
-                "new_password_confirm": "NEW_PASSWORD",
+                "new_password": "newherminetincture",
+                "new_password_confirm": "newherminetincture",
                 "csrf_token": csrf_token,
             },
         )
@@ -214,38 +236,15 @@ class TestAuthUpdatePassword:
             f"{tenant_params.path_prefix}/password",
             cookies=cookies,
             data={
-                "old_password": "hermine",
-                "new_password": "NEW_PASSWORD",
-                "new_password_confirm": "ANOTHER_NEW_PASSWORD",
+                "old_password": "herminetincture",
+                "new_password": "newherminetincture",
+                "new_password_confirm": "newtincturehermine",
                 "csrf_token": csrf_token,
             },
         )
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert response.headers["X-Fief-Error"] == "passwords_dont_match"
-
-    @pytest.mark.htmx()
-    async def test_update_invalid_new_password(
-        self,
-        tenant_params: TenantParams,
-        csrf_token: str,
-        test_client_auth_csrf: httpx.AsyncClient,
-    ):
-        cookies = {}
-        cookies[settings.session_cookie_name] = tenant_params.session_token_token[0]
-        response = await test_client_auth_csrf.post(
-            f"{tenant_params.path_prefix}/password",
-            cookies=cookies,
-            data={
-                "old_password": "hermine",
-                "new_password": "a",
-                "new_password_confirm": "a",
-                "csrf_token": csrf_token,
-            },
-        )
-
-        assert response.status_code == status.HTTP_400_BAD_REQUEST
-        assert response.headers["X-Fief-Error"] == "invalid_password"
 
     @pytest.mark.htmx()
     async def test_update_valid(
@@ -260,9 +259,9 @@ class TestAuthUpdatePassword:
             f"{tenant_params.path_prefix}/password",
             cookies=cookies,
             data={
-                "old_password": "hermine",
-                "new_password": "NEW_PASSWORD",
-                "new_password_confirm": "NEW_PASSWORD",
+                "old_password": "herminetincture",
+                "new_password": "newherminetincture",
+                "new_password_confirm": "newherminetincture",
                 "csrf_token": csrf_token,
             },
         )

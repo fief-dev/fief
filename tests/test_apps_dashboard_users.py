@@ -108,7 +108,7 @@ class TestCreateUser:
             "/users/create",
             data={
                 "email": "louis@bretagne.duchy",
-                "password": "hermine1",
+                "password": "herminetincture",
                 "tenant": str(not_existing_uuid),
                 "csrf_token": csrf_token,
             },
@@ -130,7 +130,7 @@ class TestCreateUser:
             "/users/create",
             data={
                 "email": "anne@bretagne.duchy",
-                "password": "hermine1",
+                "password": "herminetincture",
                 "tenant": str(tenant.id),
                 "csrf_token": csrf_token,
             },
@@ -182,7 +182,7 @@ class TestCreateUser:
             "/users/create",
             data={
                 "email": "louis@bretagne.duchy",
-                "password": "hermine1",
+                "password": "herminetincture",
                 "tenant": str(tenant.id),
                 "fields-last_seen": "INVALID_VALUE",
                 "csrf_token": csrf_token,
@@ -207,7 +207,7 @@ class TestCreateUser:
             "/users/create",
             data={
                 "email": "louis@bretagne.duchy",
-                "password": "hermine1",
+                "password": "herminetincture",
                 "tenant": str(tenant.id),
                 "fields-onboarding_done": True,
                 "fields-last_seen": "2022-01-01 13:37:00",
@@ -335,7 +335,7 @@ class TestUpdateUser:
             f"/users/{user.id}/edit",
             data={
                 "email": "anne+updated@bretagne.duchy",
-                "password": "hermine1",
+                "password": "newherminetincture",
                 "fields-onboarding_done": True,
                 "fields-last_seen": "2022-01-01 13:37:00",
                 "csrf_token": csrf_token,

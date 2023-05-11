@@ -555,7 +555,7 @@ class TestAuthPostLogin:
             f"{path_prefix}/login",
             data={
                 "email": "anne@bretagne.duchy",
-                "password": "hermine",
+                "password": "herminetincture",
                 "csrf_token": csrf_token,
             },
             cookies=cookies,
@@ -597,7 +597,7 @@ class TestAuthPostLogin:
             f"{path_prefix}/login",
             data={
                 "email": "anne@bretagne.duchy",
-                "password": "hermine",
+                "password": "herminetincture",
                 "csrf_token": csrf_token,
             },
             cookies=cookies,
@@ -632,7 +632,7 @@ class TestAuthPostLogin:
             f"{path_prefix}/login",
             data={
                 "email": "anne@bretagne.duchy",
-                "password": "hermine",
+                "password": "herminetincture",
                 "csrf_token": csrf_token,
             },
         )

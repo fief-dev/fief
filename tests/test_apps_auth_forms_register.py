@@ -29,7 +29,7 @@ class TestGetRegisterFormClass:
             FormData(
                 {
                     "email": "anne@bretagne.duchy",
-                    "password": "hermine",
+                    "password": "herminetincture",
                     "fields.first_name": "Anne",
                 }
             ),
@@ -58,7 +58,7 @@ class TestGetRegisterFormClass:
         assert issubclass(form_class, RegisterFormBase)
 
         form = form_class(
-            FormData({"email": "anne@bretagne.duchy", "password": "hermine"}),
+            FormData({"email": "anne@bretagne.duchy", "password": "herminetincture"}),
             meta={"csrf": False},
         )
 
@@ -88,7 +88,7 @@ class TestGetRegisterFormClass:
             FormData(
                 {
                     "email": "anne@bretagne.duchy",
-                    "password": "hermine",
+                    "password": "herminetincture",
                     "fields.first_name": "",
                 }
             ),
@@ -118,7 +118,7 @@ class TestGetRegisterFormClass:
         assert issubclass(form_class, RegisterFormBase)
 
         form = form_class(
-            FormData({"email": "anne@bretagne.duchy", "password": "hermine"}),
+            FormData({"email": "anne@bretagne.duchy", "password": "herminetincture"}),
             meta={"csrf": False},
         )
 
@@ -147,7 +147,7 @@ class TestGetRegisterFormClass:
             FormData(
                 {
                     "email": "anne@bretagne.duchy",
-                    "password": "hermine",
+                    "password": "herminetincture",
                     "fields.newsletter": "on",
                 }
             ),
@@ -176,7 +176,7 @@ class TestGetRegisterFormClass:
         form_class = await get_register_form_class(user_fields, None)
         assert issubclass(form_class, RegisterFormBase)
 
-        data = {"email": "anne@bretagne.duchy", "password": "hermine"}
+        data = {"email": "anne@bretagne.duchy", "password": "herminetincture"}
         if value is not None:
             data["fields.consent"] = value
         form = form_class(FormData(data), meta={"csrf": False})
@@ -207,7 +207,7 @@ class TestGetRegisterFormClass:
             FormData(
                 {
                     "email": "anne@bretagne.duchy",
-                    "password": "hermine",
+                    "password": "herminetincture",
                     "fields.consent": "on",
                 }
             ),
@@ -239,7 +239,7 @@ class TestGetRegisterFormClass:
             FormData(
                 {
                     "email": "anne@bretagne.duchy",
-                    "password": "hermine",
+                    "password": "herminetincture",
                     "fields.choice": "d",
                 }
             ),
@@ -272,7 +272,7 @@ class TestGetRegisterFormClass:
             FormData(
                 {
                     "email": "anne@bretagne.duchy",
-                    "password": "hermine",
+                    "password": "herminetincture",
                     "fields.choice": "a",
                 }
             ),
@@ -304,7 +304,7 @@ class TestGetRegisterFormClass:
             FormData(
                 {
                     "email": "anne@bretagne.duchy",
-                    "password": "hermine",
+                    "password": "herminetincture",
                     "fields.phone_number": "+33102030405",
                 }
             ),
@@ -333,7 +333,7 @@ class TestGetRegisterFormClass:
         assert issubclass(form_class, RegisterFormBase)
 
         form = form_class(
-            FormData({"email": "anne@bretagne.duchy", "password": "hermine"}),
+            FormData({"email": "anne@bretagne.duchy", "password": "herminetincture"}),
             meta={"csrf": False},
         )
 

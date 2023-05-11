@@ -29,7 +29,7 @@ class TestGetUserCreateModel:
 
         user_create = model(
             email="anne@bretagne.duchy",
-            password="hermine",
+            password="herminetincture",
             fields={
                 "first_name": "Anne",
             },
@@ -56,7 +56,7 @@ class TestGetUserCreateModel:
         model = await get_user_create_model(user_fields)
 
         with pytest.raises(ValidationError) as e:
-            model(email="anne@bretagne.duchy", password="hermine", fields={})
+            model(email="anne@bretagne.duchy", password="herminetincture", fields={})
 
         errors = e.value.errors()
         assert len(errors) == 1
@@ -85,7 +85,7 @@ class TestGetUserCreateModel:
         with pytest.raises(ValidationError) as e:
             model(
                 email="anne@bretagne.duchy",
-                password="hermine",
+                password="herminetincture",
                 fields={"first_name": ""},
             )
 
@@ -113,7 +113,9 @@ class TestGetUserCreateModel:
         ]
         model = await get_user_create_model(user_fields)
 
-        user_create = model(email="anne@bretagne.duchy", password="hermine", fields={})
+        user_create = model(
+            email="anne@bretagne.duchy", password="herminetincture", fields={}
+        )
 
         assert user_create.fields.newsletter is False
 
@@ -135,7 +137,9 @@ class TestGetUserCreateModel:
         model = await get_user_create_model(user_fields)
 
         user_create = model(
-            email="anne@bretagne.duchy", password="hermine", fields={"newsletter": "on"}
+            email="anne@bretagne.duchy",
+            password="herminetincture",
+            fields={"newsletter": "on"},
         )
 
         assert user_create.fields.newsletter is True
@@ -162,7 +166,9 @@ class TestGetUserCreateModel:
             fields = {}
             if value is not None:
                 fields["consent"] = value
-            model(email="anne@bretagne.duchy", password="hermine", fields=fields)
+            model(
+                email="anne@bretagne.duchy", password="herminetincture", fields=fields
+            )
 
         errors = e.value.errors()
         assert len(errors) == 1
@@ -190,7 +196,9 @@ class TestGetUserCreateModel:
         model = await get_user_create_model(user_fields)
 
         user_create = model(
-            email="anne@bretagne.duchy", password="hermine", fields={"consent": "on"}
+            email="anne@bretagne.duchy",
+            password="herminetincture",
+            fields={"consent": "on"},
         )
 
         assert user_create.fields.consent is True
@@ -214,7 +222,9 @@ class TestGetUserCreateModel:
 
         with pytest.raises(ValidationError) as e:
             model(
-                email="anne@bretagne.duchy", password="hermine", fields={"choice": "d"}
+                email="anne@bretagne.duchy",
+                password="herminetincture",
+                fields={"choice": "d"},
             )
 
         errors = e.value.errors()
@@ -243,7 +253,9 @@ class TestGetUserCreateModel:
         model = await get_user_create_model(user_fields)
 
         user_create = model(
-            email="anne@bretagne.duchy", password="hermine", fields={"choice": "a"}
+            email="anne@bretagne.duchy",
+            password="herminetincture",
+            fields={"choice": "a"},
         )
 
         assert user_create.fields.choice == "a"

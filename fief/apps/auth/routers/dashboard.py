@@ -1,7 +1,7 @@
 from typing import TypedDict
 
-from fastapi import APIRouter, Depends, Request
-from fastapi_users.exceptions import InvalidPasswordException, UserAlreadyExists
+from fastapi import APIRouter, Depends, Header, Request
+from fastapi_users.exceptions import UserAlreadyExists
 
 from fief import schemas
 from fief.apps.auth.forms.password import ChangePasswordForm
@@ -78,6 +78,7 @@ async def update_profile(
 @router.api_route("/password", methods=["GET", "POST"], name="auth.dashboard:password")
 async def update_password(
     request: Request,
+    hx_trigger: str | None = Header(None),
     user: User = Depends(get_user_from_session_token),
     user_manager: UserManager = Depends(get_user_manager),
     context: BaseContext = Depends(get_base_context),
@@ -89,7 +90,7 @@ async def update_password(
         context={**context, "current_route": "auth.dashboard:password"},
     )
 
-    if await form_helper.is_submitted_and_valid():
+    if await form_helper.is_submitted_and_valid() and hx_trigger is None:
         form = await form_helper.get_form()
 
         old_password = form.old_password.data
@@ -113,11 +114,7 @@ async def update_password(
             form.new_password.errors.append(message)
             return await form_helper.get_error_response(message, "passwords_dont_match")
 
-        try:
-            await user_manager._update(user, {"password": new_password})
-        except InvalidPasswordException as e:
-            form.new_password.errors.append(e.reason)
-            return await form_helper.get_error_response(e.reason, "invalid_password")
+        await user_manager._update(user, {"password": new_password})
 
         form_helper.context["success"] = _(
             "Your password has been changed successfully."

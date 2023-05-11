@@ -251,6 +251,7 @@ dependencies = [
     "typer ==0.7.0",
     "uvicorn[standard]==0.21.1",
     "WTForms==3.0.1",
+    "zxcvbn-rs-py==0.1.0",
 ]
 
 [project.scripts]

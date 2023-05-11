@@ -5,7 +5,7 @@ from wtforms import EmailField, FormField, validators
 
 from fief.dependencies.register import get_optional_registration_session
 from fief.dependencies.user_field import get_registration_user_fields
-from fief.forms import BaseForm, CSRFBaseForm, PasswordFieldForm, get_form_field
+from fief.forms import BaseForm, CSRFBaseForm, PasswordCreateFieldForm, get_form_field
 from fief.locale import gettext_lazy as _
 from fief.models import RegistrationSession, RegistrationSessionFlow, UserField
 
@@ -34,7 +34,7 @@ async def get_register_form_class(
     class RegisterForm(RegisterFormBase):
         fields = FormField(RegisterFormFields, separator=".")
 
-    class RegisterPasswordForm(RegisterForm, PasswordFieldForm):
+    class RegisterPasswordForm(RegisterForm, PasswordCreateFieldForm):
         pass
 
     if registration_session is None or (

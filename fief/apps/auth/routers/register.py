@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Request, Response, status
+from fastapi import APIRouter, Depends, Header, Request, Response, status
 from fastapi.responses import RedirectResponse
 from fastapi_users.exceptions import InvalidPasswordException, UserAlreadyExists
 from fastapi_users.router import ErrorCode
@@ -34,6 +34,7 @@ router = APIRouter()
 @router.api_route("/register", methods=["GET", "POST"], name="register:register")
 async def register(
     request: Request,
+    hx_trigger: str | None = Header(None),
     login_session: LoginSession | None = Depends(get_optional_login_session),
     register_form_class: type[RF] = Depends(get_register_form_class),
     registration_flow: RegistrationFlow = Depends(get_registration_flow),
@@ -72,7 +73,11 @@ async def register(
     ):
         form.email.data = registration_session.email
 
-    if registration_session is not None and await form_helper.is_submitted_and_valid():
+    if (
+        registration_session is not None
+        and await form_helper.is_submitted_and_valid()
+        and hx_trigger is None
+    ):
         try:
             user = await registration_flow.create_user(
                 form.data, tenant, registration_session, request=request

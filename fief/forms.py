@@ -32,6 +32,7 @@ from fief.locale import get_translations
 from fief.locale import gettext_lazy as _
 from fief.middlewares.csrf import CSRF_ATTRIBUTE_NAME
 from fief.models import UserField, UserFieldType
+from fief.services.password import PasswordValidation
 from fief.settings import settings
 from fief.templates import templates
 
@@ -317,8 +318,27 @@ class AddressFormField(FormField):
         super().__init__(form_class, separator=".", *args, **kwargs)
 
 
-class PasswordFieldForm(BaseForm):
-    password = PasswordField(_("Password"), validators=[validators.InputRequired()])
+class PasswordValidator:
+    def __init__(self) -> None:
+        self.field_flags = {"password_validator": True}
+
+    def __call__(self, form: Form, field: Field) -> Any:
+        value = field.data
+        if value:
+            password_validation = PasswordValidation.validate(value)
+            field.flags.password_strength_score = password_validation.score
+            if not password_validation.valid:
+                for message in password_validation.messages:
+                    field.errors.append(message)
+                raise validators.ValidationError()
+
+
+class PasswordCreateFieldForm(BaseForm):
+    password = PasswordField(
+        _("Password"),
+        widget=widgets.PasswordInput(hide_value=False),
+        validators=[validators.InputRequired(), PasswordValidator()],
+    )
 
 
 USER_FIELD_FORM_FIELD_MAP: Mapping[UserFieldType, Field] = {

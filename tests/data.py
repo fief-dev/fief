@@ -51,7 +51,7 @@ from fief.settings import settings
 ModelMapping = Mapping[str, M]
 
 now = datetime.now(timezone.utc)
-hashed_password = password_helper.hash("hermine")
+hashed_password = password_helper.hash("herminetincture")
 
 
 def load_jwk_keys() -> jwk.JWKSet:

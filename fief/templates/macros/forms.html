@@ -291,10 +291,40 @@
 </button>
 {% endmacro %}
 
+{% macro password_validator(field) %}
+<div
+  id="{{ field.id }}-password-strength"
+  class="mt-2"
+  hx-post
+  hx-trigger="keyup from:previous input delay:100ms"
+  hx-select="#{{ field.id }}-password-strength"
+  >
+  {% if field.flags.password_strength_score != None %}
+    {% set score = field.flags.password_strength_score %}
+    {% set width = [15, 100 / 4 * score] | max %}
+    <div class="w-full bg-gray-200 rounded-full">
+      {% if score <= 2 %}
+      <div id="{{ field.id }}-password-strength-bar" class="bg-red-500 text-xs font-medium text-white text-center p-0.5 leading-none rounded-full transition-all" style="width: {{ width }}%">{{ _("Weak") }}</div>
+      {% elif score == 3 %}
+      <div id="{{ field.id }}-password-strength-bar" class="bg-yellow-500 text-xs font-medium text-white text-center p-0.5 leading-none rounded-full transition-all" style="width: {{ width }}%">{{ _("Acceptable") }}</div>
+      {% elif score == 4 %}
+      <div id="{{ field.id }}-password-strength-bar" class="bg-green-500 text-xs font-medium text-white text-center p-0.5 leading-none rounded-full transition-all" style="width: {{ width }}%">{{ _("Good") }}</div>
+      {% endif %}
+    </div>
+  {% endif %}
+  </div>
+{% endmacro %}
+
 {% macro form_field(field, class) %}
 <div class="{{ class }}">
   {% if field.type == "BooleanField" %}
     {{ form_checkbox_field(field, **kwargs) }}
+    {{ form_field_errors(field) }}
+  {% elif field.type == "PasswordField" %}
+    {{ form_standard_field(field, **kwargs) }}
+    {% if field.flags.password_validator %}
+      {{ password_validator(field) }}
+    {% endif %}
     {{ form_field_errors(field) }}
   {% elif field.type == "SelectField" %}
     {{ form_select_field(field, **kwargs) }}

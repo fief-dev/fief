@@ -120,10 +120,10 @@ class TestPostResetPassword:
         "data",
         [
             pytest.param({}, id="Missing password and token"),
-            pytest.param({"password": "hermine1"}, id="Missing token"),
+            pytest.param({"password": "newherminetincture"}, id="Missing token"),
             pytest.param({"token": "TOKEN"}, id="Missing password"),
             pytest.param(
-                {"token": "TOKEN", "password": "hermine1"}, id="Invalid token"
+                {"token": "TOKEN", "password": "newherminetincture"}, id="Invalid token"
             ),
         ],
     )
@@ -161,9 +161,6 @@ class TestPostResetPassword:
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 
-        headers = response.headers
-        assert headers["X-Fief-Error"] == "invalid_password"
-
     async def test_valid(
         self,
         test_client_auth_csrf: httpx.AsyncClient,
@@ -180,7 +177,11 @@ class TestPostResetPassword:
 
         response = await test_client_auth_csrf.post(
             "/reset",
-            data={"password": "hermine1", "token": token, "csrf_token": csrf_token},
+            data={
+                "password": "newherminetincture",
+                "token": token,
+                "csrf_token": csrf_token,
+            },
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -204,7 +205,11 @@ class TestPostResetPassword:
 
         response = await test_client_auth_csrf.post(
             "/reset",
-            data={"password": "hermine1", "token": token, "csrf_token": csrf_token},
+            data={
+                "password": "newherminetincture",
+                "token": token,
+                "csrf_token": csrf_token,
+            },
             cookies=cookies,
         )
 

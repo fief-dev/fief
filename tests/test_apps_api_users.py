@@ -76,7 +76,7 @@ class TestCreateUser:
             "/users/",
             json={
                 "email": "louis@bretagne.duchy",
-                "password": "hermine1",
+                "password": "herminetincture",
                 "fields": {},
                 "tenant_id": str(not_existing_uuid),
             },
@@ -96,7 +96,7 @@ class TestCreateUser:
             "/users/",
             json={
                 "email": "anne@bretagne.duchy",
-                "password": "hermine1",
+                "password": "herminetincture",
                 "fields": {},
                 "tenant_id": str(tenant.id),
             },
@@ -144,7 +144,7 @@ class TestCreateUser:
             "/users/",
             json={
                 "email": "louis@bretagne.duchy",
-                "password": "hermine1",
+                "password": "herminetincture",
                 "fields": {
                     "last_seen": "INVALID_VALUE",
                 },
@@ -170,7 +170,7 @@ class TestCreateUser:
             "/users/",
             json={
                 "email": "louis@bretagne.duchy",
-                "password": "hermine1",
+                "password": "herminetincture",
                 "fields": {
                     "onboarding_done": True,
                     "last_seen": "2022-01-01T13:37:00+00:00",
@@ -279,7 +279,7 @@ class TestUpdateUser:
             f"/users/{user.id}",
             json={
                 "email": "anne+updated@bretagne.duchy",
-                "password": "hermine1",
+                "password": "herminetincture",
                 "fields": {
                     "onboarding_done": True,
                     "last_seen": "2022-01-01T13:37:00+00:00",

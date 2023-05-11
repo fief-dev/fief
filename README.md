@@ -72,7 +72,7 @@ When the Codespace is built, a main workspace and a main user are automatically 
 >
 > Email: `anne@bretagne.duchy`
 >
-> Password: `hermine1`
+> Password: `herminetincture`
 
 Run the Fief server in development mode with the following command:
 

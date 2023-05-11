@@ -202,7 +202,7 @@ class TestPostRegister:
             f"{tenant_params.path_prefix}/register",
             data={
                 "email": "anne@bretagne.duchy",
-                "password": "hermine1",
+                "password": "herminetincture",
                 "csrf_token": csrf_token,
             },
             cookies=cookies,
@@ -231,7 +231,7 @@ class TestPostRegister:
             f"{path_prefix}/register",
             data={
                 "email": "anne@bretagne.duchy",
-                "password": "hermine1",
+                "password": "herminetincture",
                 "csrf_token": csrf_token,
             },
             cookies=cookies,
@@ -260,7 +260,7 @@ class TestPostRegister:
             f"{tenant_params.path_prefix}/register",
             data={
                 "email": "anne@bretagne.duchy",
-                "password": "hermine1",
+                "password": "herminetincture",
                 "csrf_token": csrf_token,
             },
             cookies=cookies,
@@ -273,8 +273,10 @@ class TestPostRegister:
         [
             pytest.param({}, id="Missing email and password"),
             pytest.param({"email": "anne@bretagne.duchy"}, id="Missing password"),
-            pytest.param({"password": "hermine1"}, id="Missing email"),
-            pytest.param({"email": "anne", "password": "hermine1"}, id="Invalid email"),
+            pytest.param({"password": "herminetincture"}, id="Missing email"),
+            pytest.param(
+                {"email": "anne", "password": "herminetincture"}, id="Invalid email"
+            ),
             pytest.param(
                 {"email": "anne@bretagne.duchy", "password": "h"},
                 id="Too short password",
@@ -322,7 +324,7 @@ class TestPostRegister:
             "/register",
             data={
                 "email": "anne@bretagne.duchy",
-                "password": "hermine1",
+                "password": "herminetincture",
                 "csrf_token": csrf_token,
             },
             cookies=cookies,
@@ -352,7 +354,7 @@ class TestPostRegister:
             "/register",
             data={
                 "email": "louis@bretagne.duchy",
-                "password": "hermine1",
+                "password": "herminetincture",
                 "csrf_token": csrf_token,
             },
             cookies=cookies,
@@ -400,7 +402,7 @@ class TestPostRegister:
             "/register",
             data={
                 "email": "louis@bretagne.duchy",
-                "password": "hermine1",
+                "password": "herminetincture",
                 "csrf_token": csrf_token,
             },
             cookies=cookies,
@@ -428,7 +430,7 @@ class TestPostRegister:
             f"/{test_data['tenants']['secondary'].slug}/register",
             data={
                 "email": "anne@bretagne.duchy",
-                "password": "hermine1",
+                "password": "herminetincture",
                 "csrf_token": csrf_token,
             },
             cookies=cookies,
@@ -453,7 +455,7 @@ class TestPostRegister:
             f"/{test_data['tenants']['secondary'].slug}/register",
             data={
                 "email": "anne@bretagne.duchy",
-                "password": "hermine1",
+                "password": "herminetincture",
                 "fields.given_name": "Anne",
                 "fields.address.line1": "4 place Marc Elder",
                 "fields.address.postal_code": "44000",
@@ -531,7 +533,7 @@ class TestPostRegister:
             f"/{test_data['tenants']['secondary'].slug}/register",
             data={
                 "email": "anne@bretagne.duchy",
-                "password": "hermine1",
+                "password": "herminetincture",
                 "csrf_token": csrf_token,
                 **data,
             },
@@ -557,7 +559,7 @@ class TestPostRegister:
             f"/{test_data['tenants']['secondary'].slug}/register",
             data={
                 "email": "anne@bretagne.duchy",
-                "password": "hermine1",
+                "password": "herminetincture",
                 "fields.given_name": "",
                 "csrf_token": csrf_token,
             },
