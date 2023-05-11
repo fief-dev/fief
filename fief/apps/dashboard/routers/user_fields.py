@@ -1,3 +1,5 @@
+from typing import cast
+
 from fastapi import APIRouter, Depends, Header, Request, status
 
 from fief import schemas
@@ -25,7 +27,12 @@ from fief.dependencies.webhooks import TriggerWebhooks, get_trigger_webhooks
 from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.forms import FormHelper
 from fief.logger import AuditLogger
-from fief.models import AuditLogMessage, OAuthProvider, UserField
+from fief.models import (
+    AuditLogMessage,
+    OAuthProvider,
+    UserField,
+    UserFieldConfiguration,
+)
 from fief.repositories import UserFieldRepository
 from fief.services.webhooks.models import (
     UserFieldCreated,
@@ -120,8 +127,14 @@ async def create_user_field(
                 "user_field_slug_already_exists",
             )
 
+        data = form.data
+        configuration = schemas.user_field.UserFieldConfiguration(
+            **data.pop("configuration")
+        )
         user_field = UserField()
         form.populate_obj(user_field)
+        user_field.configuration = cast(UserFieldConfiguration, configuration.dict())
+
         user_field = await repository.create(user_field)
         audit_logger.log_object_write(AuditLogMessage.OBJECT_CREATED, user_field)
         trigger_webhooks(UserFieldCreated, user_field, schemas.user_field.UserField)
@@ -174,7 +187,12 @@ async def update_user_field(
             )
 
         form = await form_helper.get_form()
+        data = form.data
+        configuration = schemas.user_field.UserFieldConfiguration(
+            **data.pop("configuration")
+        )
         form.populate_obj(user_field)
+        user_field.configuration = cast(UserFieldConfiguration, configuration.dict())
 
         await repository.update(user_field)
         audit_logger.log_object_write(AuditLogMessage.OBJECT_UPDATED, user_field)

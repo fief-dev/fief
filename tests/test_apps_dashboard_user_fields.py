@@ -257,6 +257,9 @@ class TestCreateUserField:
             ("BOOLEAN", True, True),
             ("BOOLEAN", False, False),
             ("TIMEZONE", "Europe/Paris", "Europe/Paris"),
+            ("DATE", None, None),
+            ("DATETIME", None, None),
+            ("ADDRESS", None, None),
         ],
     )
     @pytest.mark.authenticated_admin(mode="session")
@@ -457,6 +460,37 @@ class TestUpdateUserField:
         assert updated_user_field is not None
         assert updated_user_field.configuration["choices"] is not None
         assert updated_user_field.configuration["choices"] == [["F", "Foo"]]
+
+    @pytest.mark.authenticated_admin(mode="session")
+    @pytest.mark.htmx(target="modal")
+    async def test_valid_date(
+        self,
+        test_client_dashboard: httpx.AsyncClient,
+        test_data: TestData,
+        csrf_token: str,
+        workspace_session: AsyncSession,
+    ):
+        user_field = test_data["user_fields"]["birthdate"]
+        response = await test_client_dashboard.post(
+            f"/user-fields/{user_field.id}/edit",
+            data={
+                "name": user_field.name,
+                "slug": user_field.slug,
+                "configuration-at_registration": user_field.configuration[
+                    "at_registration"
+                ],
+                "configuration-required": user_field.configuration["required"],
+                "configuration-at_update": user_field.configuration["at_update"],
+                "csrf_token": csrf_token,
+            },
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+
+        user_field_repository = UserFieldRepository(workspace_session)
+        updated_user_field = await user_field_repository.get_by_id(user_field.id)
+        assert updated_user_field is not None
+        assert updated_user_field.configuration["default"] is None
 
 
 @pytest.mark.asyncio

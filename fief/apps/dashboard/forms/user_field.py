@@ -17,34 +17,26 @@ from fief.forms import CSRFBaseForm, TimezoneField
 from fief.models import UserField, UserFieldType
 
 
-class FormFieldTuple(FormField):
+class FormFieldValueLabelTuple(FormField):
     def process(self, formdata, data=unset_value, extra_filters=None):
         """
-        Transform input data in form of a tuple to a dict labelled by field key.
-
-        The trick is to iterate over the form class to detect the field definitions
-        (the logic is borrowed form FormMeta) and assign them the tuple value
-        in the same order.
+        Transform input data in form of a tuple to a dict with value/label.
         """
         data_dict = {}
         if data:
-            data_list = list(data)
-            for name in dir(self.form_class):
-                if not name.startswith("_"):
-                    unbound_field = getattr(self.form_class, name)
-                    if hasattr(unbound_field, "_formfield"):
-                        data_dict[name] = data_list.pop(0)
+            data_dict = {"value": data[0], "label": data[1]}
 
         return super().process(formdata, data_dict, extra_filters)
 
     def populate_obj(self, obj, name):
         """
-        Transform data labelled by field key into a tuple, in the order of the fields.
+        Transform data labelled with value/label to a tuple.
         """
-        data_list = []
-        for field in self.form:
-            data_list.append(field.data)
-        setattr(obj, name, tuple(data_list))
+        setattr(obj, name, (self.form.value.data, self.form.label.data))
+
+    @property
+    def data(self):
+        return (self.form.value.data, self.form.label.data)
 
 
 class SettableDict(dict):
@@ -95,7 +87,7 @@ class UserFieldConfigurationChoiceItem(Form):
 
 class UserFieldConfigurationChoice(UserFieldConfigurationBase):
     choices = FieldList(
-        FormFieldTuple(UserFieldConfigurationChoiceItem),
+        FormFieldValueLabelTuple(UserFieldConfigurationChoiceItem),
         "Choices",
         min_entries=1,
     )
@@ -105,9 +97,7 @@ class UserFieldConfigurationChoice(UserFieldConfigurationBase):
         choices = self.data["choices"]
         if choices is not None:
             self.default.choices = [("", "")] + [
-                (choice["value"], choice["label"])
-                for choice in choices
-                if choice["value"] is not None
+                (key, value) for (key, value) in choices if value is not None
             ]
 
 
