@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  Fief\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2023-03-29 14:35+0200\n"
+"POT-Creation-Date: 2023-05-11 14:38+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: pl\n"
@@ -15,43 +15,43 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.12.1\n"
 
-#: fief/forms.py:65
+#: fief/forms.py:66
 msgid "CSRF failed."
 msgstr "CSRF failed."
 
-#: fief/forms.py:268
+#: fief/forms.py:269
 msgid "The country code is missing."
 msgstr "Brak kodu kraju."
 
-#: fief/forms.py:270
+#: fief/forms.py:271
 msgid "This phone number is invalid."
 msgstr "Ten numer telefonu jest nieprawidłowy."
 
-#: fief/forms.py:288
+#: fief/forms.py:289
 msgid "Address line 1"
 msgstr "Adres (linia 1)"
 
-#: fief/forms.py:290
+#: fief/forms.py:291
 msgid "Address line 2"
 msgstr "Adres (linia 2)"
 
-#: fief/forms.py:294
+#: fief/forms.py:295
 msgid "Postal code"
 msgstr "Kod pocztowy"
 
-#: fief/forms.py:295
+#: fief/forms.py:296
 msgid "City"
 msgstr "Miasto"
 
-#: fief/forms.py:297
+#: fief/forms.py:298
 msgid "State"
 msgstr "Województwo"
 
-#: fief/forms.py:299
+#: fief/forms.py:300
 msgid "Country"
 msgstr "Kraj"
 
-#: fief/apps/auth/forms/auth.py:12 fief/forms.py:321
+#: fief/apps/auth/forms/auth.py:12 fief/forms.py:338
 #: fief/templates/auth/dashboard/password.html:7
 #: fief/templates/auth/dashboard/sidebar.html:40
 msgid "Password"
@@ -75,7 +75,7 @@ msgstr "Odmów"
 msgid "Old password"
 msgstr "Hasło"
 
-#: fief/apps/auth/forms/password.py:12 fief/apps/auth/forms/reset.py:14
+#: fief/apps/auth/forms/password.py:12 fief/apps/auth/forms/reset.py:15
 msgid "New password"
 msgstr "Nowe hasło"
 
@@ -105,16 +105,16 @@ msgstr "Użytkownik z tym adresem email już istnieje."
 msgid "Your profile has successfully been updated."
 msgstr ""
 
-#: fief/apps/auth/routers/dashboard.py:104
+#: fief/apps/auth/routers/dashboard.py:105
 #, fuzzy
 msgid "Old password is invalid."
 msgstr "Ten numer telefonu jest nieprawidłowy."
 
-#: fief/apps/auth/routers/dashboard.py:112
+#: fief/apps/auth/routers/dashboard.py:113
 msgid "Passwords don't match."
 msgstr ""
 
-#: fief/apps/auth/routers/dashboard.py:122
+#: fief/apps/auth/routers/dashboard.py:119
 msgid "Your password has been changed successfully."
 msgstr ""
 
@@ -141,11 +141,11 @@ msgstr ""
 msgid "Your account is inactive."
 msgstr "Twoje konto jest nieaktywne."
 
-#: fief/apps/auth/routers/register.py:49
+#: fief/apps/auth/routers/register.py:50
 msgid "Registration is disabled"
 msgstr "Rejestracja jest wyłączona"
 
-#: fief/apps/auth/routers/register.py:82
+#: fief/apps/auth/routers/register.py:87
 msgid "A user with the same email address already exists."
 msgstr "Użytkownik z tym adresem email już istnieje."
 
@@ -157,11 +157,11 @@ msgstr ""
 "Sprawdź swoją skrzynkę odbiorczą! Jeśli konto powiązane z tym adresem "
 "e-mail istnieje w naszym systemie, otrzymasz link do zresetowania hasła."
 
-#: fief/apps/auth/routers/reset.py:71
+#: fief/apps/auth/routers/reset.py:72
 msgid "The reset password token is missing."
 msgstr "The reset password token is missing."
 
-#: fief/apps/auth/routers/reset.py:83
+#: fief/apps/auth/routers/reset.py:84
 msgid "The reset password token is invalid or expired."
 msgstr "Token resetowania hasła jest nieprawidłowy lub wygasł."
 
@@ -244,9 +244,19 @@ msgstr "Nieprawidłowa sesja logowania."
 msgid "Unknown OAuth provider"
 msgstr "Nieznany dostawca OAuth"
 
-#: fief/dependencies/users.py:112
-msgid "The password should be at least 8 characters."
+#: fief/services/password.py:26
+#, fuzzy, python-format
+msgid "Password must be at least %(min)d characters long.min"
 msgstr "Hasło powinno mieć co najmniej 8 znaków."
+
+#: fief/services/password.py:34
+#, fuzzy, python-format
+msgid "Password must be at most %(max)d characters long.max"
+msgstr "Hasło powinno mieć co najmniej 8 znaków."
+
+#: fief/services/password.py:43
+msgid "Password is not strong enough."
+msgstr ""
 
 #: fief/templates/auth/authorize.html:3 fief/templates/auth/authorize.html:5
 msgid "Authorize"
@@ -359,4 +369,16 @@ msgstr ""
 #: fief/templates/macros/branding.html:3
 msgid "Powered and secured by"
 msgstr "Tworzony i zabezpieczany przez"
+
+#: fief/templates/macros/forms.html:307
+msgid "Weak"
+msgstr ""
+
+#: fief/templates/macros/forms.html:309
+msgid "Acceptable"
+msgstr ""
+
+#: fief/templates/macros/forms.html:311
+msgid "Good"
+msgstr ""
 
