@@ -302,7 +302,7 @@ msgstr "Tu contraseña ha sido cambiada exitosamente."
 
 #: fief/apps/auth/routers/oauth.py:147
 msgid "An error occurred while querying the provider API. Original error message: %(message)s"
-msgstr "Ocurrió un error al consultar la API del proveedor. Mensaje de error original: %(mensaje)s"
+msgstr "Ocurrió un error al consultar la API del proveedor. Mensaje de error original: %(message)s"
 
 #: fief/dependencies/auth.py:276
 msgid "Missing login session. You should return to %(tenant)s and try to login again"
