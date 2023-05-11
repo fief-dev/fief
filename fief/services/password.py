@@ -24,16 +24,16 @@ class PasswordValidation:
             valid = False
             messages.append(
                 _(
-                    "Password must be at least %(min)d characters long."
-                    % {"min": MIN_PASSWORD_LENGTH}
+                    "Password must be at least %(min)d characters long.",
+                    min=MIN_PASSWORD_LENGTH,
                 )
             )
         elif len(password) > MAX_PASSWORD_LENGTH:
             valid = False
             messages.append(
                 _(
-                    "Password must be at most %(max)d characters long."
-                    % {"max": MAX_PASSWORD_LENGTH}
+                    "Password must be at most %(max)d characters long.",
+                    max=MAX_PASSWORD_LENGTH,
                 )
             )
 

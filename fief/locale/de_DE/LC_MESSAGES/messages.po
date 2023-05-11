@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  Fief\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2023-05-11 14:38+0200\n"
+"POT-Creation-Date: 2023-05-11 14:43+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: de\n"
@@ -250,12 +250,12 @@ msgstr "Unbekannter OAuth Provider"
 
 #: fief/services/password.py:26
 #, fuzzy, python-format
-msgid "Password must be at least %(min)d characters long.min"
+msgid "Password must be at least %(min)d characters long."
 msgstr "Das Passwort sollte mindestens 8 Zeichen lang sein."
 
 #: fief/services/password.py:34
 #, fuzzy, python-format
-msgid "Password must be at most %(max)d characters long.max"
+msgid "Password must be at most %(max)d characters long."
 msgstr "Das Passwort sollte mindestens 8 Zeichen lang sein."
 
 #: fief/services/password.py:43
