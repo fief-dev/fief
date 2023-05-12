@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, status
-from fastapi_users.exceptions import InvalidPasswordException, UserAlreadyExists
 from pydantic import UUID4
 
 from fief import schemas, tasks
@@ -19,12 +18,9 @@ from fief.apps.dashboard.forms.user import (
 )
 from fief.apps.dashboard.responses import HXRedirectResponse
 from fief.crypto.access_token import generate_access_token
-from fief.crypto.password import password_helper
-from fief.db import AsyncSession
 from fief.dependencies.admin_authentication import is_authenticated_admin_session
 from fief.dependencies.current_workspace import (
     get_current_workspace,
-    get_current_workspace_session,
 )
 from fief.dependencies.logger import get_audit_logger
 from fief.dependencies.pagination import PaginatedObjects
@@ -36,13 +32,11 @@ from fief.dependencies.tasks import get_send_task
 from fief.dependencies.tenant import get_tenants
 from fief.dependencies.user_field import get_user_fields
 from fief.dependencies.users import (
-    SQLAlchemyUserTenantDatabase,
-    UserManager,
     get_admin_user_create_internal_model,
     get_admin_user_update_model,
     get_paginated_users,
     get_user_by_id_or_404,
-    get_user_manager_from_user,
+    get_user_manager,
     get_user_oauth_accounts,
     get_user_permissions,
     get_user_roles,
@@ -69,6 +63,11 @@ from fief.repositories import (
     UserPermissionRepository,
     UserRepository,
     UserRoleRepository,
+)
+from fief.services.user_manager import (
+    InvalidPasswordError,
+    UserAlreadyExistsError,
+    UserManager,
 )
 from fief.services.webhooks.models import (
     UserDeleted,
@@ -164,10 +163,7 @@ async def create_user(
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
     audit_logger: AuditLogger = Depends(get_audit_logger),
-    session: AsyncSession = Depends(get_current_workspace_session),
-    workspace: Workspace = Depends(get_current_workspace),
-    send_task: SendTask = Depends(get_send_task),
-    trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
+    user_manager: UserManager = Depends(get_user_manager),
 ):
     form_class = await UserCreateForm.get_form_class(user_fields)
     form_helper = FormHelper(
@@ -187,24 +183,12 @@ async def create_user(
                 "Unknown tenant.", "unknown_tenant"
             )
 
-        user_db = SQLAlchemyUserTenantDatabase(session, tenant, User)
-        user_manager = UserManager(
-            user_db,
-            password_helper,
-            workspace,
-            tenant,
-            send_task,
-            audit_logger,
-            trigger_webhooks,
-        )
         user_create = user_create_internal_model(**form.data, tenant_id=tenant.id)
 
         try:
-            user = await user_manager.create_with_fields(
-                user_create, user_fields=user_fields, request=request
-            )
+            user = await user_manager.create(user_create, tenant.id, request=request)
             audit_logger.log_object_write(AuditLogMessage.OBJECT_CREATED, user)
-        except UserAlreadyExists:
+        except UserAlreadyExistsError:
             form.email.errors.append(
                 "A user with this email address already exists on this tenant."
             )
@@ -212,9 +196,12 @@ async def create_user(
                 "A user with this email address already exists on this tenant.",
                 "user_already_exists",
             )
-        except InvalidPasswordException as e:
-            form.password.errors.append(e.reason)
-            return await form_helper.get_error_response(e.reason, "invalid_password")
+        except InvalidPasswordError as e:
+            for message in e.messages:
+                form.password.errors.append(message)
+            return await form_helper.get_error_response(
+                ", ".join(map(str, e.messages)), "invalid_password"
+            )
 
         return HXRedirectResponse(
             request.url_for("dashboard.users:get", id=user.id),
@@ -237,11 +224,10 @@ async def update_user(
     ),
     user: User = Depends(get_user_by_id_or_404),
     user_fields: list[UserField] = Depends(get_user_fields),
-    user_manager: UserManager = Depends(get_user_manager_from_user),
+    user_manager: UserManager = Depends(get_user_manager),
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
     audit_logger: AuditLogger = Depends(get_audit_logger),
-    trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ):
     form_class = await UserUpdateForm.get_form_class(user_fields)
     form_helper = FormHelper(
@@ -262,11 +248,9 @@ async def update_user(
         user_update = user_update_model(**data)
 
         try:
-            user = await user_manager.update_with_fields(
-                user_update, user, user_fields=user_fields, request=request
-            )
+            user = await user_manager.update(user_update, user, request=request)
             audit_logger.log_object_write(AuditLogMessage.OBJECT_UPDATED, user)
-        except UserAlreadyExists:
+        except UserAlreadyExistsError:
             form.email.errors.append(
                 "A user with this email address already exists on this tenant."
             )
@@ -274,9 +258,12 @@ async def update_user(
                 "A user with this email address already exists on this tenant.",
                 "user_already_exists",
             )
-        except InvalidPasswordException as e:
-            form.password.errors.append(e.reason)
-            return await form_helper.get_error_response(e.reason, "invalid_password")
+        except InvalidPasswordError as e:
+            for message in e.messages:
+                form.password.errors.append(message)
+            return await form_helper.get_error_response(
+                ", ".join(map(str, e.messages)), "invalid_password"
+            )
 
         return HXRedirectResponse(request.url_for("dashboard.users:get", id=user.id))
 

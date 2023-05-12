@@ -1,7 +1,6 @@
 from typing import TypedDict
 
 from fastapi import APIRouter, Depends, Header, Request
-from fastapi_users.exceptions import UserAlreadyExists
 
 from fief import schemas
 from fief.apps.auth.forms.password import ChangePasswordForm
@@ -10,11 +9,11 @@ from fief.dependencies.branding import get_show_branding
 from fief.dependencies.session_token import get_user_from_session_token
 from fief.dependencies.tenant import get_current_tenant
 from fief.dependencies.theme import get_current_theme
-from fief.dependencies.user_field import get_user_fields
-from fief.dependencies.users import UserManager, get_user_manager, get_user_update_model
+from fief.dependencies.users import get_user_manager, get_user_update_model
 from fief.forms import FormHelper
 from fief.locale import gettext_lazy as _
-from fief.models import Tenant, Theme, User, UserField
+from fief.models import Tenant, Theme, User
+from fief.services.user_manager import UserAlreadyExistsError, UserManager
 
 router = APIRouter()
 
@@ -52,7 +51,6 @@ async def update_profile(
     user_update_model: type[schemas.user.UserUpdate[schemas.user.UF]] = Depends(
         get_user_update_model
     ),
-    user_fields: list[UserField] = Depends(get_user_fields),
     context: BaseContext = Depends(get_base_context),
 ):
     form_helper = FormHelper(
@@ -69,10 +67,8 @@ async def update_profile(
         user_update = user_update_model(**data)
 
         try:
-            user = await user_manager.update_with_fields(
-                user_update, user, user_fields=user_fields, request=request
-            )
-        except UserAlreadyExists:
+            user = await user_manager.update(user_update, user, request=request)
+        except UserAlreadyExistsError:
             message = _("A user with this email address already exists.")
             form.email.errors.append(message)
             return await form_helper.get_error_response(message, "user_already_exists")
@@ -123,7 +119,8 @@ async def update_password(
             form.new_password.errors.append(message)
             return await form_helper.get_error_response(message, "passwords_dont_match")
 
-        await user_manager._update(user, {"password": new_password})
+        user = await user_manager.set_user_attributes(user, password=new_password)
+        await user_manager.user_repository.update(user)
 
         form_helper.context["success"] = _(
             "Your password has been changed successfully."

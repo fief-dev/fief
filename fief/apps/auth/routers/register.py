@@ -1,7 +1,5 @@
 from fastapi import APIRouter, Depends, Header, Request, Response, status
 from fastapi.responses import RedirectResponse
-from fastapi_users.exceptions import InvalidPasswordException, UserAlreadyExists
-from fastapi_users.router import ErrorCode
 
 from fief.apps.auth.forms.register import RF, get_register_form_class
 from fief.dependencies.auth import (
@@ -29,6 +27,7 @@ from fief.models import (
 from fief.schemas.auth import LoginError
 from fief.services.authentication_flow import AuthenticationFlow
 from fief.services.registration_flow import RegistrationFlow
+from fief.services.user_manager import UserAlreadyExistsError
 
 router = APIRouter()
 
@@ -83,14 +82,11 @@ async def register(
             user = await registration_flow.create_user(
                 form.data, tenant, registration_session, request=request
             )
-        except UserAlreadyExists:
+        except UserAlreadyExistsError:
             return await form_helper.get_error_response(
                 _("A user with the same email address already exists."),
-                error_code=ErrorCode.REGISTER_USER_ALREADY_EXISTS,
+                error_code="user_already_exists",
             )
-        except InvalidPasswordException as e:
-            form.password.errors.append(e.reason)
-            return await form_helper.get_error_response(e.reason, "invalid_password")
         else:
             if login_session is not None:
                 response = RedirectResponse(

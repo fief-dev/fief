@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from fastapi.responses import JSONResponse
-from fastapi_users.exceptions import InvalidPasswordException, UserAlreadyExists
 from pydantic import UUID4
 from sqlalchemy.orm import joinedload
 
@@ -15,9 +14,7 @@ from fief.dependencies.permission import (
     get_user_permissions_getter,
 )
 from fief.dependencies.tasks import get_send_task
-from fief.dependencies.user_field import get_user_fields
 from fief.dependencies.users import (
-    UserManager,
     get_admin_user_update,
     get_paginated_user_oauth_accounts,
     get_paginated_user_permissions,
@@ -25,8 +22,7 @@ from fief.dependencies.users import (
     get_paginated_users,
     get_user_by_id_or_404,
     get_user_create_internal,
-    get_user_manager_from_create_user_internal,
-    get_user_manager_from_user,
+    get_user_manager,
 )
 from fief.dependencies.webhooks import TriggerWebhooks, get_trigger_webhooks
 from fief.dependencies.workspace_repositories import get_workspace_repository
@@ -36,7 +32,6 @@ from fief.models import (
     AuditLogMessage,
     OAuthAccount,
     User,
-    UserField,
     UserPermission,
     UserRole,
     Workspace,
@@ -45,11 +40,17 @@ from fief.repositories import (
     ClientRepository,
     PermissionRepository,
     RoleRepository,
+    TenantRepository,
     UserPermissionRepository,
     UserRepository,
     UserRoleRepository,
 )
 from fief.schemas.generics import PaginatedResults
+from fief.services.user_manager import (
+    InvalidPasswordError,
+    UserAlreadyExistsError,
+    UserManager,
+)
 from fief.services.webhooks.models import (
     UserDeleted,
     UserPermissionCreated,
@@ -91,27 +92,36 @@ async def get_user(
 async def create_user(
     request: Request,
     user_create: schemas.user.UserCreateInternal = Depends(get_user_create_internal),
-    user_fields: list[UserField] = Depends(get_user_fields),
-    user_manager: UserManager = Depends(get_user_manager_from_create_user_internal),
+    user_manager: UserManager = Depends(get_user_manager),
     user_repository: UserRepository = Depends(get_workspace_repository(UserRepository)),
+    tenant_repository: TenantRepository = Depends(
+        get_workspace_repository(TenantRepository)
+    ),
     audit_logger: AuditLogger = Depends(get_audit_logger),
 ):
+    tenant = await tenant_repository.get_by_id(user_create.tenant_id)
+    if tenant is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=APIErrorCode.USER_CREATE_UNKNOWN_TENANT,
+        )
+
     try:
-        created_user = await user_manager.create_with_fields(
-            user_create, user_fields=user_fields, request=request
+        created_user = await user_manager.create(
+            user_create, user_create.tenant_id, request=request
         )
         audit_logger.log_object_write(AuditLogMessage.OBJECT_CREATED, created_user)
-    except UserAlreadyExists as e:
+    except UserAlreadyExistsError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=APIErrorCode.USER_CREATE_ALREADY_EXISTS,
         ) from e
-    except InvalidPasswordException as e:
+    except InvalidPasswordError as e:
         # Build a JSON response manually to fine-tune the response structure
         return JSONResponse(
             content={
                 "detail": APIErrorCode.USER_CREATE_INVALID_PASSWORD,
-                "reason": [str(message) for message in e.reason],
+                "reason": [str(message) for message in e.messages],
             },
             status_code=status.HTTP_400_BAD_REQUEST,
         )
@@ -126,30 +136,23 @@ async def update_user(
     request: Request,
     user_update: schemas.user.UserUpdate = Depends(get_admin_user_update),
     user: User = Depends(get_user_by_id_or_404),
-    user_fields: list[UserField] = Depends(get_user_fields),
-    user_manager: UserManager = Depends(get_user_manager_from_user),
+    user_manager: UserManager = Depends(get_user_manager),
     audit_logger: AuditLogger = Depends(get_audit_logger),
 ):
     try:
-        user = await user_manager.update_with_fields(
-            user_update,
-            user,
-            user_fields=user_fields,
-            safe=False,
-            request=request,
-        )
+        user = await user_manager.update(user_update, user, request=request)
         audit_logger.log_object_write(AuditLogMessage.OBJECT_UPDATED, user)
-    except UserAlreadyExists as e:
+    except UserAlreadyExistsError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=APIErrorCode.USER_UPDATE_EMAIL_ALREADY_EXISTS,
         ) from e
-    except InvalidPasswordException as e:
+    except InvalidPasswordError as e:
         # Build a JSON response manually to fine-tune the response structure
         return JSONResponse(
             content={
                 "detail": APIErrorCode.USER_UPDATE_INVALID_PASSWORD,
-                "reason": [str(message) for message in e.reason],
+                "reason": [str(message) for message in e.messages],
             },
             status_code=status.HTTP_400_BAD_REQUEST,
         )

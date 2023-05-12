@@ -333,7 +333,7 @@ class TestPostRegister:
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 
         headers = response.headers
-        assert headers["X-Fief-Error"] == "REGISTER_USER_ALREADY_EXISTS"
+        assert headers["X-Fief-Error"] == "user_already_exists"
 
     async def test_new_user(
         self,

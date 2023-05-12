@@ -30,7 +30,7 @@ from fief.dependencies.login_hint import LoginHint, get_login_hint
 from fief.dependencies.oauth_provider import get_oauth_providers
 from fief.dependencies.session_token import get_session_token
 from fief.dependencies.tenant import get_current_tenant
-from fief.dependencies.users import UserManager, get_user_manager
+from fief.dependencies.users import get_user_manager
 from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.exceptions import LogoutException
 from fief.forms import FormHelper
@@ -40,6 +40,7 @@ from fief.models.session_token import SessionToken
 from fief.repositories.session_token import SessionTokenRepository
 from fief.schemas.auth import LogoutError
 from fief.services.authentication_flow import AuthenticationFlow
+from fief.services.user_manager import UserManager
 from fief.settings import settings
 
 router = APIRouter()
@@ -146,7 +147,9 @@ async def login(
     form = await form_helper.get_form()
 
     if await form_helper.is_submitted_and_valid():
-        user = await user_manager.authenticate(form.get_credentials())
+        user = await user_manager.authenticate(
+            form.email.data, form.password.data, tenant.id
+        )
         if user is None or not user.is_active:
             return await form_helper.get_error_response(
                 _("Invalid email or password"), "bad_credentials"

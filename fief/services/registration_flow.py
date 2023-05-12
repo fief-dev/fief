@@ -3,7 +3,6 @@ from typing import Any, TypeVar
 
 from fastapi import Request, Response
 
-from fief.dependencies.users import UserManager
 from fief.models import (
     OAuthAccount,
     RegistrationSession,
@@ -14,6 +13,7 @@ from fief.models import (
 )
 from fief.repositories import OAuthAccountRepository, RegistrationSessionRepository
 from fief.schemas.user import UF, UserCreateInternal
+from fief.services.user_manager import UserManager
 from fief.settings import settings
 
 ResponseType = TypeVar("ResponseType", bound=Response)
@@ -110,12 +110,7 @@ class RegistrationFlow:
         if "password" not in user_create_dict:
             user_create_dict["password"] = self.user_manager.password_helper.generate()
         user_create = self.user_create_internal_model(**user_create_dict)
-        user = await self.user_manager.create_with_fields(
-            user_create,
-            user_fields=self.user_fields,
-            safe=True,
-            request=request,
-        )
+        user = await self.user_manager.create(user_create, tenant.id, request=request)
 
         registration_session.email = user.email
         await self.registration_session_repository.update(registration_session)

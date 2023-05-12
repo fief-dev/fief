@@ -1,11 +1,5 @@
 from fastapi import APIRouter, Depends, Header, Query, Request, status
 from fastapi.responses import RedirectResponse
-from fastapi_users.exceptions import (
-    InvalidPasswordException,
-    InvalidResetPasswordToken,
-    UserInactive,
-    UserNotExists,
-)
 
 from fief.apps.auth.forms.reset import ForgotPasswordForm, ResetPasswordForm
 from fief.dependencies.auth import (
@@ -14,10 +8,16 @@ from fief.dependencies.auth import (
     get_optional_login_session,
 )
 from fief.dependencies.tenant import get_current_tenant
-from fief.dependencies.users import UserManager, get_user_manager
+from fief.dependencies.users import get_user_manager
 from fief.forms import FormHelper
 from fief.locale import gettext_lazy as _
-from fief.models import LoginSession, Tenant
+from fief.models import LoginSession, Tenant, Theme
+from fief.services.user_manager import (
+    InvalidResetPasswordTokenError,
+    UserDoesNotExistError,
+    UserInactiveError,
+    UserManager,
+)
 
 router = APIRouter()
 
@@ -38,9 +38,9 @@ async def forgot_password(
 
     if await form_helper.is_submitted_and_valid():
         try:
-            user = await user_manager.get_by_email(form.email.data)
-            await user_manager.forgot_password(user, request)
-        except (UserNotExists, UserInactive):
+            user = await user_manager.get_by_email(form.email.data, tenant.id)
+            await user_manager.forgot_password(user, request=request)
+        except (UserDoesNotExistError, UserInactiveError):
             pass
 
         form_helper.context["success"] = _(
@@ -79,17 +79,18 @@ async def reset_password(
     if await form_helper.is_submitted_and_valid() and hx_trigger is None:
         try:
             await user_manager.reset_password(
-                form.token.data, form.password.data, request
+                form.token.data, form.password.data, tenant, request=request
             )
-        except (InvalidResetPasswordToken, UserNotExists, UserInactive):
+        except (
+            InvalidResetPasswordTokenError,
+            UserDoesNotExistError,
+            UserInactiveError,
+        ):
             return await form_helper.get_error_response(
                 _("The reset password token is invalid or expired."),
                 "invalid_token",
                 fatal=True,
             )
-        except InvalidPasswordException as e:
-            form.password.errors.append(e.reason)
-            return await form_helper.get_error_response(e.reason, "invalid_password")
         else:
             if login_session is not None:
                 redirection = tenant.url_path_for(request, "auth:login")

@@ -2,8 +2,7 @@ import uuid
 from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
-from fastapi_users import schemas
-from pydantic import UUID4, Field
+from pydantic import UUID4, EmailStr, Field
 from pydantic.generics import GenericModel
 
 from fief.schemas.generics import BaseModel, CreatedUpdatedAt
@@ -13,7 +12,13 @@ if TYPE_CHECKING:  # pragma: no cover
     from fief.models.tenant import Tenant
 
 
-class UserRead(schemas.BaseUser, CreatedUpdatedAt):
+class UserRead(CreatedUpdatedAt):
+    id: UUID4
+    email: EmailStr
+    is_active: bool
+    is_superuser: bool
+    is_verified: bool
+
     tenant_id: UUID4
     tenant: TenantEmbedded
     fields: dict[str, Any]
@@ -33,7 +38,9 @@ class UserFields(BaseModel):
 UF = TypeVar("UF", bound=UserFields)
 
 
-class UserCreate(GenericModel, Generic[UF], schemas.BaseUserCreate):
+class UserCreate(GenericModel, Generic[UF]):
+    email: EmailStr
+    password: str
     fields: UF = Field(default_factory=dict, exclude=True)  # type: ignore
 
 
@@ -46,7 +53,9 @@ class UserCreateInternal(UserCreate[UF], Generic[UF]):
     tenant_id: UUID4
 
 
-class UserUpdate(GenericModel, Generic[UF], schemas.BaseUserUpdate):
+class UserUpdate(GenericModel, Generic[UF]):
+    email: EmailStr | None
+    password: str | None
     fields: UF | None = Field(exclude=True)
 
 
@@ -61,7 +70,9 @@ class AccessTokenResponse(BaseModel):
     expires_in: int
 
 
-class UserEmailContext(schemas.BaseUser, CreatedUpdatedAt):
+class UserEmailContext(CreatedUpdatedAt):
+    id: UUID4
+    email: EmailStr
     tenant_id: UUID4
     fields: dict[str, Any]
 

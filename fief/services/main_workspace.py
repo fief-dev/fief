@@ -4,12 +4,14 @@ from fief.crypto.token import get_token_hash
 from fief.db.main import create_main_async_session_maker
 from fief.db.workspace import WorkspaceEngineManager, get_workspace_session
 from fief.dependencies.logger import get_audit_logger
-from fief.dependencies.users import get_user_db, get_user_manager
+from fief.dependencies.users import get_user_manager
 from fief.models import AdminAPIKey, Client, User, Workspace, WorkspaceUser
 from fief.repositories import (
     AdminAPIKeyRepository,
     ClientRepository,
     TenantRepository,
+    UserFieldRepository,
+    UserRepository,
     WorkspaceRepository,
     WorkspaceUserRepository,
 )
@@ -129,23 +131,27 @@ async def create_main_fief_user(email: str, password: str | None = None) -> User
             if tenant is None:
                 raise MainWorkspaceDoesNotHaveDefaultTenant()
 
-            user_db = await get_user_db(session, tenant)
+            user_repository = UserRepository(session)
+            user_fields = await UserFieldRepository(session).all()
             audit_logger = await get_audit_logger(workspace, None, None)
+
             user_manager = await get_user_manager(
-                user_db,
-                tenant,
                 workspace,
+                user_repository,
+                user_fields,
                 send_task,
                 audit_logger,
                 functools.partial(
                     trigger_webhooks, workspace_id=workspace.id, send_task=send_task
                 ),
             )
+
             if password is None:
                 password = user_manager.password_helper.generate()
-            user = await user_manager.create_with_fields(
+
+            user = await user_manager.create(
                 UserCreateInternal(email=email, password=password, tenant_id=tenant.id),
-                user_fields=[],
+                tenant.id,
             )
 
         workspace_user = WorkspaceUser(workspace_id=workspace.id, user_id=user.id)

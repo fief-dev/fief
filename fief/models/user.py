@@ -18,24 +18,11 @@ class User(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
     __tablename__ = "users"
     __table_args__ = (UniqueConstraint("email", "tenant_id"),)
 
-    if TYPE_CHECKING:
-        email: str
-        hashed_password: str
-        is_active: bool
-        is_superuser: bool
-        is_verified: bool
-    else:
-        email: Mapped[str] = mapped_column(
-            String(length=320), index=True, nullable=False
-        )
-        hashed_password: Mapped[str] = mapped_column(String(length=255), nullable=False)
-        is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
-        is_superuser: Mapped[bool] = mapped_column(
-            Boolean, default=False, nullable=False
-        )
-        is_verified: Mapped[bool] = mapped_column(
-            Boolean, default=False, nullable=False
-        )
+    email: Mapped[str] = mapped_column(String(length=320), index=True, nullable=False)
+    hashed_password: Mapped[str] = mapped_column(String(length=255), nullable=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    is_superuser: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    is_verified: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
     tenant_id: Mapped[UUID4] = mapped_column(
         GUID, ForeignKey(Tenant.id, ondelete="CASCADE"), nullable=False
