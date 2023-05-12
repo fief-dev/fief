@@ -72,11 +72,7 @@ async def profile():
     )
 
 
-@router.get(
-    "/logout",
-    name="dashboard.auth:logout",
-    dependencies=[Depends(is_authenticated_admin_session)],
-)
+@router.get("/logout", name="dashboard.auth:logout")
 async def logout(
     request: Request,
     session_token: AdminSessionToken = Depends(get_admin_session_token),

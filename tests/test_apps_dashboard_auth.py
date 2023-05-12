@@ -102,14 +102,10 @@ class TestAuthProfile:
 @pytest.mark.asyncio
 @pytest.mark.workspace_host
 class TestAuthLogout:
-    async def test_unauthorized(
-        self,
-        unauthorized_dashboard_assertions: HTTPXResponseAssertion,
-        test_client_dashboard: httpx.AsyncClient,
-    ):
+    async def test_unauthorized(self, test_client_dashboard: httpx.AsyncClient):
         response = await test_client_dashboard.get("/auth/logout")
 
-        unauthorized_dashboard_assertions(response)
+        assert response.status_code == status.HTTP_307_TEMPORARY_REDIRECT
 
     @pytest.mark.authenticated_admin(mode="session")
     async def test_valid(
