@@ -32,6 +32,20 @@ def str_match(s: str):
     return StringMatch(s)
 
 
+class UnorderedListMatch:
+    def __init__(self, list_match: list) -> None:
+        self.list_match = list_match
+
+    def __eq__(self, o: object) -> bool:
+        if not isinstance(o, list):
+            return False
+        return set(self.list_match) == set(o)
+
+
+def unordered_list(list_match: list):
+    return UnorderedListMatch(list_match)
+
+
 def api_unauthorized_assertions(response: httpx.Response):
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
 

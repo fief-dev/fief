@@ -11,7 +11,7 @@ from fief.models import Workspace
 from fief.repositories import RoleRepository
 from fief.tasks import on_role_updated
 from tests.data import TestData
-from tests.helpers import HTTPXResponseAssertion
+from tests.helpers import HTTPXResponseAssertion, unordered_list
 
 
 @pytest.mark.asyncio
@@ -292,11 +292,13 @@ class TestUpdateRole:
         send_task_mock.assert_called_with(
             on_role_updated,
             str(role.id),
-            {
-                str(test_data["permissions"]["castles:update"].id),
-                str(test_data["permissions"]["castles:create"].id),
-            },
-            {str(test_data["permissions"]["castles:read"].id)},
+            unordered_list(
+                [
+                    str(test_data["permissions"]["castles:update"].id),
+                    str(test_data["permissions"]["castles:create"].id),
+                ]
+            ),
+            unordered_list([str(test_data["permissions"]["castles:read"].id)]),
             str(workspace.id),
         )
 

@@ -10,6 +10,7 @@ import asgi_lifespan
 import httpx
 import pytest
 import pytest_asyncio
+from dramatiq import Actor, Message
 from fastapi import FastAPI
 from sqlalchemy_utils import create_database, drop_database
 
@@ -39,7 +40,6 @@ from fief.services.theme_preview import ThemePreview
 from fief.services.workspace_creation import WorkspaceCreation
 from fief.services.workspace_db import WorkspaceDatabase
 from fief.settings import settings
-from fief.tasks import send_task
 from tests.data import TestData, data_mapping, session_token_tokens
 from tests.types import GetTestDatabase, HTTPClientGeneratorType, TenantParams
 
@@ -239,7 +239,17 @@ async def fief_client_mock() -> MagicMock:
 
 @pytest_asyncio.fixture
 async def send_task_mock() -> MagicMock:
-    return MagicMock(spec=send_task)
+    def _send_task(task: Actor, *args, **kwargs):
+        message: Message = Message(
+            queue_name=task.queue_name,
+            actor_name=task.actor_name,
+            args=args,
+            kwargs=kwargs or {},
+            options={},
+        )
+        message.encode()
+
+    return MagicMock(side_effect=_send_task)
 
 
 @pytest_asyncio.fixture
