@@ -110,8 +110,9 @@ class UserManager:
 
         hashed_password = self.password_helper.hash(user_create.password)
         user = User(
-            **user_create.dict(exclude={"password", "fields"}),
+            **user_create.dict(exclude={"password", "fields", "tenant_id"}),
             hashed_password=hashed_password,
+            tenant_id=tenant,
         )
 
         user = await self.user_repository.create(user)

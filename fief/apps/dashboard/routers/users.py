@@ -30,9 +30,8 @@ from fief.dependencies.permission import (
 )
 from fief.dependencies.tasks import get_send_task
 from fief.dependencies.tenant import get_tenants
-from fief.dependencies.user_field import get_user_fields
+from fief.dependencies.user_field import get_user_create_admin_model, get_user_fields
 from fief.dependencies.users import (
-    get_admin_user_create_internal_model,
     get_admin_user_update_model,
     get_paginated_users,
     get_user_by_id_or_404,
@@ -153,9 +152,9 @@ async def get_user(
 @router.api_route("/create", methods=["GET", "POST"], name="dashboard.users:create")
 async def create_user(
     request: Request,
-    user_create_internal_model: type[
-        schemas.user.UserCreateInternal[schemas.user.UF]
-    ] = Depends(get_admin_user_create_internal_model),
+    user_create_admin_model: type[
+        schemas.user.UserCreateAdmin[schemas.user.UF]
+    ] = Depends(get_user_create_admin_model),
     user_fields: list[UserField] = Depends(get_user_fields),
     tenant_repository: TenantRepository = Depends(
         get_workspace_repository(TenantRepository)
@@ -183,7 +182,7 @@ async def create_user(
                 "Unknown tenant.", "unknown_tenant"
             )
 
-        user_create = user_create_internal_model(**form.data, tenant_id=tenant.id)
+        user_create = user_create_admin_model(**form.data, tenant_id=tenant.id)
 
         try:
             user = await user_manager.create(user_create, tenant.id, request=request)

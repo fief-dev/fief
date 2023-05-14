@@ -21,7 +21,7 @@ from fief.dependencies.users import (
     get_paginated_user_roles,
     get_paginated_users,
     get_user_by_id_or_404,
-    get_user_create_internal,
+    get_user_create_admin,
     get_user_manager,
 )
 from fief.dependencies.webhooks import TriggerWebhooks, get_trigger_webhooks
@@ -91,7 +91,7 @@ async def get_user(
 )
 async def create_user(
     request: Request,
-    user_create: schemas.user.UserCreateInternal = Depends(get_user_create_internal),
+    user_create: schemas.user.UserCreateAdmin = Depends(get_user_create_admin),
     user_manager: UserManager = Depends(get_user_manager),
     user_repository: UserRepository = Depends(get_workspace_repository(UserRepository)),
     tenant_repository: TenantRepository = Depends(

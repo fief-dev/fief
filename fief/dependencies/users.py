@@ -28,8 +28,8 @@ from fief.dependencies.tenant import (
     get_current_tenant,
 )
 from fief.dependencies.user_field import (
-    get_admin_user_create_internal_model,
     get_admin_user_update_model,
+    get_user_create_admin_model,
     get_user_fields,
     get_user_update_model,
 )
@@ -51,7 +51,7 @@ from fief.repositories import (
     UserRepository,
     UserRoleRepository,
 )
-from fief.schemas.user import UF, UserCreateInternal, UserUpdate
+from fief.schemas.user import UF, UserCreateAdmin, UserUpdate
 from fief.services.user_manager import UserDoesNotExistError, UserManager
 from fief.tasks import SendTask
 
@@ -225,22 +225,22 @@ async def get_user_oauth_accounts(
     return await oauth_account_repository.list(statement)
 
 
-async def get_user_create_internal(
+async def get_user_create_admin(
     json: dict[str, Any] = Depends(get_request_json),
-    user_create_internal_model: type[UserCreateInternal[UF]] = Depends(
-        get_admin_user_create_internal_model
+    user_create_admin_model: type[UserCreateAdmin[UF]] = Depends(
+        get_user_create_admin_model,
     ),
-) -> UserCreateInternal[UF]:
+) -> UserCreateAdmin[UF]:
     body_model = create_model(
-        "UserCreateInternalBody",
-        body=(user_create_internal_model, ...),
+        "UserCreateAdminBody",
+        body=(user_create_admin_model, ...),
     )
     try:
-        validated_user_create_internal = body_model(body=json)
+        validated_user_create = body_model(body=json)
     except ValidationError as e:
         raise RequestValidationError(e.raw_errors) from e
     else:
-        return validated_user_create_internal.body  # type: ignore
+        return validated_user_create.body  # type: ignore
 
 
 async def get_user_update(

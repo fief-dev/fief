@@ -44,10 +44,11 @@ class UserCreate(GenericModel, Generic[UF]):
     fields: UF = Field(default_factory=dict, exclude=True)  # type: ignore
 
 
-class UserCreateInternal(UserCreate[UF], Generic[UF]):
+class UserCreateAdmin(UserCreate[UF], Generic[UF]):
     """
-    Utility model so that we can hook into the logic of UserManager.create
-    and add some attributes before persisting into database.
+    Model allowing an admin to create a user, from dashboard or API.
+
+    In this context, we need to set the `tenant_id` manually.
     """
 
     tenant_id: UUID4

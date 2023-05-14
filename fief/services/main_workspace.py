@@ -15,7 +15,7 @@ from fief.repositories import (
     WorkspaceRepository,
     WorkspaceUserRepository,
 )
-from fief.schemas.user import UserCreateInternal
+from fief.schemas.user import UserCreateAdmin
 from fief.schemas.workspace import WorkspaceCreate
 from fief.services.posthog import posthog
 from fief.services.webhooks.trigger import trigger_webhooks
@@ -150,7 +150,7 @@ async def create_main_fief_user(email: str, password: str | None = None) -> User
                 password = user_manager.password_helper.generate()
 
             user = await user_manager.create(
-                UserCreateInternal(email=email, password=password, tenant_id=tenant.id),
+                UserCreateAdmin(email=email, password=password, tenant_id=tenant.id),
                 tenant.id,
             )
 
