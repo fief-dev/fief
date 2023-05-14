@@ -61,4 +61,6 @@ runs:
         FIEF_CLIENT_ID: FIEF_CLIENT_ID
         FIEF_CLIENT_SECRET: FIEF_CLIENT_SECRET
       run: |
-        hatch run test
+        hatch run test-cov-xml
+    - name: Upload coverage reports to Codecov
+      uses: codecov/codecov-action@v3
