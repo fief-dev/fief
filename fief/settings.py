@@ -124,7 +124,7 @@ class Settings(BaseSettings):
 
     class Config:
         env_file = ".env"
-        secrets_dir = '/run/secrets'
+        secrets_dir = "/run/secrets"
 
     @root_validator(pre=True)
     def parse_database_url(cls, values):
