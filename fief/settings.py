@@ -32,6 +32,15 @@ class InvalidEncryptionKeyError(ValueError):
     pass
 
 
+class InitialSettings(BaseSettings):
+    secrets_dir : str = "/run/secrets"
+
+    class Config:
+        env_file = ".env"
+
+initial_settings = InitialSettings()        
+
+
 class Settings(BaseSettings):
     environment: Environment = Environment.PRODUCTION
     log_level: str = "INFO"
@@ -124,7 +133,7 @@ class Settings(BaseSettings):
 
     class Config:
         env_file = ".env"
-        secrets_dir = "/run/secrets"
+        secrets_dir = initial_settings.secrets_dir
 
     @root_validator(pre=True)
     def parse_database_url(cls, values):
