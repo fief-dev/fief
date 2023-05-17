@@ -127,7 +127,7 @@ dependencies = [
 
 [tool.hatch.envs.default.scripts]
 test = "pytest {args}"
-test-cov-xml = "pytest --cov fief/ --cov-report=xml"
+test-cov-xml = "pytest --cov fief/ --cov-report=xml --exitfirst"
 
 lint = [
   "black . ",
