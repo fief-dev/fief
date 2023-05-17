@@ -153,6 +153,15 @@
       "contributions": [
         "doc"
       ]
+    },
+    {
+      "login": "oaltun",
+      "name": "oaltun",
+      "avatar_url": "https://avatars.githubusercontent.com/u/10688199?v=4",
+      "profile": "http://razalt.com",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
