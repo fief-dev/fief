@@ -63,6 +63,8 @@ class Settings(BaseSettings):
 
     email_provider: AvailableEmailProvider = AvailableEmailProvider.NULL
     email_provider_params: dict[str, Any] = Field(default_factory=dict)
+    default_from_email: str = "contact@fief.dev"
+    default_from_name: str | None = "Fief"
 
     workspace_table_prefix: str = "fief_"
 

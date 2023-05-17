@@ -5,6 +5,7 @@ import dramatiq
 from fief import schemas
 from fief.services.email_template.contexts import ForgotPasswordContext
 from fief.services.email_template.types import EmailTemplateType
+from fief.settings import settings
 from fief.tasks.base import TaskBase
 
 
@@ -37,7 +38,7 @@ class OnAfterForgotPasswordTask(TaskBase):
             )
 
         self.email_provider.send_email(
-            sender=("contact@fief.dev", None),
+            sender=(settings.default_from_email, settings.default_from_name),
             recipient=(user.email, None),
             subject=subject,
             html=html,
