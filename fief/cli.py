@@ -17,14 +17,11 @@ from sqlalchemy.orm import sessionmaker
 
 from fief import __version__
 from fief.crypto.encryption import generate_key
-from fief.logger import init_logger
 from fief.paths import ALEMBIC_CONFIG_FILE
 from fief.services.workspace_db import (
     WorkspaceDatabase,
     WorkspaceDatabaseConnectionError,
 )
-
-init_logger()
 
 
 def asyncio_command(f):
