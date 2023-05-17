@@ -5,10 +5,11 @@ from fastapi.responses import RedirectResponse
 from httpx_oauth.errors import GetIdEmailError
 from httpx_oauth.oauth2 import GetAccessTokenError
 
+from fief.dependencies.auth import get_optional_login_session
 from fief.dependencies.authentication_flow import get_authentication_flow
 from fief.dependencies.oauth import (
-    get_login_session_with_tenant_query,
     get_oauth_provider,
+    get_optional_login_session_with_tenant_query,
     get_tenant_by_query,
 )
 from fief.dependencies.oauth_provider import get_oauth_providers
@@ -35,11 +36,14 @@ from fief.services.registration_flow import RegistrationFlow
 router = APIRouter(prefix="/oauth")
 
 
-@router.get("/authorize", name="oauth:authorize")
+@router.get(
+    "/authorize",
+    name="oauth:authorize",
+    dependencies=[Depends(get_optional_login_session_with_tenant_query)],
+)
 async def authorize(
     request: Request,
     tenant: Tenant = Depends(get_tenant_by_query),
-    login_session: LoginSession = Depends(get_login_session_with_tenant_query),
     oauth_provider: OAuthProvider = Depends(get_oauth_provider),
     oauth_session_repository: OAuthSessionRepository = Depends(
         get_workspace_repository(OAuthSessionRepository)
@@ -50,7 +54,6 @@ async def authorize(
     oauth_session = OAuthSession(
         redirect_uri=redirect_uri,
         oauth_provider=oauth_provider,
-        login_session=login_session,
         tenant=tenant,
     )
     oauth_session = await oauth_session_repository.create(oauth_session)
@@ -72,6 +75,7 @@ async def callback(
     code_verifier: str | None = Query(None),
     state: str | None = Query(None),
     error: str | None = Query(None),
+    login_session: LoginSession | None = Depends(get_optional_login_session),
     oauth_providers: list[OAuthProvider] | None = Depends(get_oauth_providers),
     oauth_session_repository: OAuthSessionRepository = Depends(
         get_workspace_repository(OAuthSessionRepository)
@@ -171,11 +175,17 @@ async def callback(
         oauth_account.expires_at = expires_at
         await oauth_account_repository.update(oauth_account)
 
-        # Redirect to consent
-        response = RedirectResponse(
-            tenant.url_path_for(request, "auth:consent"),
-            status_code=status.HTTP_302_FOUND,
-        )
+        # Redirect to consent or profile
+        if login_session is not None:
+            response = RedirectResponse(
+                tenant.url_path_for(request, "auth:consent"),
+                status_code=status.HTTP_302_FOUND,
+            )
+        else:
+            response = RedirectResponse(
+                tenant.url_path_for(request, "auth.dashboard:profile"),
+                status_code=status.HTTP_302_FOUND,
+            )
         response = await authentication_flow.rotate_session_token(
             response, user.id, session_token=session_token
         )

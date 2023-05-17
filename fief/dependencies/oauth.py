@@ -33,27 +33,13 @@ async def get_optional_login_session_with_tenant_query(
         get_workspace_repository(LoginSessionRepository)
     ),
     tenant: Tenant = Depends(get_tenant_by_query),
+    oauth_providers: list[OAuthProvider] | None = Depends(get_oauth_providers),
 ) -> LoginSession | None:
     if token is None:
         return None
 
     login_session = await login_session_repository.get_by_token(token)
-    if login_session is None:
-        return None
-
-    if login_session.client.tenant_id != tenant.id:
-        return None
-
-    return login_session
-
-
-async def get_login_session_with_tenant_query(
-    login_session: LoginSession
-    | None = Depends(get_optional_login_session_with_tenant_query),
-    tenant: Tenant = Depends(get_tenant_by_query),
-    oauth_providers: list[OAuthProvider] | None = Depends(get_oauth_providers),
-) -> LoginSession:
-    if login_session is None:
+    if login_session is None or login_session.client.tenant_id != tenant.id:
         raise OAuthException(
             OAuthError.get_invalid_session(_("Invalid login session.")),
             oauth_providers=oauth_providers,

@@ -7,7 +7,6 @@ from sqlalchemy.sql.sqltypes import String
 
 from fief.models.base import WorkspaceBase
 from fief.models.generics import GUID, CreatedUpdatedAt, ExpiresAt, UUIDModel
-from fief.models.login_session import LoginSession
 from fief.models.oauth_account import OAuthAccount
 from fief.models.oauth_provider import OAuthProvider
 from fief.models.tenant import Tenant
@@ -31,11 +30,6 @@ class OAuthSession(UUIDModel, CreatedUpdatedAt, ExpiresAt, WorkspaceBase):
         GUID, ForeignKey(OAuthProvider.id, ondelete="CASCADE"), nullable=False
     )
     oauth_provider: Mapped[OAuthProvider] = relationship("OAuthProvider", lazy="joined")
-
-    login_session_id: Mapped[UUID4] = mapped_column(
-        GUID, ForeignKey(LoginSession.id, ondelete="CASCADE"), nullable=False
-    )
-    login_session: Mapped[LoginSession] = relationship("LoginSession")
 
     oauth_account_id: Mapped[UUID4 | None] = mapped_column(
         GUID, ForeignKey(OAuthAccount.id, ondelete="CASCADE"), nullable=True
