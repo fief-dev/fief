@@ -1,6 +1,8 @@
 import asyncio
+import concurrent.futures
 import functools
 import secrets
+import uuid
 
 import typer
 import uvicorn
@@ -11,7 +13,7 @@ from fastapi_users.exceptions import InvalidPasswordException, UserAlreadyExists
 from pydantic import ValidationError
 from rich.console import Console
 from rich.table import Table
-from sqlalchemy import create_engine, select
+from sqlalchemy import create_engine, nulls_first, select
 from sqlalchemy.exc import DBAPIError
 from sqlalchemy.orm import sessionmaker
 
@@ -20,7 +22,6 @@ from fief.crypto.encryption import generate_key
 from fief.paths import ALEMBIC_CONFIG_FILE
 from fief.services.workspace_db import (
     WorkspaceDatabase,
-    WorkspaceDatabaseConnectionError,
 )
 
 
@@ -70,8 +71,35 @@ async def list():
     console.print(table)
 
 
+def _migrate_workspace(workspace_id: uuid.UUID):
+    from fief.models import Workspace
+
+    settings = get_settings()
+
+    url, connect_args = settings.get_database_connection_parameters(False)
+    engine = create_engine(url, connect_args=connect_args)
+    Session = sessionmaker(engine)
+
+    with Session() as session:
+        workspace = session.execute(
+            select(Workspace).where(Workspace.id == workspace_id).limit(1)
+        ).scalar()
+        assert workspace is not None
+        alembic_revision = WorkspaceDatabase().migrate(
+            workspace.get_database_connection_parameters(False),
+            workspace.get_schema_name(),
+        )
+        workspace.alembic_revision = alembic_revision
+        session.add(workspace)
+        session.commit()
+
+
 @workspaces.command("migrate")
-def migrate_workspaces():
+def migrate_workspaces(
+    max_workers: int = typer.Option(
+        8, help="The maximum number of workers to run migrations concurrently."
+    ),
+):
     """Apply database migrations to each workspace database."""
     from fief.models import Workspace
 
@@ -83,22 +111,30 @@ def migrate_workspaces():
     with Session() as session:
         workspace_db = WorkspaceDatabase()
         latest_revision = workspace_db.get_latest_revision()
-        workspaces = select(Workspace).where(
+
+        outdated_workspaces_query = select(Workspace).where(
             Workspace.alembic_revision != latest_revision
         )
-        for [workspace] in session.execute(workspaces):
-            assert isinstance(workspace, Workspace)
-            typer.secho(f"Migrating {workspace.name}... ", bold=True, nl=False)
+        workspaces_query = outdated_workspaces_query.order_by(
+            nulls_first(Workspace.database_type), Workspace.created_at.asc()
+        )
+
+        migrations: dict[concurrent.futures.Future, Workspace] = {}
+        with concurrent.futures.ProcessPoolExecutor(
+            max_workers=max_workers
+        ) as executor:
+            for workspace in session.execute(workspaces_query).scalars():
+                future = executor.submit(_migrate_workspace, workspace.id)
+                migrations[future] = workspace
+
+        done, _ = concurrent.futures.wait(migrations.keys())
+        for future in done:
+            workspace = migrations[future]
+            typer.secho(f"{workspace.name} ", bold=True, nl=False)
             try:
-                alembic_revision = workspace_db.migrate(
-                    workspace.get_database_connection_parameters(False),
-                    workspace.get_schema_name(),
-                )
-                workspace.alembic_revision = alembic_revision
-                session.add(workspace)
-                session.commit()
-                typer.secho("Done!")
-            except WorkspaceDatabaseConnectionError:
+                future.result()
+                typer.secho("Done!", fg="green")
+            except Exception:
                 typer.secho("Failed!", fg="red", err=True)
 
 
