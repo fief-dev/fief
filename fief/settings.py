@@ -33,7 +33,7 @@ class InvalidEncryptionKeyError(ValueError):
 
 
 class InitialSettings(BaseSettings):
-    secrets_dir: str = "/run/secrets"
+    secrets_dir: str | None = None
 
     class Config:
         env_file = ".env"

@@ -15,6 +15,7 @@ RUN apt-get update && apt-get install -y build-essential redis libpq-dev \
 COPY supervisord.conf /etc/supervisord.conf
 
 ENV DATABASE_LOCATION=/data/db
+ENV SECRETS_DIR /run/secrets
 
 ENV PORT=8000
 EXPOSE ${PORT}
