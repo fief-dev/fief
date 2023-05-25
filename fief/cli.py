@@ -121,7 +121,7 @@ def migrate_workspaces(
         )
 
         byod_workspaces_query = outdated_workspaces_query.order_by(
-            Workspace.database_type == None, Workspace.created_at.asc()  # noqa: E711
+            Workspace.database_type != None, Workspace.created_at.asc()  # noqa: E711
         )
 
         migrations: dict[concurrent.futures.Future, Workspace] = {}
