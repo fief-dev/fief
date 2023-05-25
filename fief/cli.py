@@ -408,7 +408,7 @@ def run_server(
     async def _pre_run_server():
         if migrate:
             migrate_main()
-            migrate_workspaces()
+            migrate_workspaces(8)
 
         if create_main_workspace:
             from fief.services.main_workspace import (
