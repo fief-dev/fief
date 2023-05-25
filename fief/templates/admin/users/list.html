@@ -61,5 +61,55 @@
   </div>
 
 </div>
+{% if tenants | length > 1 %}
+{% set base_button_classes = 'inline-flex items-center justify-center text-sm font-medium leading-5 rounded-full px-3 py-1 border shadow-sm duration-150 ease-in-out' %}
+{% set inactive_button_classes = 'border-slate-200 hover:border-slate-300 bg-white text-slate-500' %}
+{% set active_button_classes = 'border-transparent bg-primary-500 text-white' %}
+<div class="sm:flex sm:justify-between sm:items-center mb-5">
+  <div class="mb-4 sm:mb-0">
+    <ul class="flex flex-wrap -m-1" hx-boost="true" hx-target="#main">
+      <li class="m-1">
+        <a
+          href="?{{ datatable_query_parameters.set_param('tenant', None) }}"
+          class="{{ base_button_classes }} {{ active_button_classes if not datatable_query_parameters.params.tenant else inactive_button_classes }}"
+        >
+          All tenants
+        </a>
+      </li>
+      {% for tenant in tenants %}
+        <li class="m-1">
+          <a
+            href="?{{ datatable_query_parameters.set_param('tenant', tenant.id) }}"
+            class="{{ base_button_classes }} {{ active_button_classes if datatable_query_parameters.params.tenant == (tenant.id | string) else inactive_button_classes }}">{{ tenant.name }}</a>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+  <div>
+    <form
+      id="search"
+      class="relative"
+      method="get"
+      hx-boost="true"
+      hx-target="#main"
+      hx-swap="none"
+      hx-select-oob="#datatable"
+      hx-trigger="submit, keyup delay:1s from:find input"
+      hx-replace-url="false"
+    >
+      <input
+        type="search"
+        name="query"
+        class="form-input pl-9"
+        placeholder="Search by email"
+        value="{{ datatable_query_parameters.params.query }}"
+      />
+      <button type="submit" class="absolute inset-0 right-auto group">
+        {{ icons.magnifying_glass('w-4 h-4 shrink-0 fill-current text-slate-400 group-hover:text-slate-500 ml-3 mr-2') }}
+      </button>
+    </form>
+  </div>
+</div>
+{% endif %}
 {% include "admin/users/table.html" %}
 {% endblock %}

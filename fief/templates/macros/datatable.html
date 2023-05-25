@@ -2,47 +2,49 @@
 {% import "macros/pagination.html" as pagination %}
 
 {% macro datatable(data, count, query_parameters, title, columns) %}
-<div id="datatable" class="bg-white shadow-lg rounded-sm border border-slate-200 relative">
-  <header class="px-5 py-4">
-    <div class="font-semibold text-slate-800">{{ title }} <span class="text-slate-400 font-medium">{{ count }}</span></div>
-  </header>
-  <div>
-    <div class="overflow-x-auto">
-      <table class="table-auto w-full">
-        <thead class="text-xs font-semibold uppercase text-slate-500 bg-slate-50 border-t border-b border-slate-200">
-          <tr hx-boost="true" hx-target="#main">
-            {% for column in columns | selectattr('slug', 'in', query_parameters.columns) %}
-                <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap font-semibold text-left">
-                  {% if column.ordering %}
-                    <a href="?{{ query_parameters.toggle_field_ordering(column.ordering) }}" class="flex items-center">
+<div id="datatable">
+  <div class="bg-white shadow-lg rounded-sm border border-slate-200 relative">
+    <header class="px-5 py-4">
+      <div class="font-semibold text-slate-800">{{ title }} <span class="text-slate-400 font-medium">{{ count }}</span></div>
+    </header>
+    <div>
+      <div class="overflow-x-auto">
+        <table class="table-auto w-full">
+          <thead class="text-xs font-semibold uppercase text-slate-500 bg-slate-50 border-t border-b border-slate-200">
+            <tr hx-boost="true" hx-target="#main">
+              {% for column in columns | selectattr('slug', 'in', query_parameters.columns) %}
+                  <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap font-semibold text-left">
+                    {% if column.ordering %}
+                      <a href="?{{ query_parameters.toggle_field_ordering(column.ordering) }}" class="flex items-center">
+                        {{ column.title }}
+                        {% if query_parameters.is_ordered(column.ordering, "asc") %}
+                          {{ icons.arrow_down('ml-1 w-2 h-2 fill-current') }}
+                        {% elif query_parameters.is_ordered(column.ordering, "desc") %}
+                          {{ icons.arrow_up('ml-1 w-2 h-2 fill-current') }}
+                        {% endif %}
+                      </a>
+                    {% else %}
                       {{ column.title }}
-                      {% if query_parameters.is_ordered(column.ordering, "asc") %}
-                        {{ icons.arrow_down('ml-1 w-2 h-2 fill-current') }}
-                      {% elif query_parameters.is_ordered(column.ordering, "desc") %}
-                        {{ icons.arrow_up('ml-1 w-2 h-2 fill-current') }}
-                      {% endif %}
-                    </a>
-                  {% else %}
-                    {{ column.title }}
-                  {% endif %}
-                </th>
-            {% endfor %}
-          </tr>
-        </thead>
-        <tbody class="text-sm divide-y divide-slate-200">
-          {% for row in data %}
-            <tr>
-              {% for column in columns | selectattr('slug', 'in', query_parameters.columns)  %}
-                <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">{{ column.renderer_macro(row, **column.renderer_macro_kwargs) }}</td>
+                    {% endif %}
+                  </th>
               {% endfor %}
             </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+          </thead>
+          <tbody class="text-sm divide-y divide-slate-200">
+            {% for row in data %}
+              <tr>
+                {% for column in columns | selectattr('slug', 'in', query_parameters.columns)  %}
+                  <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">{{ column.renderer_macro(row, **column.renderer_macro_kwargs) }}</td>
+                {% endfor %}
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
-</div>
-<div class="mt-8">
-  {{ pagination.pagination(count, query_parameters) }}
+  <div class="mt-8">
+    {{ pagination.pagination(count, query_parameters) }}
+  </div>
 </div>
 {% endmacro %}

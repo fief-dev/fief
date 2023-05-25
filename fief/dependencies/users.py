@@ -1,6 +1,6 @@
 from typing import Any, cast
 
-from fastapi import Depends, HTTPException, Request, status
+from fastapi import Depends, HTTPException, Query, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.security import OAuth2AuthorizationCodeBearer
 from fastapi_users import BaseUserManager, InvalidPasswordException
@@ -370,6 +370,9 @@ authentication_backend = AuthenticationBackend[User, UUID4](
 
 
 async def get_paginated_users(
+    query: str | None = Query(None),
+    email: str | None = Query(None),
+    tenant: UUID4 | None = Query(None),
     pagination: Pagination = Depends(get_pagination),
     ordering: Ordering = Depends(OrderingGetter()),
     repository: UserRepository = Depends(get_workspace_repository(UserRepository)),
@@ -378,6 +381,12 @@ async def get_paginated_users(
     ),
 ) -> PaginatedObjects[User]:
     statement = select(User).options(joinedload(User.tenant))
+    if query is not None:
+        statement = statement.where(User.email.ilike(f"%{query}%"))  # type: ignore
+    if email is not None:
+        statement = statement.where(User.email == email)  # type: ignore
+    if tenant is not None:
+        statement = statement.where(User.tenant_id == tenant)
     return await get_paginated_objects(statement, pagination, ordering, repository)
 
 

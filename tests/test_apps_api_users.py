@@ -1,4 +1,5 @@
 import uuid
+from typing import Any
 from unittest.mock import MagicMock
 
 import httpx
@@ -7,10 +8,10 @@ from fastapi import status
 
 from fief.db import AsyncSession
 from fief.errors import APIErrorCode
-from fief.models import Workspace
+from fief.models import User, Workspace
 from fief.repositories import UserPermissionRepository, UserRoleRepository
 from fief.tasks import on_after_register, on_user_role_created, on_user_role_deleted
-from tests.data import TestData
+from tests.data import TestData, tenants, users
 from tests.helpers import HTTPXResponseAssertion
 
 
@@ -48,6 +49,47 @@ class TestListUsers:
 
         for result in json["results"]:
             assert "tenant" in result
+
+    @pytest.mark.parametrize(
+        "params,results",
+        [
+            pytest.param(
+                {"query": "ANNE"},
+                [users["regular"], users["regular_secondary"]],
+                id="Query filter",
+            ),
+            pytest.param(
+                {"email": users["regular"].email}, [users["regular"]], id="Email filter"
+            ),
+            pytest.param(
+                {"tenant": tenants["secondary"].id},
+                [users["regular_secondary"]],
+                id="Tenant filter",
+            ),
+            pytest.param(
+                {"email": users["regular"].email, "tenant": tenants["secondary"].id},
+                [],
+                id="Email and tenant filter",
+            ),
+        ],
+    )
+    @pytest.mark.authenticated_admin
+    async def test_query_filters(
+        self,
+        params: dict[str, Any],
+        results: list[User],
+        test_client_api: httpx.AsyncClient,
+    ):
+        response = await test_client_api.get("/users/", params=params)
+
+        assert response.status_code == status.HTTP_200_OK
+
+        json = response.json()
+        assert json["count"] == len(results)
+
+        assert set([uuid.UUID(result["id"]) for result in json["results"]]) == set(
+            [result.id for result in results]
+        )
 
 
 @pytest.mark.asyncio

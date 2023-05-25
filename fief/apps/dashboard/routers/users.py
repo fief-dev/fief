@@ -33,6 +33,7 @@ from fief.dependencies.permission import (
     get_user_permissions_getter,
 )
 from fief.dependencies.tasks import get_send_task
+from fief.dependencies.tenant import get_tenants
 from fief.dependencies.user_field import get_user_fields
 from fief.dependencies.users import (
     SQLAlchemyUserTenantDatabase,
@@ -53,6 +54,7 @@ from fief.logger import AuditLogger
 from fief.models import (
     AuditLogMessage,
     OAuthAccount,
+    Tenant,
     User,
     UserField,
     UserPermission,
@@ -109,9 +111,12 @@ async def get_columns(
 async def get_list_context(
     columns: list[DatatableColumn] = Depends(get_columns),
     datatable_query_parameters: DatatableQueryParameters = Depends(
-        DatatableQueryParametersGetter(["email", "created_at", "id", "tenant"])
+        DatatableQueryParametersGetter(
+            ["email", "created_at", "id", "tenant"], ["tenant", "query"]
+        )
     ),
     paginated_users: PaginatedObjects[User] = Depends(get_paginated_users),
+    tenants: list[Tenant] = Depends(get_tenants),
 ):
     users, count = paginated_users
 
@@ -120,6 +125,7 @@ async def get_list_context(
         "count": count,
         "datatable_query_parameters": datatable_query_parameters,
         "columns": columns,
+        "tenants": tenants,
     }
 
 

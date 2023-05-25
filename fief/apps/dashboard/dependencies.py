@@ -74,12 +74,14 @@ class DatatableQueryParameters:
         pagination: Pagination,
         ordering: Ordering,
         columns: list[str],
+        params: dict[str, Any],
     ) -> None:
         limit, skip = pagination
         self.limit = limit
         self.skip = skip
         self.ordering = ordering
         self.columns = columns
+        self.params = params
 
     def is_ordered(self, field: str, way: Literal["asc", "desc"] = "asc") -> bool:
         field_accessor = field.split(".")
@@ -91,7 +93,9 @@ class DatatableQueryParameters:
         return False
 
     def set_pagination(self, *, limit: int, skip: int) -> "DatatableQueryParameters":
-        return DatatableQueryParameters((limit, skip), self.ordering, self.columns)
+        return DatatableQueryParameters(
+            (limit, skip), self.ordering, self.columns, self.params
+        )
 
     def toggle_field_ordering(self, field: str) -> "DatatableQueryParameters":
         field_accessor = field.split(".")
@@ -102,7 +106,7 @@ class DatatableQueryParameters:
         else:
             updated_ordering = [(field_accessor, False)]
         return DatatableQueryParameters(
-            (self.limit, self.skip), updated_ordering, self.columns
+            (self.limit, self.skip), updated_ordering, self.columns, self.params
         )
 
     def toggle_column(self, column: str) -> "DatatableQueryParameters":
@@ -111,7 +115,19 @@ class DatatableQueryParameters:
             columns = [c for c in columns if c != column]
         else:
             columns = columns + [column]
-        return DatatableQueryParameters((self.limit, self.skip), self.ordering, columns)
+        return DatatableQueryParameters(
+            (self.limit, self.skip), self.ordering, columns, self.params
+        )
+
+    def set_param(self, name: str, value: str | None) -> "DatatableQueryParameters":
+        params = {**self.params}
+        if value is None:
+            params.pop(name, None)
+        else:
+            params[name] = value
+        return DatatableQueryParameters(
+            (self.limit, self.skip), self.ordering, self.columns, params
+        )
 
     def __str__(self) -> str:
         ordering_params = [
@@ -122,6 +138,7 @@ class DatatableQueryParameters:
             "limit": self.limit,
             "skip": self.skip,
             "ordering": ",".join(ordering_params),
+            **self.params,
         }
         if self.columns:
             params["columns"] = ",".join(self.columns)
@@ -129,11 +146,15 @@ class DatatableQueryParameters:
 
 
 class DatatableQueryParametersGetter:
-    def __init__(self, default_columns: list[str]) -> None:
+    def __init__(
+        self, default_columns: list[str], params: list[str] | None = None
+    ) -> None:
         self.default_columns = default_columns
+        self.params = params or []
 
     def __call__(
         self,
+        request: Request,
         pagination: Pagination = Depends(get_pagination),
         ordering: Ordering = Depends(OrderingGetter()),
         columns: str | None = Query(None),
@@ -141,4 +162,12 @@ class DatatableQueryParametersGetter:
         columns_list = self.default_columns
         if columns is not None:
             columns_list = columns.lower().split(",")
-        return DatatableQueryParameters(pagination, ordering, columns_list)
+
+        params = {}
+        for param in self.params:
+            try:
+                params[param] = request.query_params[param]
+            except KeyError:
+                pass
+
+        return DatatableQueryParameters(pagination, ordering, columns_list, params)

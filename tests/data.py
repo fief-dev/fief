@@ -109,6 +109,7 @@ oauth_providers: ModelMapping[OAuthProvider] = {
 
 tenants: ModelMapping[Tenant] = {
     "default": Tenant(
+        id=uuid.uuid4(),
         name="Default",
         slug="default",
         default=True,
@@ -116,6 +117,7 @@ tenants: ModelMapping[Tenant] = {
         sign_jwk=signature_key.export(),
     ),
     "secondary": Tenant(
+        id=uuid.uuid4(),
         name="Secondary",
         slug="secondary",
         default=False,
@@ -123,6 +125,7 @@ tenants: ModelMapping[Tenant] = {
         sign_jwk=signature_key.export(),
     ),
     "registration_disabled": Tenant(
+        id=uuid.uuid4(),
         name="Registration disabled",
         slug="registration-disabled",
         default=False,

@@ -77,3 +77,9 @@ async def get_tenant_by_id_or_404(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
 
     return tenant
+
+
+async def get_tenants(
+    repository: TenantRepository = Depends(get_workspace_repository(TenantRepository)),
+) -> list[Tenant]:
+    return await repository.all()
