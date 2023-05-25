@@ -13,7 +13,7 @@ from fastapi_users.exceptions import InvalidPasswordException, UserAlreadyExists
 from pydantic import ValidationError
 from rich.console import Console
 from rich.table import Table
-from sqlalchemy import create_engine, nulls_first, select
+from sqlalchemy import create_engine, select
 from sqlalchemy.exc import DBAPIError
 from sqlalchemy.orm import sessionmaker
 
@@ -115,15 +115,23 @@ def migrate_workspaces(
         outdated_workspaces_query = select(Workspace).where(
             Workspace.alembic_revision != latest_revision
         )
-        workspaces_query = outdated_workspaces_query.order_by(
-            nulls_first(Workspace.database_type), Workspace.created_at.asc()
+
+        local_workspaces_query = outdated_workspaces_query.order_by(
+            Workspace.database_type == None, Workspace.created_at.asc()  # noqa: E711
+        )
+
+        byod_workspaces_query = outdated_workspaces_query.order_by(
+            Workspace.database_type == None, Workspace.created_at.asc()  # noqa: E711
         )
 
         migrations: dict[concurrent.futures.Future, Workspace] = {}
         with concurrent.futures.ProcessPoolExecutor(
             max_workers=max_workers
         ) as executor:
-            for workspace in session.execute(workspaces_query).scalars():
+            for workspace in session.execute(local_workspaces_query).scalars():
+                future = executor.submit(_migrate_workspace, workspace.id)
+                migrations[future] = workspace
+            for workspace in session.execute(byod_workspaces_query).scalars():
                 future = executor.submit(_migrate_workspace, workspace.id)
                 migrations[future] = workspace
 
