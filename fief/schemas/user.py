@@ -1,12 +1,12 @@
 import uuid
-from datetime import date, datetime, timezone
+from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
 from fastapi_users import schemas
-from pydantic import UUID4, Field, StrictBool, StrictInt, StrictStr
+from pydantic import UUID4, Field
 from pydantic.generics import GenericModel
 
-from fief.schemas.generics import Address, BaseModel, CreatedUpdatedAt, Timezone
+from fief.schemas.generics import BaseModel, CreatedUpdatedAt
 from fief.schemas.tenant import TenantEmbedded
 
 if TYPE_CHECKING:  # pragma: no cover
@@ -63,9 +63,7 @@ class AccessTokenResponse(BaseModel):
 
 class UserEmailContext(schemas.BaseUser, CreatedUpdatedAt):
     tenant_id: UUID4
-    fields: dict[
-        str, Address | Timezone | StrictBool | StrictInt | StrictStr | datetime | date
-    ]
+    fields: dict[str, Any]
 
     class Config:
         orm_mode = True
