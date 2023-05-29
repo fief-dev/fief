@@ -6,6 +6,7 @@ from fastapi_users.exceptions import UserAlreadyExists
 from fief import schemas
 from fief.apps.auth.forms.password import ChangePasswordForm
 from fief.apps.auth.forms.profile import PF, get_profile_form_class
+from fief.dependencies.branding import get_show_branding
 from fief.dependencies.session_token import get_user_from_session_token
 from fief.dependencies.tenant import get_current_tenant
 from fief.dependencies.theme import get_current_theme
@@ -23,6 +24,7 @@ class BaseContext(TypedDict):
     user: User
     tenant: Tenant
     theme: Theme
+    show_branding: bool
 
 
 async def get_base_context(
@@ -30,8 +32,15 @@ async def get_base_context(
     user: User = Depends(get_user_from_session_token),
     tenant: Tenant = Depends(get_current_tenant),
     theme: Theme = Depends(get_current_theme),
+    show_branding: bool = Depends(get_show_branding),
 ) -> BaseContext:
-    return {"request": request, "user": user, "tenant": tenant, "theme": theme}
+    return {
+        "request": request,
+        "user": user,
+        "tenant": tenant,
+        "theme": theme,
+        "show_branding": show_branding,
+    }
 
 
 @router.api_route("/", methods=["GET", "POST"], name="auth.dashboard:profile")

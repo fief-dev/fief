@@ -24,8 +24,8 @@
       </div>
     </div>
   </div>
-
-  {{ branding.branding() }}
+  {% if show_branding %}
+    {{ branding.branding() }}
+  {% endif %}
 </main>
 {% endblock %}
-

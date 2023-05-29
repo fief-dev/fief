@@ -47,9 +47,11 @@
               {% block auth_form %}
               {% endblock %}
             {% endif %}
-            <div class="pt-5 mt-6 border-t border-light">
-              {{ branding.branding() }}
-            </div>
+            {% if show_branding %}
+              <div class="pt-5 mt-6 border-t border-light">
+                {{ branding.branding() }}
+              </div>
+            {% endif %}
           </div>
         </div>
       </div>

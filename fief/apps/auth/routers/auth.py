@@ -6,6 +6,7 @@ from pydantic import AnyUrl
 
 from fief.apps.auth.forms.auth import ConsentForm, LoginForm
 from fief.dependencies.auth import (
+    BaseContext,
     check_unsupported_request_parameter,
     get_authorize_client,
     get_authorize_code_challenge,
@@ -15,6 +16,7 @@ from fief.dependencies.auth import (
     get_authorize_response_type,
     get_authorize_scope,
     get_authorize_screen,
+    get_base_context,
     get_consent_prompt,
     get_login_session,
     get_needs_consent,
@@ -28,13 +30,12 @@ from fief.dependencies.login_hint import LoginHint, get_login_hint
 from fief.dependencies.oauth_provider import get_oauth_providers
 from fief.dependencies.session_token import get_session_token
 from fief.dependencies.tenant import get_current_tenant
-from fief.dependencies.theme import get_current_theme
 from fief.dependencies.users import UserManager, get_user_manager
 from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.exceptions import LogoutException
 from fief.forms import FormHelper
 from fief.locale import gettext_lazy as _
-from fief.models import Client, LoginSession, OAuthProvider, Tenant, Theme, Workspace
+from fief.models import Client, LoginSession, OAuthProvider, Tenant, Workspace
 from fief.models.session_token import SessionToken
 from fief.repositories.session_token import SessionTokenRepository
 from fief.schemas.auth import LogoutError
@@ -122,7 +123,7 @@ async def login(
     oauth_providers: list[OAuthProvider] = Depends(get_oauth_providers),
     login_hint: LoginHint | None = Depends(get_login_hint),
     tenant: Tenant = Depends(get_current_tenant),
-    theme: Theme = Depends(get_current_theme),
+    context: BaseContext = Depends(get_base_context),
 ):
     # Prefill email with login_hint if it's a string
     initial_form_data = None
@@ -135,12 +136,11 @@ async def login(
         request=request,
         data=initial_form_data,
         context={
+            **context,
             "oauth_providers": oauth_providers,
             "oauth_provider_login_hint": login_hint
             if isinstance(login_hint, OAuthProvider)
             else None,
-            "tenant": tenant,
-            "theme": theme,
         },
     )
     form = await form_helper.get_form()
@@ -181,17 +181,16 @@ async def consent(
     prompt: str | None = Depends(get_consent_prompt),
     needs_consent: bool = Depends(get_needs_consent),
     tenant: Tenant = Depends(get_current_tenant),
-    theme: Theme = Depends(get_current_theme),
     workspace: Workspace = Depends(get_current_workspace),
     authentication_flow: AuthenticationFlow = Depends(get_authentication_flow),
+    context: BaseContext = Depends(get_base_context),
 ):
     form_helper = FormHelper(
         ConsentForm,
         "auth/consent.html",
         request=request,
         context={
-            "tenant": tenant,
-            "theme": theme,
+            **context,
             "client": login_session.client,
             "scopes": login_session.scope,
         },
@@ -257,7 +256,7 @@ async def consent(
 async def logout(
     redirect_uri: AnyUrl | None = Query(None),
     session_token: SessionToken | None = Depends(get_session_token),
-    sesstion_token_repository: SessionTokenRepository = Depends(
+    session_token_repository: SessionTokenRepository = Depends(
         get_workspace_repository(SessionTokenRepository)
     ),
     tenant: Tenant = Depends(get_current_tenant),
@@ -269,7 +268,7 @@ async def logout(
         )
 
     if session_token is not None:
-        await sesstion_token_repository.delete(session_token)
+        await session_token_repository.delete(session_token)
 
     response = RedirectResponse(redirect_uri, status_code=status.HTTP_302_FOUND)
 

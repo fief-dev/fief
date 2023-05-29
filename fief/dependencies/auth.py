@@ -1,10 +1,13 @@
 from datetime import datetime, timezone
+from typing import TypedDict
 
-from fastapi import Cookie, Depends, Query, Response
+from fastapi import Cookie, Depends, Query, Request, Response
 
 from fief.dependencies.authentication_flow import get_authentication_flow
+from fief.dependencies.branding import get_show_branding
 from fief.dependencies.session_token import get_session_token
 from fief.dependencies.tenant import get_current_tenant
+from fief.dependencies.theme import get_current_theme
 from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.exceptions import (
     AuthorizeException,
@@ -12,7 +15,7 @@ from fief.exceptions import (
     LoginException,
 )
 from fief.locale import gettext_lazy as _
-from fief.models import Client, LoginSession, SessionToken, Tenant
+from fief.models import Client, LoginSession, SessionToken, Tenant, Theme
 from fief.repositories import ClientRepository, GrantRepository, LoginSessionRepository
 from fief.schemas.auth import AuthorizeError, AuthorizeRedirectError, LoginError
 from fief.services.authentication_flow import AuthenticationFlow
@@ -329,3 +332,24 @@ async def get_consent_prompt(
         )
 
     return prompt
+
+
+class BaseContext(TypedDict):
+    request: Request
+    tenant: Tenant
+    theme: Theme
+    show_branding: bool
+
+
+async def get_base_context(
+    request: Request,
+    tenant: Tenant = Depends(get_current_tenant),
+    theme: Theme = Depends(get_current_theme),
+    show_branding: bool = Depends(get_show_branding),
+) -> BaseContext:
+    return {
+        "request": request,
+        "tenant": tenant,
+        "theme": theme,
+        "show_branding": show_branding,
+    }

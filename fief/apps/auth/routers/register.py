@@ -4,7 +4,11 @@ from fastapi_users.exceptions import InvalidPasswordException, UserAlreadyExists
 from fastapi_users.router import ErrorCode
 
 from fief.apps.auth.forms.register import RF, get_register_form_class
-from fief.dependencies.auth import get_optional_login_session
+from fief.dependencies.auth import (
+    BaseContext,
+    get_base_context,
+    get_optional_login_session,
+)
 from fief.dependencies.authentication_flow import get_authentication_flow
 from fief.dependencies.oauth_provider import get_oauth_providers
 from fief.dependencies.register import (
@@ -12,7 +16,6 @@ from fief.dependencies.register import (
     get_registration_flow,
 )
 from fief.dependencies.tenant import get_current_tenant
-from fief.dependencies.theme import get_current_theme
 from fief.exceptions import LoginException
 from fief.forms import FormHelper
 from fief.locale import gettext_lazy as _
@@ -22,7 +25,6 @@ from fief.models import (
     RegistrationSession,
     RegistrationSessionFlow,
     Tenant,
-    Theme,
 )
 from fief.schemas.auth import LoginError
 from fief.services.authentication_flow import AuthenticationFlow
@@ -43,7 +45,7 @@ async def register(
     | None = Depends(get_optional_registration_session),
     oauth_providers: list[OAuthProvider] | None = Depends(get_oauth_providers),
     tenant: Tenant = Depends(get_current_tenant),
-    theme: Theme = Depends(get_current_theme),
+    context: BaseContext = Depends(get_base_context),
 ):
     if not tenant.registration_allowed:
         raise LoginException(
@@ -57,11 +59,10 @@ async def register(
         "auth/register.html",
         request=request,
         context={
+            **context,
             "finalize": registration_session is not None
             and registration_session.flow != RegistrationSessionFlow.PASSWORD,
             "oauth_providers": oauth_providers,
-            "tenant": tenant,
-            "theme": theme,
         },
     )
     form = await form_helper.get_form()

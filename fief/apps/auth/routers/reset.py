@@ -8,13 +8,16 @@ from fastapi_users.exceptions import (
 )
 
 from fief.apps.auth.forms.reset import ForgotPasswordForm, ResetPasswordForm
-from fief.dependencies.auth import get_optional_login_session
+from fief.dependencies.auth import (
+    BaseContext,
+    get_base_context,
+    get_optional_login_session,
+)
 from fief.dependencies.tenant import get_current_tenant
-from fief.dependencies.theme import get_current_theme
 from fief.dependencies.users import UserManager, get_user_manager
 from fief.forms import FormHelper
 from fief.locale import gettext_lazy as _
-from fief.models import LoginSession, Tenant, Theme
+from fief.models import LoginSession, Tenant
 
 router = APIRouter()
 
@@ -23,14 +26,13 @@ router = APIRouter()
 async def forgot_password(
     request: Request,
     user_manager: UserManager = Depends(get_user_manager),
-    tenant: Tenant = Depends(get_current_tenant),
-    theme: Theme = Depends(get_current_theme),
+    context: BaseContext = Depends(get_base_context),
 ):
     form_helper = FormHelper(
         ForgotPasswordForm,
         "auth/forgot_password.html",
         request=request,
-        context={"tenant": tenant, "theme": theme},
+        context={**context},
     )
     form = await form_helper.get_form()
 
@@ -56,13 +58,13 @@ async def reset_password(
     user_manager: UserManager = Depends(get_user_manager),
     login_session: LoginSession | None = Depends(get_optional_login_session),
     tenant: Tenant = Depends(get_current_tenant),
-    theme: Theme = Depends(get_current_theme),
+    context: BaseContext = Depends(get_base_context),
 ):
     form_helper = FormHelper(
         ResetPasswordForm,
         "auth/reset_password.html",
         request=request,
-        context={"tenant": tenant, "theme": theme},
+        context={**context},
     )
     form = await form_helper.get_form()
 
