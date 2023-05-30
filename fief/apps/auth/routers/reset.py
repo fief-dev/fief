@@ -11,7 +11,7 @@ from fief.dependencies.tenant import get_current_tenant
 from fief.dependencies.users import get_user_manager
 from fief.forms import FormHelper
 from fief.locale import gettext_lazy as _
-from fief.models import LoginSession, Tenant, Theme
+from fief.models import LoginSession, Tenant
 from fief.services.user_manager import (
     InvalidResetPasswordTokenError,
     UserDoesNotExistError,
@@ -26,6 +26,7 @@ router = APIRouter()
 async def forgot_password(
     request: Request,
     user_manager: UserManager = Depends(get_user_manager),
+    tenant: Tenant = Depends(get_current_tenant),
     context: BaseContext = Depends(get_base_context),
 ):
     form_helper = FormHelper(
