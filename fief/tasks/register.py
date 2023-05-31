@@ -7,7 +7,6 @@ from fief.models import UserRole
 from fief.repositories import RoleRepository, UserRoleRepository
 from fief.services.email_template.contexts import WelcomeContext
 from fief.services.email_template.types import EmailTemplateType
-from fief.settings import settings
 from fief.tasks.base import TaskBase, send_task
 from fief.tasks.user_permissions import on_user_role_created
 
@@ -62,7 +61,7 @@ class OnAfterRegisterTask(TaskBase):
             )
 
         self.email_provider.send_email(
-            sender=(settings.default_from_email, settings.default_from_name),
+            sender=tenant.get_email_sender(),
             recipient=(user.email, None),
             subject=subject,
             html=html,

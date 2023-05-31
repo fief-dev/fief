@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, Header, Request, status
+from fastapi import APIRouter, Depends, Header, HTTPException, Request, status
+from fastapi.responses import RedirectResponse
 
 from fief import schemas
 from fief.apps.dashboard.dependencies import (
@@ -8,12 +9,18 @@ from fief.apps.dashboard.dependencies import (
     DatatableQueryParametersGetter,
     get_base_context,
 )
-from fief.apps.dashboard.forms.tenant import TenantCreateForm, TenantUpdateForm
+from fief.apps.dashboard.forms.tenant import (
+    TenantCreateForm,
+    TenantEmailForm,
+    TenantUpdateForm,
+)
 from fief.apps.dashboard.responses import HXRedirectResponse
 from fief.dependencies.admin_authentication import is_authenticated_admin_session
+from fief.dependencies.email_provider import get_email_provider
 from fief.dependencies.logger import get_audit_logger
 from fief.dependencies.pagination import PaginatedObjects
 from fief.dependencies.tenant import get_paginated_tenants, get_tenant_by_id_or_404
+from fief.dependencies.tenant_email_domain import get_tenant_email_domain
 from fief.dependencies.webhooks import TriggerWebhooks, get_trigger_webhooks
 from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.forms import FormHelper
@@ -26,12 +33,19 @@ from fief.repositories import (
     ThemeRepository,
     UserRepository,
 )
+from fief.services.email import EmailProvider
+from fief.services.tenant_email_domain import (
+    DomainAuthenticationNotImplementedError,
+    TenantEmailDomain,
+    TenantEmailDomainError,
+)
 from fief.services.webhooks.models import (
     ClientCreated,
     TenantCreated,
     TenantDeleted,
     TenantUpdated,
 )
+from fief.settings import settings
 from fief.templates import templates
 
 router = APIRouter(dependencies=[Depends(is_authenticated_admin_session)])
@@ -88,9 +102,120 @@ async def get_tenant(
     context: BaseContext = Depends(get_base_context),
 ):
     return templates.TemplateResponse(
-        "admin/tenants/get.html",
-        {**context, **list_context, "tenant": tenant},
+        "admin/tenants/get/general.html",
+        {**context, **list_context, "tenant": tenant, "tab": "general"},
     )
+
+
+@router.api_route(
+    "/{id:uuid}/email", methods=["GET", "POST"], name="dashboard.tenants:email"
+)
+async def tenant_email(
+    request: Request,
+    repository: TenantRepository = Depends(get_workspace_repository(TenantRepository)),
+    tenant: Tenant = Depends(get_tenant_by_id_or_404),
+    list_context=Depends(get_list_context),
+    context: BaseContext = Depends(get_base_context),
+    tenant_email_domain: TenantEmailDomain = Depends(get_tenant_email_domain),
+    email_provider: EmailProvider = Depends(get_email_provider),
+    audit_logger: AuditLogger = Depends(get_audit_logger),
+    trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
+):
+    form_helper = FormHelper(
+        TenantEmailForm,
+        "admin/tenants/get/email.html",
+        object=tenant,
+        request=request,
+        context={
+            **context,
+            **list_context,
+            "tenant": tenant,
+            "tab": "email",
+            "email_provider": email_provider,
+            "default_from_name": settings.default_from_name,
+            "default_from_email": settings.default_from_email,
+        },
+    )
+
+    if await form_helper.is_submitted_and_valid():
+        form = await form_helper.get_form()
+        form.populate_obj(tenant)
+
+        if tenant.email_from_email is not None:
+            try:
+                tenant = await tenant_email_domain.authenticate_domain(tenant)
+            except DomainAuthenticationNotImplementedError:
+                pass
+            except TenantEmailDomainError as e:
+                return await form_helper.get_error_response(
+                    e.message, "tenant_email_domain_error"
+                )
+
+        await repository.update(tenant)
+        audit_logger.log_object_write(AuditLogMessage.OBJECT_UPDATED, tenant)
+        trigger_webhooks(TenantUpdated, tenant, schemas.tenant.Tenant)
+
+        return HXRedirectResponse(
+            request.url_for("dashboard.tenants:email", id=tenant.id)
+        )
+
+    return await form_helper.get_response()
+
+
+@router.get(
+    "/{id:uuid}/email/domain", name="dashboard.tenants:email_domain_authentication"
+)
+async def tenant_email_domain_authentication(
+    request: Request,
+    tenant: Tenant = Depends(get_tenant_by_id_or_404),
+    list_context=Depends(get_list_context),
+    context: BaseContext = Depends(get_base_context),
+):
+    if tenant.email_domain is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+
+    form_helper = FormHelper(
+        TenantEmailForm,
+        "admin/tenants/get/email_domain_authentication.html",
+        object=tenant,
+        request=request,
+        context={
+            **context,
+            **list_context,
+            "tenant": tenant,
+            "tab": "email",
+            "default_from_name": settings.default_from_name,
+            "default_from_email": settings.default_from_email,
+        },
+    )
+    return await form_helper.get_response()
+
+
+@router.post("/{id:uuid}/email/verify", name="dashboard.tenants:email_domain_verify")
+async def tenant_email_domain_verify(
+    request: Request,
+    hx_request: bool = Header(False),
+    tenant: Tenant = Depends(get_tenant_by_id_or_404),
+    tenant_email_domain: TenantEmailDomain = Depends(get_tenant_email_domain),
+):
+    if tenant.email_domain is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+
+    try:
+        tenant = await tenant_email_domain.verify_domain(tenant)
+    except TenantEmailDomainError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=e.message
+        ) from e
+
+    redirect_url = request.url_for(
+        "dashboard.tenants:email_domain_authentication", id=tenant.id
+    )
+
+    if hx_request:
+        return HXRedirectResponse(redirect_url)
+    else:
+        return RedirectResponse(redirect_url, status_code=status.HTTP_303_SEE_OTHER)
 
 
 @router.api_route("/create", methods=["GET", "POST"], name="dashboard.tenants:create")

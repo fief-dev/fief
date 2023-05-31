@@ -1,4 +1,5 @@
 import uuid
+from unittest.mock import MagicMock
 
 import httpx
 import pytest
@@ -9,6 +10,10 @@ from sqlalchemy import select
 from fief.db import AsyncSession
 from fief.models import Client, Workspace
 from fief.repositories import ClientRepository, TenantRepository
+from fief.services.tenant_email_domain import (
+    DomainAuthenticationNotImplementedError,
+    TenantEmailDomainError,
+)
 from tests.data import TestData
 from tests.helpers import HTTPXResponseAssertion
 
@@ -91,6 +96,311 @@ class TestGetTenant:
         html = BeautifulSoup(response.text, features="html.parser")
         title = html.find("h2")
         assert tenant.name in title.text
+
+
+@pytest.mark.asyncio
+@pytest.mark.workspace_host
+class TestTenantEmail:
+    async def test_unauthorized(
+        self,
+        unauthorized_dashboard_assertions: HTTPXResponseAssertion,
+        test_client_dashboard: httpx.AsyncClient,
+        test_data: TestData,
+    ):
+        response = await test_client_dashboard.get(
+            f"/tenants/{test_data['tenants']['default'].id}/email"
+        )
+
+        unauthorized_dashboard_assertions(response)
+
+    @pytest.mark.authenticated_admin(mode="session")
+    async def test_not_existing(
+        self,
+        test_client_dashboard: httpx.AsyncClient,
+        not_existing_uuid: uuid.UUID,
+    ):
+        response = await test_client_dashboard.get(
+            f"/tenants/{not_existing_uuid}/email"
+        )
+
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    @pytest.mark.authenticated_admin(mode="session")
+    @pytest.mark.htmx(target="aside")
+    async def test_valid(
+        self, test_client_dashboard: httpx.AsyncClient, test_data: TestData
+    ):
+        tenant = test_data["tenants"]["default"]
+        response = await test_client_dashboard.get(f"/tenants/{tenant.id}/email")
+
+        assert response.status_code == status.HTTP_200_OK
+
+        html = BeautifulSoup(response.text, features="html.parser")
+        email_from_name_input = html.find("input", attrs={"id": "email_from_name"})
+        assert email_from_name_input is not None
+        email_from_email_input = html.find("input", attrs={"id": "email_from_email"})
+        assert email_from_email_input is not None
+
+    @pytest.mark.authenticated_admin(mode="session")
+    @pytest.mark.htmx(target="aside")
+    async def test_update_invalid(
+        self, test_client_dashboard: httpx.AsyncClient, test_data: TestData
+    ):
+        tenant = test_data["tenants"]["default"]
+        response = await test_client_dashboard.post(
+            f"/tenants/{tenant.id}/email",
+            data={
+                "email_from_name": "Anne",
+                "email_from_email": "Anne",
+            },
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    @pytest.mark.parametrize(
+        "error,status_code",
+        [
+            (DomainAuthenticationNotImplementedError(), status.HTTP_200_OK),
+            (TenantEmailDomainError("Error"), status.HTTP_400_BAD_REQUEST),
+        ],
+    )
+    @pytest.mark.authenticated_admin(mode="session")
+    @pytest.mark.htmx(target="aside")
+    async def test_update_error(
+        self,
+        error: Exception,
+        status_code: int,
+        test_client_dashboard: httpx.AsyncClient,
+        test_data: TestData,
+        csrf_token: str,
+        tenant_email_domain_mock: MagicMock,
+    ):
+        tenant = test_data["tenants"]["default"]
+
+        tenant_email_domain_mock.authenticate_domain.side_effect = error
+
+        response = await test_client_dashboard.post(
+            f"/tenants/{tenant.id}/email",
+            data={
+                "email_from_name": "Anne",
+                "email_from_email": "anne@bretagne.duchy",
+                "csrf_token": csrf_token,
+            },
+        )
+
+        assert response.status_code == status_code
+
+    @pytest.mark.authenticated_admin(mode="session")
+    @pytest.mark.htmx(target="aside")
+    async def test_update_valid(
+        self,
+        test_client_dashboard: httpx.AsyncClient,
+        test_data: TestData,
+        csrf_token: str,
+        tenant_email_domain_mock: MagicMock,
+        workspace_session: AsyncSession,
+    ):
+        tenant = test_data["tenants"]["default"]
+        email_domain = test_data["email_domains"]["bretagne.duchy"]
+
+        async def authenticate_domain_mock(*args, **kwargs):
+            tenant_repository = TenantRepository(workspace_session)
+            _tenant = await tenant_repository.get_by_id(tenant.id)
+            assert _tenant is not None
+            _tenant.email_domain = email_domain
+            await tenant_repository.update(_tenant)
+            return _tenant
+
+        tenant_email_domain_mock.authenticate_domain.side_effect = (
+            authenticate_domain_mock
+        )
+
+        response = await test_client_dashboard.post(
+            f"/tenants/{tenant.id}/email",
+            data={
+                "email_from_name": "Anne",
+                "email_from_email": "anne@bretagne.duchy",
+                "csrf_token": csrf_token,
+            },
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+
+        tenant_repository = TenantRepository(workspace_session)
+        updated_tenant = await tenant_repository.get_by_id(tenant.id)
+        assert updated_tenant is not None
+        assert updated_tenant.email_from_name == "Anne"
+        assert updated_tenant.email_from_email == "anne@bretagne.duchy"
+        assert updated_tenant.email_domain_id == email_domain.id
+
+
+@pytest.mark.asyncio
+@pytest.mark.workspace_host
+class TestTenantEmailDomainAuthentication:
+    async def test_unauthorized(
+        self,
+        unauthorized_dashboard_assertions: HTTPXResponseAssertion,
+        test_client_dashboard: httpx.AsyncClient,
+        test_data: TestData,
+    ):
+        response = await test_client_dashboard.get(
+            f"/tenants/{test_data['tenants']['default'].id}/email/domain"
+        )
+
+        unauthorized_dashboard_assertions(response)
+
+    @pytest.mark.authenticated_admin(mode="session")
+    async def test_not_existing(
+        self,
+        test_client_dashboard: httpx.AsyncClient,
+        not_existing_uuid: uuid.UUID,
+    ):
+        response = await test_client_dashboard.get(
+            f"/tenants/{not_existing_uuid}/email/domain"
+        )
+
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    @pytest.mark.authenticated_admin(mode="session")
+    async def test_no_email_domain(
+        self,
+        test_client_dashboard: httpx.AsyncClient,
+        test_data: TestData,
+    ):
+        response = await test_client_dashboard.get(
+            f"/tenants/{test_data['tenants']['default'].id}/email/domain"
+        )
+
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    @pytest.mark.authenticated_admin(mode="session")
+    @pytest.mark.htmx(target="modal")
+    async def test_valid(
+        self,
+        test_client_dashboard: httpx.AsyncClient,
+        test_data: TestData,
+        workspace_session: AsyncSession,
+    ):
+        tenant = test_data["tenants"]["default"]
+        email_domain = test_data["email_domains"]["bretagne.duchy"]
+        tenant_repository = TenantRepository(workspace_session)
+        tenant.email_domain = email_domain
+        await tenant_repository.update(tenant)
+
+        response = await test_client_dashboard.get(f"/tenants/{tenant.id}/email/domain")
+
+        assert response.status_code == status.HTTP_200_OK
+
+        html = BeautifulSoup(response.text, features="html.parser")
+        table = html.find(
+            "table", attrs={"id": "email-domain-authentication-records-table"}
+        )
+        assert table is not None
+        rows = table.find("tbody").find_all("tr")
+        assert len(rows) == len(email_domain.records)
+
+
+@pytest.mark.asyncio
+@pytest.mark.workspace_host
+class TestTenantEmailDomainVerify:
+    async def test_unauthorized(
+        self,
+        unauthorized_dashboard_assertions: HTTPXResponseAssertion,
+        test_client_dashboard: httpx.AsyncClient,
+        test_data: TestData,
+    ):
+        response = await test_client_dashboard.post(
+            f"/tenants/{test_data['tenants']['default'].id}/email/verify"
+        )
+
+        unauthorized_dashboard_assertions(response)
+
+    @pytest.mark.authenticated_admin(mode="session")
+    async def test_not_existing(
+        self,
+        test_client_dashboard: httpx.AsyncClient,
+        not_existing_uuid: uuid.UUID,
+    ):
+        response = await test_client_dashboard.post(
+            f"/tenants/{not_existing_uuid}/email/verify"
+        )
+
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    @pytest.mark.authenticated_admin(mode="session")
+    async def test_no_email_domain(
+        self,
+        test_client_dashboard: httpx.AsyncClient,
+        test_data: TestData,
+    ):
+        response = await test_client_dashboard.post(
+            f"/tenants/{test_data['tenants']['default'].id}/email/verify"
+        )
+
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    @pytest.mark.authenticated_admin(mode="session")
+    async def test_error(
+        self,
+        test_client_dashboard: httpx.AsyncClient,
+        test_data: TestData,
+        workspace_session: AsyncSession,
+        tenant_email_domain_mock: MagicMock,
+    ):
+        tenant = test_data["tenants"]["default"]
+        email_domain = test_data["email_domains"]["bretagne.duchy"]
+        tenant_repository = TenantRepository(workspace_session)
+        tenant.email_domain = email_domain
+        await tenant_repository.update(tenant)
+
+        tenant_email_domain_mock.verify_domain.side_effect = TenantEmailDomainError(
+            "Error"
+        )
+
+        response = await test_client_dashboard.post(
+            f"/tenants/{tenant.id}/email/verify"
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    @pytest.mark.authenticated_admin(mode="session")
+    async def test_valid(
+        self,
+        test_client_dashboard: httpx.AsyncClient,
+        test_data: TestData,
+        workspace_session: AsyncSession,
+        tenant_email_domain_mock: MagicMock,
+    ):
+        tenant = test_data["tenants"]["default"]
+        email_domain = test_data["email_domains"]["bretagne.duchy"]
+        tenant_repository = TenantRepository(workspace_session)
+        tenant.email_domain = email_domain
+        await tenant_repository.update(tenant)
+
+        async def verify_domain_mock(*args, **kwargs):
+            tenant_repository = TenantRepository(workspace_session)
+            _tenant = await tenant_repository.get_by_id(tenant.id)
+            assert _tenant is not None
+            _tenant.email_domain = email_domain
+            await tenant_repository.update(_tenant)
+            return _tenant
+
+        tenant_email_domain_mock.verify_domain.side_effect = verify_domain_mock
+
+        response = await test_client_dashboard.post(
+            f"/tenants/{tenant.id}/email/verify"
+        )
+
+        is_htmx = "HX-Request" in test_client_dashboard.headers
+
+        if is_htmx:
+            assert response.status_code == status.HTTP_200_OK
+            assert response.headers["hx-redirect"].endswith(
+                f"/{tenant.id}/email/domain"
+            )
+        else:
+            assert response.status_code == status.HTTP_303_SEE_OTHER
+            assert response.headers["location"].endswith(f"/{tenant.id}/email/domain")
 
 
 @pytest.mark.asyncio

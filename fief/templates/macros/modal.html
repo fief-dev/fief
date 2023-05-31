@@ -20,8 +20,8 @@
 <h2 class="font-semibold text-slate-800">{{ caller() }}</h2>
 {% endmacro %}
 
-{% macro body() %}
-<div class="p-5">{{ caller() }}</div>
+{% macro body(class="p-5") %}
+<div class="{{ class }}">{{ caller() }}</div>
 {% endmacro %}
 
 {% macro footer() %}

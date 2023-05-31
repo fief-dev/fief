@@ -1,6 +1,14 @@
 from enum import StrEnum
 
-from fief.services.email.base import EmailError, EmailProvider, SendEmailError
+from fief.services.email.base import (
+    CreateDomainError,
+    EmailDomain,
+    EmailDomainDNSRecord,
+    EmailError,
+    EmailProvider,
+    SendEmailError,
+    VerifyDomainError,
+)
 from fief.services.email.null import Null
 from fief.services.email.postmark import Postmark
 from fief.services.email.sendgrid import Sendgrid
@@ -26,5 +34,9 @@ __all__ = [
     "EMAIL_PROVIDERS",
     "EmailError",
     "EmailProvider",
+    "EmailDomain",
+    "EmailDomainDNSRecord",
     "SendEmailError",
+    "CreateDomainError",
+    "VerifyDomainError",
 ]

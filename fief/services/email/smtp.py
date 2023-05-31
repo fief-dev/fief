@@ -2,10 +2,17 @@ import smtplib
 import ssl
 from email.message import EmailMessage
 
-from fief.services.email.base import EmailProvider, SendEmailError, format_address
+from fief.services.email.base import (
+    EmailDomain,
+    EmailProvider,
+    SendEmailError,
+    format_address,
+)
 
 
 class SMTP(EmailProvider):
+    DOMAIN_AUTHENTICATION = False
+
     def __init__(
         self,
         host: str,
@@ -51,3 +58,9 @@ class SMTP(EmailProvider):
                 server.send_message(message)
         except smtplib.SMTPException as e:
             raise SendEmailError(str(e)) from e
+
+    def create_domain(self, domain: str) -> EmailDomain:
+        raise NotImplementedError()
+
+    def verify_domain(self, email_domain: EmailDomain) -> EmailDomain:
+        raise NotImplementedError()
