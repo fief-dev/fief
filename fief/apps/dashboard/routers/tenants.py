@@ -170,6 +170,7 @@ async def tenant_email_domain_authentication(
     tenant: Tenant = Depends(get_tenant_by_id_or_404),
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
+    email_provider: EmailProvider = Depends(get_email_provider),
 ):
     if tenant.email_domain is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
@@ -184,6 +185,7 @@ async def tenant_email_domain_authentication(
             **list_context,
             "tenant": tenant,
             "tab": "email",
+            "email_provider": email_provider,
             "default_from_name": settings.default_from_name,
             "default_from_email": settings.default_from_email,
         },

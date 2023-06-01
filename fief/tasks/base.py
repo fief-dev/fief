@@ -9,6 +9,7 @@ import jinja2
 from dramatiq.brokers.redis import RedisBroker
 from dramatiq.middleware import CurrentMessage
 from pydantic import UUID4
+from sqlalchemy.orm import selectinload
 
 from fief.db import AsyncSession
 from fief.db.engine import create_async_session_maker, create_engine
@@ -135,7 +136,9 @@ class TaskBase:
     async def _get_tenant(self, tenant_id: UUID4, workspace: Workspace) -> Tenant:
         async with self.get_workspace_session(workspace) as session:
             repository = TenantRepository(session)
-            tenant = await repository.get_by_id(tenant_id)
+            tenant = await repository.get_by_id(
+                tenant_id, (selectinload(Tenant.email_domain),)
+            )
             if tenant is None:
                 raise TaskError()
             return tenant
