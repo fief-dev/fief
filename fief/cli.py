@@ -1,8 +1,6 @@
 import asyncio
-import concurrent.futures
 import functools
 import secrets
-import uuid
 
 import typer
 import uvicorn
@@ -22,6 +20,7 @@ from fief.crypto.encryption import generate_key
 from fief.paths import ALEMBIC_CONFIG_FILE
 from fief.services.workspace_db import (
     WorkspaceDatabase,
+    WorkspaceDatabaseConnectionError,
 )
 
 
@@ -71,35 +70,8 @@ async def list():
     console.print(table)
 
 
-def _migrate_workspace(workspace_id: uuid.UUID):
-    from fief.models import Workspace
-
-    settings = get_settings()
-
-    url, connect_args = settings.get_database_connection_parameters(False)
-    engine = create_engine(url, connect_args=connect_args)
-    Session = sessionmaker(engine)
-
-    with Session() as session:
-        workspace = session.execute(
-            select(Workspace).where(Workspace.id == workspace_id).limit(1)
-        ).scalar()
-        assert workspace is not None
-        alembic_revision = WorkspaceDatabase().migrate(
-            workspace.get_database_connection_parameters(False),
-            workspace.get_schema_name(),
-        )
-        workspace.alembic_revision = alembic_revision
-        session.add(workspace)
-        session.commit()
-
-
 @workspaces.command("migrate")
-def migrate_workspaces(
-    max_workers: int = typer.Option(
-        8, help="The maximum number of workers to run migrations concurrently."
-    ),
-):
+def migrate_workspaces():
     """Apply database migrations to each workspace database."""
     from fief.models import Workspace
 
@@ -111,39 +83,28 @@ def migrate_workspaces(
     with Session() as session:
         workspace_db = WorkspaceDatabase()
         latest_revision = workspace_db.get_latest_revision()
-
-        outdated_workspaces_query = select(Workspace).where(
-            Workspace.alembic_revision != latest_revision
+        workspaces = (
+            select(Workspace)
+            .where(
+                Workspace.alembic_revision != latest_revision,
+                Workspace.database_type is None,
+            )
+            .order_by(Workspace.created_at.asc())
         )
-
-        local_workspaces_query = outdated_workspaces_query.order_by(
-            Workspace.database_type == None, Workspace.created_at.asc()  # noqa: E711
-        )
-
-        byod_workspaces_query = outdated_workspaces_query.order_by(
-            Workspace.database_type != None, Workspace.created_at.asc()  # noqa: E711
-        )
-
-        migrations: dict[concurrent.futures.Future, Workspace] = {}
-        with concurrent.futures.ProcessPoolExecutor(
-            max_workers=max_workers
-        ) as executor:
-            for workspace in session.execute(local_workspaces_query).scalars():
-                future = executor.submit(_migrate_workspace, workspace.id)
-                migrations[future] = workspace
-            for workspace in session.execute(byod_workspaces_query).scalars():
-                future = executor.submit(_migrate_workspace, workspace.id)
-                migrations[future] = workspace
-
-        done, _ = concurrent.futures.wait(migrations.keys())
-        for future in done:
-            workspace = migrations[future]
-            typer.secho(f"{workspace.name} ", bold=True, nl=False)
+        for [workspace] in session.execute(workspaces):
+            assert isinstance(workspace, Workspace)
+            typer.secho(f"Migrating {workspace.name}... ", bold=True, nl=False)
             try:
-                future.result()
-                typer.secho("Done!", fg="green")
-            except Exception:
+                alembic_revision = workspace_db.migrate(
+                    workspace.get_database_connection_parameters(False),
+                    workspace.get_schema_name(),
+                )
+                workspace.alembic_revision = alembic_revision
+                session.add(workspace)
+                typer.secho("Done!")
+            except WorkspaceDatabaseConnectionError:
                 typer.secho("Failed!", fg="red", err=True)
+        session.commit()
 
 
 @workspaces.command("init-email-templates")
@@ -408,7 +369,7 @@ def run_server(
     async def _pre_run_server():
         if migrate:
             migrate_main()
-            migrate_workspaces(8)
+            migrate_workspaces()
 
         if create_main_workspace:
             from fief.services.main_workspace import (
