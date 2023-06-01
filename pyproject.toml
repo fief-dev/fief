@@ -65,6 +65,10 @@ ignore_missing_imports = true
 module = "posthog.*"
 ignore_missing_imports = true
 
+[[tool.mypy.overrides]]
+module = "python_http_client.*"
+ignore_missing_imports = true
+
 [tool.ruff]
 extend-select = ["I", "TRY"]
 ignore = ["E501"]

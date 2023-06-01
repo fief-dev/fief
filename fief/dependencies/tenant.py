@@ -71,7 +71,9 @@ async def get_tenant_by_id_or_404(
     id: UUID4,
     repository: TenantRepository = Depends(get_workspace_repository(TenantRepository)),
 ) -> Tenant:
-    tenant = await repository.get_by_id(id, (selectinload(Tenant.theme),))
+    tenant = await repository.get_by_id(
+        id, (selectinload(Tenant.theme), selectinload(Tenant.email_domain))
+    )
 
     if tenant is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)

@@ -14,6 +14,7 @@ from fief.models import (
     AuthorizationCode,
     Client,
     ClientType,
+    EmailDomain,
     EmailTemplate,
     Grant,
     LoginSession,
@@ -38,6 +39,7 @@ from fief.models import (
     Webhook,
     WebhookLog,
 )
+from fief.services.email import AvailableEmailProvider
 from fief.services.email_template.types import EmailTemplateType
 from fief.services.oauth_provider import AvailableOAuthProvider
 from fief.services.webhooks.models import (
@@ -89,6 +91,7 @@ class TestData(TypedDict):
     themes: ModelMapping[Theme]
     webhooks: ModelMapping[Webhook]
     webhook_logs: ModelMapping[WebhookLog]
+    email_domains: ModelMapping[EmailDomain]
 
 
 oauth_providers: ModelMapping[OAuthProvider] = {
@@ -876,6 +879,23 @@ webhook_logs: ModelMapping[WebhookLog] = {
     ),
 }
 
+email_domains: ModelMapping[EmailDomain] = {
+    "bretagne.duchy": EmailDomain(
+        email_provider=AvailableEmailProvider.NULL,
+        domain_id="1234",
+        domain="bretagne.duchy",
+        _records=[
+            {
+                "id": "dkim",
+                "type": "CNAME",
+                "host": "email.bretagne.duchy",
+                "value": "DKIM_KEY",
+                "verified": False,
+            }
+        ],
+    )
+}
+
 data_mapping: TestData = {
     "tenants": tenants,
     "clients": clients,
@@ -899,6 +919,7 @@ data_mapping: TestData = {
     "themes": themes,
     "webhooks": webhooks,
     "webhook_logs": webhook_logs,
+    "email_domains": email_domains,
 }
 
 __all__ = [

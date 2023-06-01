@@ -1,7 +1,9 @@
-from fief.services.email.base import EmailProvider
+from fief.services.email.base import EmailDomain, EmailProvider
 
 
 class Null(EmailProvider):
+    DOMAIN_AUTHENTICATION = False
+
     def send_email(
         self,
         *,
@@ -12,3 +14,9 @@ class Null(EmailProvider):
         text: str | None = None,
     ):
         return
+
+    def create_domain(self, domain: str) -> EmailDomain:
+        raise NotImplementedError()
+
+    def verify_domain(self, email_domain: EmailDomain) -> EmailDomain:
+        raise NotImplementedError()

@@ -1,4 +1,4 @@
-from wtforms import BooleanField, StringField, URLField, validators
+from wtforms import BooleanField, EmailField, StringField, URLField, validators
 
 from fief.forms import (
     ComboboxSelectField,
@@ -46,3 +46,18 @@ class TenantCreateForm(BaseTenantForm):
 
 class TenantUpdateForm(BaseTenantForm):
     pass
+
+
+class TenantEmailForm(CSRFBaseForm):
+    email_from_name = StringField(
+        "From name",
+        description="Name of the transactional emails sender.",
+        validators=[],
+        filters=[empty_string_to_none],
+    )
+    email_from_email = EmailField(
+        "From email",
+        description="Email address of the transactional emails sender.",
+        validators=[validators.Email()],
+        filters=[empty_string_to_none],
+    )
