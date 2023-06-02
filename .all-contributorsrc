@@ -162,6 +162,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "csmaniottojr",
+      "name": "Cesar Smaniotto Júnior",
+      "avatar_url": "https://avatars.githubusercontent.com/u/7607534?v=4",
+      "profile": "http://cesarsmaniotto.dev",
+      "contributions": [
+        "translation"
+      ]
     }
   ],
   "contributorsPerLine": 7,
@@ -170,5 +179,6 @@
   "repoType": "github",
   "repoHost": "https://github.com",
   "skipCi": true,
-  "commitConvention": "angular"
+  "commitConvention": "angular",
+  "commitType": "docs"
 }
