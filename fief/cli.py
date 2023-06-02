@@ -87,7 +87,6 @@ def migrate_workspaces():
             select(Workspace)
             .where(
                 Workspace.alembic_revision != latest_revision,
-                Workspace.database_type is None,
             )
             .order_by(Workspace.created_at.asc())
         )
@@ -413,7 +412,7 @@ def run_server(
                     raise typer.Exit(code=1) from e
                 except InvalidPasswordException as e:
                     typer.secho(
-                        f"Invalid main Fief user password: {', '.join(e.reason)}",
+                        f"Invalid main Fief user password: {', '.join(map(str, e.reason))}",
                         fg=typer.colors.RED,
                     )
                     raise typer.Exit(code=1) from e
