@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 from sqlalchemy import select
 
@@ -16,7 +16,7 @@ class AuthorizationCodeRepository(
     async def get_valid_by_code(self, code: str) -> AuthorizationCode | None:
         statement = select(AuthorizationCode).where(
             AuthorizationCode.code == code,
-            AuthorizationCode.expires_at > datetime.now(timezone.utc),
+            AuthorizationCode.expires_at > datetime.now(timezone.utc) + timedelta(seconds=-1),
         )
         return await self.get_one_or_none(statement)
 
