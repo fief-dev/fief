@@ -16,8 +16,6 @@ class UserRead(CreatedUpdatedAt):
     id: UUID4
     email: EmailStr
     is_active: bool
-    is_superuser: bool
-    is_verified: bool
 
     tenant_id: UUID4
     tenant: TenantEmbedded

@@ -339,6 +339,13 @@ users: ModelMapping[User] = {
         is_active=False,
         tenant=tenants["default"],
     ),
+    "cased_email": User(
+        id=uuid.uuid4(),
+        created_at=datetime.now(tz=timezone.utc) + timedelta(seconds=4),
+        email="Claude@bretagne.duchy",
+        hashed_password=hashed_password,
+        tenant=tenants["default"],
+    ),
 }
 
 user_field_values: ModelMapping[UserFieldValue] = {

@@ -33,8 +33,6 @@ async def test_get_claims(test_data: TestData):
         "email": user.email,
         "tenant_id": str(user.tenant_id),
         "is_active": True,
-        "is_superuser": False,
-        "is_verified": False,
         "fields": {
             "gender": "F",
             "given_name": "Anne",

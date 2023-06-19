@@ -324,7 +324,6 @@ class UserManager:
                 raise UserAlreadyExistsError()  # noqa: TRY301
             except UserDoesNotExistError:
                 user.email = email
-                user.is_verified = False
 
         if password is not None:
             await self.validate_password(password, user)
