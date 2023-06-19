@@ -251,6 +251,7 @@ class TestCreateUserField:
             ("STRING", None, None),
             ("STRING", "off", "off"),
             ("STRING", "on", "on"),
+            ("STRING", "", None),
             ("INTEGER", 123, 123),
             ("INTEGER", 0, 0),
             ("INTEGER", 1, 1),

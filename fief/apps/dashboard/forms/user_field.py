@@ -13,7 +13,7 @@ from wtforms import (
 )
 from wtforms.utils import unset_value
 
-from fief.forms import CSRFBaseForm, TimezoneField
+from fief.forms import CSRFBaseForm, TimezoneField, empty_string_to_none
 from fief.models import UserField, UserFieldType
 
 
@@ -61,7 +61,7 @@ class UserFieldConfigurationBase(Form):
 
 
 class UserFieldConfigurationString(UserFieldConfigurationBase):
-    default = StringField("Default value")
+    default = StringField("Default value", filters=[empty_string_to_none])
 
 
 class UserFieldConfigurationInteger(UserFieldConfigurationBase):
