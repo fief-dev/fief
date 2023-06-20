@@ -268,7 +268,7 @@ class UserManager:
         request: Request | None = None,
     ) -> User:
         user = await self.set_user_attributes(
-            user, **user_update.dict(exclude={"fields"})
+            user, **user_update.dict(exclude_unset=True, exclude={"fields"})
         )
 
         if user_update.fields is not None:
