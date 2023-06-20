@@ -129,9 +129,9 @@ async def get_paginated_users(
 ) -> PaginatedObjects[User]:
     statement = select(User).options(joinedload(User.tenant))
     if query is not None:
-        statement = statement.where(User.email.ilike(f"%{query}%"))  # type: ignore
+        statement = statement.where(User.email_lower.ilike(f"%{query}%"))  # type: ignore
     if email is not None:
-        statement = statement.where(User.email == email)  # type: ignore
+        statement = statement.where(User.email_lower == email.lower())  # type: ignore
     if tenant is not None:
         statement = statement.where(User.tenant_id == tenant)
     return await get_paginated_objects(statement, pagination, ordering, repository)
