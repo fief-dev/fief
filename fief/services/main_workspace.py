@@ -9,6 +9,7 @@ from fief.models import AdminAPIKey, Client, User, Workspace, WorkspaceUser
 from fief.repositories import (
     AdminAPIKeyRepository,
     ClientRepository,
+    EmailVerificationRepository,
     TenantRepository,
     UserFieldRepository,
     UserRepository,
@@ -132,12 +133,14 @@ async def create_main_fief_user(email: str, password: str | None = None) -> User
                 raise MainWorkspaceDoesNotHaveDefaultTenant()
 
             user_repository = UserRepository(session)
+            email_verification_repository = EmailVerificationRepository(session)
             user_fields = await UserFieldRepository(session).all()
             audit_logger = await get_audit_logger(workspace, None, None)
 
             user_manager = await get_user_manager(
                 workspace,
                 user_repository,
+                email_verification_repository,
                 user_fields,
                 send_task,
                 audit_logger,
@@ -150,7 +153,12 @@ async def create_main_fief_user(email: str, password: str | None = None) -> User
                 password = user_manager.password_helper.generate()
 
             user = await user_manager.create(
-                UserCreateAdmin(email=email, password=password, tenant_id=tenant.id),
+                UserCreateAdmin(
+                    email=email,
+                    password=password,
+                    email_verified=True,
+                    tenant_id=tenant.id,
+                ),
                 tenant.id,
             )
 

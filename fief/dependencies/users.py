@@ -46,6 +46,7 @@ from fief.models import (
     Workspace,
 )
 from fief.repositories import (
+    EmailVerificationRepository,
     OAuthAccountRepository,
     UserPermissionRepository,
     UserRepository,
@@ -59,6 +60,9 @@ from fief.tasks import SendTask
 async def get_user_manager(
     workspace: Workspace = Depends(get_current_workspace),
     user_repository: UserRepository = Depends(get_workspace_repository(UserRepository)),
+    email_verification_repository: EmailVerificationRepository = Depends(
+        get_workspace_repository(EmailVerificationRepository)
+    ),
     user_fields: list[UserField] = Depends(get_user_fields),
     send_task: SendTask = Depends(get_send_task),
     audit_logger: AuditLogger = Depends(get_audit_logger),
@@ -68,6 +72,7 @@ async def get_user_manager(
         workspace=workspace,
         password_helper=password_helper,
         user_repository=user_repository,
+        email_verification_repository=email_verification_repository,
         user_fields=user_fields,
         send_task=send_task,
         audit_logger=audit_logger,

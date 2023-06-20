@@ -10,12 +10,14 @@ from fief.crypto.code_challenge import get_code_verifier_hash
 from fief.crypto.id_token import get_validation_hash
 from fief.crypto.password import password_helper
 from fief.crypto.token import generate_token
+from fief.crypto.verify_code import generate_verify_code
 from fief.models import (
     AuthorizationCode,
     Client,
     ClientType,
     EmailDomain,
     EmailTemplate,
+    EmailVerification,
     Grant,
     LoginSession,
     M,
@@ -79,6 +81,7 @@ class TestData(TypedDict):
     registration_sessions: ModelMapping[RegistrationSession]
     oauth_sessions: ModelMapping[OAuthSession]
     authorization_codes: ModelMapping[AuthorizationCode]
+    email_verifications: ModelMapping[EmailVerification]
     refresh_tokens: ModelMapping[RefreshToken]
     session_tokens: ModelMapping[SessionToken]
     oauth_accounts: ModelMapping[OAuthAccount]
@@ -314,6 +317,7 @@ users: ModelMapping[User] = {
         id=uuid.uuid4(),
         created_at=datetime.now(tz=timezone.utc),
         email="anne@bretagne.duchy",
+        email_verified=True,
         hashed_password=hashed_password,
         tenant=tenants["default"],
     ),
@@ -321,6 +325,7 @@ users: ModelMapping[User] = {
         id=uuid.uuid4(),
         created_at=datetime.now(tz=timezone.utc) + timedelta(seconds=1),
         email="anne@nantes.city",
+        email_verified=True,
         hashed_password=hashed_password,
         tenant=tenants["secondary"],
     ),
@@ -328,6 +333,7 @@ users: ModelMapping[User] = {
         id=uuid.uuid4(),
         created_at=datetime.now(tz=timezone.utc) + timedelta(seconds=2),
         email="isabeau@bretagne.duchy",
+        email_verified=True,
         hashed_password=hashed_password,
         tenant=tenants["default"],
     ),
@@ -335,6 +341,7 @@ users: ModelMapping[User] = {
         id=uuid.uuid4(),
         created_at=datetime.now(tz=timezone.utc) + timedelta(seconds=3),
         email="marguerite@bretagne.duchy",
+        email_verified=True,
         hashed_password=hashed_password,
         is_active=False,
         tenant=tenants["default"],
@@ -343,6 +350,15 @@ users: ModelMapping[User] = {
         id=uuid.uuid4(),
         created_at=datetime.now(tz=timezone.utc) + timedelta(seconds=4),
         email="Claude@bretagne.duchy",
+        email_verified=True,
+        hashed_password=hashed_password,
+        tenant=tenants["default"],
+    ),
+    "not_verified_email": User(
+        id=uuid.uuid4(),
+        created_at=datetime.now(tz=timezone.utc) + timedelta(seconds=5),
+        email="charles@france.realm",
+        email_verified=False,
         hashed_password=hashed_password,
         tenant=tenants["default"],
     ),
@@ -719,6 +735,19 @@ authorization_codes: ModelMapping[AuthorizationCode] = {
     ),
 }
 
+email_verification_codes: Mapping[str, tuple[str, str]] = {
+    "not_verified_email": generate_verify_code(),
+}
+
+
+email_verifications: ModelMapping[EmailVerification] = {
+    "not_verified_email": EmailVerification(
+        code=email_verification_codes["not_verified_email"][1],
+        email=users["not_verified_email"].email,
+        user=users["not_verified_email"],
+    )
+}
+
 refresh_token_tokens: Mapping[str, tuple[str, str]] = {
     "default_regular": generate_token(),
     "default_public_regular": generate_token(),
@@ -746,6 +775,7 @@ refresh_tokens: ModelMapping[RefreshToken] = {
 session_token_tokens: Mapping[str, tuple[str, str]] = {
     "regular": generate_token(),
     "regular_secondary": generate_token(),
+    "not_verified_email": generate_token(),
 }
 
 session_tokens: ModelMapping[SessionToken] = {
@@ -756,6 +786,10 @@ session_tokens: ModelMapping[SessionToken] = {
     "regular_secondary": SessionToken(
         token=session_token_tokens["regular_secondary"][1],
         user=users["regular_secondary"],
+    ),
+    "not_verified_email": SessionToken(
+        token=session_token_tokens["not_verified_email"][1],
+        user=users["not_verified_email"],
     ),
 }
 
@@ -833,6 +867,11 @@ email_templates: ModelMapping[EmailTemplate] = {
         type=EmailTemplateType.WELCOME,
         subject="TITLE",
         content='{% extends "BASE" %}{% block main %}WELCOME{% endblock %}',
+    ),
+    "verify_email": EmailTemplate(
+        type=EmailTemplateType.VERIFY_EMAIL,
+        subject="TITLE",
+        content='{% extends "BASE" %}{% block main %}VERIFY_EMAIL {{ code }}{% endblock %}',
     ),
     "forgot_password": EmailTemplate(
         type=EmailTemplateType.FORGOT_PASSWORD,
@@ -914,6 +953,7 @@ data_mapping: TestData = {
     "registration_sessions": registration_sessions,
     "oauth_sessions": oauth_sessions,
     "authorization_codes": authorization_codes,
+    "email_verifications": email_verifications,
     "refresh_tokens": refresh_tokens,
     "session_tokens": session_tokens,
     "oauth_accounts": oauth_accounts,
@@ -932,6 +972,7 @@ data_mapping: TestData = {
 __all__ = [
     "authorization_code_codes",
     "data_mapping",
+    "email_verification_codes",
     "refresh_token_tokens",
     "session_token_tokens",
     "TestData",

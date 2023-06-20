@@ -1,4 +1,3 @@
-
 import pytest
 
 from fief.db import AsyncSession

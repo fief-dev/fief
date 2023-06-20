@@ -11,6 +11,7 @@ if TYPE_CHECKING:  # pragma: no cover
     from fief.services.email_template.contexts import (
         EmailContext,
         ForgotPasswordContext,
+        VerifyEmailContext,
         WelcomeContext,
     )
 
@@ -51,6 +52,14 @@ class EmailTemplateRenderer:
     @overload
     async def render(
         self, type: Literal[EmailTemplateType.WELCOME], context: "WelcomeContext"
+    ) -> str:
+        ...  # pragma: no cover
+
+    @overload
+    async def render(
+        self,
+        type: Literal[EmailTemplateType.VERIFY_EMAIL],
+        context: "VerifyEmailContext",
     ) -> str:
         ...  # pragma: no cover
 
@@ -111,6 +120,14 @@ class EmailSubjectRenderer:
     @overload
     async def render(
         self, type: Literal[EmailTemplateType.WELCOME], context: "WelcomeContext"
+    ) -> str:
+        ...  # pragma: no cover
+
+    @overload
+    async def render(
+        self,
+        type: Literal[EmailTemplateType.VERIFY_EMAIL],
+        context: "VerifyEmailContext",
     ) -> str:
         ...  # pragma: no cover
 

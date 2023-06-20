@@ -108,6 +108,7 @@ class TestCreateUser:
             "/users/create",
             data={
                 "email": "louis@bretagne.duchy",
+                "email_verified": True,
                 "password": "herminetincture",
                 "tenant": str(not_existing_uuid),
                 "csrf_token": csrf_token,
@@ -130,6 +131,7 @@ class TestCreateUser:
             "/users/create",
             data={
                 "email": "anne@bretagne.duchy",
+                "email_verified": True,
                 "password": "herminetincture",
                 "tenant": str(tenant.id),
                 "csrf_token": csrf_token,
@@ -160,6 +162,7 @@ class TestCreateUser:
             "/users/create",
             data={
                 "email": "louis@bretagne.duchy",
+                "email_verified": True,
                 "password": password,
                 "tenant": str(tenant.id),
                 "csrf_token": csrf_token,
@@ -182,6 +185,7 @@ class TestCreateUser:
             "/users/create",
             data={
                 "email": "louis@bretagne.duchy",
+                "email_verified": True,
                 "password": "herminetincture",
                 "tenant": str(tenant.id),
                 "fields-last_seen": "INVALID_VALUE",
@@ -207,6 +211,7 @@ class TestCreateUser:
             "/users/create",
             data={
                 "email": "louis@bretagne.duchy",
+                "email_verified": True,
                 "password": "herminetincture",
                 "tenant": str(tenant.id),
                 "fields-onboarding_done": True,
@@ -223,6 +228,7 @@ class TestCreateUser:
         )
         assert user is not None
         assert user.email == "louis@bretagne.duchy"
+        assert user.email_verified is True
         assert user.tenant_id == tenant.id
 
         assert user.fields["onboarding_done"] is True

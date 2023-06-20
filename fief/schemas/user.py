@@ -15,6 +15,7 @@ if TYPE_CHECKING:  # pragma: no cover
 class UserRead(CreatedUpdatedAt):
     id: UUID4
     email: EmailStr
+    email_verified: bool
     is_active: bool
 
     tenant_id: UUID4
@@ -46,14 +47,16 @@ class UserCreateAdmin(UserCreate[UF], Generic[UF]):
     """
     Model allowing an admin to create a user, from dashboard or API.
 
-    In this context, we need to set the `tenant_id` manually.
+    In this context, we need to set the `tenant_id` and `email_verified` manually.
     """
 
+    email_verified: bool
     tenant_id: UUID4
 
 
 class UserUpdate(GenericModel, Generic[UF]):
     email: EmailStr | None
+    email_verified: bool | None
     password: str | None
     fields: UF | None = Field(exclude=True)
 

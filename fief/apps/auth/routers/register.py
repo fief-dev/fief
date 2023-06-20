@@ -18,7 +18,6 @@ from fief.exceptions import LoginException
 from fief.forms import FormHelper
 from fief.locale import gettext_lazy as _
 from fief.models import (
-    LoginSession,
     OAuthProvider,
     RegistrationSession,
     RegistrationSessionFlow,
@@ -32,11 +31,15 @@ from fief.services.user_manager import UserAlreadyExistsError
 router = APIRouter()
 
 
-@router.api_route("/register", methods=["GET", "POST"], name="register:register")
+@router.api_route(
+    "/register",
+    methods=["GET", "POST"],
+    dependencies=[Depends(get_optional_login_session)],
+    name="register:register",
+)
 async def register(
     request: Request,
     hx_trigger: str | None = Header(None),
-    login_session: LoginSession | None = Depends(get_optional_login_session),
     register_form_class: type[RF] = Depends(get_register_form_class),
     registration_flow: RegistrationFlow = Depends(get_registration_flow),
     authentication_flow: AuthenticationFlow = Depends(get_authentication_flow),
@@ -88,16 +91,10 @@ async def register(
                 error_code="user_already_exists",
             )
         else:
-            if login_session is not None:
-                response = RedirectResponse(
-                    tenant.url_path_for(request, "auth:consent"),
-                    status_code=status.HTTP_302_FOUND,
-                )
-            else:
-                response = RedirectResponse(
-                    tenant.url_path_for(request, "auth.dashboard:profile"),
-                    status_code=status.HTTP_302_FOUND,
-                )
+            response = RedirectResponse(
+                tenant.url_path_for(request, "auth:verify_email_request"),
+                status_code=status.HTTP_302_FOUND,
+            )
             response = await authentication_flow.create_session_token(response, user.id)
             response = await registration_flow.set_login_hint(
                 response, registration_session

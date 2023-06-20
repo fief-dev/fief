@@ -6,7 +6,9 @@ from fief import schemas
 from fief.apps.auth.forms.password import ChangePasswordForm
 from fief.apps.auth.forms.profile import PF, get_profile_form_class
 from fief.dependencies.branding import get_show_branding
-from fief.dependencies.session_token import get_user_from_session_token
+from fief.dependencies.session_token import (
+    get_verified_email_user_from_session_token_or_verify,
+)
 from fief.dependencies.tenant import get_current_tenant
 from fief.dependencies.theme import get_current_theme
 from fief.dependencies.users import get_user_manager, get_user_update_model
@@ -28,7 +30,7 @@ class BaseContext(TypedDict):
 
 async def get_base_context(
     request: Request,
-    user: User = Depends(get_user_from_session_token),
+    user: User = Depends(get_verified_email_user_from_session_token_or_verify),
     tenant: Tenant = Depends(get_current_tenant),
     theme: Theme = Depends(get_current_theme),
     show_branding: bool = Depends(get_show_branding),
@@ -45,7 +47,7 @@ async def get_base_context(
 @router.api_route("/", methods=["GET", "POST"], name="auth.dashboard:profile")
 async def update_profile(
     request: Request,
-    user: User = Depends(get_user_from_session_token),
+    user: User = Depends(get_verified_email_user_from_session_token_or_verify),
     user_manager: UserManager = Depends(get_user_manager),
     profile_form_class: type[PF] = Depends(get_profile_form_class),
     user_update_model: type[schemas.user.UserUpdate[schemas.user.UF]] = Depends(
@@ -84,7 +86,7 @@ async def update_profile(
 async def update_password(
     request: Request,
     hx_trigger: str | None = Header(None),
-    user: User = Depends(get_user_from_session_token),
+    user: User = Depends(get_verified_email_user_from_session_token_or_verify),
     user_manager: UserManager = Depends(get_user_manager),
     context: BaseContext = Depends(get_base_context),
 ):

@@ -4,7 +4,11 @@ import pytest
 from fief.db import AsyncSession
 from fief.models import EmailTemplate
 from fief.repositories import EmailTemplateRepository
-from fief.services.email_template.contexts import ForgotPasswordContext, WelcomeContext
+from fief.services.email_template.contexts import (
+    ForgotPasswordContext,
+    VerifyEmailContext,
+    WelcomeContext,
+)
 from fief.services.email_template.renderers import (
     EmailSubjectRenderer,
     EmailTemplateRenderer,
@@ -52,6 +56,19 @@ class TestEmailTemplateRenderer:
             EmailTemplateType.WELCOME, context
         )
         assert result == "<html><body><h1>Default</h1>WELCOME</body></html>"
+
+    async def test_render_verify_email(
+        self, email_template_renderer: EmailTemplateRenderer, test_data: TestData
+    ):
+        context = VerifyEmailContext(
+            tenant=test_data["tenants"]["default"],
+            user=test_data["users"]["regular"],
+            code="ABCDEF",
+        )
+        result = await email_template_renderer.render(
+            EmailTemplateType.VERIFY_EMAIL, context
+        )
+        assert result == "<html><body><h1>Default</h1>VERIFY_EMAIL ABCDEF</body></html>"
 
     async def test_render_forgot_password(
         self, email_template_renderer: EmailTemplateRenderer, test_data: TestData
@@ -106,6 +123,19 @@ class TestEmailSubjectRenderer:
             tenant=test_data["tenants"]["default"], user=test_data["users"]["regular"]
         )
         result = await email_subject_renderer.render(EmailTemplateType.WELCOME, context)
+        assert result == "TITLE"
+
+    async def test_render_verify_email(
+        self, email_subject_renderer: EmailTemplateRenderer, test_data: TestData
+    ):
+        context = VerifyEmailContext(
+            tenant=test_data["tenants"]["default"],
+            user=test_data["users"]["regular"],
+            code="ABCDEF",
+        )
+        result = await email_subject_renderer.render(
+            EmailTemplateType.VERIFY_EMAIL, context
+        )
         assert result == "TITLE"
 
     async def test_render_forgot_password(

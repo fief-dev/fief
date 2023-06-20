@@ -6,6 +6,7 @@ from fief.repositories.base import get_repository
 from fief.repositories.client import ClientRepository
 from fief.repositories.email_domain import EmailDomainRepository
 from fief.repositories.email_template import EmailTemplateRepository
+from fief.repositories.email_verification import EmailVerificationRepository
 from fief.repositories.grant import GrantRepository
 from fief.repositories.login_session import LoginSessionRepository
 from fief.repositories.oauth_account import OAuthAccountRepository
@@ -37,6 +38,7 @@ __all__ = [
     "ClientRepository",
     "EmailDomainRepository",
     "EmailTemplateRepository",
+    "EmailVerificationRepository",
     "GrantRepository",
     "LoginSessionRepository",
     "OAuthAccountRepository",

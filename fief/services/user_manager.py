@@ -8,17 +8,19 @@ from pydantic import UUID4
 
 from fief import schemas
 from fief.crypto.password import PasswordHelper
+from fief.crypto.verify_code import generate_verify_code, get_verify_code_hash
 from fief.dependencies.webhooks import TriggerWebhooks
 from fief.logger import AuditLogger
 from fief.models import (
     AuditLogMessage,
+    EmailVerification,
     Tenant,
     User,
     UserField,
     UserFieldValue,
     Workspace,
 )
-from fief.repositories import UserRepository
+from fief.repositories import EmailVerificationRepository, UserRepository
 from fief.services.password import PasswordValidation
 from fief.services.webhooks.models import (
     UserCreated,
@@ -26,7 +28,12 @@ from fief.services.webhooks.models import (
     UserPasswordReset,
     UserUpdated,
 )
-from fief.tasks import SendTask, on_after_forgot_password, on_after_register
+from fief.tasks import (
+    SendTask,
+    on_after_forgot_password,
+    on_after_register,
+    on_email_verification_requested,
+)
 
 RESET_PASSWORD_TOKEN_AUDIENCE = "fief:reset"
 
@@ -47,6 +54,10 @@ class UserInactiveError(UserManagerError):
     pass
 
 
+class InvalidEmailVerificationCodeError(UserManagerError):
+    pass
+
+
 class InvalidResetPasswordTokenError(UserManagerError):
     pass
 
@@ -64,6 +75,7 @@ class UserManager:
         workspace: Workspace,
         password_helper: PasswordHelper,
         user_repository: UserRepository,
+        email_verification_repository: EmailVerificationRepository,
         user_fields: list[UserField],
         send_task: SendTask,
         audit_logger: AuditLogger,
@@ -72,6 +84,7 @@ class UserManager:
         self.workspace = workspace
         self.password_helper = password_helper
         self.user_repository = user_repository
+        self.email_verification_repository = email_verification_repository
         self.user_fields = user_fields
         self.send_task = send_task
         self.audit_logger = audit_logger
@@ -133,6 +146,45 @@ class UserManager:
 
         await self.user_repository.update(user)
         await self.on_after_register(user, request=request)
+
+        return user
+
+    async def request_verify_email(
+        self, user: User, email: str, *, request: Request | None = None
+    ) -> None:
+        if not user.is_active:
+            raise UserInactiveError()
+
+        code, code_hash = generate_verify_code()
+        email_verification = EmailVerification(code=code_hash, email=email, user=user)
+        email_verification = await self.email_verification_repository.create(
+            email_verification
+        )
+
+        await self.on_after_request_verify_email(
+            email_verification, code, request=request
+        )
+
+    async def verify_email(
+        self, user: User, code: str, *, request: Request | None = None
+    ) -> User:
+        if not user.is_active:
+            raise UserInactiveError()
+
+        code_hash = get_verify_code_hash(code)
+        email_verification = await self.email_verification_repository.get_by_code(
+            code_hash
+        )
+        if email_verification is None:
+            raise InvalidEmailVerificationCodeError()
+        if email_verification.user_id != user.id:
+            raise InvalidEmailVerificationCodeError()
+
+        user.email = email_verification.email
+        user.email_verified = True
+        await self.user_repository.update(user)
+
+        await self.email_verification_repository.delete(email_verification)
 
         return user
 
@@ -255,6 +307,27 @@ class UserManager:
     async def on_after_update(self, user: User, *, request: Request | None = None):
         self.audit_logger(AuditLogMessage.USER_UPDATED, subject_user_id=user.id)
         self.trigger_webhooks(UserUpdated, user, schemas.user.UserRead)
+
+    async def on_after_request_verify_email(
+        self,
+        email_verification: EmailVerification,
+        code: str,
+        *,
+        request: Request | None = None,
+    ):
+        self.audit_logger(
+            AuditLogMessage.USER_EMAIL_VERIFY_REQUESTED,
+            subject_user_id=email_verification.user_id,
+            email=email_verification.email,
+        )
+        # TODO: Webhook
+
+        self.send_task(
+            on_email_verification_requested,
+            str(email_verification.id),
+            str(self.workspace.id),
+            code,
+        )
 
     async def on_after_forgot_password(
         self, user: User, token: str, *, request: Request | None = None

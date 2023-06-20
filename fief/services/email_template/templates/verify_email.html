@@ -1,0 +1,9 @@
+{% extends "BASE" %}
+
+{% block preheader %}Use this code to verify your email address. This code is only valid for 1 hour.{% endblock %}
+
+{% block main %}
+  <h1>Verify your email address</h1>
+  <p>You recently created or updated your account email on {{ tenant.name }}. To verify your email address, please enter the verification code below. <strong>This verification code is only valid for the next hour.</strong></p>
+  <p>{{ code }}</p>
+{% endblock %}

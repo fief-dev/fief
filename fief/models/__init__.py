@@ -6,6 +6,7 @@ from fief.models.base import MainBase, WorkspaceBase
 from fief.models.client import Client, ClientType
 from fief.models.email_domain import EmailDomain
 from fief.models.email_template import EmailTemplate
+from fief.models.email_verification import EmailVerification
 from fief.models.generics import M_UUID, M
 from fief.models.grant import Grant
 from fief.models.login_session import LoginSession
@@ -43,6 +44,7 @@ __all__ = [
     "ClientType",
     "EmailDomain",
     "EmailTemplate",
+    "EmailVerification",
     "Grant",
     "AuditLog",
     "AuditLogMessage",

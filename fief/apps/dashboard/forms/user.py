@@ -1,4 +1,5 @@
 from wtforms import (
+    BooleanField,
     EmailField,
     FieldList,
     Form,
@@ -22,6 +23,7 @@ class BaseUserForm(CSRFBaseForm):
     email = EmailField(
         "Email address", validators=[validators.InputRequired(), validators.Email()]
     )
+    email_verified = BooleanField("Email verified")
 
     @classmethod
     async def get_form_class(

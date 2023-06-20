@@ -1,19 +1,26 @@
 import urllib.parse
+from unittest.mock import MagicMock
 
 import httpx
 import pytest
+from bs4 import BeautifulSoup
 from fastapi import status
 
 from fief.crypto.token import get_token_hash
+from fief.crypto.verify_code import get_verify_code_hash
 from fief.db import AsyncSession
+from fief.models import Workspace
 from fief.repositories import (
+    EmailVerificationRepository,
     GrantRepository,
     LoginSessionRepository,
     SessionTokenRepository,
+    UserRepository,
 )
 from fief.services.response_type import DEFAULT_RESPONSE_MODE, HYBRID_RESPONSE_TYPES
 from fief.settings import settings
-from tests.data import TestData, session_token_tokens
+from fief.tasks import on_email_verification_requested
+from tests.data import TestData, email_verification_codes, session_token_tokens
 from tests.helpers import authorization_code_assertions, get_params_by_response_mode
 from tests.types import TenantParams
 
@@ -564,7 +571,7 @@ class TestAuthPostLogin:
         assert response.status_code == status.HTTP_302_FOUND
 
         redirect_uri = response.headers["Location"]
-        assert redirect_uri.endswith(f"{path_prefix}/consent")
+        assert redirect_uri.endswith(f"{path_prefix}/verify-request")
 
         session_cookie = response.cookies[settings.session_cookie_name]
         session_token_repository = SessionTokenRepository(workspace_session)
@@ -606,7 +613,7 @@ class TestAuthPostLogin:
         assert response.status_code == status.HTTP_302_FOUND
 
         redirect_uri = response.headers["Location"]
-        assert redirect_uri.endswith(f"{path_prefix}/consent")
+        assert redirect_uri.endswith(f"{path_prefix}/verify-request")
 
         session_cookie = response.cookies[settings.session_cookie_name]
         session_token_repository = SessionTokenRepository(workspace_session)
@@ -619,28 +626,305 @@ class TestAuthPostLogin:
         old_session_token = await session_token_repository.get_by_id(session_token.id)
         assert old_session_token is None
 
-    async def test_valid_without_login_session(
+
+@pytest.mark.asyncio
+@pytest.mark.workspace_host
+class TestAuthVerifyEmailRequest:
+    @pytest.mark.parametrize("cookie", [None, "INVALID_SESSION_TOKEN"])
+    async def test_invalid_session_token(
+        self,
+        cookie: str | None,
+        test_client_auth: httpx.AsyncClient,
+        test_data: TestData,
+    ):
+        login_session = test_data["login_sessions"]["default"]
+        client = login_session.client
+        tenant = client.tenant
+        path_prefix = tenant.slug if not tenant.default else ""
+
+        cookies = {}
+        cookies[settings.login_session_cookie_name] = login_session.token
+        if cookie is not None:
+            cookies[settings.session_cookie_name] = cookie
+
+        response = await test_client_auth.get(
+            f"{path_prefix}/verify-request", cookies=cookies
+        )
+
+        assert response.status_code == status.HTTP_307_TEMPORARY_REDIRECT
+
+        redirect_uri = response.headers["Location"]
+        assert redirect_uri.endswith(f"{path_prefix}/login")
+
+    async def test_already_verified_no_login_session(
+        self, test_client_auth: httpx.AsyncClient, test_data: TestData
+    ):
+        user = test_data["users"]["regular"]
+        tenant = user.tenant
+        path_prefix = tenant.slug if not tenant.default else ""
+        cookies = {}
+        cookies[settings.session_cookie_name] = session_token_tokens["regular"][0]
+
+        response = await test_client_auth.get(
+            f"{path_prefix}/verify-request", cookies=cookies
+        )
+
+        assert response.status_code == status.HTTP_302_FOUND
+        redirect_uri = response.headers["Location"]
+
+        assert redirect_uri.endswith(f"{path_prefix}/")
+
+    async def test_already_verified_login_session(
+        self, test_client_auth: httpx.AsyncClient, test_data: TestData
+    ):
+        cookies = {}
+        login_session = test_data["login_sessions"]["default"]
+        client = login_session.client
+        tenant = client.tenant
+        path_prefix = tenant.slug if not tenant.default else ""
+        cookies[settings.login_session_cookie_name] = login_session.token
+        cookies[settings.session_cookie_name] = session_token_tokens["regular"][0]
+
+        response = await test_client_auth.get(
+            f"{path_prefix}/verify-request", cookies=cookies
+        )
+
+        assert response.status_code == status.HTTP_302_FOUND
+        redirect_uri = response.headers["Location"]
+
+        assert redirect_uri.endswith(f"{path_prefix}/consent")
+
+    async def test_not_verified(
+        self,
+        test_client_auth: httpx.AsyncClient,
+        test_data: TestData,
+        workspace: Workspace,
+        workspace_session: AsyncSession,
+        send_task_mock: MagicMock,
+    ):
+        user = test_data["users"]["not_verified_email"]
+        tenant = user.tenant
+        path_prefix = tenant.slug if not tenant.default else ""
+        cookies = {}
+        cookies[settings.session_cookie_name] = session_token_tokens[
+            "not_verified_email"
+        ][0]
+
+        response = await test_client_auth.get(
+            f"{path_prefix}/verify-request", cookies=cookies
+        )
+
+        assert response.status_code == status.HTTP_302_FOUND
+        redirect_uri = response.headers["Location"]
+
+        assert redirect_uri.endswith(f"{path_prefix}/verify")
+
+        email_verification_repository = EmailVerificationRepository(workspace_session)
+        email_verifications = await email_verification_repository.all()
+        email_verification = email_verifications[-1]
+        assert email_verification.email == user.email
+
+        send_task_mock.assert_called_once()
+        assert send_task_mock.call_args[0][0] == on_email_verification_requested
+        assert send_task_mock.call_args[0][1] == str(email_verification.id)
+        assert send_task_mock.call_args[0][2] == str(workspace.id)
+        assert (
+            get_verify_code_hash(send_task_mock.call_args[0][3])
+            == email_verification.code
+        )
+
+
+@pytest.mark.asyncio
+@pytest.mark.workspace_host
+class TestAuthGetVerifyEmail:
+    async def test_invalid_login_session(
+        self,
+        tenant_params: TenantParams,
+        test_client_auth: httpx.AsyncClient,
+    ):
+        cookies = {}
+        cookies[settings.login_session_cookie_name] = "INVALID_LOGIN_SESSION"
+        cookies[settings.session_cookie_name] = tenant_params.session_token_token[0]
+
+        response = await test_client_auth.get(
+            f"{tenant_params.path_prefix}/verify", cookies=cookies
+        )
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+        headers = response.headers
+        assert headers["X-Fief-Error"] == "invalid_session"
+
+    @pytest.mark.parametrize("cookie", [None, "INVALID_SESSION_TOKEN"])
+    async def test_invalid_session_token(
+        self,
+        cookie: str | None,
+        test_client_auth: httpx.AsyncClient,
+        test_data: TestData,
+    ):
+        login_session = test_data["login_sessions"]["default"]
+        client = login_session.client
+        tenant = client.tenant
+        path_prefix = tenant.slug if not tenant.default else ""
+
+        cookies = {}
+        cookies[settings.login_session_cookie_name] = login_session.token
+        if cookie is not None:
+            cookies[settings.session_cookie_name] = cookie
+
+        response = await test_client_auth.get(f"{path_prefix}/verify", cookies=cookies)
+
+        assert response.status_code == status.HTTP_307_TEMPORARY_REDIRECT
+
+        redirect_uri = response.headers["Location"]
+        assert redirect_uri.endswith(f"{path_prefix}/login")
+
+    async def test_valid(
+        self, test_client_auth: httpx.AsyncClient, test_data: TestData
+    ):
+        user = test_data["users"]["not_verified_email"]
+        tenant = user.tenant
+        path_prefix = tenant.slug if not tenant.default else ""
+        cookies = {}
+        cookies[settings.session_cookie_name] = session_token_tokens[
+            "not_verified_email"
+        ][0]
+
+        response = await test_client_auth.get(f"{path_prefix}/verify", cookies=cookies)
+
+        assert response.status_code == status.HTTP_200_OK
+        html = BeautifulSoup(response.text, features="html.parser")
+        code_inputs = html.find_all("input", type="text")
+        assert len(code_inputs) == settings.email_verification_code_length
+
+
+@pytest.mark.asyncio
+@pytest.mark.workspace_host
+class TestAuthPostVerifyEmail:
+    async def test_invalid_login_session(
+        self,
+        tenant_params: TenantParams,
+        test_client_auth_csrf: httpx.AsyncClient,
+        csrf_token: str,
+    ):
+        cookies = {}
+        cookies[settings.login_session_cookie_name] = "INVALID_LOGIN_SESSION"
+        cookies[settings.session_cookie_name] = tenant_params.session_token_token[0]
+
+        response = await test_client_auth_csrf.post(
+            f"{tenant_params.path_prefix}/verify",
+            data={"code": "ABCDEF", "csrf_token": csrf_token},
+            cookies=cookies,
+        )
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+        headers = response.headers
+        assert headers["X-Fief-Error"] == "invalid_session"
+
+    @pytest.mark.parametrize("cookie", [None, "INVALID_SESSION_TOKEN"])
+    async def test_invalid_session_token(
+        self,
+        cookie: str | None,
+        test_client_auth_csrf: httpx.AsyncClient,
+        csrf_token: str,
+        test_data: TestData,
+    ):
+        login_session = test_data["login_sessions"]["default"]
+        client = login_session.client
+        tenant = client.tenant
+        path_prefix = tenant.slug if not tenant.default else ""
+
+        cookies = {}
+        cookies[settings.login_session_cookie_name] = login_session.token
+        if cookie is not None:
+            cookies[settings.session_cookie_name] = cookie
+
+        response = await test_client_auth_csrf.post(
+            f"{path_prefix}/verify",
+            data={"code": "ABCDEF", "csrf_token": csrf_token},
+            cookies=cookies,
+        )
+
+        assert response.status_code == status.HTTP_307_TEMPORARY_REDIRECT
+
+        redirect_uri = response.headers["Location"]
+        assert redirect_uri.endswith(f"{path_prefix}/login")
+
+    async def test_invalid_code(
         self,
         test_client_auth_csrf: httpx.AsyncClient,
         csrf_token: str,
         test_data: TestData,
     ):
-        tenant = test_data["tenants"]["default"]
+        user = test_data["users"]["not_verified_email"]
+        tenant = user.tenant
         path_prefix = tenant.slug if not tenant.default else ""
+        cookies = {}
+        cookies[settings.session_cookie_name] = session_token_tokens[
+            "not_verified_email"
+        ][0]
 
         response = await test_client_auth_csrf.post(
-            f"{path_prefix}/login",
-            data={
-                "email": "anne@bretagne.duchy",
-                "password": "herminetincture",
-                "csrf_token": csrf_token,
-            },
+            f"{path_prefix}/verify",
+            data={"code": "ABCDEF", "csrf_token": csrf_token},
+            cookies=cookies,
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+        headers = response.headers
+        assert headers["X-Fief-Error"] == "invalid_code"
+
+    @pytest.mark.parametrize(
+        "has_login_session,redirect_path",
+        [
+            (True, "/consent"),
+            (False, "/"),
+        ],
+    )
+    async def test_valid(
+        self,
+        has_login_session: bool,
+        redirect_path: str,
+        test_client_auth_csrf: httpx.AsyncClient,
+        csrf_token: str,
+        workspace_session: AsyncSession,
+        test_data: TestData,
+    ):
+        user = test_data["users"]["not_verified_email"]
+        code = email_verification_codes["not_verified_email"][0]
+        email_verification = test_data["email_verifications"]["not_verified_email"]
+
+        tenant = user.tenant
+        path_prefix = tenant.slug if not tenant.default else ""
+        cookies = {}
+        cookies[settings.session_cookie_name] = session_token_tokens[
+            "not_verified_email"
+        ][0]
+        if has_login_session:
+            login_session = test_data["login_sessions"]["default"]
+            cookies[settings.login_session_cookie_name] = login_session.token
+
+        response = await test_client_auth_csrf.post(
+            f"{path_prefix}/verify",
+            data={"code": code, "csrf_token": csrf_token},
+            cookies=cookies,
         )
 
         assert response.status_code == status.HTTP_302_FOUND
 
         redirect_uri = response.headers["Location"]
-        assert redirect_uri.endswith(f"{path_prefix}/")
+        assert redirect_uri.endswith(f"{path_prefix}{redirect_path}")
+
+        email_verification_repository = EmailVerificationRepository(workspace_session)
+        deleted_email_verification = await email_verification_repository.get_by_id(
+            email_verification.id
+        )
+        assert deleted_email_verification is None
+
+        user_repository = UserRepository(workspace_session)
+        updated_user = await user_repository.get_by_id(user.id)
+        assert updated_user is not None
+        assert updated_user.email_verified is True
 
 
 @pytest.mark.asyncio
@@ -660,6 +944,7 @@ class TestAuthGetConsent:
         cookies = {}
         if cookie is not None:
             cookies[settings.login_session_cookie_name] = cookie
+        cookies[settings.session_cookie_name] = tenant_params.session_token_token[0]
 
         response = await test_client_auth.get(
             f"{tenant_params.path_prefix}/consent", cookies=cookies
@@ -689,25 +974,21 @@ class TestAuthGetConsent:
 
         response = await test_client_auth.get(f"{path_prefix}/consent", cookies=cookies)
 
-        assert response.status_code == status.HTTP_302_FOUND
+        assert response.status_code == status.HTTP_307_TEMPORARY_REDIRECT
 
         redirect_uri = response.headers["Location"]
         assert redirect_uri.endswith(f"{path_prefix}/login")
 
     async def test_valid(
-        self, test_client_auth: httpx.AsyncClient, test_data: TestData
+        self, test_client_auth: httpx.AsyncClient, tenant_params: TenantParams
     ):
-        login_session = test_data["login_sessions"]["default"]
-        client = login_session.client
-        tenant = client.tenant
-        path_prefix = tenant.slug if not tenant.default else ""
-        session_token_token = session_token_tokens["regular"][0]
-
         cookies = {}
-        cookies[settings.login_session_cookie_name] = login_session.token
-        cookies[settings.session_cookie_name] = session_token_token
+        cookies[settings.login_session_cookie_name] = tenant_params.login_session.token
+        cookies[settings.session_cookie_name] = tenant_params.session_token_token[0]
 
-        response = await test_client_auth.get(f"{path_prefix}/consent", cookies=cookies)
+        response = await test_client_auth.get(
+            f"{tenant_params.path_prefix}/consent", cookies=cookies
+        )
 
         assert response.status_code == status.HTTP_200_OK
 
@@ -859,6 +1140,7 @@ class TestAuthPostConsent:
         cookies = {}
         if cookie is not None:
             cookies[settings.login_session_cookie_name] = cookie
+        cookies[settings.session_cookie_name] = tenant_params.session_token_token[0]
 
         response = await test_client_auth_csrf.post(
             f"{tenant_params.path_prefix}/consent",
@@ -895,7 +1177,7 @@ class TestAuthPostConsent:
             data={"allow": "allow", "csrf_token": csrf_token},
         )
 
-        assert response.status_code == status.HTTP_302_FOUND
+        assert response.status_code == status.HTTP_307_TEMPORARY_REDIRECT
 
         redirect_uri = response.headers["Location"]
         assert redirect_uri.endswith(f"{path_prefix}/login")

@@ -364,7 +364,7 @@ class TestPostRegister:
 
         redirect_uri = response.headers["Location"]
         redirect_uri = response.headers["Location"]
-        assert redirect_uri.endswith("/consent")
+        assert redirect_uri.endswith("/verify-request")
 
         session_cookie = response.cookies[settings.session_cookie_name]
         session_token_repository = SessionTokenRepository(workspace_session)
@@ -372,6 +372,12 @@ class TestPostRegister:
             get_token_hash(session_cookie)
         )
         assert session_token is not None
+
+        user_repository = UserRepository(workspace_session)
+        user = await user_repository.get_by_id(session_token.user_id)
+        assert user is not None
+        assert user.email == "louis@bretagne.duchy"
+        assert user.email_verified is False
 
         login_hint_cookie = response.cookies[settings.login_hint_cookie_name]
         assert urllib.parse.unquote(login_hint_cookie) == "louis@bretagne.duchy"
@@ -387,32 +393,6 @@ class TestPostRegister:
         send_task_mock.assert_called_with(
             on_after_register, str(session_token.user_id), str(workspace.id)
         )
-
-    async def test_new_user_no_login_session(
-        self,
-        test_client_auth_csrf: httpx.AsyncClient,
-        csrf_token: str,
-        test_data: TestData,
-    ):
-        registration_session = test_data["registration_sessions"]["default_password"]
-        cookies = {}
-        cookies[settings.registration_session_cookie_name] = registration_session.token
-
-        response = await test_client_auth_csrf.post(
-            "/register",
-            data={
-                "email": "louis@bretagne.duchy",
-                "password": "herminetincture",
-                "csrf_token": csrf_token,
-            },
-            cookies=cookies,
-        )
-
-        assert response.status_code == status.HTTP_302_FOUND
-
-        redirect_uri = response.headers["Location"]
-        redirect_uri = response.headers["Location"]
-        assert redirect_uri.endswith("/")
 
     async def test_no_email_conflict_on_another_tenant(
         self,
@@ -610,7 +590,7 @@ class TestPostRegister:
 
         redirect_uri = response.headers["Location"]
         redirect_uri = response.headers["Location"]
-        assert redirect_uri.endswith("/consent")
+        assert redirect_uri.endswith("/verify-request")
 
         session_cookie = response.cookies[settings.session_cookie_name]
         session_token_repository = SessionTokenRepository(workspace_session)
@@ -677,3 +657,4 @@ class TestPostRegister:
         user = await user_repository.get_by_id(session_token.user_id)
         assert user is not None
         assert user.email == "louis+fief@bretagne.duchy"
+        assert user.email_verified is False

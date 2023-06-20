@@ -6,6 +6,7 @@ from sqlalchemy.exc import DBAPIError
 from fief.logger import logger
 from fief.repositories import (
     AuthorizationCodeRepository,
+    EmailVerificationRepository,
     LoginSessionRepository,
     OAuthSessionRepository,
     RefreshTokenRepository,
@@ -19,6 +20,7 @@ from fief.tasks.base import TaskBase
 
 repository_classes: list[type[ExpiresAtRepositoryProtocol]] = [
     AuthorizationCodeRepository,
+    EmailVerificationRepository,
     LoginSessionRepository,
     OAuthSessionRepository,
     RefreshTokenRepository,

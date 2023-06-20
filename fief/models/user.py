@@ -20,6 +20,9 @@ class User(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
 
     email: Mapped[str] = mapped_column(String(length=320), index=True, nullable=False)
     email_lower: Mapped[str] = mapped_column(String(320), index=True, nullable=False)
+    email_verified: Mapped[bool] = mapped_column(
+        Boolean, index=True, default=False, nullable=False
+    )
     hashed_password: Mapped[str] = mapped_column(String(length=255), nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
 
