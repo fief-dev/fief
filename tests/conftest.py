@@ -571,8 +571,9 @@ def htmx(request: pytest.FixtureRequest):
             client.headers["HX-Request"] = "true"
             marker = request.node.get_closest_marker("htmx")
             if marker:
-                target: str = marker.kwargs["target"]
-                client.headers["HX-Target"] = target
+                target: str | None = marker.kwargs.get("target")
+                if target:
+                    client.headers["HX-Target"] = target
         return client
 
     return _htmx

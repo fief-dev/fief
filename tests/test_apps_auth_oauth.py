@@ -435,7 +435,6 @@ class TestOAuthCallback:
             cookies=cookies,
         )
 
-        print(response.headers)
         assert response.status_code == status.HTTP_302_FOUND
 
         redirect_uri = response.headers["Location"]

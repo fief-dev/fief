@@ -22,7 +22,19 @@
   {% endcall %}
   {% call modal.body() %}
     <div class="space-y-4">
-      {{ forms.form_field(form.email) }}
+      {{
+        forms.form_field(
+          form.email,
+          **{
+            "script": "
+              on keyup
+                remove [@checked] from #" ~ form.email_verified.id ~"
+              end
+            "
+          },
+        )
+      }}
+      {{ forms.form_field(form.email_verified) }}
       {{ forms.form_field(form.password) }}
       <hr />
       {% for field in form.fields %}

@@ -14,6 +14,15 @@
 </a>
 {% endmacro %}
 
+{% macro email_verified_column(user) %}
+{% if user.email_verified %}
+  {{ icons.check('w-4 h-4') }}
+{% else %}
+  {{ icons.x_mark('w-4 h-4') }}
+{% endif %}
+{% endmacro %}
+
+
 {% macro created_at_column(user) %}
 {{ user.created_at.strftime('%x %X') }}
 {% endmacro %}

@@ -87,6 +87,12 @@ async def get_columns(
     return [
         DatatableColumn("Email address", "email", "email_column", ordering="email"),
         DatatableColumn(
+            "Email verified",
+            "email_verified",
+            "email_verified_column",
+            ordering="email_verified",
+        ),
+        DatatableColumn(
             "Created at", "created_at", "created_at_column", ordering="created_at"
         ),
         DatatableColumn(
@@ -110,7 +116,8 @@ async def get_list_context(
     columns: list[DatatableColumn] = Depends(get_columns),
     datatable_query_parameters: DatatableQueryParameters = Depends(
         DatatableQueryParametersGetter(
-            ["email", "created_at", "id", "tenant"], ["tenant", "query"]
+            ["email", "email_verified", "created_at", "id", "tenant"],
+            ["tenant", "query"],
         )
     ),
     paginated_users: PaginatedObjects[User] = Depends(get_paginated_users),
@@ -338,6 +345,22 @@ async def create_user_access_token(
         )
 
     return await form_helper.get_response()
+
+
+@router.post("/{id:uuid}/verify-request", name="dashboard.users:verify_email_request")
+async def verify_email_request(
+    user: User = Depends(get_user_by_id_or_404),
+    user_manager: UserManager = Depends(get_user_manager),
+    context: BaseContext = Depends(get_base_context),
+):
+    if not user.email_verified:
+        await user_manager.request_verify_email(user, user.email)
+
+    return templates.TemplateResponse(
+        "admin/users/get/verify_email_requested.html",
+        {**context, "user": user},
+        status_code=status.HTTP_202_ACCEPTED,
+    )
 
 
 @router.api_route(

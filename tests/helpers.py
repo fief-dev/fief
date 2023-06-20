@@ -2,6 +2,7 @@ import json
 import re
 from collections.abc import Callable
 from datetime import datetime
+from unittest.mock import MagicMock
 
 import httpx
 import pytest
@@ -11,9 +12,11 @@ from jwcrypto import jwk, jwt
 
 from fief.crypto.id_token import get_validation_hash
 from fief.crypto.token import get_token_hash
+from fief.crypto.verify_code import get_verify_code_hash
 from fief.db import AsyncSession
-from fief.models import AuthorizationCode, LoginSession, SessionToken, User
-from fief.repositories import AuthorizationCodeRepository
+from fief.models import AuthorizationCode, LoginSession, SessionToken, User, Workspace
+from fief.repositories import AuthorizationCodeRepository, EmailVerificationRepository
+from fief.tasks import on_email_verification_requested
 
 HTTPXResponseAssertion = Callable[[httpx.Response], None]
 
@@ -206,3 +209,24 @@ async def authorization_code_assertions(
             authorization_code_tuple=(authorization_code, code),
             access_token=params.get("access_token"),
         )
+
+
+async def email_verification_requested_assertions(
+    *,
+    user: User,
+    workspace: Workspace,
+    send_task_mock: MagicMock,
+    session: AsyncSession,
+):
+    email_verification_repository = EmailVerificationRepository(session)
+    email_verifications = await email_verification_repository.all()
+    email_verification = email_verifications[-1]
+    assert email_verification.email == user.email
+
+    send_task_mock.assert_called_once()
+    assert send_task_mock.call_args[0][0] == on_email_verification_requested
+    assert send_task_mock.call_args[0][1] == str(email_verification.id)
+    assert send_task_mock.call_args[0][2] == str(workspace.id)
+    assert (
+        get_verify_code_hash(send_task_mock.call_args[0][3]) == email_verification.code
+    )

@@ -296,7 +296,9 @@ class UserManager:
                             user_field_value.value = default
                             user.user_field_values.append(user_field_value)
 
+        await self.user_repository.update(user)
         await self.on_after_update(user, request=request)
+
         return user
 
     async def on_after_register(self, user: User, *, request: Request | None = None):

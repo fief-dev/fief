@@ -7,7 +7,6 @@ from bs4 import BeautifulSoup
 from fastapi import status
 
 from fief.crypto.token import get_token_hash
-from fief.crypto.verify_code import get_verify_code_hash
 from fief.db import AsyncSession
 from fief.models import Workspace
 from fief.repositories import (
@@ -19,9 +18,12 @@ from fief.repositories import (
 )
 from fief.services.response_type import DEFAULT_RESPONSE_MODE, HYBRID_RESPONSE_TYPES
 from fief.settings import settings
-from fief.tasks import on_email_verification_requested
 from tests.data import TestData, email_verification_codes, session_token_tokens
-from tests.helpers import authorization_code_assertions, get_params_by_response_mode
+from tests.helpers import (
+    authorization_code_assertions,
+    email_verification_requested_assertions,
+    get_params_by_response_mode,
+)
 from tests.types import TenantParams
 
 
@@ -719,18 +721,11 @@ class TestAuthVerifyEmailRequest:
 
         assert redirect_uri.endswith(f"{path_prefix}/verify")
 
-        email_verification_repository = EmailVerificationRepository(workspace_session)
-        email_verifications = await email_verification_repository.all()
-        email_verification = email_verifications[-1]
-        assert email_verification.email == user.email
-
-        send_task_mock.assert_called_once()
-        assert send_task_mock.call_args[0][0] == on_email_verification_requested
-        assert send_task_mock.call_args[0][1] == str(email_verification.id)
-        assert send_task_mock.call_args[0][2] == str(workspace.id)
-        assert (
-            get_verify_code_hash(send_task_mock.call_args[0][3])
-            == email_verification.code
+        await email_verification_requested_assertions(
+            user=user,
+            workspace=workspace,
+            send_task_mock=send_task_mock,
+            session=workspace_session,
         )
 
 

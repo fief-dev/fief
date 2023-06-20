@@ -23,7 +23,10 @@ class BaseUserForm(CSRFBaseForm):
     email = EmailField(
         "Email address", validators=[validators.InputRequired(), validators.Email()]
     )
-    email_verified = BooleanField("Email verified")
+    email_verified = BooleanField(
+        "Email verified",
+        description="You can force the email address to be verified, but make sure it actually belongs to the user.",
+    )
 
     @classmethod
     async def get_form_class(
