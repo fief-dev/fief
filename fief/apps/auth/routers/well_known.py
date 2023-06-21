@@ -37,7 +37,7 @@ async def get_openid_configuration(
         issuer=tenant.get_host(workspace.domain),
         authorization_endpoint=_url_for("auth:authorize"),
         token_endpoint=_url_for("auth:token"),
-        userinfo_endpoint=_url_for("user:userinfo.get"),
+        userinfo_endpoint=_url_for("user:userinfo"),
         jwks_uri=_url_for("well_known:jwks"),
         registration_endpoint=_url_for("register:register"),
         scopes_supported=["openid", "offline_access"],
