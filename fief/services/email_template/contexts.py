@@ -66,5 +66,6 @@ class ForgotPasswordContext(EmailContext):
 EMAIL_TEMPLATE_CONTEXT_CLASS_MAP: dict[EmailTemplateType, type[EmailContext]] = {
     EmailTemplateType.BASE: EmailContext,
     EmailTemplateType.WELCOME: WelcomeContext,
+    EmailTemplateType.VERIFY_EMAIL: VerifyEmailContext,
     EmailTemplateType.FORGOT_PASSWORD: ForgotPasswordContext,
 }

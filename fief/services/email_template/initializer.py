@@ -32,6 +32,14 @@ class EmailTemplateInitializer:
             )
             await self.repository.create(welcome)
 
+        if await self.repository.get_by_type(EmailTemplateType.VERIFY_EMAIL) is None:
+            verify_email = EmailTemplate(
+                type=EmailTemplateType.VERIFY_EMAIL,
+                subject="Verify your email for your {{ tenant.name }}'s account",
+                content=self._load_template("verify_email.html"),
+            )
+            await self.repository.create(verify_email)
+
         if await self.repository.get_by_type(EmailTemplateType.FORGOT_PASSWORD) is None:
             forgot_password = EmailTemplate(
                 type=EmailTemplateType.FORGOT_PASSWORD,
