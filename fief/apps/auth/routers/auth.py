@@ -4,7 +4,8 @@ from fastapi import APIRouter, Depends, Query, Request, status
 from fastapi.responses import RedirectResponse
 from pydantic import AnyUrl
 
-from fief.apps.auth.forms.auth import ConsentForm, LoginForm, VerifyEmailForm
+from fief.apps.auth.forms.auth import ConsentForm, LoginForm
+from fief.apps.auth.forms.verify_email import VerifyEmailForm
 from fief.dependencies.auth import (
     BaseContext,
     check_unsupported_request_parameter,

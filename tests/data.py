@@ -737,6 +737,7 @@ authorization_codes: ModelMapping[AuthorizationCode] = {
 
 email_verification_codes: Mapping[str, tuple[str, str]] = {
     "not_verified_email": generate_verify_code(),
+    "regular_update_email": generate_verify_code(),
 }
 
 
@@ -745,7 +746,12 @@ email_verifications: ModelMapping[EmailVerification] = {
         code=email_verification_codes["not_verified_email"][1],
         email=users["not_verified_email"].email,
         user=users["not_verified_email"],
-    )
+    ),
+    "regular_update_email": EmailVerification(
+        code=email_verification_codes["regular_update_email"][1],
+        email="anne+updated@bretagne.duchy",
+        user=users["regular"],
+    ),
 }
 
 refresh_token_tokens: Mapping[str, tuple[str, str]] = {

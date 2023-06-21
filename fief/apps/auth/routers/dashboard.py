@@ -1,10 +1,12 @@
 from typing import TypedDict
 
-from fastapi import APIRouter, Depends, Header, Request
+from fastapi import APIRouter, Depends, Header, Request, status
 
 from fief import schemas
 from fief.apps.auth.forms.password import ChangePasswordForm
-from fief.apps.auth.forms.profile import PF, get_profile_form_class
+from fief.apps.auth.forms.profile import PF, ChangeEmailForm, get_profile_form_class
+from fief.apps.auth.forms.verify_email import VerifyEmailForm
+from fief.apps.auth.responses import HXLocationResponse
 from fief.dependencies.branding import get_show_branding
 from fief.dependencies.session_token import (
     get_verified_email_user_from_session_token_or_verify,
@@ -15,7 +17,12 @@ from fief.dependencies.users import get_user_manager, get_user_update_model
 from fief.forms import FormHelper
 from fief.locale import gettext_lazy as _
 from fief.models import Tenant, Theme, User
-from fief.services.user_manager import UserAlreadyExistsError, UserManager
+from fief.services.user_manager import (
+    InvalidEmailVerificationCodeError,
+    UserAlreadyExistsError,
+    UserManager,
+)
+from fief.settings import settings
 
 router = APIRouter()
 
@@ -68,15 +75,105 @@ async def update_profile(
         data = form.data
         user_update = user_update_model(**data)
 
+        user = await user_manager.update(user_update, user, request=request)
+
+        form_helper.context["success"] = _(
+            "Your profile has successfully been updated."
+        )
+
+    return await form_helper.get_response()
+
+
+@router.api_route(
+    "/email/change", methods=["GET", "POST"], name="auth.dashboard:email_change"
+)
+async def email_change(
+    request: Request,
+    user: User = Depends(get_verified_email_user_from_session_token_or_verify),
+    user_manager: UserManager = Depends(get_user_manager),
+    context: BaseContext = Depends(get_base_context),
+    tenant: Tenant = Depends(get_current_tenant),
+):
+    form_helper = FormHelper(
+        ChangeEmailForm,
+        "auth/dashboard/email/change.html",
+        request=request,
+        object=user,
+        context={**context},
+    )
+
+    if await form_helper.is_submitted_and_valid():
+        form = await form_helper.get_form()
+
+        current_password = form.current_password.data
+        (
+            current_password_valid,
+            _hash_update,
+        ) = user_manager.password_helper.verify_and_update(
+            current_password, user.hashed_password
+        )
+
+        if not current_password_valid:
+            message = _("Your password is invalid.")
+            form.current_password.errors.append(message)
+            return await form_helper.get_error_response(
+                message, "invalid_current_password"
+            )
+
         try:
-            user = await user_manager.update(user_update, user, request=request)
+            await user_manager.request_verify_email(
+                user, form.email.data, request=request
+            )
         except UserAlreadyExistsError:
             message = _("A user with this email address already exists.")
             form.email.errors.append(message)
             return await form_helper.get_error_response(message, "user_already_exists")
 
-        form_helper.context["success"] = _(
-            "Your profile has successfully been updated."
+        return HXLocationResponse(
+            tenant.url_for(request, "auth.dashboard:email_verify"),
+            status_code=status.HTTP_202_ACCEPTED,
+            hx_target="#email-change",
+        )
+
+    return await form_helper.get_response()
+
+
+@router.api_route(
+    "/email/verify", methods=["GET", "POST"], name="auth.dashboard:email_verify"
+)
+async def email_verify(
+    request: Request,
+    user: User = Depends(get_verified_email_user_from_session_token_or_verify),
+    user_manager: UserManager = Depends(get_user_manager),
+    context: BaseContext = Depends(get_base_context),
+    tenant: Tenant = Depends(get_current_tenant),
+):
+    form_helper = FormHelper(
+        VerifyEmailForm,
+        "auth/dashboard/email/verify.html",
+        request=request,
+        object=user,
+        context={**context, "code_length": settings.email_verification_code_length},
+    )
+
+    if await form_helper.is_submitted_and_valid():
+        form = await form_helper.get_form()
+        try:
+            user = await user_manager.verify_email(
+                user, form.code.data, request=request
+            )
+        except InvalidEmailVerificationCodeError:
+            return await form_helper.get_error_response(
+                _(
+                    "The verification code is invalid. Please check that you have entered it correctly. "
+                    "If the code was copied and pasted, ensure it has not expired. "
+                    "If it has been more than one hour, start over the email change process."
+                ),
+                "invalid_code",
+            )
+
+        return HXLocationResponse(
+            tenant.url_for(request, "auth.dashboard:profile"),
         )
 
     return await form_helper.get_response()

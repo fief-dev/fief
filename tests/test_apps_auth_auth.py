@@ -722,7 +722,7 @@ class TestAuthVerifyEmailRequest:
         assert redirect_uri.endswith(f"{path_prefix}/verify")
 
         await email_verification_requested_assertions(
-            user=user,
+            email=user.email,
             workspace=workspace,
             send_task_mock=send_task_mock,
             session=workspace_session,

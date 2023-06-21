@@ -1,0 +1,52 @@
+{% import "macros/alerts.html" as alerts %}
+{% import "macros/buttons.html" as buttons %}
+{% import "macros/forms.html" as forms %}
+{% import "macros/verify_email.html" as verify_email %}
+
+<div class="w-full md:w-1/2">
+  <script type="text/hyperscript">
+    def submitForm()
+      htmx.trigger("#{{ form.meta.id }}", "form-submit")
+    end
+  </script>
+  <form
+    id="{{ form.meta.id }}"
+    method="POST"
+    action="{{ tenant.url_path_for(request, 'auth.dashboard:email_verify') }}"
+    hx-boost="true"
+    hx-push-url="false"
+    hx-target="#email-change"
+    hx-trigger="form-submit"
+    _="
+      on submit
+        halt the event
+        updateCodeValue()
+        submitForm()
+      end
+    "
+  >
+    <div class="space-y-4">
+      {% call alerts.info() %}
+        {{ _("To complete the email change, please check your email for the verification code. Enter the code below to verify your new email address.") }}
+      {% endcall %}
+      <div class="mx-0 md:mx-4">
+        {{ verify_email.form(form, code_length) }}
+      </div>
+      {% if error %}
+        {% call alerts.error() %}
+          {{ error }}
+        {% endcall %}
+      {% endif %}
+      <div class="flex gap-2">
+        <a
+          href="{{ tenant.url_path_for(request, 'auth.dashboard:profile') }}"
+          class="btn border-slate-200 hover:border-slate-300 text-slate-600"
+          hx-target="body"
+        >{{ _("Cancel") }}</a>
+        {% call buttons.submit('btn') %}
+          {{ _("Verify my email") }}
+        {% endcall %}
+    </div>
+    </div>
+  </form>
+</div>

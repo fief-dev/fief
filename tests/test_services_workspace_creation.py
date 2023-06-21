@@ -20,6 +20,7 @@ from fief.repositories import (
     WorkspaceUserRepository,
 )
 from fief.schemas.workspace import WorkspaceCreate
+from fief.services.email_template.types import EmailTemplateType
 from fief.services.workspace_creation import WorkspaceCreation
 from fief.services.workspace_db import (
     WorkspaceDatabase,
@@ -159,7 +160,7 @@ class TestWorkspaceCreationCreate:
             email_template_repository = EmailTemplateRepository(session)
             email_templates = await email_template_repository.all()
 
-            assert len(email_templates) == 3
+            assert len(email_templates) == len(EmailTemplateType)
 
             theme_repository = ThemeRepository(session)
             theme = await theme_repository.get_default()

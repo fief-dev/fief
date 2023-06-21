@@ -1,4 +1,5 @@
 {% import 'macros/forms.html' as forms %}
+{% import "macros/verify_email.html" as verify_email %}
 
 {% extends "auth/layout.html" %}
 
@@ -7,87 +8,30 @@
 {% block title %}{{ _('Verify your email') }}{% endblock %}
 
 {% block auth_form %}
+<script type="text/hyperscript">
+  def submitForm()
+    submit() the #{{ form.meta.id }}
+  end
+</script>
 <form
-  id="verify-email-form"
+  id="{{ form.meta.id }}"
   method="POST"
   action="{{ tenant.url_path_for(request, 'auth:verify_email') }}"
   _="
     on submit
       halt the event
       updateCodeValue()
-      submit() me
+      submitForm()
     end
   "
 >
   <div class="space-y-4">
     <p class="text-justify text-sm">{{ _("To complete the email verification process, please check your email for the verification code. Enter the code below to verify your email address.") }}</p>
-    <div class="flex space-x-2">
-      {% for i in range(code_length) %}
-        <input
-          type="text"
-          maxlength="1"
-          pattern="[A-Z0-9]"
-          required
-          class="form-input w-full text-2xl text-center"
-          _="install CodeInput"
-        >
-      {% endfor %}
-    </div>
-    {{ form.code }}
-    {{ forms.form_csrf_token(form) }}
+    {{ verify_email.form(form, code_length) }}
   </div>
   <div class="flex items-center justify-between mt-6">
     <a href="{{ tenant.url_path_for(request, 'auth:verify_email_request') }}" class="btn border-slate-200 hover:border-slate-300 text-primary">{{ _('Resend the code') }}</a>
     <button type="submit" class="btn bg-primary hover:bg-primary-hover text-white ml-3">{{ _('Verify my email') }}</button>
   </div>
 </form>
-{% endblock %}
-
-{% block hyperscripts %}
-{{ super() }}
-<script type="text/hyperscript">
-  def updateCodeValue()
-    set code to ''
-    repeat for input in <input[type='text'] />
-      append value of input to code
-    end
-    set value of #{{ form.code.id }} to code
-  end
-
-  behavior CodeInput()
-    on input
-      halt the event
-      set inputValue to value of target of event
-      set value of me to inputValue.toUpperCase()
-      updateCodeValue()
-      set nextInput to next <input[type='text'] />
-      if nextInput != null
-        focus() the nextInput
-      else
-        submit() the #verify-email-form
-      end
-    end
-    on keydown[key == 'Backspace']
-      halt the event
-      set value of me to ''
-      set previousInput to previous <input[type='text'] />
-      if previousInput != null
-        focus() the previousInput
-        set value of previousInput to ''
-      end
-      updateCodeValue()
-    end
-  end
-
-  on paste from document
-    halt the event
-    getData('text') from clipboardData of event then put it into pastedData
-    repeat for input in <input[type='text'] /> index i
-      set value of input to pastedData[i].toUpperCase()
-      focus() the input
-    end
-    updateCodeValue()
-    submit() the #verify-email-form
-  end
-</script>
 {% endblock %}

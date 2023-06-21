@@ -155,6 +155,13 @@ class UserManager:
         if not user.is_active:
             raise UserInactiveError()
 
+        if user.email != email:
+            try:
+                await self.get_by_email(email, user.tenant_id)
+                raise UserAlreadyExistsError()  # noqa: TRY301
+            except UserDoesNotExistError:
+                pass
+
         code, code_hash = generate_verify_code()
         email_verification = EmailVerification(code=code_hash, email=email, user=user)
         email_verification = await self.email_verification_repository.create(
