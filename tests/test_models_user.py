@@ -31,8 +31,9 @@ async def test_get_claims(test_data: TestData):
     assert user.get_claims() == {
         "sub": str(user.id),
         "email": user.email,
-        "tenant_id": str(user.tenant_id),
+        "email_verified": user.email_verified,
         "is_active": True,
+        "tenant_id": str(user.tenant_id),
         "fields": {
             "gender": "F",
             "given_name": "Anne",

@@ -137,7 +137,7 @@ async def create_user(
 @router.patch("/{id:uuid}", name="users:update", response_model=schemas.user.UserRead)
 async def update_user(
     request: Request,
-    user_update: schemas.user.UserUpdate = Depends(get_admin_user_update),
+    user_update: schemas.user.UserUpdateAdmin = Depends(get_admin_user_update),
     user: User = Depends(get_user_by_id_or_404),
     user_manager: UserManager = Depends(get_user_manager),
     audit_logger: AuditLogger = Depends(get_audit_logger),

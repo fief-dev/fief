@@ -228,7 +228,7 @@ async def create_user(
 )
 async def update_user(
     request: Request,
-    user_update_model: type[schemas.user.UserUpdate[schemas.user.UF]] = Depends(
+    user_update_model: type[schemas.user.UserUpdateAdmin[schemas.user.UF]] = Depends(
         get_admin_user_update_model
     ),
     user: User = Depends(get_user_by_id_or_404),

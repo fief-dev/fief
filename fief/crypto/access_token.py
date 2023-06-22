@@ -1,10 +1,9 @@
 import json
-import uuid
 from datetime import datetime, timezone
+from typing import Any
 
 from jwcrypto import jwk, jwt
 from jwcrypto.common import JWException
-from pydantic import UUID4
 
 from fief.models import Client, User
 from fief.services.acr import ACR
@@ -47,12 +46,9 @@ def generate_access_token(
     return token.serialize()
 
 
-def read_access_token(key: jwk.JWK, token: str) -> UUID4:
+def read_access_token(key: jwk.JWK, token: str) -> dict[str, Any]:
     try:
         decoded_jwt = jwt.JWT(jwt=token, key=key)
-        claims = json.loads(decoded_jwt.claims)
-        user_id = claims["sub"]
-    except (JWException, KeyError, ValueError) as e:
+        return json.loads(decoded_jwt.claims)
+    except JWException as e:
         raise InvalidAccessToken() from e
-    else:
-        return uuid.UUID(user_id)

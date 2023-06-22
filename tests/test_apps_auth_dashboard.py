@@ -448,4 +448,5 @@ class TestAuthEmailVerify:
         user_repository = UserRepository(workspace_session)
         updated_user = await user_repository.get_by_id(user.id)
         assert updated_user is not None
+        assert updated_user.email == email_verification.email
         assert updated_user.email_verified is True

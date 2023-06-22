@@ -477,6 +477,8 @@ def access_token(
                 user_alias = marker.kwargs["user"]
                 user = test_data["users"][user_alias]
 
+            acr: ACR = marker.kwargs.get("acr", ACR.LEVEL_ZERO)
+
             user_tenant = user.tenant
             client = next(
                 client
@@ -494,7 +496,7 @@ def access_token(
                 user_tenant.get_host(workspace.domain),
                 client,
                 datetime.now(timezone.utc),
-                ACR.LEVEL_ZERO,
+                acr,
                 user,
                 ["openid"],
                 user_permissions,

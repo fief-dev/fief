@@ -1,3 +1,4 @@
+import uuid
 from typing import Any
 
 from fastapi import Depends, HTTPException, Query, status
@@ -35,6 +36,7 @@ from fief.dependencies.user_field import (
 )
 from fief.dependencies.webhooks import TriggerWebhooks, get_trigger_webhooks
 from fief.dependencies.workspace_repositories import get_workspace_repository
+from fief.errors import APIErrorCode
 from fief.logger import AuditLogger
 from fief.models import (
     OAuthAccount,
@@ -52,8 +54,9 @@ from fief.repositories import (
     UserRepository,
     UserRoleRepository,
 )
-from fief.schemas.user import UF, UserCreateAdmin, UserUpdate
-from fief.services.user_manager import UserDoesNotExistError, UserManager
+from fief.schemas.user import UF, UserCreateAdmin, UserUpdate, UserUpdateAdmin
+from fief.services.acr import ACR
+from fief.services.user_manager import UserManager
 from fief.tasks import SendTask
 
 
@@ -89,31 +92,49 @@ scheme = OAuth2AuthorizationCodeBearer(
 )
 
 
-async def current_optional_user(
-    token: str | None = Depends(scheme),
-    tenant: Tenant = Depends(get_current_tenant),
-    user_manager: UserManager = Depends(get_user_manager),
-) -> User | None:
-    if token is None:
-        return None
+def current_user(
+    *, optional: bool = False, active: bool = True, acr: ACR = ACR.LEVEL_ZERO
+):
+    async def _current_user(
+        token: str | None = Depends(scheme),
+        tenant: Tenant = Depends(get_current_tenant),
+        user_manager: UserManager = Depends(get_user_manager),
+    ) -> User | None:
+        if token is None:
+            if optional:
+                return None
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
 
-    try:
-        user_id = read_access_token(tenant.get_sign_jwk(), token)
-        user = await user_manager.get(user_id, tenant.id)
-    except InvalidAccessToken:
-        return None
-    except UserDoesNotExistError:
-        return None
-    else:
-        return user
+        try:
+            claims = read_access_token(tenant.get_sign_jwk(), token)
+            user_id = uuid.UUID(claims["sub"])
+            acr_claim = ACR(claims["acr"])
+            user = await user_manager.get(user_id, tenant.id)
+        except (InvalidAccessToken, KeyError, ValueError) as e:
+            if optional:
+                return None
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED) from e
+        else:
+            if active and not user.is_active:
+                if optional:
+                    return None
+                raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+
+            valid_acr = acr_claim >= acr
+            if not valid_acr:
+                if optional:
+                    return None
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail=APIErrorCode.ACR_TOO_LOW,
+                )
+            return user
+
+    return _current_user
 
 
-async def current_active_user(
-    user: User | None = Depends(current_optional_user),
-) -> User:
-    if user is None or not user.is_active:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
-    return user
+current_active_user = current_user(active=True)
+current_active_user_acr_level_1 = current_user(active=True, acr=ACR.LEVEL_ONE)
 
 
 async def get_paginated_users(
@@ -266,10 +287,10 @@ async def get_user_update(
 
 async def get_admin_user_update(
     json: dict[str, Any] = Depends(get_request_json),
-    user_update_model: type[UserUpdate[UF]] = Depends(get_admin_user_update_model),
-) -> UserUpdate[UF]:
+    user_update_model: type[UserUpdateAdmin[UF]] = Depends(get_admin_user_update_model),
+) -> UserUpdateAdmin[UF]:
     body_model = create_model(
-        "UserUpdateBody",
+        "UserUpdateAdminBody",
         body=(user_update_model, ...),
     )
     try:

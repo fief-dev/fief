@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
-from pydantic import UUID4, EmailStr, Field
+from pydantic import UUID4, EmailStr, Field, SecretStr
 from pydantic.generics import GenericModel
 
 from fief.schemas.generics import BaseModel, CreatedUpdatedAt
@@ -54,11 +54,26 @@ class UserCreateAdmin(UserCreate[UF], Generic[UF]):
     tenant_id: UUID4
 
 
+class UserChangeEmail(BaseModel):
+    email: EmailStr
+
+
+class UserVerifyEmail(BaseModel):
+    code: SecretStr
+
+
+class UserChangePassword(BaseModel):
+    password: SecretStr
+
+
 class UserUpdate(GenericModel, Generic[UF]):
+    fields: UF | None = Field(exclude=True)
+
+
+class UserUpdateAdmin(UserUpdate[UF], Generic[UF]):
     email: EmailStr | None
     email_verified: bool | None
-    password: str | None
-    fields: UF | None = Field(exclude=True)
+    password: str
 
 
 class CreateAccessToken(BaseModel):

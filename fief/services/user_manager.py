@@ -179,12 +179,12 @@ class UserManager:
             raise UserInactiveError()
 
         code_hash = get_verify_code_hash(code)
-        email_verification = await self.email_verification_repository.get_by_code(
-            code_hash
+        email_verification = (
+            await self.email_verification_repository.get_by_code_and_user(
+                code_hash, user.id
+            )
         )
         if email_verification is None:
-            raise InvalidEmailVerificationCodeError()
-        if email_verification.user_id != user.id:
             raise InvalidEmailVerificationCodeError()
 
         user.email = email_verification.email
@@ -306,6 +306,18 @@ class UserManager:
         await self.user_repository.update(user)
         await self.on_after_update(user, request=request)
 
+        return user
+
+    async def change_password(
+        self,
+        password: str,
+        user: User,
+        *,
+        request: Request | None = None,
+    ) -> User:
+        user = await self.set_user_attributes(user, password=password)
+        await self.user_repository.update(user)
+        await self.on_after_update(user, request=request)
         return user
 
     async def on_after_register(self, user: User, *, request: Request | None = None):

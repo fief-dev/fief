@@ -59,8 +59,9 @@ class User(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
         return {
             "sub": str(self.id),
             "email": self.email,
-            "tenant_id": str(self.tenant_id),
+            "email_verified": self.email_verified,
             "is_active": self.is_active,
+            "tenant_id": str(self.tenant_id),
             "fields": fields,
         }
 
