@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from fastapi.responses import JSONResponse
 from pydantic import UUID4
@@ -46,6 +48,7 @@ from fief.repositories import (
     UserRoleRepository,
 )
 from fief.schemas.generics import PaginatedResults
+from fief.services.acr import ACR
 from fief.services.user_manager import (
     InvalidPasswordError,
     UserAlreadyExistsError,
@@ -228,6 +231,8 @@ async def create_user_access_token(
         user.tenant.get_sign_jwk(),
         tenant_host,
         client,
+        datetime.now(timezone.utc),
+        ACR.LEVEL_ZERO,
         user,
         create_access_token.scopes,
         permissions,

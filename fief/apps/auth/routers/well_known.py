@@ -7,6 +7,7 @@ from fief.dependencies.current_workspace import get_current_workspace
 from fief.dependencies.tenant import get_current_tenant
 from fief.models import Tenant, Workspace
 from fief.schemas.well_known import OpenIDProviderMetadata
+from fief.services.acr import ACR
 from fief.services.response_type import ALLOWED_RESPONSE_TYPES
 from fief.settings import settings
 
@@ -49,11 +50,18 @@ async def get_openid_configuration(
         id_token_encryption_alg_values_supported=["RSA-OAEP-256"],
         id_token_encryption_enc_values_supported=["A256CBC-HS512"],
         userinfo_signing_alg_values_supported=["none"],
+        acr_values_supported=list(ACR),
         token_endpoint_auth_methods_supported=[
             "client_secret_basic",
             "client_secret_post",
         ],
-        claims_supported=["email", "tenant_id"],
+        claims_supported=[
+            "email",
+            "email_verified",
+            "is_active",
+            "tenant_id",
+            "fields",
+        ],
         request_parameter_supported=False,
         code_challenge_methods_supported=["plain", "S256"],
         service_documentation=settings.fief_documentation_url,

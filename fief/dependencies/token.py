@@ -18,6 +18,7 @@ from fief.repositories import (
     RefreshTokenRepository,
 )
 from fief.schemas.auth import TokenError
+from fief.services.acr import ACR
 from fief.services.user_manager import UserDoesNotExistError, UserManager
 
 ClientSecretBasicScheme = HTTPBasic(scheme_name="client_secret_basic", auto_error=False)
@@ -27,6 +28,7 @@ class GrantRequest(TypedDict):
     user_id: UUID4
     scope: list[str]
     authenticated_at: datetime
+    acr: ACR
     nonce: str | None
     c_hash: str | None
     client: Client
@@ -156,6 +158,7 @@ async def validate_grant_request(
             "user_id": authorization_code.user_id,
             "scope": authorization_code.scope,
             "authenticated_at": authorization_code.authenticated_at,
+            "acr": authorization_code.acr,
             "nonce": authorization_code.nonce,
             "c_hash": authorization_code.c_hash,
             "client": client,
@@ -185,6 +188,7 @@ async def validate_grant_request(
             "user_id": refresh_token.user_id,
             "scope": new_scope,
             "authenticated_at": refresh_token.authenticated_at,
+            "acr": ACR.LEVEL_ZERO,
             "nonce": None,
             "c_hash": None,
             "client": client,

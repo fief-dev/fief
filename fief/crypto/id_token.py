@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from jwcrypto import jwk, jwt
 
 from fief.models import Client, User
+from fief.services.acr import ACR
 
 
 def generate_id_token(
@@ -12,6 +13,7 @@ def generate_id_token(
     host: str,
     client: Client,
     authenticated_at: datetime,
+    acr: ACR,
     user: User,
     lifetime_seconds: int,
     *,
@@ -29,6 +31,7 @@ def generate_id_token(
     :host: The issuer host.
     :client: The client used to authenticate the user.
     :authenticated_at: Date and time at which the user authenticated.
+    :acr: ACR level.
     :user: The authenticated user.
     :lifetime_seconds: Lifetime of the JWT.
     :nonce: Optional nonce value associated with the authorization request.
@@ -47,6 +50,7 @@ def generate_id_token(
         "exp": exp,
         "iat": iat,
         "auth_time": int(authenticated_at.timestamp()),
+        "acr": str(acr),
         "azp": client.client_id,
     }
 

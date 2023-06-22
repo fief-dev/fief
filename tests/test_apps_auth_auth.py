@@ -16,6 +16,7 @@ from fief.repositories import (
     SessionTokenRepository,
     UserRepository,
 )
+from fief.services.acr import ACR
 from fief.services.response_type import DEFAULT_RESPONSE_MODE, HYBRID_RESPONSE_TYPES
 from fief.settings import settings
 from tests.data import TestData, email_verification_codes, session_token_tokens
@@ -263,66 +264,83 @@ class TestAuthAuthorize:
         assert headers["X-Fief-Error"] == "invalid_client"
 
     @pytest.mark.parametrize(
-        "params,session,redirection",
+        "params,session,redirection,acr",
         [
             pytest.param(
-                {"response_type": "code"}, False, "/login", id="Default login screen"
+                {"response_type": "code"},
+                False,
+                "/login",
+                ACR.LEVEL_ONE,
+                id="Default login screen",
             ),
             pytest.param(
                 {"response_type": "code", "screen": "login"},
                 False,
                 "/login",
+                ACR.LEVEL_ONE,
                 id="Login screen",
             ),
             pytest.param(
                 {"response_type": "code", "screen": "register"},
                 False,
                 "/register",
+                ACR.LEVEL_ONE,
                 id="Register screen",
             ),
             pytest.param(
-                {"response_type": "code"}, True, "/consent", id="No prompt with session"
+                {"response_type": "code"},
+                True,
+                "/consent",
+                ACR.LEVEL_ZERO,
+                id="No prompt with session",
             ),
             pytest.param(
                 {"response_type": "code", "prompt": "none"},
                 True,
                 "/consent",
+                ACR.LEVEL_ZERO,
                 id="None prompt with session",
             ),
             pytest.param(
                 {"response_type": "code", "prompt": "consent"},
                 True,
                 "/consent",
+                ACR.LEVEL_ZERO,
                 id="Consent prompt with session",
             ),
             pytest.param(
                 {"response_type": "code", "prompt": "login"},
                 True,
                 "/login",
+                ACR.LEVEL_ONE,
                 id="Login prompt with session",
             ),
             pytest.param(
                 {"response_type": "code", "nonce": "NONCE"},
                 False,
                 "/login",
+                ACR.LEVEL_ONE,
                 id="Provided nonce value",
             ),
             pytest.param(
                 {"response_type": "code", "max_age": 3600},
                 True,
                 "/consent",
+                ACR.LEVEL_ZERO,
                 id="max_age one hour ago",
             ),
             pytest.param(
                 {"response_type": "code", "max_age": 0},
                 True,
                 "/login",
+                ACR.LEVEL_ONE,
                 id="max_age now",
             ),
             pytest.param(
                 {"response_type": "code", "code_challenge": "CODE_CHALLENGE"},
                 False,
                 "/login",
+                ACR.LEVEL_ONE,
                 id="code_challenge without method",
             ),
             pytest.param(
@@ -333,6 +351,7 @@ class TestAuthAuthorize:
                 },
                 False,
                 "/login",
+                ACR.LEVEL_ONE,
                 id="code_challenge with specified method",
             ),
             *[
@@ -343,6 +362,7 @@ class TestAuthAuthorize:
                     },
                     False,
                     "/login",
+                    ACR.LEVEL_ONE,
                     id=f"Hybrid flow with {response_type}",
                 )
                 for response_type in HYBRID_RESPONSE_TYPES
@@ -354,6 +374,7 @@ class TestAuthAuthorize:
         params: dict[str, str],
         session: bool,
         redirection: str,
+        acr: ACR,
         tenant_params: TenantParams,
         test_client_auth: httpx.AsyncClient,
         workspace_session: AsyncSession,
@@ -402,6 +423,8 @@ class TestAuthAuthorize:
             assert login_session.response_mode == "query"
         else:
             assert login_session.response_mode == "fragment"
+
+        assert login_session.acr == acr
 
     async def test_set_locale_by_query(
         self, tenant_params: TenantParams, test_client_auth: httpx.AsyncClient

@@ -16,6 +16,7 @@ from fief.crypto.verify_code import get_verify_code_hash
 from fief.db import AsyncSession
 from fief.models import AuthorizationCode, LoginSession, SessionToken, User, Workspace
 from fief.repositories import AuthorizationCodeRepository, EmailVerificationRepository
+from fief.services.acr import ACR
 from fief.tasks import on_email_verification_requested
 
 HTTPXResponseAssertion = Callable[[httpx.Response], None]
@@ -67,7 +68,9 @@ def dashboard_unauthorized_alt_workspace_assertions(response: httpx.Response):
     assert response.headers["Location"] == "http://gascony.localhost/admin/"
 
 
-async def access_token_assertions(*, access_token: str, jwk: jwk.JWK, user: User):
+async def access_token_assertions(
+    *, access_token: str, jwk: jwk.JWK, user: User, authenticated_at: datetime, acr: ACR
+):
     access_token_jwt = jwt.JWT(jwt=access_token, algs=["RS256"], key=jwk)
 
     access_token_header = json.loads(access_token_jwt.header)
@@ -76,6 +79,8 @@ async def access_token_assertions(*, access_token: str, jwk: jwk.JWK, user: User
     access_token_claims = json.loads(access_token_jwt.claims)
 
     assert access_token_claims["sub"] == str(user.id)
+    assert access_token_claims["auth_time"] == int(authenticated_at.timestamp())
+    assert access_token_claims["acr"] == acr
     assert "scope" in access_token_claims
     assert "permissions" in access_token_claims
 
@@ -94,6 +99,7 @@ async def id_token_assertions(
     id_token: str,
     jwk: jwk.JWK,
     authenticated_at: datetime,
+    acr: ACR,
     authorization_code_tuple: tuple[AuthorizationCode, str] | None = None,
     access_token: str | None = None,
 ):
@@ -104,7 +110,8 @@ async def id_token_assertions(
 
     id_token_claims = json.loads(id_token_jwt.claims)
 
-    id_token_claims["auth_time"] == int(authenticated_at.timestamp())
+    assert id_token_claims["auth_time"] == int(authenticated_at.timestamp())
+    assert id_token_claims["acr"] == acr
 
     if authorization_code_tuple is not None:
         authorization_code, code = authorization_code_tuple
@@ -126,6 +133,7 @@ async def encrypted_id_token_assertions(
     sign_jwk: jwk.JWK,
     encrypt_jwk: jwk.JWK,
     authenticated_at: datetime,
+    acr: ACR,
     authorization_code_tuple: tuple[AuthorizationCode, str] | None = None,
     access_token: str | None = None,
 ):
@@ -140,6 +148,7 @@ async def encrypted_id_token_assertions(
         id_token=encrypted_id_token_jwt.claims,
         jwk=sign_jwk,
         authenticated_at=authenticated_at,
+        acr=acr,
         authorization_code_tuple=authorization_code_tuple,
         access_token=access_token,
     )
@@ -187,6 +196,8 @@ async def authorization_code_assertions(
 
     assert authorization_code.c_hash == get_validation_hash(code)
 
+    assert authorization_code.acr == login_session.acr
+
     if login_session.response_type in ["code token", "code id_token token"]:
         assert "access_token" in params
         assert "token_type" in params
@@ -196,7 +207,11 @@ async def authorization_code_assertions(
         user = session_token.user
         tenant = user.tenant
         await access_token_assertions(
-            access_token=params["access_token"], jwk=tenant.get_sign_jwk(), user=user
+            access_token=params["access_token"],
+            jwk=tenant.get_sign_jwk(),
+            user=user,
+            authenticated_at=authorization_code.authenticated_at,
+            acr=authorization_code.acr,
         )
 
     if login_session.response_type in ["code id_token", "code id_token token"]:
@@ -206,6 +221,7 @@ async def authorization_code_assertions(
             id_token=params["id_token"],
             jwk=tenant.get_sign_jwk(),
             authenticated_at=authorization_code.authenticated_at,
+            acr=authorization_code.acr,
             authorization_code_tuple=(authorization_code, code),
             access_token=params.get("access_token"),
         )

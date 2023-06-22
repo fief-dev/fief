@@ -39,6 +39,7 @@ async def token(
 ):
     scope = grant_request["scope"]
     authenticated_at = grant_request["authenticated_at"]
+    acr = grant_request["acr"]
     nonce = grant_request["nonce"]
     c_hash = grant_request["c_hash"]
     client = grant_request["client"]
@@ -49,6 +50,8 @@ async def token(
         tenant.get_sign_jwk(),
         tenant_host,
         client,
+        authenticated_at,
+        acr,
         user,
         scope,
         permissions,
@@ -59,6 +62,7 @@ async def token(
         tenant_host,
         client,
         authenticated_at,
+        acr,
         user,
         client.access_id_token_lifetime_seconds,
         nonce=nonce,

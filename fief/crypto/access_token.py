@@ -7,6 +7,7 @@ from jwcrypto.common import JWException
 from pydantic import UUID4
 
 from fief.models import Client, User
+from fief.services.acr import ACR
 
 
 class InvalidAccessToken(Exception):
@@ -17,6 +18,8 @@ def generate_access_token(
     key: jwk.JWK,
     host: str,
     client: Client,
+    authenticated_at: datetime,
+    acr: ACR,
     user: User,
     scope: list[str],
     permissions: list[str],
@@ -31,6 +34,8 @@ def generate_access_token(
         "aud": [client.client_id],
         "exp": exp,
         "iat": iat,
+        "auth_time": int(authenticated_at.timestamp()),
+        "acr": str(acr),
         "azp": client.client_id,
         "scope": " ".join(scope),
         "permissions": permissions,

@@ -4,6 +4,7 @@ import json
 import secrets
 import uuid
 from collections.abc import AsyncGenerator, Callable, Generator
+from datetime import datetime, timezone
 from unittest.mock import MagicMock, patch
 
 import asgi_lifespan
@@ -37,6 +38,7 @@ from fief.models import (
     Workspace,
     WorkspaceUser,
 )
+from fief.services.acr import ACR
 from fief.services.tenant_email_domain import TenantEmailDomain
 from fief.services.theme_preview import ThemePreview
 from fief.services.workspace_creation import WorkspaceCreation
@@ -491,6 +493,8 @@ def access_token(
                 user_tenant.get_sign_jwk(),
                 user_tenant.get_host(workspace.domain),
                 client,
+                datetime.now(timezone.utc),
+                ACR.LEVEL_ZERO,
                 user,
                 ["openid"],
                 user_permissions,

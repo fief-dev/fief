@@ -45,6 +45,7 @@ from fief.models import Client, LoginSession, OAuthProvider, Tenant, User, Works
 from fief.models.session_token import SessionToken
 from fief.repositories.session_token import SessionTokenRepository
 from fief.schemas.auth import LogoutError
+from fief.services.acr import ACR
 from fief.services.authentication_flow import AuthenticationFlow
 from fief.services.user_manager import InvalidEmailVerificationCodeError, UserManager
 from fief.settings import settings
@@ -76,9 +77,11 @@ async def authorize(
     has_valid_session_token: bool = Depends(has_valid_session_token),
 ):
     tenant = client.tenant
+    acr = ACR.LEVEL_ONE
 
     if has_valid_session_token and prompt != "login":
         redirection = tenant.url_path_for(request, "auth:consent")
+        acr = ACR.LEVEL_ZERO  # Reuse of existing session, lowest assurance level
     elif screen == "register":
         redirection = tenant.url_path_for(request, "register:register")
     else:
@@ -93,6 +96,7 @@ async def authorize(
         scope=scope,
         state=state,
         nonce=nonce,
+        acr=acr,
         code_challenge_tuple=code_challenge_tuple,
         client=client,
     )
