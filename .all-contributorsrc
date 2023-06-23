@@ -171,6 +171,15 @@
       "contributions": [
         "translation"
       ]
+    },
+    {
+      "login": "rotil",
+      "name": "rotil",
+      "avatar_url": "https://avatars.githubusercontent.com/u/42150485?v=4",
+      "profile": "https://github.com/rotil",
+      "contributions": [
+        "security"
+      ]
     }
   ],
   "contributorsPerLine": 7,
