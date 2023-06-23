@@ -14,7 +14,7 @@
 ## Contributing
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-18-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-19-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 All contributions to improve the project are welcome! In particular, bug and documentation fixes are really appreciated.
@@ -51,6 +51,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
       <td align="center" valign="top" width="14.28%"><a href="https://bartoszmagiera.live/"><img src="https://avatars.githubusercontent.com/u/28759224?v=4?s=100" width="100px;" alt="Bartosz Magiera"/><br /><sub><b>Bartosz Magiera</b></sub></a><br /><a href="https://github.com/fief-dev/fief/commits?author=bartosz121" title="Documentation">📖</a></td>
       <td align="center" valign="top" width="14.28%"><a href="http://razalt.com"><img src="https://avatars.githubusercontent.com/u/10688199?v=4?s=100" width="100px;" alt="oaltun"/><br /><sub><b>oaltun</b></sub></a><br /><a href="https://github.com/fief-dev/fief/commits?author=oaltun" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="http://cesarsmaniotto.dev"><img src="https://avatars.githubusercontent.com/u/7607534?v=4?s=100" width="100px;" alt="Cesar Smaniotto Júnior"/><br /><sub><b>Cesar Smaniotto Júnior</b></sub></a><br /><a href="#translation-csmaniottojr" title="Translation">🌍</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/rotil"><img src="https://avatars.githubusercontent.com/u/42150485?v=4?s=100" width="100px;" alt="rotil"/><br /><sub><b>rotil</b></sub></a><br /><a href="#security-rotil" title="Security">🛡️</a></td>
     </tr>
   </tbody>
 </table>
