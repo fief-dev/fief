@@ -27,10 +27,26 @@ def upgrade():
     else:
         acr_enum = sa.Enum("0", "1", name="acr")
 
-    op.add_column(
-        "fief_authorization_codes", sa.Column("acr", acr_enum, nullable=False)
-    )
-    op.add_column("fief_login_sessions", sa.Column("acr", acr_enum, nullable=False))
+    op.add_column("fief_authorization_codes", sa.Column("acr", acr_enum, nullable=True))
+    op.add_column("fief_login_sessions", sa.Column("acr", acr_enum, nullable=True))
+
+    op.execute("UPDATE fief_authorization_codes SET acr = '0'")
+    op.execute("UPDATE fief_login_sessions SET acr = '0'")
+
+    connection = op.get_bind()
+    if connection.dialect.name == "sqlite":
+        with op.batch_alter_table("fief_authorization_codes") as batch_op:
+            batch_op.alter_column("acr", existing_nullable=True, nullable=False)
+        with op.batch_alter_table("fief_login_sessions") as batch_op:
+            batch_op.alter_column("acr", existing_nullable=True, nullable=False)
+    else:
+        op.alter_column(
+            "fief_authorization_codes", "acr", existing_nullable=True, nullable=False
+        )
+        op.alter_column(
+            "fief_login_sessions", "acr", existing_nullable=True, nullable=False
+        )
+
     # ### end Alembic commands ###
 
 
