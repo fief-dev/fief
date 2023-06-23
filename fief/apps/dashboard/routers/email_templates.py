@@ -1,3 +1,4 @@
+import jinja2.exceptions
 from fastapi import APIRouter, Depends, Query, Request
 
 from fief import schemas
@@ -104,6 +105,27 @@ async def update_email_template(
     if await form_helper.is_submitted_and_valid():
         form = await form_helper.get_form()
 
+        email_template_preview = EmailTemplate(
+            type=email_template.type,
+            subject=form.data["subject"],
+            content=form.data["content"],
+        )
+        email_subject_renderer = EmailSubjectRenderer(
+            repository,
+            templates_overrides={email_template.type: email_template_preview},
+        )
+        email_template_renderer = EmailTemplateRenderer(
+            repository,
+            templates_overrides={email_template.type: email_template_preview},
+        )
+        try:
+            subject = await email_subject_renderer.render(EmailTemplateType[email_template_preview.type], sample_context)  # type: ignore
+            content = await email_template_renderer.render(EmailTemplateType[email_template_preview.type], sample_context)  # type: ignore
+        except jinja2.exceptions.TemplateError as e:
+            return await form_helper.get_error_response(
+                f"The template is invalid: {e!r}", "invalid_template"
+            )
+
         if not preview:
             form.populate_obj(email_template)
             await repository.update(email_template)
@@ -117,19 +139,6 @@ async def update_email_template(
             )
             return HXRedirectResponse(request.url_for("dashboard.email_templates:list"))
 
-        email_template = EmailTemplate(
-            type=email_template.type,
-            subject=form.data["subject"],
-            content=form.data["content"],
-        )
-        email_subject_renderer = EmailSubjectRenderer(
-            repository, templates_overrides={email_template.type: email_template}
-        )
-        email_template_renderer = EmailTemplateRenderer(
-            repository, templates_overrides={email_template.type: email_template}
-        )
-        subject = await email_subject_renderer.render(EmailTemplateType[email_template.type], sample_context)  # type: ignore
-        content = await email_template_renderer.render(EmailTemplateType[email_template.type], sample_context)  # type: ignore
     else:
         email_subject_renderer = EmailSubjectRenderer(repository)
         email_template_renderer = EmailTemplateRenderer(repository)

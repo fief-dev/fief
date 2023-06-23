@@ -1,6 +1,7 @@
 from typing import TYPE_CHECKING, Literal, overload
 
 import jinja2
+from jinja2.sandbox import ImmutableSandboxedEnvironment
 
 from fief.services.email_template.types import EmailTemplateType
 
@@ -74,7 +75,9 @@ class EmailTemplateRenderer:
                     templates, templates_overrides=self.templates_overrides
                 )
             )
-            self._jinja_environment = jinja2.Environment(loader=loader, autoescape=True)
+            self._jinja_environment = ImmutableSandboxedEnvironment(
+                loader=loader, autoescape=True
+            )
         return self._jinja_environment
 
 
@@ -132,5 +135,7 @@ class EmailSubjectRenderer:
                     templates, templates_overrides=self.templates_overrides
                 )
             )
-            self._jinja_environment = jinja2.Environment(loader=loader, autoescape=True)
+            self._jinja_environment = ImmutableSandboxedEnvironment(
+                loader=loader, autoescape=True
+            )
         return self._jinja_environment

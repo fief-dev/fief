@@ -1,6 +1,8 @@
+import jinja2
 import pytest
 
 from fief.db import AsyncSession
+from fief.models import EmailTemplate
 from fief.repositories import EmailTemplateRepository
 from fief.services.email_template.contexts import ForgotPasswordContext, WelcomeContext
 from fief.services.email_template.renderers import (
@@ -12,13 +14,30 @@ from tests.data import TestData
 
 
 @pytest.fixture
-def email_template_renderer(workspace_session: AsyncSession) -> EmailTemplateRenderer:
-    return EmailTemplateRenderer(EmailTemplateRepository(workspace_session))
+def email_template_repository(
+    workspace_session: AsyncSession,
+) -> EmailTemplateRepository:
+    return EmailTemplateRepository(workspace_session)
 
 
 @pytest.fixture
-def email_subject_renderer(workspace_session: AsyncSession) -> EmailSubjectRenderer:
-    return EmailSubjectRenderer(EmailTemplateRepository(workspace_session))
+def email_template_renderer(
+    email_template_repository: EmailTemplateRepository,
+) -> EmailTemplateRenderer:
+    return EmailTemplateRenderer(email_template_repository)
+
+
+@pytest.fixture
+def email_subject_renderer(
+    email_template_repository: EmailTemplateRepository,
+) -> EmailSubjectRenderer:
+    return EmailSubjectRenderer(email_template_repository)
+
+
+UNSAFE_COMMANDS = [
+    "{{ cycler.__init__.__globals__.os.popen('id').read() }}",
+    "{{ foo.__init__.bar }}",
+]
 
 
 @pytest.mark.asyncio
@@ -50,6 +69,33 @@ class TestEmailTemplateRenderer:
             == "<html><body><h1>Default</h1>FORGOT_PASSWORD http://bretagne.fief.dev/reset</body></html>"
         )
 
+    @pytest.mark.parametrize("command", UNSAFE_COMMANDS)
+    async def test_prevent_unsafe_commands(
+        self,
+        command: str,
+        email_template_repository: EmailTemplateRepository,
+        test_data: TestData,
+    ):
+        email_template = EmailTemplate(
+            type=EmailTemplateType.FORGOT_PASSWORD,
+            subject="TITLE",
+            content=command,
+        )
+
+        email_template_renderer = EmailTemplateRenderer(
+            email_template_repository,
+            templates_overrides={EmailTemplateType.FORGOT_PASSWORD: email_template},
+        )
+        context = ForgotPasswordContext(
+            tenant=test_data["tenants"]["default"],
+            reset_url="http://bretagne.fief.dev/reset",
+            user=test_data["users"]["regular"],
+        )
+        with pytest.raises(jinja2.exceptions.SecurityError):
+            await email_template_renderer.render(
+                EmailTemplateType.FORGOT_PASSWORD, context
+            )
+
 
 @pytest.mark.asyncio
 class TestEmailSubjectRenderer:
@@ -74,3 +120,30 @@ class TestEmailSubjectRenderer:
             EmailTemplateType.FORGOT_PASSWORD, context
         )
         assert result == "TITLE"
+
+    @pytest.mark.parametrize("command", UNSAFE_COMMANDS)
+    async def test_prevent_access_to_magic_methods_from_undefined_object(
+        self,
+        command: str,
+        email_template_repository: EmailTemplateRepository,
+        test_data: TestData,
+    ):
+        email_template = EmailTemplate(
+            type=EmailTemplateType.FORGOT_PASSWORD,
+            subject=command,
+            content="",
+        )
+
+        email_subject_renderer = EmailSubjectRenderer(
+            email_template_repository,
+            templates_overrides={EmailTemplateType.FORGOT_PASSWORD: email_template},
+        )
+        context = ForgotPasswordContext(
+            tenant=test_data["tenants"]["default"],
+            reset_url="http://bretagne.fief.dev/reset",
+            user=test_data["users"]["regular"],
+        )
+        with pytest.raises(jinja2.exceptions.SecurityError):
+            await email_subject_renderer.render(
+                EmailTemplateType.FORGOT_PASSWORD, context
+            )

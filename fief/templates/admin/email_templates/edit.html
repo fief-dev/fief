@@ -1,18 +1,25 @@
+{% import "macros/alerts.html" as alerts %}
 {% import "macros/buttons.html" as buttons %}
 {% import "macros/forms.html" as forms %}
 {% import "macros/icons.html" as icons %}
 
 {% macro preview() %}
 <div id="preview">
-  <input
-    class="form-input w-full border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed mb-4"
-    disabled
-    type="text"
-    value="{{ subject_preview }}"
-  />
-  <div style="height: 75vh; overflow: auto">
-    <iframe class="h-full w-full" title="Preview" srcdoc="{{ content_preview }}"></iframe>
-  </div>
+  {% if error %}
+    {% call alerts.error() %}
+      <p>{{ error }}</p>
+    {% endcall %}
+  {% else %}
+    <input
+      class="form-input w-full border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed mb-4"
+      disabled
+      type="text"
+      value="{{ subject_preview }}"
+    />
+    <div style="height: 75vh; overflow: auto">
+      <iframe class="h-full w-full" title="Preview" srcdoc="{{ content_preview }}"></iframe>
+    </div>
+  {% endif %}
 </div>
 {% endmacro %}
 

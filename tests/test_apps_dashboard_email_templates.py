@@ -135,6 +135,36 @@ class TestUpdateEmailTemplate:
         content_output_field = preview.find("iframe")
         assert content_output_field.attrs["srcdoc"] == content_output
 
+    @pytest.mark.parametrize(
+        "subject_input,content_input",
+        [("", "{{ foo.bar }}"), ("{{ foo.bar }}", ""), ("", "{% if %}")],
+    )
+    @pytest.mark.parametrize("preview", (False, True))
+    @pytest.mark.authenticated_admin(mode="session")
+    @pytest.mark.htmx(target="preview")
+    async def test_invalid_template(
+        self,
+        subject_input: str,
+        content_input: str,
+        preview: bool,
+        test_client_dashboard: httpx.AsyncClient,
+        test_data: TestData,
+        csrf_token: str,
+    ):
+        email_template = test_data["email_templates"]["welcome"]
+        response = await test_client_dashboard.post(
+            f"/customization/email-templates/{email_template.id}/edit",
+            params={"preview": preview},
+            data={
+                "subject": subject_input,
+                "content": content_input,
+                "csrf_token": csrf_token,
+            },
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.headers["X-Fief-Error"] == "invalid_template"
+
     @pytest.mark.authenticated_admin(mode="session")
     @pytest.mark.htmx(target="main")
     async def test_valid_update(
