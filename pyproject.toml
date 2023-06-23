@@ -244,7 +244,7 @@ dependencies = [
     "sendgrid ==6.10.0",
     "psycopg2 ==2.9.6",
     "pycountry >=22.3.5,<22.4",
-    "pydantic[dotenv] ==1.10.8",
+    "pydantic[dotenv] ==1.10.9",
     "python-slugify ==8.0.1",
     "pytz ==2023.3",
     "rich ==13.4.1",
