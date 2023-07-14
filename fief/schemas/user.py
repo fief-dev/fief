@@ -73,7 +73,7 @@ class UserUpdate(GenericModel, Generic[UF]):
 class UserUpdateAdmin(UserUpdate[UF], Generic[UF]):
     email: EmailStr | None
     email_verified: bool | None
-    password: str
+    password: str | None
 
 
 class CreateAccessToken(BaseModel):
