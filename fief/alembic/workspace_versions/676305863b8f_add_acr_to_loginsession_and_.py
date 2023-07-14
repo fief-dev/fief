@@ -36,15 +36,27 @@ def upgrade():
     connection = op.get_bind()
     if connection.dialect.name == "sqlite":
         with op.batch_alter_table("fief_authorization_codes") as batch_op:
-            batch_op.alter_column("acr", existing_nullable=True, nullable=False)
+            batch_op.alter_column(
+                "acr", existing_nullable=True, nullable=False, existing_type=acr_enum
+            )
         with op.batch_alter_table("fief_login_sessions") as batch_op:
-            batch_op.alter_column("acr", existing_nullable=True, nullable=False)
+            batch_op.alter_column(
+                "acr", existing_nullable=True, nullable=False, existing_type=acr_enum
+            )
     else:
         op.alter_column(
-            "fief_authorization_codes", "acr", existing_nullable=True, nullable=False
+            "fief_authorization_codes",
+            "acr",
+            existing_nullable=True,
+            nullable=False,
+            existing_type=acr_enum,
         )
         op.alter_column(
-            "fief_login_sessions", "acr", existing_nullable=True, nullable=False
+            "fief_login_sessions",
+            "acr",
+            existing_nullable=True,
+            nullable=False,
+            existing_type=acr_enum,
         )
 
     # ### end Alembic commands ###

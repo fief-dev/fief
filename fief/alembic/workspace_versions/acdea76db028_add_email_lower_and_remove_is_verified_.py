@@ -31,7 +31,11 @@ def upgrade():
             batch_op.alter_column("email_lower", existing_nullable=True, nullable=False)
     else:
         op.alter_column(
-            "fief_users", "email_lower", existing_nullable=True, nullable=False
+            "fief_users",
+            "email_lower",
+            existing_nullable=True,
+            nullable=False,
+            existing_type=sa.String(length=320),
         )
 
     op.create_index(
