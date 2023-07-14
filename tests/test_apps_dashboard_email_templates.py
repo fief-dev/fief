@@ -94,6 +94,13 @@ class TestUpdateEmailTemplate:
                 "<html><body><h1>Default</h1>WELCOME, anne@bretagne.duchy</body></html>",
             ),
             (
+                "verify_email",
+                "Verify your email, {{ user.email }}",
+                "Verify your email, anne@bretagne.duchy",
+                "{% extends 'BASE' %}{% block main %}VERIFY_EMAIL, {{ user.email }} {{ code }}{% endblock %}",
+                "<html><body><h1>Default</h1>VERIFY_EMAIL, anne@bretagne.duchy ABC123</body></html>",
+            ),
+            (
                 "forgot_password",
                 "Password forgot, {{ user.email }}",
                 "Password forgot, anne@bretagne.duchy",
