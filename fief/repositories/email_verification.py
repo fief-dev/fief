@@ -19,3 +19,11 @@ class EmailVerificationRepository(
             EmailVerification.code == code, EmailVerification.user_id == user
         )
         return await self.get_one_or_none(statement)
+
+    async def get_last(self) -> EmailVerification | None:
+        statement = (
+            select(EmailVerification)
+            .order_by(EmailVerification.created_at.desc())
+            .limit(1)
+        )
+        return await self.get_one_or_none(statement)

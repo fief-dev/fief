@@ -235,8 +235,8 @@ async def email_verification_requested_assertions(
     session: AsyncSession,
 ):
     email_verification_repository = EmailVerificationRepository(session)
-    email_verifications = await email_verification_repository.all()
-    email_verification = email_verifications[-1]
+    email_verification = await email_verification_repository.get_last()
+    assert email_verification is not None
     assert email_verification.email == email
 
     send_task_mock.assert_called_once()
