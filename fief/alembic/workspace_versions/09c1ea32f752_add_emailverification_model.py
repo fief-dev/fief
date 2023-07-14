@@ -28,13 +28,13 @@ def upgrade():
         sa.Column(
             "created_at",
             fief.models.generics.TIMESTAMPAware(timezone=True),
-            server_default=sa.text("now()"),
+            server_default=sa.func.now(),
             nullable=False,
         ),
         sa.Column(
             "updated_at",
             fief.models.generics.TIMESTAMPAware(timezone=True),
-            server_default=sa.text("now()"),
+            server_default=sa.func.now(),
             nullable=False,
         ),
         sa.Column(
@@ -86,11 +86,18 @@ def upgrade():
     if connection.dialect.name == "sqlite":
         with op.batch_alter_table("fief_users") as batch_op:
             batch_op.alter_column(
-                "email_verified", existing_nullable=True, nullable=False
+                "email_verified",
+                existing_nullable=True,
+                nullable=False,
+                existing_type=sa.Boolean(),
             )
     else:
         op.alter_column(
-            "fief_users", "email_verified", existing_nullable=True, nullable=False
+            "fief_users",
+            "email_verified",
+            existing_nullable=True,
+            nullable=False,
+            existing_type=sa.Boolean(),
         )
 
     op.create_index(
