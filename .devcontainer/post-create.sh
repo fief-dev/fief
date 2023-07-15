@@ -11,6 +11,7 @@ echo "FIEF_DOMAIN=${CODESPACE_NAME}-8000.${GITHUB_CODESPACES_PORT_FORWARDING_DOM
 hatch run python -m fief.cli migrate
 
 set +e
+hatch run translations.compile
 hatch run python -m fief.cli workspaces create-main
 hatch run python -m fief.cli workspaces create-main-user --user-email anne@bretagne.duchy --user-password herminetincture
 set -e
