@@ -15,7 +15,9 @@ async def init_default_theme(repository: ThemeRepository):
 
 
 async def init_workspace_default_theme(workspace: "Workspace"):
-    workspace_engine_manager = WorkspaceEngineManager()
-    async with get_workspace_session(workspace, workspace_engine_manager) as session:
-        repository = ThemeRepository(session)
-        await init_default_theme(repository)
+    async with WorkspaceEngineManager() as workspace_engine_manager:
+        async with get_workspace_session(
+            workspace, workspace_engine_manager
+        ) as session:
+            repository = ThemeRepository(session)
+            await init_default_theme(repository)

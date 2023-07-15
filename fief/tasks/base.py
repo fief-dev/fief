@@ -12,7 +12,7 @@ from pydantic import UUID4
 from sqlalchemy.orm import selectinload
 
 from fief.db import AsyncSession
-from fief.db.engine import create_async_session_maker, create_engine
+from fief.db.main import get_single_main_async_session
 from fief.db.workspace import WorkspaceEngineManager, get_workspace_session
 from fief.locale import BabelMiddleware, get_babel_middleware_kwargs
 from fief.logger import logger
@@ -55,22 +55,14 @@ def send_task(task: dramatiq.Actor, *args, **kwargs):
 
 
 @contextlib.asynccontextmanager
-async def get_main_session_task():
-    main_engine = create_engine(settings.get_database_connection_parameters())
-    session_maker = create_async_session_maker(main_engine)
-    async with session_maker() as session:
-        yield session
-    await main_engine.dispose()
-
-
-@contextlib.asynccontextmanager
 async def get_workspace_session_task(
     workspace: Workspace,
 ) -> AsyncGenerator[AsyncSession, None]:
-    workspace_engine_manager = WorkspaceEngineManager()
-    async with get_workspace_session(workspace, workspace_engine_manager) as session:
-        yield session
-    await workspace_engine_manager.close_all()
+    async with WorkspaceEngineManager() as workspace_engine_manager:
+        async with get_workspace_session(
+            workspace, workspace_engine_manager
+        ) as session:
+            yield session
 
 
 email_provider = settings.get_email_provider()
@@ -92,7 +84,7 @@ class TaskBase:
         self,
         get_main_session: Callable[
             ..., AsyncContextManager[AsyncSession]
-        ] = get_main_session_task,
+        ] = get_single_main_async_session,
         get_workspace_session: Callable[
             ..., AsyncContextManager[AsyncSession]
         ] = get_workspace_session_task,

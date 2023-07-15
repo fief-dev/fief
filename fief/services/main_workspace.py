@@ -1,7 +1,7 @@
 import functools
 
 from fief.crypto.token import get_token_hash
-from fief.db.main import create_main_async_session_maker
+from fief.db.main import get_single_main_async_session
 from fief.db.workspace import WorkspaceEngineManager, get_workspace_session
 from fief.dependencies.logger import get_audit_logger
 from fief.dependencies.users import get_user_manager
@@ -54,8 +54,7 @@ class MainFiefAdminApiKeyAlreadyExists(MainWorkspaceError):
 
 
 async def get_main_fief_workspace() -> Workspace:
-    main_async_session_maker = create_main_async_session_maker()
-    async with main_async_session_maker() as session:
+    async with get_single_main_async_session() as session:
         workspace_repository = WorkspaceRepository(session)
         workspace = await workspace_repository.get_main()
 
@@ -67,23 +66,23 @@ async def get_main_fief_workspace() -> Workspace:
 
 async def get_main_fief_client() -> Client:
     workspace = await get_main_fief_workspace()
-    async with get_workspace_session(workspace, WorkspaceEngineManager()) as session:
-        client_repository = ClientRepository(session)
-        client = await client_repository.get_by_client_id(settings.fief_client_id)
+    async with WorkspaceEngineManager() as workspace_engine_manager:
+        async with get_workspace_session(
+            workspace, workspace_engine_manager
+        ) as session:
+            client_repository = ClientRepository(session)
+            client = await client_repository.get_by_client_id(settings.fief_client_id)
 
-        if client is None:
-            raise MainWorkspaceClientDoesNotExist()
+            if client is None:
+                raise MainWorkspaceClientDoesNotExist()
 
-        return client
+            return client
 
 
 async def create_main_fief_workspace() -> Workspace:
     from fief.services.workspace_creation import WorkspaceCreation
 
-    main_async_session_maker = create_main_async_session_maker()
-    workspace_engine_manager = WorkspaceEngineManager()
-
-    async with main_async_session_maker() as session:
+    async with get_single_main_async_session() as session:
         workspace_repository = WorkspaceRepository(session)
         workspace_user_repository = WorkspaceUserRepository(session)
         workspace = await workspace_repository.get_main()
@@ -91,8 +90,10 @@ async def create_main_fief_workspace() -> Workspace:
         if workspace is not None:
             raise MainWorkspaceAlreadyExists()
 
-        workspace_create = WorkspaceCreate(name="Fief")
-        workspace_db = WorkspaceDatabase()
+    workspace_create = WorkspaceCreate(name="Fief")
+    workspace_db = WorkspaceDatabase()
+
+    async with WorkspaceEngineManager() as workspace_engine_manager:
         workspace_creation = WorkspaceCreation(
             workspace_repository,
             workspace_user_repository,
@@ -119,59 +120,58 @@ async def create_main_fief_workspace() -> Workspace:
 
 async def create_main_fief_user(email: str, password: str | None = None) -> User:
     workspace = await get_main_fief_workspace()
-    main_async_session_maker = create_main_async_session_maker()
-    async with main_async_session_maker() as session:
+    async with get_single_main_async_session() as session:
         workspace_user_repository = WorkspaceUserRepository(session)
 
-        async with get_workspace_session(
-            workspace, WorkspaceEngineManager()
-        ) as session:
-            tenant_repository = TenantRepository(session)
-            tenant = await tenant_repository.get_default()
+        async with WorkspaceEngineManager() as workspace_engine_manager:
+            async with get_workspace_session(
+                workspace, workspace_engine_manager
+            ) as session:
+                tenant_repository = TenantRepository(session)
+                tenant = await tenant_repository.get_default()
 
-            if tenant is None:
-                raise MainWorkspaceDoesNotHaveDefaultTenant()
+                if tenant is None:
+                    raise MainWorkspaceDoesNotHaveDefaultTenant()
 
-            user_repository = UserRepository(session)
-            email_verification_repository = EmailVerificationRepository(session)
-            user_fields = await UserFieldRepository(session).all()
-            audit_logger = await get_audit_logger(workspace, None, None)
+                user_repository = UserRepository(session)
+                email_verification_repository = EmailVerificationRepository(session)
+                user_fields = await UserFieldRepository(session).all()
+                audit_logger = await get_audit_logger(workspace, None, None)
 
-            user_manager = await get_user_manager(
-                workspace,
-                user_repository,
-                email_verification_repository,
-                user_fields,
-                send_task,
-                audit_logger,
-                functools.partial(
-                    trigger_webhooks, workspace_id=workspace.id, send_task=send_task
-                ),
-            )
+                user_manager = await get_user_manager(
+                    workspace,
+                    user_repository,
+                    email_verification_repository,
+                    user_fields,
+                    send_task,
+                    audit_logger,
+                    functools.partial(
+                        trigger_webhooks, workspace_id=workspace.id, send_task=send_task
+                    ),
+                )
 
-            if password is None:
-                password = user_manager.password_helper.generate()
+                if password is None:
+                    password = user_manager.password_helper.generate()
 
-            user = await user_manager.create(
-                UserCreateAdmin(
-                    email=email,
-                    password=password,
-                    email_verified=True,
-                    tenant_id=tenant.id,
-                ),
-                tenant.id,
-            )
+                user = await user_manager.create(
+                    UserCreateAdmin(
+                        email=email,
+                        password=password,
+                        email_verified=True,
+                        tenant_id=tenant.id,
+                    ),
+                    tenant.id,
+                )
 
-        workspace_user = WorkspaceUser(workspace_id=workspace.id, user_id=user.id)
-        await workspace_user_repository.create(workspace_user)
+            workspace_user = WorkspaceUser(workspace_id=workspace.id, user_id=user.id)
+            await workspace_user_repository.create(workspace_user)
 
     return user
 
 
 async def create_main_fief_admin_api_key(token: str) -> AdminAPIKey:
     workspace = await get_main_fief_workspace()
-    main_async_session_maker = create_main_async_session_maker()
-    async with main_async_session_maker() as session:
+    async with get_single_main_async_session() as session:
         admin_api_key_repository = AdminAPIKeyRepository(session)
 
         token_hash = get_token_hash(token)
@@ -180,8 +180,9 @@ async def create_main_fief_admin_api_key(token: str) -> AdminAPIKey:
         if admin_api_key is not None:
             raise MainFiefAdminApiKeyAlreadyExists()
 
+    async with WorkspaceEngineManager() as workspace_engine_manager:
         async with get_workspace_session(
-            workspace, WorkspaceEngineManager()
+            workspace, workspace_engine_manager
         ) as session:
             admin_api_key = AdminAPIKey(
                 name="Environment variable key",

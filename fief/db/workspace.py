@@ -1,6 +1,6 @@
 import contextlib
 from collections.abc import AsyncGenerator
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Self
 
 import asyncpg.exceptions
 import pymysql.err
@@ -33,6 +33,12 @@ class WorkspaceEngineManager:
     async def close_all(self):
         for engine in self.engines.values():
             await engine.dispose()
+
+    async def __aenter__(self) -> Self:
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        await self.close_all()
 
 
 @contextlib.asynccontextmanager

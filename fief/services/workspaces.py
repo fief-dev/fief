@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from fief.db.main import create_main_async_session_maker
+from fief.db.main import get_single_main_async_session
 from fief.db.workspace import WorkspaceEngineManager
 from fief.models import Workspace
 from fief.repositories import WorkspaceRepository
@@ -41,9 +41,8 @@ class Workspaces:
 
 
 async def get_workspaces_stats() -> list[WorkspaceStats]:
-    main_async_session_maker = create_main_async_session_maker()
-    workspace_engine_manager = WorkspaceEngineManager()
-    async with main_async_session_maker() as session:
+    async with get_single_main_async_session() as session:
         workspace_repository = WorkspaceRepository(session)
-        workspaces = Workspaces(workspace_repository, workspace_engine_manager)
-        return await workspaces.get_stats()
+        async with WorkspaceEngineManager() as workspace_engine_manager:
+            workspaces = Workspaces(workspace_repository, workspace_engine_manager)
+            return await workspaces.get_stats()

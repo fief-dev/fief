@@ -54,8 +54,12 @@ class EmailTemplateInitializer:
 
 
 async def init_email_templates(workspace: "Workspace"):
-    workspace_engine_manager = WorkspaceEngineManager()
-    async with get_workspace_session(workspace, workspace_engine_manager) as session:
-        email_template_repository = EmailTemplateRepository(session)
-        email_template_initializer = EmailTemplateInitializer(email_template_repository)
-        await email_template_initializer.init_templates()
+    async with WorkspaceEngineManager() as workspace_engine_manager:
+        async with get_workspace_session(
+            workspace, workspace_engine_manager
+        ) as session:
+            email_template_repository = EmailTemplateRepository(session)
+            email_template_initializer = EmailTemplateInitializer(
+                email_template_repository
+            )
+            await email_template_initializer.init_templates()
