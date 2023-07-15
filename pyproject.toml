@@ -253,7 +253,7 @@ dependencies = [
     "rich ==13.4.2",
     "sentry_dramatiq ==0.3.3",
     "sentry-sdk ==1.28.1",
-    "sqlalchemy[mypy] ==2.0.18",
+    "sqlalchemy[mypy] ==2.0.9", # Error with asyncpg+insertmanyvalues starting 2.0.10. Should monitor that.
     "sqlalchemy-utils ==0.41.1",
     "typer ==0.9.0",
     "uvicorn[standard]==0.23.0",
