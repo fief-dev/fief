@@ -274,6 +274,7 @@ class TestUserChangeEmail:
         assert response.status_code == status.HTTP_202_ACCEPTED
 
         await email_verification_requested_assertions(
+            user=user,
             email="anne+updated@bretagne.duchy",
             workspace=workspace,
             send_task_mock=send_task_mock,

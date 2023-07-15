@@ -162,6 +162,7 @@ class UserManager:
             except UserDoesNotExistError:
                 pass
 
+        await self.email_verification_repository.delete_by_user(user.id)
         code, code_hash = generate_verify_code()
         email_verification = EmailVerification(code=code_hash, email=email, user=user)
         email_verification = await self.email_verification_repository.create(

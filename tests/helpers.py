@@ -229,14 +229,16 @@ async def authorization_code_assertions(
 
 async def email_verification_requested_assertions(
     *,
+    user: User,
     email: str,
     workspace: Workspace,
     send_task_mock: MagicMock,
     session: AsyncSession,
 ):
     email_verification_repository = EmailVerificationRepository(session)
-    email_verification = await email_verification_repository.get_last()
-    assert email_verification is not None
+    email_verifications = await email_verification_repository.get_by_user(user.id)
+    assert len(email_verifications) == 1
+    email_verification = email_verifications[0]
     assert email_verification.email == email
 
     send_task_mock.assert_called_once()

@@ -745,11 +745,42 @@ class TestAuthVerifyEmailRequest:
         assert redirect_uri.endswith(f"{path_prefix}/verify")
 
         await email_verification_requested_assertions(
+            user=user,
             email=user.email,
             workspace=workspace,
             send_task_mock=send_task_mock,
             session=workspace_session,
         )
+
+    async def test_resend(
+        self,
+        test_client_auth: httpx.AsyncClient,
+        test_data: TestData,
+        workspace_session: AsyncSession,
+    ):
+        user = test_data["users"]["not_verified_email"]
+        tenant = user.tenant
+        path_prefix = tenant.slug if not tenant.default else ""
+        cookies = {}
+        cookies[settings.session_cookie_name] = session_token_tokens[
+            "not_verified_email"
+        ][0]
+
+        # First request
+        response = await test_client_auth.get(
+            f"{path_prefix}/verify-request", cookies=cookies
+        )
+        assert response.status_code == status.HTTP_302_FOUND
+
+        # Second request
+        response = await test_client_auth.get(
+            f"{path_prefix}/verify-request", cookies=cookies
+        )
+        assert response.status_code == status.HTTP_302_FOUND
+
+        email_verification_repository = EmailVerificationRepository(workspace_session)
+        email_verifications = await email_verification_repository.get_by_user(user.id)
+        assert len(email_verifications) == 1
 
 
 @pytest.mark.asyncio

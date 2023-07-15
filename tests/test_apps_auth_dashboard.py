@@ -339,6 +339,7 @@ class TestAuthEmailChange:
         assert "/email/verify" in response.headers["HX-Location"]
 
         await email_verification_requested_assertions(
+            user=tenant_params.user,
             email="anne+updated@bretagne.duchy",
             workspace=workspace,
             send_task_mock=send_task_mock,
