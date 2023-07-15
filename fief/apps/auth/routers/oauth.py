@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, Query, Request, status
 from fastapi.responses import RedirectResponse
@@ -133,9 +133,7 @@ async def callback(
     access_token = access_token_dict["access_token"]
     refresh_token = access_token_dict.get("refresh_token")
     try:
-        expires_at = datetime.fromtimestamp(
-            access_token_dict["expires_at"], tz=timezone.utc
-        )
+        expires_at = datetime.fromtimestamp(access_token_dict["expires_at"], tz=UTC)
     except KeyError:
         expires_at = None
 

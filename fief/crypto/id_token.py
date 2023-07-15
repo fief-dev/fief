@@ -1,6 +1,6 @@
 import base64
 import hashlib
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from jwcrypto import jwk, jwt
 
@@ -40,7 +40,7 @@ def generate_id_token(
     :encryption_key: Optional JWK to further encrypt the signed token.
     In this case, it becomes a Nested JWT, as defined in rfc7519.
     """
-    iat = int(datetime.now(timezone.utc).timestamp())
+    iat = int(datetime.now(UTC).timestamp())
     exp = iat + lifetime_seconds
 
     claims = {

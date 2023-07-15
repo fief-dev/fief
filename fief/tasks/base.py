@@ -1,7 +1,7 @@
 import asyncio
 import contextlib
 from collections.abc import AsyncGenerator, Callable
-from typing import AsyncContextManager, ClassVar
+from typing import ClassVar
 from urllib.parse import urlparse
 
 import dramatiq
@@ -83,10 +83,10 @@ class TaskBase:
     def __init__(
         self,
         get_main_session: Callable[
-            ..., AsyncContextManager[AsyncSession]
+            ..., contextlib.AbstractAsyncContextManager[AsyncSession]
         ] = get_single_main_async_session,
         get_workspace_session: Callable[
-            ..., AsyncContextManager[AsyncSession]
+            ..., contextlib.AbstractAsyncContextManager[AsyncSession]
         ] = get_workspace_session_task,
         email_provider: EmailProvider = email_provider,
         send_task: SendTask = send_task,

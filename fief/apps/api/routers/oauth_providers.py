@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import cast
 
 from fastapi import APIRouter, Depends, HTTPException, Response, status
@@ -201,7 +201,7 @@ async def get_user_access_token(
         oauth_account.access_token = access_token_dict["access_token"]  # type: ignore
         try:
             oauth_account.expires_at = datetime.fromtimestamp(
-                access_token_dict["expires_at"], tz=timezone.utc
+                access_token_dict["expires_at"], tz=UTC
             )
         except KeyError:
             oauth_account.expires_at = None

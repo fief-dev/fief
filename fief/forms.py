@@ -206,7 +206,7 @@ class ComboboxSelectMultipleField(SelectMultipleField):
 
     def _choices_generator(self, choices):
         if choices:
-            if isinstance(choices[0], (list, tuple)):
+            if isinstance(choices[0], list | tuple):
                 _choices = choices
             else:
                 _choices = zip(choices, choices)

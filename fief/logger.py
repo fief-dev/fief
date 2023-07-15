@@ -2,7 +2,7 @@ import json
 import logging
 import sys
 import uuid
-from datetime import timezone
+from datetime import UTC
 from typing import TYPE_CHECKING, Literal
 
 from loguru import logger
@@ -89,7 +89,7 @@ class AuditLogSink:
         self.task.send(
             json.dumps(
                 {
-                    "time": record["time"].astimezone(timezone.utc).isoformat(),
+                    "time": record["time"].astimezone(UTC).isoformat(),
                     "level": record["level"].name,
                     "message": record["message"],
                     "extra": record["extra"],

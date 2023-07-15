@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
 from pydantic import UUID4, EmailStr, Field, SecretStr
@@ -101,8 +101,8 @@ class UserEmailContext(CreatedUpdatedAt):
         return cls(
             id=uuid.uuid4(),
             email="anne@bretagne.duchy",
-            created_at=datetime.now(timezone.utc),
-            updated_at=datetime.now(timezone.utc),
+            created_at=datetime.now(UTC),
+            updated_at=datetime.now(UTC),
             tenant_id=tenant.id,
             fields={
                 "first_name": "Anne",

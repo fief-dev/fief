@@ -1,6 +1,6 @@
 import functools
 import uuid
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import TypeVar
 
 from pydantic import UUID4
@@ -60,7 +60,7 @@ class UUIDModel(BaseModel):
 
 
 def now_utc():
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 class TIMESTAMPAware(TypeDecorator):
@@ -76,7 +76,7 @@ class TIMESTAMPAware(TypeDecorator):
 
     def process_result_value(self, value: datetime | None, dialect):
         if value is not None and dialect.name != "postgresql":
-            return value.replace(tzinfo=timezone.utc)
+            return value.replace(tzinfo=UTC)
         return value
 
 
@@ -99,7 +99,7 @@ class CreatedUpdatedAt(BaseModel):
 
 
 def _get_default_expires_at(timedelta_seconds: int) -> datetime:
-    return datetime.now(timezone.utc) + timedelta(seconds=timedelta_seconds)
+    return datetime.now(UTC) + timedelta(seconds=timedelta_seconds)
 
 
 class ExpiresAt(BaseModel):

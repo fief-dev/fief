@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from fastapi.responses import JSONResponse
@@ -231,7 +231,7 @@ async def create_user_access_token(
         user.tenant.get_sign_jwk(),
         tenant_host,
         client,
-        datetime.now(timezone.utc),
+        datetime.now(UTC),
         ACR.LEVEL_ZERO,
         user,
         create_access_token.scopes,

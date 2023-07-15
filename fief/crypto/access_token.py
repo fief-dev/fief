@@ -1,5 +1,5 @@
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from jwcrypto import jwk, jwt
@@ -24,7 +24,7 @@ def generate_access_token(
     permissions: list[str],
     lifetime_seconds: int,
 ) -> str:
-    iat = int(datetime.now(timezone.utc).timestamp())
+    iat = int(datetime.now(UTC).timestamp())
     exp = iat + lifetime_seconds
 
     claims = {

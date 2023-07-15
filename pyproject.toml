@@ -70,7 +70,8 @@ module = "python_http_client.*"
 ignore_missing_imports = true
 
 [tool.ruff]
-extend-select = ["I", "TRY"]
+target-version = "py311"
+extend-select = ["I", "TRY", "UP"]
 ignore = ["E501"]
 per-file-ignores = {"conftest.py" = ["E731"], "tests/*" = ["TRY"], "fief/repositories/*" = ["E711", "E712"], "fief/alembic/*" = ["F401"]}
 

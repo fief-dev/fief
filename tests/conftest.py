@@ -4,7 +4,7 @@ import json
 import secrets
 import uuid
 from collections.abc import AsyncGenerator, Callable, Generator
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from unittest.mock import MagicMock, patch
 
 import asgi_lifespan
@@ -495,7 +495,7 @@ def access_token(
                 user_tenant.get_sign_jwk(),
                 user_tenant.get_host(workspace.domain),
                 client,
-                datetime.now(timezone.utc),
+                datetime.now(UTC),
                 acr,
                 user,
                 ["openid"],

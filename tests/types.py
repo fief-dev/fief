@@ -1,6 +1,6 @@
 import dataclasses
 from collections.abc import Callable
-from typing import AsyncContextManager
+from contextlib import AbstractAsyncContextManager
 
 import httpx
 from fastapi import FastAPI
@@ -29,8 +29,10 @@ class TenantParams:
     session_token_token: tuple[str, str]
 
 
-HTTPClientGeneratorType = Callable[[FastAPI], AsyncContextManager[httpx.AsyncClient]]
+HTTPClientGeneratorType = Callable[
+    [FastAPI], AbstractAsyncContextManager[httpx.AsyncClient]
+]
 
 GetTestDatabase = Callable[
-    ..., AsyncContextManager[tuple[DatabaseConnectionParameters, DatabaseType]]
+    ..., AbstractAsyncContextManager[tuple[DatabaseConnectionParameters, DatabaseType]]
 ]

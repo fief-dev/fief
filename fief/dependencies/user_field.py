@@ -1,4 +1,4 @@
-from typing import Any, Literal, Optional
+from typing import Any, Literal
 
 from fastapi import Depends, HTTPException, status
 from fastapi.exceptions import RequestValidationError
@@ -126,7 +126,7 @@ async def get_user_field_update_internal_model(
     return create_model(
         "UserFieldUpdateInternal",
         type=(Literal[user_field_type], ...),  # type: ignore
-        configuration=(Optional[configuration_type], None),
+        configuration=(configuration_type | None, None),
         __base__=UserFieldUpdate,
     )
 
@@ -199,7 +199,7 @@ def _get_pydantic_specification(user_fields: list[UserField]) -> tuple[Any, Any]
             default = False
 
         fields[field.slug] = (
-            field_type if required else Optional[field_type],
+            field_type if required else (field_type | None),
             default if default is not None else (... if required else None),
         )
     return fields, validators

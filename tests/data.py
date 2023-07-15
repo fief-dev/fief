@@ -1,6 +1,6 @@
 import uuid
 from collections.abc import Mapping
-from datetime import date, datetime, timedelta, timezone
+from datetime import UTC, date, datetime, timedelta
 from os import path
 from typing import TypedDict
 
@@ -54,12 +54,12 @@ from fief.settings import settings
 
 ModelMapping = Mapping[str, M]
 
-now = datetime.now(timezone.utc)
+now = datetime.now(UTC)
 hashed_password = password_helper.hash("herminetincture")
 
 
 def load_jwk_keys() -> jwk.JWKSet:
-    with open(path.join(path.dirname(__file__), "jwks.json"), "r") as jwks_file:
+    with open(path.join(path.dirname(__file__), "jwks.json")) as jwks_file:
         return jwk.JWKSet.from_json(jwks_file.read())
 
 
@@ -315,7 +315,7 @@ user_fields: ModelMapping[UserField] = {
 users: ModelMapping[User] = {
     "regular": User(
         id=uuid.uuid4(),
-        created_at=datetime.now(tz=timezone.utc),
+        created_at=datetime.now(tz=UTC),
         email="anne@bretagne.duchy",
         email_verified=True,
         hashed_password=hashed_password,
@@ -323,7 +323,7 @@ users: ModelMapping[User] = {
     ),
     "regular_secondary": User(
         id=uuid.uuid4(),
-        created_at=datetime.now(tz=timezone.utc) + timedelta(seconds=1),
+        created_at=datetime.now(tz=UTC) + timedelta(seconds=1),
         email="anne@nantes.city",
         email_verified=True,
         hashed_password=hashed_password,
@@ -331,7 +331,7 @@ users: ModelMapping[User] = {
     ),
     "regular_default_2": User(
         id=uuid.uuid4(),
-        created_at=datetime.now(tz=timezone.utc) + timedelta(seconds=2),
+        created_at=datetime.now(tz=UTC) + timedelta(seconds=2),
         email="isabeau@bretagne.duchy",
         email_verified=True,
         hashed_password=hashed_password,
@@ -339,7 +339,7 @@ users: ModelMapping[User] = {
     ),
     "inactive": User(
         id=uuid.uuid4(),
-        created_at=datetime.now(tz=timezone.utc) + timedelta(seconds=3),
+        created_at=datetime.now(tz=UTC) + timedelta(seconds=3),
         email="marguerite@bretagne.duchy",
         email_verified=True,
         hashed_password=hashed_password,
@@ -348,7 +348,7 @@ users: ModelMapping[User] = {
     ),
     "cased_email": User(
         id=uuid.uuid4(),
-        created_at=datetime.now(tz=timezone.utc) + timedelta(seconds=4),
+        created_at=datetime.now(tz=UTC) + timedelta(seconds=4),
         email="Claude@bretagne.duchy",
         email_verified=True,
         hashed_password=hashed_password,
@@ -356,7 +356,7 @@ users: ModelMapping[User] = {
     ),
     "not_verified_email": User(
         id=uuid.uuid4(),
-        created_at=datetime.now(tz=timezone.utc) + timedelta(seconds=5),
+        created_at=datetime.now(tz=UTC) + timedelta(seconds=5),
         email="charles@france.realm",
         email_verified=False,
         hashed_password=hashed_password,
@@ -391,7 +391,7 @@ user_field_values: ModelMapping[UserFieldValue] = {
         user_field=user_fields["birthdate"],
     ),
     "regular_last_seen": UserFieldValue(
-        value_datetime=datetime(2022, 1, 1, 0, 0, 0, tzinfo=timezone.utc),
+        value_datetime=datetime(2022, 1, 1, 0, 0, 0, tzinfo=UTC),
         user=users["regular"],
         user_field=user_fields["last_seen"],
     ),
@@ -425,7 +425,7 @@ user_field_values: ModelMapping[UserFieldValue] = {
 oauth_accounts: ModelMapping[OAuthAccount] = {
     "regular_google": OAuthAccount(
         access_token="REGULAR_GOOGLE_ACCESS_TOKEN",
-        expires_at=datetime.now(timezone.utc) + timedelta(seconds=3600),
+        expires_at=datetime.now(UTC) + timedelta(seconds=3600),
         refresh_token="REGULAR_GOOGLE_REFRESH_TOKEN",
         account_id="REGULAR_GOOGLE_ACCOUNT_ID",
         account_email="anne@bretagne.duchy",
@@ -435,7 +435,7 @@ oauth_accounts: ModelMapping[OAuthAccount] = {
     ),
     "regular_openid_expired": OAuthAccount(
         access_token="REGULAR_OPENID_ACCESS_TOKEN",
-        expires_at=datetime.now(timezone.utc) - timedelta(seconds=3600),
+        expires_at=datetime.now(UTC) - timedelta(seconds=3600),
         refresh_token="REGULAR_OPENID_REFRESH_TOKEN",
         account_id="REGULAR_OPENID_ACCOUNT_ID",
         account_email="anne@bretagne.duchy",
@@ -445,7 +445,7 @@ oauth_accounts: ModelMapping[OAuthAccount] = {
     ),
     "inactive_google": OAuthAccount(
         access_token="INACTIVE_GOOGLE_ACCESS_TOKEN",
-        expires_at=datetime.now(timezone.utc) + timedelta(seconds=3600),
+        expires_at=datetime.now(UTC) + timedelta(seconds=3600),
         refresh_token="INACTIVE_GOOGLE_REFRESH_TOKEN",
         account_id="INACTIVE_GOOGLE_ACCOUNT_ID",
         account_email="marguerite@bretagne.duchy",
@@ -455,7 +455,7 @@ oauth_accounts: ModelMapping[OAuthAccount] = {
     ),
     "new_user_google": OAuthAccount(
         access_token="NEW_USER_GOOGLE_ACCESS_TOKEN",
-        expires_at=datetime.now(timezone.utc) + timedelta(seconds=3600),
+        expires_at=datetime.now(UTC) + timedelta(seconds=3600),
         refresh_token="NEW_USER_GOOGLE_REFRESH_TOKEN",
         account_id="NEW_USER_GOOGLE_ACCOUNT_ID",
         account_email="louis@bretagne.duchy",
@@ -681,7 +681,7 @@ authorization_codes: ModelMapping[AuthorizationCode] = {
         expires_at=clients["secondary_tenant"].get_authorization_code_expires_at(),
     ),
     "expired": AuthorizationCode(
-        expires_at=datetime.now(timezone.utc)
+        expires_at=datetime.now(UTC)
         - timedelta(
             seconds=clients["default_tenant"].authorization_code_lifetime_seconds
         ),
