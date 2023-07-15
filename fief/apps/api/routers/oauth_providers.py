@@ -119,7 +119,7 @@ async def update_oauth_provider(
             ).dict()
         )
     except ValidationError as e:
-        raise RequestValidationError(e.raw_errors) from e
+        raise RequestValidationError(e.errors()) from e
 
     for field, value in oauth_provider_update_dict.items():
         setattr(oauth_provider, field, value)

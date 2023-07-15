@@ -264,7 +264,7 @@ async def get_user_create_admin(
     try:
         validated_user_create = body_model(body=json)
     except ValidationError as e:
-        raise RequestValidationError(e.raw_errors) from e
+        raise RequestValidationError(e.errors()) from e
     else:
         return validated_user_create.body  # type: ignore
 
@@ -280,7 +280,7 @@ async def get_user_update(
     try:
         validated_user_update = body_model(body=json)
     except ValidationError as e:
-        raise RequestValidationError(e.raw_errors) from e
+        raise RequestValidationError(e.errors()) from e
     else:
         return validated_user_update.body  # type: ignore
 
@@ -296,6 +296,6 @@ async def get_admin_user_update(
     try:
         validated_user_update = body_model(body=json)
     except ValidationError as e:
-        raise RequestValidationError(e.raw_errors) from e
+        raise RequestValidationError(e.errors()) from e
     else:
         return validated_user_update.body  # type: ignore

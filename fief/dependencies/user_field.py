@@ -106,7 +106,7 @@ async def get_validated_user_field_create(
     try:
         validated_user_field_create = body_model(body=user_field_create.dict())
     except ValidationError as e:
-        raise RequestValidationError(e.raw_errors) from e
+        raise RequestValidationError(e.errors()) from e
     else:
         return validated_user_field_create.body  # type: ignore
 
@@ -147,7 +147,7 @@ async def get_validated_user_field_update(
             body={"type": user_field.type, **user_field_update.dict(exclude_unset=True)}
         )
     except ValidationError as e:
-        raise RequestValidationError(e.raw_errors) from e
+        raise RequestValidationError(e.errors()) from e
     else:
         return validated_user_field_update.body  # type: ignore
 
