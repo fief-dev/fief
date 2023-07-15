@@ -79,7 +79,9 @@ async def access_token_assertions(
     access_token_claims = json.loads(access_token_jwt.claims)
 
     assert access_token_claims["sub"] == str(user.id)
-    assert access_token_claims["auth_time"] == int(authenticated_at.timestamp())
+    assert access_token_claims["auth_time"] == pytest.approx(
+        authenticated_at.timestamp(), rel=1e-9
+    )
     assert access_token_claims["acr"] == acr
     assert "scope" in access_token_claims
     assert "permissions" in access_token_claims
@@ -110,7 +112,9 @@ async def id_token_assertions(
 
     id_token_claims = json.loads(id_token_jwt.claims)
 
-    assert id_token_claims["auth_time"] == int(authenticated_at.timestamp())
+    assert id_token_claims["auth_time"] == pytest.approx(
+        authenticated_at.timestamp(), rel=1e-9
+    )
     assert id_token_claims["acr"] == acr
 
     if authorization_code_tuple is not None:
