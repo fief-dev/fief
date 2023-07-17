@@ -1,4 +1,4 @@
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 
 import pytest
 
@@ -14,7 +14,7 @@ async def test_fields(test_data: TestData):
         "phone_number": "+33642424242",
         "phone_number_verified": True,
         "birthdate": date(1477, 1, 25),
-        "last_seen": datetime(2022, 1, 1, 0, 0, 0, tzinfo=timezone.utc),
+        "last_seen": datetime(2022, 1, 1, 0, 0, 0, tzinfo=UTC),
         "address": {
             "line1": "4 place Marc Elder",
             "postal_code": "44000",
@@ -31,10 +31,9 @@ async def test_get_claims(test_data: TestData):
     assert user.get_claims() == {
         "sub": str(user.id),
         "email": user.email,
-        "tenant_id": str(user.tenant_id),
+        "email_verified": user.email_verified,
         "is_active": True,
-        "is_superuser": False,
-        "is_verified": False,
+        "tenant_id": str(user.tenant_id),
         "fields": {
             "gender": "F",
             "given_name": "Anne",

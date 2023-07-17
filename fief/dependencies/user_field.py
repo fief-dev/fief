@@ -1,4 +1,4 @@
-from typing import Any, Literal, Optional
+from typing import Any, Literal
 
 from fastapi import Depends, HTTPException, status
 from fastapi.exceptions import RequestValidationError
@@ -19,7 +19,14 @@ from fief.models import UserField
 from fief.models.user_field import UserFieldType
 from fief.repositories import UserFieldRepository
 from fief.schemas.generics import true_bool_validator
-from fief.schemas.user import UF, UserCreate, UserCreateInternal, UserFields, UserUpdate
+from fief.schemas.user import (
+    UF,
+    UserCreate,
+    UserCreateAdmin,
+    UserFields,
+    UserUpdate,
+    UserUpdateAdmin,
+)
 from fief.schemas.user_field import (
     USER_FIELD_CAN_HAVE_DEFAULT,
     USER_FIELD_TYPE_MAP,
@@ -99,7 +106,7 @@ async def get_validated_user_field_create(
     try:
         validated_user_field_create = body_model(body=user_field_create.dict())
     except ValidationError as e:
-        raise RequestValidationError(e.raw_errors) from e
+        raise RequestValidationError(e.errors()) from e
     else:
         return validated_user_field_create.body  # type: ignore
 
@@ -119,7 +126,7 @@ async def get_user_field_update_internal_model(
     return create_model(
         "UserFieldUpdateInternal",
         type=(Literal[user_field_type], ...),  # type: ignore
-        configuration=(Optional[configuration_type], None),
+        configuration=(configuration_type | None, None),
         __base__=UserFieldUpdate,
     )
 
@@ -140,7 +147,7 @@ async def get_validated_user_field_update(
             body={"type": user_field.type, **user_field_update.dict(exclude_unset=True)}
         )
     except ValidationError as e:
-        raise RequestValidationError(e.raw_errors) from e
+        raise RequestValidationError(e.errors()) from e
     else:
         return validated_user_field_update.body  # type: ignore
 
@@ -192,7 +199,7 @@ def _get_pydantic_specification(user_fields: list[UserField]) -> tuple[Any, Any]
             default = False
 
         fields[field.slug] = (
-            field_type if required else Optional[field_type],
+            field_type if required else (field_type | None),
             default if default is not None else (... if required else None),
         )
     return fields, validators
@@ -211,22 +218,9 @@ async def get_user_create_model(
     return UserCreate[user_fields_model]  # type: ignore
 
 
-async def get_user_create_internal_model(
-    registration_user_fields: list[UserField] = Depends(get_registration_user_fields),
-) -> type[UserCreateInternal[UF]]:
-    fields, validators = _get_pydantic_specification(registration_user_fields)
-    user_fields_model = create_model(
-        "UserFields",
-        **fields,
-        __validators__=validators,
-        __base__=UserFields,  # type: ignore
-    )
-    return UserCreateInternal[user_fields_model]  # type: ignore
-
-
-async def get_admin_user_create_internal_model(
+async def get_user_create_admin_model(
     user_fields: list[UserField] = Depends(get_user_fields),
-) -> type[UserCreateInternal[UF]]:
+) -> type[UserCreateAdmin[UF]]:
     fields, validators = _get_pydantic_specification(user_fields)
     user_fields_model = create_model(
         "UserFields",
@@ -234,7 +228,7 @@ async def get_admin_user_create_internal_model(
         __validators__=validators,
         __base__=UserFields,  # type: ignore
     )
-    return UserCreateInternal[user_fields_model]  # type: ignore
+    return UserCreateAdmin[user_fields_model]  # type: ignore
 
 
 async def get_user_update_model(
@@ -252,7 +246,7 @@ async def get_user_update_model(
 
 async def get_admin_user_update_model(
     user_fields: list[UserField] = Depends(get_user_fields),
-) -> type[UserUpdate[UF]]:
+) -> type[UserUpdateAdmin[UF]]:
     fields, validators = _get_pydantic_specification(user_fields)
     user_fields_model = create_model(
         "UserFields",
@@ -260,4 +254,4 @@ async def get_admin_user_update_model(
         __validators__=validators,
         __base__=UserFields,  # type: ignore
     )
-    return UserUpdate[user_fields_model]  # type: ignore
+    return UserUpdateAdmin[user_fields_model]  # type: ignore

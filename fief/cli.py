@@ -7,7 +7,6 @@ import uvicorn
 from alembic import command
 from alembic.config import Config
 from dramatiq import cli as dramatiq_cli
-from fastapi_users.exceptions import InvalidPasswordException, UserAlreadyExists
 from pydantic import ValidationError
 from rich.console import Console
 from rich.table import Table
@@ -18,6 +17,7 @@ from sqlalchemy.orm import sessionmaker
 from fief import __version__
 from fief.crypto.encryption import generate_key
 from fief.paths import ALEMBIC_CONFIG_FILE
+from fief.services.user_manager import InvalidPasswordError, UserAlreadyExistsError
 from fief.services.workspace_db import (
     WorkspaceDatabase,
     WorkspaceDatabaseConnectionError,
@@ -203,11 +203,13 @@ async def create_main_user(
     except CreateMainFiefUserError as e:
         typer.secho("An error occured", fg="red")
         raise typer.Exit(code=1) from e
-    except UserAlreadyExists as e:
+    except UserAlreadyExistsError as e:
         typer.secho("User already exists", fg="red")
         raise typer.Exit(code=1) from e
-    except InvalidPasswordException as e:
-        typer.secho(f"Invalid password: {', '.join(e.reason)}", fg=typer.colors.RED)
+    except InvalidPasswordError as e:
+        typer.secho(
+            f"Invalid password: {', '.join(map(str, e.messages))}", fg=typer.colors.RED
+        )
         raise typer.Exit(code=1) from e
 
 
@@ -410,13 +412,13 @@ def run_server(
                         fg=typer.colors.RED,
                     )
                     raise typer.Exit(code=1) from e
-                except InvalidPasswordException as e:
+                except InvalidPasswordError as e:
                     typer.secho(
-                        f"Invalid main Fief user password: {', '.join(map(str, e.reason))}",
+                        f"Invalid main Fief user password: {', '.join(map(str, e.messages))}",
                         fg=typer.colors.RED,
                     )
                     raise typer.Exit(code=1) from e
-                except UserAlreadyExists:
+                except UserAlreadyExistsError:
                     typer.echo("Main Fief user already exists")
 
         if create_main_admin_api_key:

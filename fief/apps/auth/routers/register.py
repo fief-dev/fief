@@ -1,7 +1,5 @@
 from fastapi import APIRouter, Depends, Header, Request, Response, status
 from fastapi.responses import RedirectResponse
-from fastapi_users.exceptions import InvalidPasswordException, UserAlreadyExists
-from fastapi_users.router import ErrorCode
 
 from fief.apps.auth.forms.register import RF, get_register_form_class
 from fief.dependencies.auth import (
@@ -20,7 +18,6 @@ from fief.exceptions import LoginException
 from fief.forms import FormHelper
 from fief.locale import gettext_lazy as _
 from fief.models import (
-    LoginSession,
     OAuthProvider,
     RegistrationSession,
     RegistrationSessionFlow,
@@ -29,15 +26,20 @@ from fief.models import (
 from fief.schemas.auth import LoginError
 from fief.services.authentication_flow import AuthenticationFlow
 from fief.services.registration_flow import RegistrationFlow
+from fief.services.user_manager import UserAlreadyExistsError
 
 router = APIRouter()
 
 
-@router.api_route("/register", methods=["GET", "POST"], name="register:register")
+@router.api_route(
+    "/register",
+    methods=["GET", "POST"],
+    dependencies=[Depends(get_optional_login_session)],
+    name="register:register",
+)
 async def register(
     request: Request,
     hx_trigger: str | None = Header(None),
-    login_session: LoginSession | None = Depends(get_optional_login_session),
     register_form_class: type[RF] = Depends(get_register_form_class),
     registration_flow: RegistrationFlow = Depends(get_registration_flow),
     authentication_flow: AuthenticationFlow = Depends(get_authentication_flow),
@@ -83,25 +85,16 @@ async def register(
             user = await registration_flow.create_user(
                 form.data, tenant, registration_session, request=request
             )
-        except UserAlreadyExists:
+        except UserAlreadyExistsError:
             return await form_helper.get_error_response(
                 _("A user with the same email address already exists."),
-                error_code=ErrorCode.REGISTER_USER_ALREADY_EXISTS,
+                error_code="user_already_exists",
             )
-        except InvalidPasswordException as e:
-            form.password.errors.append(e.reason)
-            return await form_helper.get_error_response(e.reason, "invalid_password")
         else:
-            if login_session is not None:
-                response = RedirectResponse(
-                    tenant.url_path_for(request, "auth:consent"),
-                    status_code=status.HTTP_302_FOUND,
-                )
-            else:
-                response = RedirectResponse(
-                    tenant.url_path_for(request, "auth.dashboard:profile"),
-                    status_code=status.HTTP_302_FOUND,
-                )
+            response = RedirectResponse(
+                tenant.url_path_for(request, "auth:verify_email_request"),
+                status_code=status.HTTP_302_FOUND,
+            )
             response = await authentication_flow.create_session_token(response, user.id)
             response = await registration_flow.set_login_hint(
                 response, registration_session

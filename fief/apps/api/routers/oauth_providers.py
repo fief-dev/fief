@@ -1,9 +1,8 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import cast
 
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 from fastapi.exceptions import RequestValidationError
-from fastapi_users.exceptions import UserNotExists
 from httpx_oauth.oauth2 import RefreshTokenError, RefreshTokenNotSupportedError
 from pydantic import UUID4, ValidationError
 
@@ -15,14 +14,17 @@ from fief.dependencies.oauth_provider import (
     get_paginated_oauth_providers,
 )
 from fief.dependencies.pagination import PaginatedObjects
-from fief.dependencies.users import UserManager, get_user_manager
 from fief.dependencies.webhooks import TriggerWebhooks, get_trigger_webhooks
 from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.errors import APIErrorCode
 from fief.logger import AuditLogger
 from fief.models import AuditLogMessage, OAuthProvider
 from fief.models.oauth_account import OAuthAccount
-from fief.repositories import OAuthAccountRepository, OAuthProviderRepository
+from fief.repositories import (
+    OAuthAccountRepository,
+    OAuthProviderRepository,
+    UserRepository,
+)
 from fief.schemas.generics import PaginatedResults
 from fief.services.oauth_provider import get_oauth_provider_service
 from fief.services.webhooks.models import (
@@ -117,7 +119,7 @@ async def update_oauth_provider(
             ).dict()
         )
     except ValidationError as e:
-        raise RequestValidationError(e.raw_errors) from e
+        raise RequestValidationError(e.errors()) from e
 
     for field, value in oauth_provider_update_dict.items():
         setattr(oauth_provider, field, value)
@@ -167,13 +169,12 @@ async def get_user_access_token(
     oauth_account_repository: OAuthAccountRepository = Depends(
         get_workspace_repository(OAuthAccountRepository)
     ),
-    user_manager: UserManager = Depends(get_user_manager),
+    user_repository: UserRepository = Depends(get_workspace_repository(UserRepository)),
     audit_logger: AuditLogger = Depends(get_audit_logger),
 ) -> OAuthAccount:
-    try:
-        user = await user_manager.get(user_id)
-    except UserNotExists as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND) from e
+    user = await user_repository.get_by_id(user_id)
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
 
     oauth_account = await oauth_account_repository.get_by_provider_and_user(
         oauth_provider.id, user.id
@@ -200,7 +201,7 @@ async def get_user_access_token(
         oauth_account.access_token = access_token_dict["access_token"]  # type: ignore
         try:
             oauth_account.expires_at = datetime.fromtimestamp(
-                access_token_dict["expires_at"], tz=timezone.utc
+                access_token_dict["expires_at"], tz=UTC
             )
         except KeyError:
             oauth_account.expires_at = None

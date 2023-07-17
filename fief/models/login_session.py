@@ -2,13 +2,14 @@ import secrets
 from typing import cast
 
 from pydantic import UUID4
-from sqlalchemy import ForeignKey
+from sqlalchemy import Enum, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql.sqltypes import JSON, String
 
 from fief.models.base import WorkspaceBase
 from fief.models.client import Client
 from fief.models.generics import GUID, CreatedUpdatedAt, ExpiresAt, UUIDModel
+from fief.services.acr import ACR
 from fief.settings import settings
 
 
@@ -30,6 +31,11 @@ class LoginSession(UUIDModel, CreatedUpdatedAt, ExpiresAt, WorkspaceBase):
     prompt: Mapped[str | None] = mapped_column(String(length=255), nullable=True)
     state: Mapped[str | None] = mapped_column(String(length=2048), nullable=True)
     nonce: Mapped[str | None] = mapped_column(String(length=255), nullable=True)
+    acr: Mapped[ACR] = mapped_column(
+        Enum(ACR, values_callable=lambda x: [e.value for e in x]),
+        nullable=False,
+        default=ACR.LEVEL_ZERO,
+    )
     code_challenge: Mapped[str | None] = mapped_column(
         String(length=255), nullable=True
     )

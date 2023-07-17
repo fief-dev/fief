@@ -1,0 +1,58 @@
+{% import 'macros/forms.html' as forms %}
+
+{% macro code_inputs(code_length) %}
+<script type="text/hyperscript">
+  behavior CodeInput()
+    on input
+      halt the event
+      set inputValue to value of target of event
+      set value of me to inputValue.toUpperCase()
+      updateCodeValue()
+      set nextInput to next <input[type='text'] />
+      if nextInput != null
+        focus() the nextInput
+      else
+        submitForm()
+      end
+    end
+  end
+</script>
+<div class="flex space-x-2">
+  {% for i in range(code_length) %}
+    <input
+      type="text"
+      maxlength="1"
+      pattern="[A-Z0-9]"
+      required
+      class="form-input w-full text-2xl text-center"
+      _="install CodeInput"
+    >
+  {% endfor %}
+</div>
+{% endmacro %}
+
+{% macro form(form, code_length) %}
+<script type="text/hyperscript">
+  def updateCodeValue()
+    set code to ''
+    repeat for input in <input[type='text'] />
+      append value of input to code
+    end
+    set value of #{{ form.code.id }} to code
+  end
+
+  on paste from document
+    halt the event
+    getData('text') from clipboardData of event then put it into pastedData
+    repeat for input in <input[type='text'] /> index i
+      set value of input to pastedData[i].toUpperCase()
+      focus() the input
+    end
+    updateCodeValue()
+    submitForm()
+  end
+</script>
+{{ code_inputs(code_length) }}
+{{ form.code }}
+{{ forms.form_csrf_token(form) }}
+{% endmacro %}

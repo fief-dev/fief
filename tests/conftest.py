@@ -4,6 +4,7 @@ import json
 import secrets
 import uuid
 from collections.abc import AsyncGenerator, Callable, Generator
+from datetime import UTC, datetime
 from unittest.mock import MagicMock, patch
 
 import asgi_lifespan
@@ -37,6 +38,7 @@ from fief.models import (
     Workspace,
     WorkspaceUser,
 )
+from fief.services.acr import ACR
 from fief.services.tenant_email_domain import TenantEmailDomain
 from fief.services.theme_preview import ThemePreview
 from fief.services.workspace_creation import WorkspaceCreation
@@ -475,6 +477,8 @@ def access_token(
                 user_alias = marker.kwargs["user"]
                 user = test_data["users"][user_alias]
 
+            acr: ACR = marker.kwargs.get("acr", ACR.LEVEL_ZERO)
+
             user_tenant = user.tenant
             client = next(
                 client
@@ -491,6 +495,8 @@ def access_token(
                 user_tenant.get_sign_jwk(),
                 user_tenant.get_host(workspace.domain),
                 client,
+                datetime.now(UTC),
+                acr,
                 user,
                 ["openid"],
                 user_permissions,
@@ -571,8 +577,9 @@ def htmx(request: pytest.FixtureRequest):
             client.headers["HX-Request"] = "true"
             marker = request.node.get_closest_marker("htmx")
             if marker:
-                target: str = marker.kwargs["target"]
-                client.headers["HX-Target"] = target
+                target: str | None = marker.kwargs.get("target")
+                if target:
+                    client.headers["HX-Target"] = target
         return client
 
     return _htmx

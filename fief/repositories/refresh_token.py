@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from sqlalchemy import select
 
@@ -18,8 +18,6 @@ class RefreshTokenRepository(
     ) -> RefreshToken | None:
         statement = select(RefreshToken).where(RefreshToken.token == token)
         if fresh:
-            statement = statement.where(
-                RefreshToken.expires_at > datetime.now(timezone.utc)
-            )
+            statement = statement.where(RefreshToken.expires_at > datetime.now(UTC))
 
         return await self.get_one_or_none(statement)

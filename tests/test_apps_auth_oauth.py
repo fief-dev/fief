@@ -1,6 +1,6 @@
 import urllib.parse
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from unittest.mock import AsyncMock, MagicMock
 
 import httpx
@@ -317,7 +317,7 @@ class TestOAuthCallback:
             return_value={
                 "access_token": "ACCESS_TOKEN",
                 "expires_in": 3600,
-                "expires_at": int(datetime.now(timezone.utc).timestamp() + 3600),
+                "expires_at": int(datetime.now(UTC).timestamp() + 3600),
                 "refresh_token": "REFRESH_TOKEN",
             }
         )
@@ -362,7 +362,7 @@ class TestOAuthCallback:
             return_value={
                 "access_token": "ACCESS_TOKEN",
                 "expires_in": 3600,
-                "expires_at": int(datetime.now(timezone.utc).timestamp() + 3600),
+                "expires_at": int(datetime.now(UTC).timestamp() + 3600),
                 "refresh_token": "REFRESH_TOKEN",
             }
         )
@@ -414,7 +414,7 @@ class TestOAuthCallback:
             return_value={
                 "access_token": "ACCESS_TOKEN",
                 "expires_in": 3600,
-                "expires_at": int(datetime.now(timezone.utc).timestamp() + 3600),
+                "expires_at": int(datetime.now(UTC).timestamp() + 3600),
                 "refresh_token": "REFRESH_TOKEN",
             }
         )
@@ -435,7 +435,6 @@ class TestOAuthCallback:
             cookies=cookies,
         )
 
-        print(response.headers)
         assert response.status_code == status.HTTP_302_FOUND
 
         redirect_uri = response.headers["Location"]
@@ -488,7 +487,7 @@ class TestOAuthCallback:
             return_value={
                 "access_token": "ACCESS_TOKEN",
                 "expires_in": 3600,
-                "expires_at": int(datetime.now(timezone.utc).timestamp() + 3600),
+                "expires_at": int(datetime.now(UTC).timestamp() + 3600),
                 "refresh_token": "REFRESH_TOKEN",
             }
         )

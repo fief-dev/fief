@@ -27,6 +27,7 @@ from fief.repositories import (
     LoginSessionRepository,
     SessionTokenRepository,
 )
+from fief.services.acr import ACR
 from fief.settings import settings
 
 ResponseType = TypeVar("ResponseType", bound=Response)
@@ -57,6 +58,7 @@ class AuthenticationFlow:
         scope: list[str],
         state: str | None,
         nonce: str | None,
+        acr: ACR,
         code_challenge_tuple: tuple[str, str] | None,
         client: Client,
     ) -> ResponseType:
@@ -67,6 +69,7 @@ class AuthenticationFlow:
             scope=scope,
             state=state,
             nonce=nonce,
+            acr=acr,
             client_id=client.id,
         )
         if code_challenge_tuple is not None:
@@ -171,6 +174,7 @@ class AuthenticationFlow:
                 scope=login_session.scope,
                 authenticated_at=authenticated_at,
                 nonce=login_session.nonce,
+                acr=login_session.acr,
                 user_id=user.id,
                 client_id=client.id,
                 expires_at=client.get_authorization_code_expires_at(),
@@ -197,6 +201,8 @@ class AuthenticationFlow:
                 tenant.get_sign_jwk(),
                 tenant_host,
                 client,
+                authenticated_at,
+                login_session.acr,
                 user,
                 login_session.scope,
                 permissions,
@@ -211,6 +217,7 @@ class AuthenticationFlow:
                 tenant_host,
                 client,
                 authenticated_at,
+                login_session.acr,
                 user,
                 client.access_id_token_lifetime_seconds,
                 nonce=login_session.nonce,

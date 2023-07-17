@@ -3,16 +3,29 @@ from unittest.mock import MagicMock
 import httpx
 import pytest
 from fastapi import status
-from fastapi_users.jwt import generate_jwt
+from jwcrypto import jwt
 
 from fief.crypto.password import password_helper
-from fief.dependencies.users import UserManager
-from fief.models import Workspace
+from fief.models import User, Workspace
+from fief.services.user_manager import RESET_PASSWORD_TOKEN_AUDIENCE
 from fief.settings import settings
 from fief.tasks import on_after_forgot_password
 from tests.data import TestData
 from tests.helpers import str_match
 from tests.types import TenantParams
+
+
+def generate_jwt(user: User) -> str:
+    claims = {
+        "sub": str(user.id),
+        "password_fgpt": password_helper.hash(user.hashed_password),
+        "aud": RESET_PASSWORD_TOKEN_AUDIENCE,
+    }
+    signing_key = user.tenant.get_sign_jwk()
+    token = jwt.JWT(header={"alg": "RS256", "kid": signing_key["kid"]}, claims=claims)
+    token.make_signed_token(signing_key)
+
+    return token.serialize()
 
 
 @pytest.mark.asyncio
@@ -148,12 +161,7 @@ class TestPostResetPassword:
         test_data: TestData,
     ):
         user = test_data["users"]["regular"]
-        token_data = {
-            "sub": str(user.id),
-            "password_fgpt": password_helper.hash(user.hashed_password),
-            "aud": UserManager.reset_password_token_audience,
-        }
-        token = generate_jwt(token_data, UserManager.reset_password_token_secret, 3600)
+        token = generate_jwt(user)
 
         response = await test_client_auth_csrf.post(
             "/reset", data={"password": "h", "token": token, "csrf_token": csrf_token}
@@ -168,12 +176,7 @@ class TestPostResetPassword:
         test_data: TestData,
     ):
         user = test_data["users"]["regular"]
-        token_data = {
-            "sub": str(user.id),
-            "password_fgpt": password_helper.hash(user.hashed_password),
-            "aud": UserManager.reset_password_token_audience,
-        }
-        token = generate_jwt(token_data, UserManager.reset_password_token_secret, 3600)
+        token = generate_jwt(user)
 
         response = await test_client_auth_csrf.post(
             "/reset",
@@ -193,12 +196,7 @@ class TestPostResetPassword:
         test_data: TestData,
     ):
         user = test_data["users"]["regular"]
-        token_data = {
-            "sub": str(user.id),
-            "password_fgpt": password_helper.hash(user.hashed_password),
-            "aud": UserManager.reset_password_token_audience,
-        }
-        token = generate_jwt(token_data, UserManager.reset_password_token_secret, 3600)
+        token = generate_jwt(user)
         login_session = test_data["login_sessions"]["default"]
         cookies = {}
         cookies[settings.login_session_cookie_name] = login_session.token

@@ -1,7 +1,6 @@
 import ssl
 from enum import StrEnum
 from pathlib import Path
-from typing import Union
 
 from sqlalchemy import engine
 
@@ -86,7 +85,7 @@ class MySQLSSLMode(StrEnum):
         return cls(str(item)) if not isinstance(item, cls) else item
 
 
-SSLMode = Union[PostreSQLSSLMode, MySQLSSLMode]
+SSLMode = PostreSQLSSLMode | MySQLSSLMode
 
 SSL_MODES: dict[DatabaseType, type[SSLMode]] = {
     DatabaseType.POSTGRESQL: PostreSQLSSLMode,

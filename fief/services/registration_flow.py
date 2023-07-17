@@ -3,7 +3,6 @@ from typing import Any, TypeVar
 
 from fastapi import Request, Response
 
-from fief.dependencies.users import UserManager
 from fief.models import (
     OAuthAccount,
     RegistrationSession,
@@ -13,7 +12,8 @@ from fief.models import (
     UserField,
 )
 from fief.repositories import OAuthAccountRepository, RegistrationSessionRepository
-from fief.schemas.user import UF, UserCreateInternal
+from fief.schemas.user import UF, UserCreate
+from fief.services.user_manager import UserManager
 from fief.settings import settings
 
 ResponseType = TypeVar("ResponseType", bound=Response)
@@ -25,13 +25,13 @@ class RegistrationFlow:
         registration_session_repository: RegistrationSessionRepository,
         oauth_account_repository: OAuthAccountRepository,
         user_manager: UserManager,
-        user_create_internal_model: type[UserCreateInternal[UF]],
+        user_create_model: type[UserCreate[UF]],
         user_fields: list[UserField],
     ) -> None:
         self.registration_session_repository = registration_session_repository
         self.oauth_account_repository = oauth_account_repository
         self.user_manager = user_manager
-        self.user_create_internal_model = user_create_internal_model
+        self.user_create_model = user_create_model
         self.user_fields = user_fields
 
     async def create_registration_session(
@@ -109,13 +109,8 @@ class RegistrationFlow:
         user_create_dict: dict[str, Any] = {**data, "tenant_id": tenant.id}
         if "password" not in user_create_dict:
             user_create_dict["password"] = self.user_manager.password_helper.generate()
-        user_create = self.user_create_internal_model(**user_create_dict)
-        user = await self.user_manager.create_with_fields(
-            user_create,
-            user_fields=self.user_fields,
-            safe=True,
-            request=request,
-        )
+        user_create = self.user_create_model(**user_create_dict)
+        user = await self.user_manager.create(user_create, tenant.id, request=request)
 
         registration_session.email = user.email
         await self.registration_session_repository.update(registration_session)

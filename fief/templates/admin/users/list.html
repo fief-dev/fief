@@ -61,29 +61,30 @@
   </div>
 
 </div>
-{% if tenants | length > 1 %}
-{% set base_button_classes = 'inline-flex items-center justify-center text-sm font-medium leading-5 rounded-full px-3 py-1 border shadow-sm duration-150 ease-in-out' %}
-{% set inactive_button_classes = 'border-slate-200 hover:border-slate-300 bg-white text-slate-500' %}
-{% set active_button_classes = 'border-transparent bg-primary-500 text-white' %}
 <div class="sm:flex sm:justify-between sm:items-center mb-5">
   <div class="mb-4 sm:mb-0">
-    <ul class="flex flex-wrap -m-1" hx-boost="true" hx-target="#main">
-      <li class="m-1">
-        <a
-          href="?{{ datatable_query_parameters.set_param('tenant', None) }}"
-          class="{{ base_button_classes }} {{ active_button_classes if not datatable_query_parameters.params.tenant else inactive_button_classes }}"
-        >
-          All tenants
-        </a>
-      </li>
-      {% for tenant in tenants %}
+    {% if tenants | length > 1 %}
+      {% set base_button_classes = 'inline-flex items-center justify-center text-sm font-medium leading-5 rounded-full px-3 py-1 border shadow-sm duration-150 ease-in-out' %}
+      {% set inactive_button_classes = 'border-slate-200 hover:border-slate-300 bg-white text-slate-500' %}
+      {% set active_button_classes = 'border-transparent bg-primary-500 text-white' %}
+      <ul class="flex flex-wrap -m-1" hx-boost="true" hx-target="#main">
         <li class="m-1">
           <a
-            href="?{{ datatable_query_parameters.set_param('tenant', tenant.id) }}"
-            class="{{ base_button_classes }} {{ active_button_classes if datatable_query_parameters.params.tenant == (tenant.id | string) else inactive_button_classes }}">{{ tenant.name }}</a>
+            href="?{{ datatable_query_parameters.set_param('tenant', None) }}"
+            class="{{ base_button_classes }} {{ active_button_classes if not datatable_query_parameters.params.tenant else inactive_button_classes }}"
+          >
+            All tenants
+          </a>
         </li>
-      {% endfor %}
-    </ul>
+        {% for tenant in tenants %}
+          <li class="m-1">
+            <a
+              href="?{{ datatable_query_parameters.set_param('tenant', tenant.id) }}"
+              class="{{ base_button_classes }} {{ active_button_classes if datatable_query_parameters.params.tenant == (tenant.id | string) else inactive_button_classes }}">{{ tenant.name }}</a>
+          </li>
+        {% endfor %}
+      </ul>
+    {% endif %}
   </div>
   <div>
     <form
@@ -96,6 +97,7 @@
       hx-select-oob="#datatable"
       hx-trigger="submit, keyup delay:1s from:find input"
       hx-replace-url="false"
+      hx-vals='{"skip": 0}'
     >
       <input
         type="search"
@@ -110,6 +112,5 @@
     </form>
   </div>
 </div>
-{% endif %}
 {% include "admin/users/table.html" %}
 {% endblock %}

@@ -4,12 +4,11 @@ from typing import TypedDict
 
 from fastapi import Depends, Form
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
-from fastapi_users.exceptions import UserNotExists
 from pydantic import UUID4
 
 from fief.crypto.code_challenge import verify_code_verifier
 from fief.crypto.token import get_token_hash
-from fief.dependencies.users import UserManager, get_user_manager
+from fief.dependencies.users import get_user_manager
 from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.exceptions import TokenRequestException
 from fief.models import Client, ClientType, User
@@ -19,6 +18,8 @@ from fief.repositories import (
     RefreshTokenRepository,
 )
 from fief.schemas.auth import TokenError
+from fief.services.acr import ACR
+from fief.services.user_manager import UserDoesNotExistError, UserManager
 
 ClientSecretBasicScheme = HTTPBasic(scheme_name="client_secret_basic", auto_error=False)
 
@@ -27,6 +28,7 @@ class GrantRequest(TypedDict):
     user_id: UUID4
     scope: list[str]
     authenticated_at: datetime
+    acr: ACR
     nonce: str | None
     c_hash: str | None
     client: Client
@@ -156,6 +158,7 @@ async def validate_grant_request(
             "user_id": authorization_code.user_id,
             "scope": authorization_code.scope,
             "authenticated_at": authorization_code.authenticated_at,
+            "acr": authorization_code.acr,
             "nonce": authorization_code.nonce,
             "c_hash": authorization_code.c_hash,
             "client": client,
@@ -185,6 +188,7 @@ async def validate_grant_request(
             "user_id": refresh_token.user_id,
             "scope": new_scope,
             "authenticated_at": refresh_token.authenticated_at,
+            "acr": ACR.LEVEL_ZERO,
             "nonce": None,
             "c_hash": None,
             "client": client,
@@ -202,6 +206,8 @@ async def get_user_from_grant_request(
     user_manager: UserManager = Depends(get_user_manager),
 ) -> User:
     try:
-        return await user_manager.get(grant_request["user_id"])
-    except UserNotExists as e:
+        return await user_manager.get(
+            grant_request["user_id"], grant_request["client"].tenant_id
+        )
+    except UserDoesNotExistError as e:
         raise TokenRequestException(TokenError.get_invalid_grant()) from e

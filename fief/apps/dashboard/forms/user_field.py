@@ -1,4 +1,4 @@
-from typing import Any, Type
+from typing import Any
 
 from fastapi import Request
 from wtforms import (
@@ -132,16 +132,8 @@ class BaseUserFieldForm(CSRFBaseForm):
 
 
 class UserFieldCreateForm(BaseUserFieldForm):
-    type = SelectField(
-        "Type",
-        choices=UserFieldType.choices(),
-        coerce=UserFieldType.coerce,
-        default=UserFieldType.STRING.value,
-        validators=[validators.InputRequired()],
-    )
-
     @classmethod
-    async def get_form_class(cls, request: Request) -> Type["UserFieldCreateForm"]:
+    async def get_form_class(cls, request: Request) -> type["UserFieldCreateForm"]:
         formdata = None
         if request.method in {"POST", "PUT", "PATCH"}:
             formdata = await request.form()
@@ -156,10 +148,18 @@ class UserFieldCreateForm(BaseUserFieldForm):
             return UserFieldForm
         return cls
 
+    type = SelectField(
+        "Type",
+        choices=UserFieldType.choices(),
+        coerce=UserFieldType.coerce,
+        default=UserFieldType.STRING.value,
+        validators=[validators.InputRequired()],
+    )
+
 
 class UserFieldUpdateForm(BaseUserFieldForm):
     @classmethod
-    async def get_form_class(cls, user_field: UserField) -> Type["UserFieldUpdateForm"]:
+    async def get_form_class(cls, user_field: UserField) -> type["UserFieldUpdateForm"]:
         class UserFieldForm(UserFieldUpdateForm):
             configuration = FormFieldPopulateJSON(
                 CONFIGURATION_FORM_CLASS_MAP[user_field.type]

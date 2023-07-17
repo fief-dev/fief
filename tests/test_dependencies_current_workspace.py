@@ -108,18 +108,18 @@ def app() -> FastAPI:
 
 
 @pytest_asyncio.fixture
-async def test_client_auth(
+async def test_client(
     test_client_generator: HTTPClientGeneratorType, app: FastAPI
 ) -> AsyncGenerator[httpx.AsyncClient, None]:
     async with test_client_generator(app) as test_client:
-        del app.dependency_overrides[get_current_workspace_session]
+        app.dependency_overrides.pop(get_current_workspace_session)
         yield test_client
 
 
 @pytest.mark.asyncio
 class TestGetCurrentWorkspaceFromHostHeader:
-    async def test_not_existing_workspace(self, test_client_auth: httpx.AsyncClient):
-        response = await test_client_auth.get(
+    async def test_not_existing_workspace(self, test_client: httpx.AsyncClient):
+        response = await test_client.get(
             "/workspace", headers={"Host": "unknown.fief.dev"}
         )
 
@@ -127,10 +127,10 @@ class TestGetCurrentWorkspaceFromHostHeader:
 
     async def test_outdated_migration_workspace(
         self,
-        test_client_auth: httpx.AsyncClient,
+        test_client: httpx.AsyncClient,
         outdated_migration_workspace: Workspace,
     ):
-        response = await test_client_auth.get(
+        response = await test_client.get(
             "/workspace", headers={"Host": outdated_migration_workspace.domain}
         )
 
@@ -140,9 +140,9 @@ class TestGetCurrentWorkspaceFromHostHeader:
         assert json["detail"] == APIErrorCode.WORKSPACE_DB_OUTDATED_MIGRATION
 
     async def test_existing_workspace(
-        self, test_client_auth: httpx.AsyncClient, workspace: Workspace
+        self, test_client: httpx.AsyncClient, workspace: Workspace
     ):
-        response = await test_client_auth.get(
+        response = await test_client.get(
             "/workspace", headers={"Host": workspace.domain}
         )
 
@@ -156,10 +156,10 @@ class TestGetCurrentWorkspaceFromHostHeader:
 class TestGetCurrentWorkspaceSession:
     async def test_unreachable_external_db_workspace(
         self,
-        test_client_auth: httpx.AsyncClient,
+        test_client: httpx.AsyncClient,
         unreachable_external_db_workspace: Workspace,
     ):
-        response = await test_client_auth.get(
+        response = await test_client.get(
             "/tenants", headers={"Host": unreachable_external_db_workspace.domain}
         )
 
@@ -169,11 +169,9 @@ class TestGetCurrentWorkspaceSession:
         assert json["detail"] == APIErrorCode.WORKSPACE_DB_CONNECTION_ERROR
 
     async def test_existing_workspace(
-        self, test_client_auth: httpx.AsyncClient, workspace: Workspace
+        self, test_client: httpx.AsyncClient, workspace: Workspace
     ):
-        response = await test_client_auth.get(
-            "/tenants", headers={"Host": workspace.domain}
-        )
+        response = await test_client.get("/tenants", headers={"Host": workspace.domain})
 
         assert response.status_code == status.HTTP_200_OK
 

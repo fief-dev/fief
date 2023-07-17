@@ -1,9 +1,9 @@
 import contextlib
+import sqlite3
 from collections.abc import AsyncGenerator
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Self
 
 import asyncpg.exceptions
-import pymysql.err
 from sqlalchemy import exc
 from sqlalchemy.ext.asyncio import AsyncConnection, AsyncEngine, AsyncSession
 
@@ -34,6 +34,12 @@ class WorkspaceEngineManager:
         for engine in self.engines.values():
             await engine.dispose()
 
+    async def __aenter__(self) -> Self:
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        await self.close_all()
+
 
 @contextlib.asynccontextmanager
 async def get_connection(
@@ -46,16 +52,21 @@ async def get_connection(
     try:
         async with engine.connect() as connection:
             yield await connection.execution_options(**options)
+    except exc.OperationalError as e:
+        # It turns out that SQLITE_BUSY error can be safely ignored, in particular during tests
+        if (
+            isinstance(e.orig, sqlite3.OperationalError)
+            and e.orig.sqlite_errorcode == sqlite3.SQLITE_BUSY
+        ):
+            pass
+        else:
+            raise ConnectionError from e
     except (
         asyncpg.exceptions.PostgresConnectionError,
         asyncpg.exceptions.InvalidAuthorizationSpecificationError,
         OSError,
     ) as e:
         raise ConnectionError from e
-    except exc.OperationalError as e:
-        # Catch MySQL connection error with code 2003
-        if isinstance(e.orig, pymysql.err.OperationalError) and e.orig.args[0] == 2003:
-            raise ConnectionError from e
 
 
 @contextlib.asynccontextmanager

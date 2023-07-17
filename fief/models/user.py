@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING, Any, Optional
 
 from pydantic import UUID4
-from sqlalchemy import Boolean, ForeignKey, String
+from sqlalchemy import Boolean, ForeignKey, String, event
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql.schema import UniqueConstraint
 
@@ -18,24 +18,13 @@ class User(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
     __tablename__ = "users"
     __table_args__ = (UniqueConstraint("email", "tenant_id"),)
 
-    if TYPE_CHECKING:
-        email: str
-        hashed_password: str
-        is_active: bool
-        is_superuser: bool
-        is_verified: bool
-    else:
-        email: Mapped[str] = mapped_column(
-            String(length=320), index=True, nullable=False
-        )
-        hashed_password: Mapped[str] = mapped_column(String(length=255), nullable=False)
-        is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
-        is_superuser: Mapped[bool] = mapped_column(
-            Boolean, default=False, nullable=False
-        )
-        is_verified: Mapped[bool] = mapped_column(
-            Boolean, default=False, nullable=False
-        )
+    email: Mapped[str] = mapped_column(String(length=320), index=True, nullable=False)
+    email_lower: Mapped[str] = mapped_column(String(320), index=True, nullable=False)
+    email_verified: Mapped[bool] = mapped_column(
+        Boolean, index=True, default=False, nullable=False
+    )
+    hashed_password: Mapped[str] = mapped_column(String(length=255), nullable=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
 
     tenant_id: Mapped[UUID4] = mapped_column(
         GUID, ForeignKey(Tenant.id, ondelete="CASCADE"), nullable=False
@@ -70,9 +59,14 @@ class User(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
         return {
             "sub": str(self.id),
             "email": self.email,
-            "tenant_id": str(self.tenant_id),
+            "email_verified": self.email_verified,
             "is_active": self.is_active,
-            "is_superuser": self.is_superuser,
-            "is_verified": self.is_verified,
+            "tenant_id": str(self.tenant_id),
             "fields": fields,
         }
+
+
+@event.listens_for(User.email, "set")
+def update_email_lower(target: User, value: str, oldvalue, initiator):
+    if value is not None:
+        target.email_lower = value.lower()

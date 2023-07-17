@@ -206,7 +206,7 @@ class ComboboxSelectMultipleField(SelectMultipleField):
 
     def _choices_generator(self, choices):
         if choices:
-            if isinstance(choices[0], (list, tuple)):
+            if isinstance(choices[0], list | tuple):
                 _choices = choices
             else:
                 _choices = zip(choices, choices)
@@ -286,18 +286,38 @@ class AddressForm(BaseForm):
         self.required = required
         super().__init__(*args, **kwargs)
 
-    line1 = StringField(_("Address line 1"), validators=[validators.DataRequired()])
+    line1 = StringField(
+        _("Address line 1"),
+        validators=[validators.DataRequired()],
+        render_kw={"autocomplete": "address-line1"},
+    )
     line2 = StringField(
         _("Address line 2"),
         validators=[validators.Optional()],
         filters=[empty_string_to_none],
+        render_kw={"autocomplete": "address-line2"},
     )
-    postal_code = StringField(_("Postal code"), validators=[validators.DataRequired()])
-    city = StringField(_("City"), validators=[validators.DataRequired()])
+    postal_code = StringField(
+        _("Postal code"),
+        validators=[validators.DataRequired()],
+        render_kw={"autocomplete": "postal-code"},
+    )
+    city = StringField(
+        _("City"),
+        validators=[validators.DataRequired()],
+        render_kw={"autocomplete": "address-level2"},
+    )
     state = StringField(
-        _("State"), validators=[validators.Optional()], filters=[empty_string_to_none]
+        _("State"),
+        validators=[validators.Optional()],
+        filters=[empty_string_to_none],
+        render_kw={"autocomplete": "address-level1"},
     )
-    country = CountryField(_("Country"), validators=[validators.DataRequired()])
+    country = CountryField(
+        _("Country"),
+        validators=[validators.DataRequired()],
+        render_kw={"autocomplete": "country"},
+    )
 
     def validate(self, extra_validators=None):
         if self.data is None and not self.required:
@@ -338,6 +358,7 @@ class PasswordCreateFieldForm(BaseForm):
         _("Password"),
         widget=widgets.PasswordInput(hide_value=False),
         validators=[validators.InputRequired(), PasswordValidator()],
+        render_kw={"autocomplete": "new-password"},
     )
 
 
@@ -373,7 +394,9 @@ def get_form_field(user_field: UserField) -> Field:
     if user_field.type == UserFieldType.CHOICE:
         field_kwargs.update({"choices": user_field.configuration.get("choices")})
     elif user_field.type == UserFieldType.PHONE_NUMBER:
-        field_kwargs.update({"render_kw": {"placeholder": "+42102030405"}})
+        field_kwargs.update(
+            {"render_kw": {"placeholder": "+42102030405", "autocomplete": "tel"}}
+        )
     elif user_field.type == UserFieldType.ADDRESS:
         field_kwargs.update({"required": required})
         field_kwargs.pop("validators")

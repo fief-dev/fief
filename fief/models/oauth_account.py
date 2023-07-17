@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from pydantic import UUID4
 from sqlalchemy import ForeignKey, String, Text
@@ -48,6 +48,4 @@ class OAuthAccount(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
     tenant: Mapped[Tenant] = relationship("Tenant")
 
     def is_expired(self) -> bool:
-        return self.expires_at is not None and self.expires_at < datetime.now(
-            timezone.utc
-        )
+        return self.expires_at is not None and self.expires_at < datetime.now(UTC)

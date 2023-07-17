@@ -43,6 +43,16 @@ class WelcomeContext(EmailContext):
     pass
 
 
+class VerifyEmailContext(EmailContext):
+    code: str
+
+    @classmethod
+    async def _get_sample_context_kwargs(cls, session: AsyncSession) -> dict[str, Any]:
+        context_kwargs = await super()._get_sample_context_kwargs(session)
+        context_kwargs["code"] = "ABC123"
+        return context_kwargs
+
+
 class ForgotPasswordContext(EmailContext):
     reset_url: str
 
@@ -56,5 +66,6 @@ class ForgotPasswordContext(EmailContext):
 EMAIL_TEMPLATE_CONTEXT_CLASS_MAP: dict[EmailTemplateType, type[EmailContext]] = {
     EmailTemplateType.BASE: EmailContext,
     EmailTemplateType.WELCOME: WelcomeContext,
+    EmailTemplateType.VERIFY_EMAIL: VerifyEmailContext,
     EmailTemplateType.FORGOT_PASSWORD: ForgotPasswordContext,
 }

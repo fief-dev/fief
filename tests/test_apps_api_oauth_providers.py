@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from unittest.mock import AsyncMock, MagicMock
 
 import httpx
@@ -383,9 +383,7 @@ class TestGetOAuthProviderUserAccessToken:
         workspace_session: AsyncSession,
     ):
         oauth_provider_service_mock = MagicMock(spec=BaseOAuth2)
-        expires_at = datetime.now(timezone.utc).replace(microsecond=0) + timedelta(
-            seconds=3600
-        )
+        expires_at = datetime.now(UTC).replace(microsecond=0) + timedelta(seconds=3600)
         oauth_provider_service_mock.refresh_token.side_effect = AsyncMock(
             return_value={
                 "access_token": "REFRESHED_ACCESS_TOKEN",

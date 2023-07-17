@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import TypedDict
 
 from fastapi import Cookie, Depends, Query, Request, Response
@@ -242,9 +242,7 @@ async def has_valid_session_token(
         return False
 
     if max_age is not None:
-        session_age = (
-            datetime.now(timezone.utc) - session_token.created_at
-        ).total_seconds()
+        session_age = (datetime.now(UTC) - session_token.created_at).total_seconds()
         return session_age < max_age
 
     return True

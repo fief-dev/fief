@@ -107,6 +107,9 @@ class Settings(BaseSettings):
     registration_session_cookie_secure: bool = True
     registration_session_lifetime_seconds: int = 600
 
+    email_verification_code_length = 6
+    email_verification_lifetime_seconds: int = 3600
+
     oauth_session_lifetime_seconds: int = 600
 
     session_cookie_name: str = "fief_session"

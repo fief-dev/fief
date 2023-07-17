@@ -3,7 +3,6 @@ from pydantic import UUID4
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
-from fief import schemas
 from fief.dependencies.pagination import (
     GetPaginatedObjects,
     Ordering,
@@ -14,7 +13,6 @@ from fief.dependencies.pagination import (
     get_pagination,
 )
 from fief.dependencies.workspace_repositories import get_workspace_repository
-from fief.errors import APIErrorCode
 from fief.models import Tenant
 from fief.repositories import TenantRepository
 
@@ -31,21 +29,6 @@ async def get_current_tenant(
 
     if tenant is None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
-
-    return tenant
-
-
-async def get_tenant_from_create_user_internal(
-    user_create: schemas.user.UserCreateInternal,
-    repository: TenantRepository = Depends(get_workspace_repository(TenantRepository)),
-) -> Tenant:
-    tenant = await repository.get_by_id(user_create.tenant_id)
-
-    if tenant is None:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=APIErrorCode.USER_CREATE_UNKNOWN_TENANT,
-        )
 
     return tenant
 

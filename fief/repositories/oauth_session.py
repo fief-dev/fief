@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from sqlalchemy import select
 
@@ -18,7 +18,5 @@ class OAuthSessionRepository(
     ) -> OAuthSession | None:
         statement = select(OAuthSession).where(OAuthSession.token == token)
         if fresh:
-            statement = statement.where(
-                OAuthSession.expires_at > datetime.now(timezone.utc)
-            )
+            statement = statement.where(OAuthSession.expires_at > datetime.now(UTC))
         return await self.get_one_or_none(statement)

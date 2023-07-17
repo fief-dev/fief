@@ -5,6 +5,7 @@ from fastapi.responses import RedirectResponse
 from pydantic import AnyUrl
 
 from fief.apps.auth.forms.auth import ConsentForm, LoginForm
+from fief.apps.auth.forms.verify_email import VerifyEmailForm
 from fief.dependencies.auth import (
     BaseContext,
     check_unsupported_request_parameter,
@@ -28,18 +29,25 @@ from fief.dependencies.authentication_flow import get_authentication_flow
 from fief.dependencies.current_workspace import get_current_workspace
 from fief.dependencies.login_hint import LoginHint, get_login_hint
 from fief.dependencies.oauth_provider import get_oauth_providers
-from fief.dependencies.session_token import get_session_token
+from fief.dependencies.session_token import (
+    get_session_token,
+    get_session_token_or_login,
+    get_user_from_session_token_or_login,
+    get_verified_email_user_from_session_token_or_verify,
+)
 from fief.dependencies.tenant import get_current_tenant
-from fief.dependencies.users import UserManager, get_user_manager
+from fief.dependencies.users import get_user_manager
 from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.exceptions import LogoutException
 from fief.forms import FormHelper
 from fief.locale import gettext_lazy as _
-from fief.models import Client, LoginSession, OAuthProvider, Tenant, Workspace
+from fief.models import Client, LoginSession, OAuthProvider, Tenant, User, Workspace
 from fief.models.session_token import SessionToken
 from fief.repositories.session_token import SessionTokenRepository
 from fief.schemas.auth import LogoutError
+from fief.services.acr import ACR
 from fief.services.authentication_flow import AuthenticationFlow
+from fief.services.user_manager import InvalidEmailVerificationCodeError, UserManager
 from fief.settings import settings
 
 router = APIRouter()
@@ -69,9 +77,11 @@ async def authorize(
     has_valid_session_token: bool = Depends(has_valid_session_token),
 ):
     tenant = client.tenant
+    acr = ACR.LEVEL_ONE
 
     if has_valid_session_token and prompt != "login":
         redirection = tenant.url_path_for(request, "auth:consent")
+        acr = ACR.LEVEL_ZERO  # Reuse of existing session, lowest assurance level
     elif screen == "register":
         redirection = tenant.url_path_for(request, "register:register")
     else:
@@ -86,6 +96,7 @@ async def authorize(
         scope=scope,
         state=state,
         nonce=nonce,
+        acr=acr,
         code_challenge_tuple=code_challenge_tuple,
         client=client,
     )
@@ -113,10 +124,14 @@ async def authorize(
     return response
 
 
-@router.api_route("/login", methods=["GET", "POST"], name="auth:login")
+@router.api_route(
+    "/login",
+    methods=["GET", "POST"],
+    dependencies=[Depends(get_optional_login_session)],
+    name="auth:login",
+)
 async def login(
     request: Request,
-    login_session: LoginSession | None = Depends(get_optional_login_session),
     user_manager: UserManager = Depends(get_user_manager),
     authentication_flow: AuthenticationFlow = Depends(get_authentication_flow),
     session_token: SessionToken | None = Depends(get_session_token),
@@ -146,10 +161,87 @@ async def login(
     form = await form_helper.get_form()
 
     if await form_helper.is_submitted_and_valid():
-        user = await user_manager.authenticate(form.get_credentials())
+        user = await user_manager.authenticate(
+            form.email.data, form.password.data, tenant.id
+        )
         if user is None or not user.is_active:
             return await form_helper.get_error_response(
                 _("Invalid email or password"), "bad_credentials"
+            )
+
+        response = RedirectResponse(
+            tenant.url_path_for(request, "auth:verify_email_request"),
+            status_code=status.HTTP_302_FOUND,
+        )
+        response = await authentication_flow.rotate_session_token(
+            response, user.id, session_token=session_token
+        )
+        response = await authentication_flow.set_login_hint(response, str(user.email))
+
+        return response
+
+    return await form_helper.get_response()
+
+
+@router.get("/verify-request", name="auth:verify_email_request")
+async def verify_email_request(
+    request: Request,
+    login_session: LoginSession | None = Depends(get_optional_login_session),
+    user: User = Depends(get_user_from_session_token_or_login),
+    user_manager: UserManager = Depends(get_user_manager),
+    tenant: Tenant = Depends(get_current_tenant),
+):
+    if user.email_verified:
+        if login_session is not None:
+            response = RedirectResponse(
+                tenant.url_path_for(request, "auth:consent"),
+                status_code=status.HTTP_302_FOUND,
+            )
+        else:
+            response = RedirectResponse(
+                tenant.url_path_for(request, "auth.dashboard:profile"),
+                status_code=status.HTTP_302_FOUND,
+            )
+        return response
+
+    await user_manager.request_verify_email(user, user.email)
+
+    return RedirectResponse(
+        tenant.url_path_for(request, "auth:verify_email"),
+        status_code=status.HTTP_302_FOUND,
+    )
+
+
+@router.api_route("/verify", methods=["GET", "POST"], name="auth:verify_email")
+async def verify_email(
+    request: Request,
+    login_session: LoginSession | None = Depends(get_optional_login_session),
+    user: User = Depends(get_user_from_session_token_or_login),
+    user_manager: UserManager = Depends(get_user_manager),
+    tenant: Tenant = Depends(get_current_tenant),
+    context: BaseContext = Depends(get_base_context),
+):
+    form_helper = FormHelper(
+        VerifyEmailForm,
+        "auth/verify_email.html",
+        request=request,
+        context={**context, "code_length": settings.email_verification_code_length},
+    )
+    form = await form_helper.get_form()
+
+    if await form_helper.is_submitted_and_valid():
+        try:
+            user = await user_manager.verify_email(
+                user, form.code.data, request=request
+            )
+        except InvalidEmailVerificationCodeError:
+            return await form_helper.get_error_response(
+                _(
+                    "The verification code is invalid. Please check that you have entered it correctly. "
+                    "If the code was copied and pasted, ensure it has not expired. "
+                    "If it has been more than one hour, please request a new verification code."
+                ),
+                "invalid_code",
             )
 
         if login_session is not None:
@@ -162,22 +254,21 @@ async def login(
                 tenant.url_path_for(request, "auth.dashboard:profile"),
                 status_code=status.HTTP_302_FOUND,
             )
-
-        response = await authentication_flow.rotate_session_token(
-            response, user.id, session_token=session_token
-        )
-        response = await authentication_flow.set_login_hint(response, str(user.email))
-
         return response
 
     return await form_helper.get_response()
 
 
-@router.api_route("/consent", methods=["GET", "POST"], name="auth:consent")
+@router.api_route(
+    "/consent",
+    methods=["GET", "POST"],
+    name="auth:consent",
+    dependencies=[Depends(get_verified_email_user_from_session_token_or_verify)],
+)
 async def consent(
     request: Request,
     login_session: LoginSession = Depends(get_login_session),
-    session_token: SessionToken | None = Depends(get_session_token),
+    session_token: SessionToken = Depends(get_session_token_or_login),
     prompt: str | None = Depends(get_consent_prompt),
     needs_consent: bool = Depends(get_needs_consent),
     tenant: Tenant = Depends(get_current_tenant),
@@ -196,12 +287,6 @@ async def consent(
         },
     )
     form = await form_helper.get_form()
-
-    if session_token is None:
-        return RedirectResponse(
-            tenant.url_path_for(request, "auth:login"),
-            status_code=status.HTTP_302_FOUND,
-        )
 
     if not needs_consent and prompt != "consent":
         response = await authentication_flow.get_authorization_code_success_redirect(

@@ -8,6 +8,7 @@ from fief.crypto.token import get_token_hash
 from fief.db import AsyncSession
 from fief.models import Client
 from fief.repositories import AuthorizationCodeRepository, RefreshTokenRepository
+from fief.services.acr import ACR
 from tests.data import (
     TestData,
     authorization_code_codes,
@@ -413,6 +414,8 @@ class TestAuthTokenAuthorizationCode:
             access_token=json["access_token"],
             jwk=tenant.get_sign_jwk(),
             user=authorization_code.user,
+            authenticated_at=authorization_code.authenticated_at,
+            acr=authorization_code.acr,
         )
 
         authorization_code_repository = AuthorizationCodeRepository(workspace_session)
@@ -435,6 +438,7 @@ class TestAuthTokenAuthorizationCode:
             id_token=json["id_token"],
             jwk=tenant.get_sign_jwk(),
             authenticated_at=authorization_code.authenticated_at,
+            acr=authorization_code.acr,
             authorization_code_tuple=(authorization_code, authorization_code_code[0]),
             access_token=json["access_token"],
         )
@@ -536,6 +540,7 @@ class TestAuthTokenAuthorizationCode:
             encrypt_jwk=encryption_key,
             sign_jwk=tenant.get_sign_jwk(),
             authenticated_at=authorization_code.authenticated_at,
+            acr=authorization_code.acr,
             authorization_code_tuple=(
                 authorization_code,
                 authorization_code_codes["default_id_token_encryption"][0],
@@ -754,6 +759,8 @@ class TestAuthTokenRefreshToken:
             access_token=json["access_token"],
             jwk=tenant.get_sign_jwk(),
             user=refresh_token.user,
+            authenticated_at=refresh_token.authenticated_at,
+            acr=ACR.LEVEL_ZERO,
         )
 
         if "offline_access" in refresh_token.scope:
@@ -771,6 +778,7 @@ class TestAuthTokenRefreshToken:
             id_token=json["id_token"],
             jwk=tenant.get_sign_jwk(),
             authenticated_at=refresh_token.authenticated_at,
+            acr=ACR.LEVEL_ZERO,
             access_token=json["access_token"],
         )
 

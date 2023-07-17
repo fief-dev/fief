@@ -1,5 +1,5 @@
 from collections.abc import Sequence
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any, Generic, Protocol, TypeVar, cast
 
 from pydantic import UUID4
@@ -186,9 +186,7 @@ class UUIDRepositoryMixin(Generic[M_UUID]):
 
 class ExpiresAtMixin(Generic[M_EXPIRES_AT]):
     async def delete_expired(self: ExpiresAtRepositoryProtocol[M_EXPIRES_AT]):
-        statement = delete(self.model).where(
-            self.model.expires_at < datetime.now(timezone.utc)
-        )
+        statement = delete(self.model).where(self.model.expires_at < datetime.now(UTC))
         await self._execute_statement(statement)
 
 

@@ -1,5 +1,5 @@
 import secrets
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from enum import StrEnum
 
 from jwcrypto import jwk
@@ -99,4 +99,4 @@ class Client(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
         return self._get_expires_at("refresh_token_lifetime_seconds")
 
     def _get_expires_at(self, attr: str) -> datetime:
-        return datetime.now(timezone.utc) + timedelta(seconds=getattr(self, attr))
+        return datetime.now(UTC) + timedelta(seconds=getattr(self, attr))

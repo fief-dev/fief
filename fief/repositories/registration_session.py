@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from sqlalchemy import select
 
@@ -21,6 +21,6 @@ class RegistrationSessionRepository(
         )
         if fresh:
             statement = statement.where(
-                RegistrationSession.expires_at > datetime.now(timezone.utc)
+                RegistrationSession.expires_at > datetime.now(UTC)
             )
         return await self.get_one_or_none(statement)

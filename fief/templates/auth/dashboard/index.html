@@ -8,21 +8,43 @@
 
 {% block content %}
 <h2 class="text-2xl text-slate-800 font-bold mb-5">{{ _("Profile") }}</h2>
-<form hx-boost="true" method="POST" class="w-full md:w-1/2">
-  <div class="space-y-4">
-    {% if success %}
-      {% call alerts.success() %}
-        {{ success }}
-      {% endcall %}
-    {% endif %}
-    {{ forms.form_field(form.email) }}
-    {% for field in form.fields %}
-      {{ forms.form_field(field) }}
-    {% endfor %}
-    {{ forms.form_csrf_token(form) }}
-    {% call buttons.submit('btn') %}
-    {{ _("Update profile") }}
-    {% endcall %}
+<!-- Email -->
+<section>
+  <h3 class="text-xl leading-snug text-slate-800 font-bold mb-1">{{ _("Email") }}</h3>
+  <div class="text-sm">{{ _("Manage your email address to receive important updates and notifications.") }}</div>
+  <div id="email-change" class="flex flex-wrap mt-5 items-center">
+      <div class="mr-2">
+        {{ user.email }}
+      </div>
+      <button
+        class="btn border-slate-200 hover:border-slate-300 shadow-sm text-primary"
+        hx-get="{{ tenant.url_path_for(request, 'auth.dashboard:email_change') }}"
+        hx-target="#email-change"
+      >
+        {{ _("Change") }}
+      </button>
   </div>
-</form>
+</section>
+{% if form.fields.form._fields | length > 0 %}
+<section>
+  <h3 class="text-xl leading-snug text-slate-800 font-bold mb-1">{{ _("Profile information") }}</h3>
+  <div class="text-sm">Excepteur sint occaecat cupidatat non proident sunt in culpa qui officia.</div>
+  <form hx-boost="true" method="POST" class="w-full md:w-1/2">
+    <div class="space-y-4">
+      {% if success %}
+        {% call alerts.success() %}
+          {{ success }}
+        {% endcall %}
+      {% endif %}
+      {% for field in form.fields %}
+        {{ forms.form_field(field) }}
+      {% endfor %}
+      {{ forms.form_csrf_token(form) }}
+      {% call buttons.submit('btn') %}
+      {{ _("Update profile") }}
+      {% endcall %}
+    </div>
+  </form>
+</section>
+{% endif %}
 {% endblock %}

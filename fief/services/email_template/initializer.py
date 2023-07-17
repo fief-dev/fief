@@ -32,6 +32,14 @@ class EmailTemplateInitializer:
             )
             await self.repository.create(welcome)
 
+        if await self.repository.get_by_type(EmailTemplateType.VERIFY_EMAIL) is None:
+            verify_email = EmailTemplate(
+                type=EmailTemplateType.VERIFY_EMAIL,
+                subject="Verify your email for your {{ tenant.name }}'s account",
+                content=self._load_template("verify_email.html"),
+            )
+            await self.repository.create(verify_email)
+
         if await self.repository.get_by_type(EmailTemplateType.FORGOT_PASSWORD) is None:
             forgot_password = EmailTemplate(
                 type=EmailTemplateType.FORGOT_PASSWORD,
@@ -46,8 +54,12 @@ class EmailTemplateInitializer:
 
 
 async def init_email_templates(workspace: "Workspace"):
-    workspace_engine_manager = WorkspaceEngineManager()
-    async with get_workspace_session(workspace, workspace_engine_manager) as session:
-        email_template_repository = EmailTemplateRepository(session)
-        email_template_initializer = EmailTemplateInitializer(email_template_repository)
-        await email_template_initializer.init_templates()
+    async with WorkspaceEngineManager() as workspace_engine_manager:
+        async with get_workspace_session(
+            workspace, workspace_engine_manager
+        ) as session:
+            email_template_repository = EmailTemplateRepository(session)
+            email_template_initializer = EmailTemplateInitializer(
+                email_template_repository
+            )
+            await email_template_initializer.init_templates()

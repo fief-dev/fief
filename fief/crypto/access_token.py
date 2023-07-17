@@ -1,12 +1,12 @@
 import json
-import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
+from typing import Any
 
 from jwcrypto import jwk, jwt
 from jwcrypto.common import JWException
-from pydantic import UUID4
 
 from fief.models import Client, User
+from fief.services.acr import ACR
 
 
 class InvalidAccessToken(Exception):
@@ -17,12 +17,14 @@ def generate_access_token(
     key: jwk.JWK,
     host: str,
     client: Client,
+    authenticated_at: datetime,
+    acr: ACR,
     user: User,
     scope: list[str],
     permissions: list[str],
     lifetime_seconds: int,
 ) -> str:
-    iat = int(datetime.now(timezone.utc).timestamp())
+    iat = int(datetime.now(UTC).timestamp())
     exp = iat + lifetime_seconds
 
     claims = {
@@ -31,6 +33,8 @@ def generate_access_token(
         "aud": [client.client_id],
         "exp": exp,
         "iat": iat,
+        "auth_time": int(authenticated_at.timestamp()),
+        "acr": str(acr),
         "azp": client.client_id,
         "scope": " ".join(scope),
         "permissions": permissions,
@@ -42,12 +46,9 @@ def generate_access_token(
     return token.serialize()
 
 
-def read_access_token(key: jwk.JWK, token: str) -> UUID4:
+def read_access_token(key: jwk.JWK, token: str) -> dict[str, Any]:
     try:
         decoded_jwt = jwt.JWT(jwt=token, key=key)
-        claims = json.loads(decoded_jwt.claims)
-        user_id = claims["sub"]
-    except (JWException, KeyError, ValueError) as e:
+        return json.loads(decoded_jwt.claims)
+    except JWException as e:
         raise InvalidAccessToken() from e
-    else:
-        return uuid.UUID(user_id)

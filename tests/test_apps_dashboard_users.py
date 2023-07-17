@@ -13,9 +13,16 @@ from fief.repositories import (
     UserRepository,
     UserRoleRepository,
 )
-from fief.tasks import on_after_register, on_user_role_created, on_user_role_deleted
+from fief.tasks import (
+    on_after_register,
+    on_user_role_created,
+    on_user_role_deleted,
+)
 from tests.data import TestData
-from tests.helpers import HTTPXResponseAssertion
+from tests.helpers import (
+    HTTPXResponseAssertion,
+    email_verification_requested_assertions,
+)
 
 
 @pytest.mark.asyncio
@@ -108,6 +115,7 @@ class TestCreateUser:
             "/users/create",
             data={
                 "email": "louis@bretagne.duchy",
+                "email_verified": True,
                 "password": "herminetincture",
                 "tenant": str(not_existing_uuid),
                 "csrf_token": csrf_token,
@@ -130,6 +138,7 @@ class TestCreateUser:
             "/users/create",
             data={
                 "email": "anne@bretagne.duchy",
+                "email_verified": True,
                 "password": "herminetincture",
                 "tenant": str(tenant.id),
                 "csrf_token": csrf_token,
@@ -160,6 +169,7 @@ class TestCreateUser:
             "/users/create",
             data={
                 "email": "louis@bretagne.duchy",
+                "email_verified": True,
                 "password": password,
                 "tenant": str(tenant.id),
                 "csrf_token": csrf_token,
@@ -182,6 +192,7 @@ class TestCreateUser:
             "/users/create",
             data={
                 "email": "louis@bretagne.duchy",
+                "email_verified": True,
                 "password": "herminetincture",
                 "tenant": str(tenant.id),
                 "fields-last_seen": "INVALID_VALUE",
@@ -207,6 +218,7 @@ class TestCreateUser:
             "/users/create",
             data={
                 "email": "louis@bretagne.duchy",
+                "email_verified": True,
                 "password": "herminetincture",
                 "tenant": str(tenant.id),
                 "fields-onboarding_done": True,
@@ -223,6 +235,7 @@ class TestCreateUser:
         )
         assert user is not None
         assert user.email == "louis@bretagne.duchy"
+        assert user.email_verified is True
         assert user.tenant_id == tenant.id
 
         assert user.fields["onboarding_done"] is True
@@ -351,6 +364,74 @@ class TestUpdateUser:
 
         assert updated_user.fields["onboarding_done"] is True
         assert updated_user.fields["last_seen"] is not None
+
+
+@pytest.mark.asyncio
+@pytest.mark.workspace_host
+class TestVerifyEmailRequest:
+    async def test_unauthorized(
+        self,
+        unauthorized_dashboard_assertions: HTTPXResponseAssertion,
+        test_client_dashboard: httpx.AsyncClient,
+        test_data: TestData,
+    ):
+        user = test_data["users"]["regular"]
+        response = await test_client_dashboard.post(
+            f"/users/{user.id}/verify-request", data={}
+        )
+
+        unauthorized_dashboard_assertions(response)
+
+    @pytest.mark.authenticated_admin(mode="session")
+    @pytest.mark.htmx()
+    async def test_not_existing(
+        self,
+        test_client_dashboard: httpx.AsyncClient,
+        not_existing_uuid: uuid.UUID,
+    ):
+        response = await test_client_dashboard.post(
+            f"/users/{not_existing_uuid}/verify-request", data={}
+        )
+
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    @pytest.mark.authenticated_admin(mode="session")
+    @pytest.mark.htmx()
+    async def test_already_verified(
+        self,
+        test_client_dashboard: httpx.AsyncClient,
+        test_data: TestData,
+        send_task_mock: MagicMock,
+    ):
+        user = test_data["users"]["regular"]
+        response = await test_client_dashboard.post(f"/users/{user.id}/verify-request")
+
+        assert response.status_code == status.HTTP_202_ACCEPTED
+
+        send_task_mock.assert_not_called()
+
+    @pytest.mark.authenticated_admin(mode="session")
+    @pytest.mark.htmx()
+    async def test_not_verified(
+        self,
+        test_client_dashboard: httpx.AsyncClient,
+        test_data: TestData,
+        send_task_mock: MagicMock,
+        workspace: Workspace,
+        workspace_session: AsyncSession,
+    ):
+        user = test_data["users"]["not_verified_email"]
+        response = await test_client_dashboard.post(f"/users/{user.id}/verify-request")
+
+        assert response.status_code == status.HTTP_202_ACCEPTED
+
+        await email_verification_requested_assertions(
+            user=user,
+            email=user.email,
+            workspace=workspace,
+            send_task_mock=send_task_mock,
+            session=workspace_session,
+        )
 
 
 @pytest.mark.asyncio

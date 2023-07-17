@@ -360,7 +360,6 @@ class TestGetWebhookLogs:
         assert response.status_code == status.HTTP_200_OK
 
         html = BeautifulSoup(response.text, features="html.parser")
-        print(html)
         rows = html.find("tbody").find_all("tr")
         assert len(rows) == len(
             [

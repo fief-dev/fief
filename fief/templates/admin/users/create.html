@@ -23,6 +23,7 @@
   {% call modal.body() %}
     <div class="space-y-4">
       {{ forms.form_field(form.email) }}
+      {{ forms.form_field(form.email_verified) }}
       {{ forms.form_field(form.password) }}
       {{ forms.form_field(form.tenant) }}
       <hr />
