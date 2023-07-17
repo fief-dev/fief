@@ -80,7 +80,7 @@ concurrency = ["thread", "gevent"]
 omit = ["fief/alembic/*"]
 
 [tool.pytest.ini_options]
-addopts = "--cov fief/ --cov-report=term-missing"
+addopts = "-n auto --cov fief/ --cov-report=term-missing"
 markers = ["test_data", "workspace_host", "access_token", "authenticated_admin", "htmx"]
 asyncio_mode = "strict"
 
@@ -124,6 +124,7 @@ dependencies = [
   "pytest-cov",
   "pytest-asyncio",
   "pytest-mock",
+  "pytest-xdist",
   "respx",
   "ruff",
   "types-python-slugify",

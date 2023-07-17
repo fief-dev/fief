@@ -59,14 +59,17 @@ def event_loop():
 
 
 @pytest.fixture(scope="session")
-def get_test_database() -> GetTestDatabase:
+def get_test_database(worker_id: str) -> GetTestDatabase:
     @contextlib.asynccontextmanager
     async def _get_test_database(
         *, name: str = "fief-test"
     ) -> AsyncGenerator[tuple[DatabaseConnectionParameters, DatabaseType], None]:
         url, connect_args = settings.get_database_connection_parameters(False)
+
+        name = f"{name}-{worker_id}"
         url = url.set(database=name)
         assert url.database == name
+
         create_database(url)
         yield ((url, connect_args), settings.database_type)
         drop_database(url)
