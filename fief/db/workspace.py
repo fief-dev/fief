@@ -1,4 +1,5 @@
 import contextlib
+import sqlite3
 from collections.abc import AsyncGenerator
 from typing import TYPE_CHECKING, Self
 
@@ -51,8 +52,16 @@ async def get_connection(
     try:
         async with engine.connect() as connection:
             yield await connection.execution_options(**options)
+    except exc.OperationalError as e:
+        # It turns out that SQLITE_BUSY error can be safely ignored, in particular during tests
+        if (
+            isinstance(e.orig, sqlite3.OperationalError)
+            and e.orig.sqlite_errorcode == sqlite3.SQLITE_BUSY
+        ):
+            pass
+        else:
+            raise ConnectionError from e
     except (
-        exc.OperationalError,
         asyncpg.exceptions.PostgresConnectionError,
         asyncpg.exceptions.InvalidAuthorizationSpecificationError,
         OSError,
