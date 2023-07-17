@@ -8,7 +8,6 @@
 
 {% block content %}
 <h2 class="text-2xl text-slate-800 font-bold mb-5">{{ _("Profile") }}</h2>
-<!-- Email -->
 <section>
   <h3 class="text-xl leading-snug text-slate-800 font-bold mb-1">{{ _("Email") }}</h3>
   <div class="text-sm">{{ _("Manage your email address to receive important updates and notifications.") }}</div>
@@ -28,7 +27,7 @@
 {% if form.fields.form._fields | length > 0 %}
 <section>
   <h3 class="text-xl leading-snug text-slate-800 font-bold mb-1">{{ _("Profile information") }}</h3>
-  <div class="text-sm">Excepteur sint occaecat cupidatat non proident sunt in culpa qui officia.</div>
+  <div class="text-sm">{{ _("Manage your profile information.") }}</div>
   <form hx-boost="true" method="POST" class="w-full md:w-1/2">
     <div class="space-y-4">
       {% if success %}
