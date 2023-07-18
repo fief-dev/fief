@@ -180,6 +180,15 @@
       "contributions": [
         "security"
       ]
+    },
+    {
+      "login": "bingyulee",
+      "name": "李秉祐",
+      "avatar_url": "https://avatars.githubusercontent.com/u/4936030?v=4",
+      "profile": "https://github.com/bingyulee",
+      "contributions": [
+        "translation"
+      ]
     }
   ],
   "contributorsPerLine": 7,
