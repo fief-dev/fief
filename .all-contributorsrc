@@ -189,6 +189,15 @@
       "contributions": [
         "translation"
       ]
+    },
+    {
+      "login": "ldub",
+      "name": "Lev Dubinets",
+      "avatar_url": "https://avatars.githubusercontent.com/u/3114081?v=4",
+      "profile": "https://dubinets.io",
+      "contributions": [
+        "financial"
+      ]
     }
   ],
   "contributorsPerLine": 7,
