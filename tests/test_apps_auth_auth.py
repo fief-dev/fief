@@ -354,6 +354,27 @@ class TestAuthAuthorize:
                 ACR.LEVEL_ONE,
                 id="code_challenge with specified method",
             ),
+            pytest.param(
+                {"response_type": "code", "acr_values": "0"},
+                True,
+                "/consent",
+                ACR.LEVEL_ZERO,
+                id="ACR level 0 with session",
+            ),
+            pytest.param(
+                {"response_type": "code", "acr_values": "1"},
+                True,
+                "/login",
+                ACR.LEVEL_ONE,
+                id="ACR level 1 with session",
+            ),
+            pytest.param(
+                {"response_type": "code", "acr_values": "non_existing_acr"},
+                True,
+                "/consent",
+                ACR.LEVEL_ZERO,
+                id="Unknown ACR with session",
+            ),
             *[
                 pytest.param(
                     {

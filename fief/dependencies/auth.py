@@ -18,6 +18,7 @@ from fief.locale import gettext_lazy as _
 from fief.models import Client, LoginSession, SessionToken, Tenant, Theme
 from fief.repositories import ClientRepository, GrantRepository, LoginSessionRepository
 from fief.schemas.auth import AuthorizeError, AuthorizeRedirectError, LoginError
+from fief.services.acr import ACR
 from fief.services.authentication_flow import AuthenticationFlow
 from fief.services.response_type import (
     ALLOWED_RESPONSE_TYPES,
@@ -232,6 +233,19 @@ async def get_authorize_code_challenge(
         )
 
     return code_challenge, code_challenge_method
+
+
+async def get_authorize_acr(acr_values: str | None = Query(None)) -> ACR:
+    if acr_values is None:
+        return ACR.LEVEL_ZERO
+
+    for acr in acr_values.split():
+        try:
+            return ACR(acr)
+        except ValueError:
+            pass
+
+    return ACR.LEVEL_ZERO
 
 
 async def has_valid_session_token(

@@ -9,6 +9,7 @@ from fief.apps.auth.forms.verify_email import VerifyEmailForm
 from fief.dependencies.auth import (
     BaseContext,
     check_unsupported_request_parameter,
+    get_authorize_acr,
     get_authorize_client,
     get_authorize_code_challenge,
     get_authorize_prompt,
@@ -72,6 +73,7 @@ async def authorize(
     nonce: str | None = Depends(get_nonce),
     state: str | None = Query(None),
     login_hint: str | None = Query(None),
+    requested_acr: ACR = Depends(get_authorize_acr),
     lang: str | None = Query(None),
     authentication_flow: AuthenticationFlow = Depends(get_authentication_flow),
     has_valid_session_token: bool = Depends(has_valid_session_token),
@@ -79,7 +81,11 @@ async def authorize(
     tenant = client.tenant
     acr = ACR.LEVEL_ONE
 
-    if has_valid_session_token and prompt != "login":
+    if (
+        has_valid_session_token
+        and prompt != "login"
+        and requested_acr <= ACR.LEVEL_ZERO
+    ):
         redirection = tenant.url_path_for(request, "auth:consent")
         acr = ACR.LEVEL_ZERO  # Reuse of existing session, lowest assurance level
     elif screen == "register":
