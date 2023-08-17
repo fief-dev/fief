@@ -354,7 +354,7 @@ msgstr "A password deve ter no minimo %(min)d caracteres."
 
 #: fief/services/password.py:34
 msgid "Password must be at most %(max)d characters long."
-msgstr "A password deve ter no máximo %(min)d caracteres."
+msgstr "A password deve ter no máximo %(max)d caracteres."
 
 #: fief/apps/auth/forms/profile.py:17
 msgid "Confirm your password"
