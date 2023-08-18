@@ -100,10 +100,10 @@ def migrate_workspaces():
                 )
                 workspace.alembic_revision = alembic_revision
                 session.add(workspace)
+                session.commit()
                 typer.secho("Done!")
             except WorkspaceDatabaseConnectionError:
                 typer.secho("Failed!", fg="red", err=True)
-        session.commit()
 
 
 @workspaces.command("init-email-templates")
