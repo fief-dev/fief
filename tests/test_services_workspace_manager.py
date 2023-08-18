@@ -21,11 +21,11 @@ from fief.repositories import (
 )
 from fief.schemas.workspace import WorkspaceCreate
 from fief.services.email_template.types import EmailTemplateType
-from fief.services.workspace_creation import WorkspaceCreation
 from fief.services.workspace_db import (
     WorkspaceDatabase,
     WorkspaceDatabaseConnectionError,
 )
+from fief.services.workspace_manager import WorkspaceManager
 from tests.data import TestData
 from tests.types import GetTestDatabase
 
@@ -34,7 +34,7 @@ from tests.types import GetTestDatabase
 async def test_database_url(
     get_test_database: GetTestDatabase,
 ) -> AsyncGenerator[tuple[DatabaseConnectionParameters, DatabaseType], None]:
-    async with get_test_database(name="fief-test-workspace-creation") as (
+    async with get_test_database(name="fief-test-workspace-manager") as (
         database_connection_parameters,
         database_type,
     ):
@@ -64,13 +64,13 @@ def workspace_engine_manager() -> WorkspaceEngineManager:
 
 
 @pytest.fixture
-def workspace_creation(
+def workspace_manager(
     main_session: AsyncSession, workspace_engine_manager: WorkspaceEngineManager
-) -> WorkspaceCreation:
+) -> WorkspaceManager:
     workspace_repository = WorkspaceRepository(main_session)
     workspace_user_repository = WorkspaceUserRepository(main_session)
     workspace_db = WorkspaceDatabase()
-    return WorkspaceCreation(
+    return WorkspaceManager(
         workspace_repository,
         workspace_user_repository,
         workspace_db,
@@ -95,32 +95,32 @@ def mock_main_fief_functions(
     mocker: MockerFixture, workspace: Workspace, main_fief_client: Client
 ):
     get_main_fief_workspace_mock = mocker.patch(
-        "fief.services.workspace_creation.get_main_fief_workspace"
+        "fief.services.workspace_manager.get_main_fief_workspace"
     )
     get_main_fief_workspace_mock.side_effect = AsyncMock(return_value=workspace)
 
     get_main_fief_client_mock = mocker.patch(
-        "fief.services.workspace_creation.get_main_fief_client"
+        "fief.services.workspace_manager.get_main_fief_client"
     )
     get_main_fief_client_mock.side_effect = AsyncMock(return_value=main_fief_client)
 
 
 @pytest.mark.asyncio
-class TestWorkspaceCreationCreate:
+class TestWorkspaceManagerCreate:
     async def test_db_error(
         self,
         mocker: MockerFixture,
         workspace_create: WorkspaceCreate,
-        workspace_creation: WorkspaceCreation,
+        workspace_manager: WorkspaceManager,
         main_session: AsyncSession,
     ):
-        workspace_db_mock = mocker.patch.object(workspace_creation, "workspace_db")
+        workspace_db_mock = mocker.patch.object(workspace_manager, "workspace_db")
         workspace_db_mock.migrate.side_effect = WorkspaceDatabaseConnectionError(
             "An error occured"
         )
 
         with pytest.raises(WorkspaceDatabaseConnectionError):
-            await workspace_creation.create(workspace_create)
+            await workspace_manager.create(workspace_create)
 
         workspace_repository = WorkspaceRepository(main_session)
         workspace = await workspace_repository.get_one_or_none(
@@ -131,10 +131,10 @@ class TestWorkspaceCreationCreate:
     async def test_valid_db(
         self,
         workspace_create: WorkspaceCreate,
-        workspace_creation: WorkspaceCreation,
+        workspace_manager: WorkspaceManager,
         workspace_engine_manager: WorkspaceEngineManager,
     ):
-        workspace = await workspace_creation.create(workspace_create)
+        workspace = await workspace_manager.create(workspace_create)
 
         assert workspace.domain == "burgundy.localhost:8000"
         assert workspace.alembic_revision is not None
@@ -169,11 +169,11 @@ class TestWorkspaceCreationCreate:
     async def test_user_id(
         self,
         workspace_create: WorkspaceCreate,
-        workspace_creation: WorkspaceCreation,
+        workspace_manager: WorkspaceManager,
         workspace_admin_user: User,
         main_session: AsyncSession,
     ):
-        workspace = await workspace_creation.create(
+        workspace = await workspace_manager.create(
             workspace_create, workspace_admin_user.id
         )
 
@@ -186,11 +186,11 @@ class TestWorkspaceCreationCreate:
     async def test_added_redirect_uri(
         self,
         workspace_create: WorkspaceCreate,
-        workspace_creation: WorkspaceCreation,
+        workspace_manager: WorkspaceManager,
         workspace_admin_user: User,
         main_fief_client: Client,
     ):
-        workspace = await workspace_creation.create(
+        workspace = await workspace_manager.create(
             workspace_create, workspace_admin_user.id
         )
 
@@ -202,10 +202,10 @@ class TestWorkspaceCreationCreate:
     async def test_default_parameters(
         self,
         workspace_create: WorkspaceCreate,
-        workspace_creation: WorkspaceCreation,
+        workspace_manager: WorkspaceManager,
         workspace_engine_manager: WorkspaceEngineManager,
     ):
-        workspace = await workspace_creation.create(
+        workspace = await workspace_manager.create(
             workspace_create,
             default_domain="foobar.fief.dev",
             default_client_id="CLIENT_ID",
@@ -227,9 +227,18 @@ class TestWorkspaceCreationCreate:
             assert client.client_secret == "CLIENT_SECRET"
 
     async def test_avoid_domain_collision(
-        self, workspace_create: WorkspaceCreate, workspace_creation: WorkspaceCreation
+        self, workspace_create: WorkspaceCreate, workspace_manager: WorkspaceManager
     ):
         workspace_create.name = "Bretagne"
-        workspace = await workspace_creation.create(workspace_create)
+        workspace = await workspace_manager.create(workspace_create)
 
         assert re.match(r"bretagne-\w+\.localhost", workspace.domain)
+
+
+@pytest.mark.asyncio
+class TestWorkspaceManagerDelete:
+    async def test_valid(
+        self, workspace_create: WorkspaceCreate, workspace_manager: WorkspaceManager
+    ):
+        workspace = await workspace_manager.create(workspace_create)
+        await workspace_manager.delete(workspace)

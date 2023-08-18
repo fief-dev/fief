@@ -7,7 +7,8 @@ from alembic.environment import EnvironmentContext
 from alembic.script import ScriptDirectory
 from sqlalchemy import create_engine, exc, inspect
 from sqlalchemy.engine import Engine
-from sqlalchemy.schema import CreateSchema
+from sqlalchemy.schema import CreateSchema, DropSchema
+from sqlalchemy_utils import drop_database
 
 from fief.db.types import DatabaseConnectionParameters
 from fief.paths import ALEMBIC_CONFIG_FILE
@@ -41,6 +42,27 @@ class WorkspaceDatabase:
         except exc.OperationalError as e:
             raise WorkspaceDatabaseConnectionError(str(e)) from e
         return self.get_latest_revision()
+
+    def drop(
+        self,
+        database_connection_parameters: DatabaseConnectionParameters,
+        schema_name: str,
+    ) -> None:
+        try:
+            with self._get_engine(database_connection_parameters) as engine:
+                dialect_name = engine.dialect.name
+                if dialect_name == "sqlite":
+                    url, _ = database_connection_parameters
+                    drop_database(url)
+                    return
+
+                inspector = inspect(engine)
+                schemas = inspector.get_schema_names()
+                if schema_name in schemas:
+                    with engine.begin() as connection:
+                        connection.execute(DropSchema(schema_name, cascade=True))
+        except exc.OperationalError as e:
+            raise WorkspaceDatabaseConnectionError(str(e)) from e
 
     def check_connection(
         self, database_connection_parameters: DatabaseConnectionParameters

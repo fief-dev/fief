@@ -23,7 +23,7 @@ from fief.services.workspace_db import (
 )
 
 
-class WorkspaceCreation:
+class WorkspaceManager:
     def __init__(
         self,
         workspace_repository: WorkspaceRepository,
@@ -132,6 +132,24 @@ class WorkspaceCreation:
         )
 
         return workspace
+
+    async def delete(self, workspace: Workspace, user_id: UUID4 | None = None) -> None:
+        # Delete cloud data. Keep data on BYOD untouched.
+        if workspace.database_type is None:
+            self.workspace_db.drop(
+                workspace.get_database_connection_parameters(False),
+                workspace.get_schema_name(),
+            )
+
+        await self.workspace_repository.delete(workspace)
+
+        # Inform telemetry
+        event_user_id = str(user_id) if user_id is not None else get_server_id()
+        self.posthog.capture(
+            event_user_id,
+            "Workspace Deleted",
+            groups={"server": get_server_id(), "workspace": str(workspace.id)},
+        )
 
     async def _add_fief_redirect_uri(self, workspace: Workspace):
         main_workspace = await get_main_fief_workspace()

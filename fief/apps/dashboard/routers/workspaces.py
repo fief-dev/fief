@@ -12,16 +12,16 @@ from fief.apps.dashboard.forms.workspace import (
 )
 from fief.db.types import UNSAFE_SSL_MODES, create_database_connection_parameters
 from fief.dependencies.admin_session import get_admin_session_token
-from fief.dependencies.workspace_creation import get_workspace_creation
 from fief.dependencies.workspace_db import get_workspace_db
+from fief.dependencies.workspace_manager import get_workspace_manager
 from fief.forms import FormHelper
 from fief.models import AdminSessionToken
 from fief.schemas.workspace import WorkspaceCreate
-from fief.services.workspace_creation import WorkspaceCreation
 from fief.services.workspace_db import (
     WorkspaceDatabase,
     WorkspaceDatabaseConnectionError,
 )
+from fief.services.workspace_manager import WorkspaceManager
 
 CREATE_WORKSPACE_DATA_SESSION_KEY = "create_workspace"
 CREATE_WORKSPACE_NB_STEPS = 4
@@ -190,7 +190,7 @@ async def create_workspace_step3_check_connection(
 async def create_workspace_step4(
     request: Request,
     session_data: dict[str, Any] = Depends(get_create_workspace_session_data),
-    workspace_creation: WorkspaceCreation = Depends(get_workspace_creation),
+    workspace_manager: WorkspaceManager = Depends(get_workspace_manager),
     admin_session_token: AdminSessionToken = Depends(get_admin_session_token),
     context=Depends(get_base_context),
 ):
@@ -204,7 +204,7 @@ async def create_workspace_step4(
     if await form_helper.is_submitted_and_valid():
         try:
             workspace_create = WorkspaceCreate(**session_data)
-            workspace = await workspace_creation.create(
+            workspace = await workspace_manager.create(
                 workspace_create, user_id=admin_session_token.user_id
             )
         except ValidationError:

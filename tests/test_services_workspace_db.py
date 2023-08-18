@@ -1,3 +1,4 @@
+import os
 from collections.abc import AsyncGenerator
 
 import pytest
@@ -50,6 +51,37 @@ class TestMigrate:
             table_names = inspector.get_table_names()
             assert "fief_alembic_version" in table_names
             assert "fief_tenants" in table_names
+
+
+@pytest.mark.asyncio
+class TestDrop:
+    async def test_connection_error(self, workspace_db: WorkspaceDatabase):
+        with pytest.raises(WorkspaceDatabaseConnectionError):
+            workspace_db.drop(
+                (engine.make_url("postgresql://foo:bar@localhost:1234/foobar"), {}),
+                "workspace-schema",
+            )
+
+    async def test_valid_db(
+        self,
+        workspace_db: WorkspaceDatabase,
+        test_database_url: tuple[DatabaseConnectionParameters, DatabaseType],
+    ):
+        database_connection_params, database_type = test_database_url
+        schema = "workspace_schema"
+        workspace_db.migrate(database_connection_params, schema)
+
+        workspace_db.drop(database_connection_params, schema)
+
+        if database_type == DatabaseType.SQLITE:
+            url, _ = database_connection_params
+            assert url.database is not None
+            assert not os.path.exists(url.database)
+        else:
+            with workspace_db._get_engine(database_connection_params, schema) as engine:
+                inspector = inspect(engine)
+                schemas = inspector.get_schema_names()
+                assert schema not in schemas
 
 
 @pytest.mark.asyncio

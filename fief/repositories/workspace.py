@@ -40,3 +40,9 @@ class WorkspaceRepository(BaseRepository[Workspace], UUIDRepositoryMixin[Workspa
             random.choices(string.ascii_lowercase + string.digits, k=6)
         )
         return f"{slug}-{random_string}.{settings.root_domain}"
+
+    async def get_by_alembic_revision(self, alembic_revision: str) -> list[Workspace]:
+        statement = select(Workspace).where(
+            Workspace.alembic_revision == alembic_revision
+        )
+        return await self.list(statement)

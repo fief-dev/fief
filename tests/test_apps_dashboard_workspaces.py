@@ -332,9 +332,9 @@ class TestCreateWorkspaceStep4:
         encode_session_data: EncodeSessionData,
         test_client_dashboard: httpx.AsyncClient,
         csrf_token: str,
-        workspace_creation_mock: MagicMock,
+        workspace_manager_mock: MagicMock,
     ):
-        workspace_creation_mock.create.side_effect = WorkspaceDatabaseConnectionError(
+        workspace_manager_mock.create.side_effect = WorkspaceDatabaseConnectionError(
             "An error occured"
         )
 
@@ -373,11 +373,11 @@ class TestCreateWorkspaceStep4:
         encode_session_data: EncodeSessionData,
         test_client_dashboard: httpx.AsyncClient,
         csrf_token: str,
-        workspace_creation_mock: MagicMock,
+        workspace_manager_mock: MagicMock,
         workspace: Workspace,
         workspace_admin_user: User,
     ):
-        workspace_creation_mock.create.side_effect = AsyncMock(return_value=workspace)
+        workspace_manager_mock.create.side_effect = AsyncMock(return_value=workspace)
 
         response = await test_client_dashboard.post(
             "/workspaces/create/step4",
@@ -405,6 +405,6 @@ class TestCreateWorkspaceStep4:
         assert response.status_code == status.HTTP_303_SEE_OTHER
         assert response.headers["Location"] == f"http://{workspace.domain}/admin/"
 
-        workspace_creation_mock.create.assert_called_once()
-        create_call_args = workspace_creation_mock.create.call_args
+        workspace_manager_mock.create.assert_called_once()
+        create_call_args = workspace_manager_mock.create.call_args
         create_call_args[1]["user_id"] == workspace_admin_user.id

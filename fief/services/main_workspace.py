@@ -80,7 +80,7 @@ async def get_main_fief_client() -> Client:
 
 
 async def create_main_fief_workspace() -> Workspace:
-    from fief.services.workspace_creation import WorkspaceCreation
+    from fief.services.workspace_manager import WorkspaceManager
 
     async with get_single_main_async_session() as session:
         workspace_repository = WorkspaceRepository(session)
@@ -94,7 +94,7 @@ async def create_main_fief_workspace() -> Workspace:
     workspace_db = WorkspaceDatabase()
 
     async with WorkspaceEngineManager() as workspace_engine_manager:
-        workspace_creation = WorkspaceCreation(
+        workspace_manager = WorkspaceManager(
             workspace_repository,
             workspace_user_repository,
             workspace_db,
@@ -102,7 +102,7 @@ async def create_main_fief_workspace() -> Workspace:
             posthog,
         )
 
-        workspace = await workspace_creation.create(
+        workspace = await workspace_manager.create(
             workspace_create,
             default_domain=settings.fief_domain,
             default_client_id=settings.fief_client_id,

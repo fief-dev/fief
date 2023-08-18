@@ -7,11 +7,11 @@ from fief.dependencies.main_repositories import get_main_repository
 from fief.dependencies.telemetry import get_posthog
 from fief.dependencies.workspace_db import get_workspace_db
 from fief.repositories import WorkspaceRepository, WorkspaceUserRepository
-from fief.services.workspace_creation import WorkspaceCreation
 from fief.services.workspace_db import WorkspaceDatabase
+from fief.services.workspace_manager import WorkspaceManager
 
 
-async def get_workspace_creation(
+async def get_workspace_manager(
     workspace_repository: WorkspaceRepository = Depends(
         get_main_repository(WorkspaceRepository)
     ),
@@ -23,8 +23,8 @@ async def get_workspace_creation(
         get_workspace_engine_manager
     ),
     posthog: Posthog = Depends(get_posthog),
-) -> WorkspaceCreation:
-    return WorkspaceCreation(
+) -> WorkspaceManager:
+    return WorkspaceManager(
         workspace_repository,
         workspace_user_repository,
         workspace_db,

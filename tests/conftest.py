@@ -28,8 +28,8 @@ from fief.dependencies.fief import FiefAsyncRelativeEndpoints, get_fief
 from fief.dependencies.tasks import get_send_task
 from fief.dependencies.tenant_email_domain import get_tenant_email_domain
 from fief.dependencies.theme import get_theme_preview
-from fief.dependencies.workspace_creation import get_workspace_creation
 from fief.dependencies.workspace_db import get_workspace_db
+from fief.dependencies.workspace_manager import get_workspace_manager
 from fief.models import (
     AdminAPIKey,
     AdminSessionToken,
@@ -41,8 +41,8 @@ from fief.models import (
 from fief.services.acr import ACR
 from fief.services.tenant_email_domain import TenantEmailDomain
 from fief.services.theme_preview import ThemePreview
-from fief.services.workspace_creation import WorkspaceCreation
 from fief.services.workspace_db import WorkspaceDatabase
+from fief.services.workspace_manager import WorkspaceManager
 from fief.settings import settings
 from tests.data import TestData, data_mapping, session_token_tokens
 from tests.types import GetTestDatabase, HTTPClientGeneratorType, TenantParams
@@ -62,7 +62,7 @@ def event_loop():
 def get_test_database(worker_id: str) -> GetTestDatabase:
     @contextlib.asynccontextmanager
     async def _get_test_database(
-        *, name: str = "fief-test"
+        *, name: str = "fief-test", drop: bool = True
     ) -> AsyncGenerator[tuple[DatabaseConnectionParameters, DatabaseType], None]:
         url, connect_args = settings.get_database_connection_parameters(False)
 
@@ -72,7 +72,12 @@ def get_test_database(worker_id: str) -> GetTestDatabase:
 
         create_database(url)
         yield ((url, connect_args), settings.database_type)
-        drop_database(url)
+
+        try:
+            drop_database(url)
+        # Silently ignore error when we try to drop an already removed SQLite DB
+        except FileNotFoundError:
+            pass
 
     return _get_test_database
 
@@ -235,8 +240,8 @@ async def workspace_db_mock(latest_revision: str) -> MagicMock:
 
 
 @pytest_asyncio.fixture
-async def workspace_creation_mock() -> MagicMock:
-    return MagicMock(spec=WorkspaceCreation)
+async def workspace_manager_mock() -> MagicMock:
+    return MagicMock(spec=WorkspaceManager)
 
 
 @pytest_asyncio.fixture
@@ -521,7 +526,7 @@ async def test_client_generator(
     main_session: AsyncSession,
     workspace_session: AsyncSession,
     workspace_db_mock: MagicMock,
-    workspace_creation_mock: MagicMock,
+    workspace_manager_mock: MagicMock,
     send_task_mock: MagicMock,
     fief_client_mock: MagicMock,
     theme_preview_mock: MagicMock,
@@ -541,9 +546,7 @@ async def test_client_generator(
         app.dependency_overrides[
             get_workspace_engine_manager
         ] = lambda: WorkspaceEngineManager()
-        app.dependency_overrides[
-            get_workspace_creation
-        ] = lambda: workspace_creation_mock
+        app.dependency_overrides[get_workspace_manager] = lambda: workspace_manager_mock
         app.dependency_overrides[get_send_task] = lambda: send_task_mock
         app.dependency_overrides[get_fief] = lambda: fief_client_mock
         app.dependency_overrides[get_theme_preview] = lambda: theme_preview_mock
