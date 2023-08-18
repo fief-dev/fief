@@ -8,6 +8,10 @@ from fief.repositories.base import BaseRepository, UUIDRepositoryMixin
 class UserRepository(BaseRepository[User], UUIDRepositoryMixin[User]):
     model = User
 
+    async def list_by_ids(self, ids: list[UUID4]) -> list[User]:
+        statement = select(User).where(User.id.in_(ids))
+        return await self.list(statement)
+
     async def get_by_id_and_tenant(self, id: UUID4, tenant: UUID4) -> User | None:
         statement = select(User).where(User.id == id, User.tenant_id == tenant)
         return await self.get_one_or_none(statement)

@@ -17,3 +17,9 @@ class WorkspaceUserRepository(
             WorkspaceUser.workspace_id == workspace_id, WorkspaceUser.user_id == user_id
         )
         return await self.get_one_or_none(statement)
+
+    async def get_by_workspace(self, workspace_id: UUID4) -> list[WorkspaceUser]:
+        statement = select(WorkspaceUser).where(
+            WorkspaceUser.workspace_id == workspace_id
+        )
+        return await self.list(statement)

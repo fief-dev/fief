@@ -192,3 +192,19 @@ async def create_main_fief_admin_api_key(token: str) -> AdminAPIKey:
             await admin_api_key_repository.create(admin_api_key)
 
     return admin_api_key
+
+
+async def get_workspace_users(workspace: Workspace) -> list[User]:
+    async with get_single_main_async_session() as session:
+        workspace_user_repository = WorkspaceUserRepository(session)
+        workspace_users = await workspace_user_repository.get_by_workspace(workspace.id)
+
+    main_workspace = await get_main_fief_workspace()
+    async with WorkspaceEngineManager() as workspace_engine_manager:
+        async with get_workspace_session(
+            main_workspace, workspace_engine_manager
+        ) as session:
+            user_repository = UserRepository(session)
+            return await user_repository.list_by_ids(
+                [workspace_user.user_id for workspace_user in workspace_users]
+            )
