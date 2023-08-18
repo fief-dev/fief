@@ -51,6 +51,7 @@ async def list():
 
     table = Table()
     table.add_column("Name")
+    table.add_column("Domain")
     table.add_column("Reachable")
     table.add_column("Database")
     table.add_column("Database type")
@@ -59,6 +60,7 @@ async def list():
     for stat in stats:
         table.add_row(
             stat.workspace.name,
+            stat.workspace.domain,
             "✅" if stat.reachable else "❌",
             "External" if stat.external_db else "Main",
             stat.workspace.database_type if stat.external_db else None,
@@ -160,6 +162,25 @@ async def init_themes():
                 typer.secho("Done!")
             except (ConnectionError, DBAPIError):
                 typer.secho("Failed!", fg="red", err=True)
+
+
+@workspaces.command("delete")
+@asyncio_command
+async def delete_workspace(
+    domain: str = typer.Argument(..., help="The workspace domain"),
+):
+    """Delete a workspace."""
+    from fief.services.workspace_manager import (
+        WorkspaceDoesNotExistError,
+        delete_workspace_by_domain,
+    )
+
+    try:
+        await delete_workspace_by_domain(domain)
+        typer.echo("Workspace deleted")
+    except WorkspaceDoesNotExistError as e:
+        typer.secho("This workspace does not exist", fg="red")
+        raise typer.Exit(code=1) from e
 
 
 @workspaces.command("create-main")

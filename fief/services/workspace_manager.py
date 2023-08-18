@@ -1,6 +1,7 @@
 from posthog import Posthog
 from pydantic import UUID4
 
+from fief.db.main import get_single_main_async_session
 from fief.db.workspace import WorkspaceEngineManager, get_workspace_session
 from fief.models import Client, Tenant, Workspace, WorkspaceUser
 from fief.repositories import (
@@ -15,7 +16,7 @@ from fief.schemas.workspace import WorkspaceCreate
 from fief.services.email_template.initializer import EmailTemplateInitializer
 from fief.services.localhost import is_localhost
 from fief.services.main_workspace import get_main_fief_client, get_main_fief_workspace
-from fief.services.posthog import get_server_id
+from fief.services.posthog import get_server_id, posthog
 from fief.services.theme import init_default_theme
 from fief.services.workspace_db import (
     WorkspaceDatabase,
@@ -165,3 +166,28 @@ class WorkspaceManager:
             fief_client.redirect_uris = fief_client.redirect_uris + [redirect_uri]
 
             await client_repository.update(fief_client)
+
+
+class WorkspaceDoesNotExistError(Exception):
+    pass
+
+
+async def delete_workspace_by_domain(domain: str) -> None:
+    async with get_single_main_async_session() as session:
+        workspace_repository = WorkspaceRepository(session)
+        workspace_user_repository = WorkspaceUserRepository(session)
+        workspace_db = WorkspaceDatabase()
+
+        workspace = await workspace_repository.get_by_domain(domain)
+        if workspace is None:
+            raise WorkspaceDoesNotExistError()
+
+        async with WorkspaceEngineManager() as workspace_engine_manager:
+            workspace_manager = WorkspaceManager(
+                workspace_repository,
+                workspace_user_repository,
+                workspace_db,
+                workspace_engine_manager,
+                posthog,
+            )
+            await workspace_manager.delete(workspace)
