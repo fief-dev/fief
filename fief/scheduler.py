@@ -3,8 +3,6 @@ from apscheduler.triggers.cron import CronTrigger
 
 from fief import tasks
 
-scheduler = BlockingScheduler()
-
 
 def schedule():
     scheduler = BlockingScheduler()
