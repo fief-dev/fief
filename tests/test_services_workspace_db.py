@@ -4,6 +4,7 @@ from collections.abc import AsyncGenerator
 import pytest
 import pytest_asyncio
 from sqlalchemy import engine, inspect
+from sqlalchemy.exc import OperationalError
 
 from fief.db.types import DatabaseConnectionParameters, DatabaseType
 from fief.services.workspace_db import (
@@ -77,11 +78,18 @@ class TestDrop:
             url, _ = database_connection_params
             assert url.database is not None
             assert not os.path.exists(url.database)
-        else:
+        elif database_type == DatabaseType.POSTGRESQL:
             with workspace_db._get_engine(database_connection_params, schema) as engine:
                 inspector = inspect(engine)
                 schemas = inspector.get_schema_names()
                 assert schema not in schemas
+        elif database_type == DatabaseType.MYSQL:
+            with pytest.raises(OperationalError) as e:
+                with workspace_db._get_engine(
+                    database_connection_params, schema
+                ) as engine:
+                    engine.connect()
+            assert "Unknown database" in str(e.value.orig)
 
 
 @pytest.mark.asyncio

@@ -60,7 +60,11 @@ class WorkspaceDatabase:
                 schemas = inspector.get_schema_names()
                 if schema_name in schemas:
                     with engine.begin() as connection:
-                        connection.execute(DropSchema(schema_name, cascade=True))
+                        connection.execute(
+                            DropSchema(
+                                schema_name, cascade=dialect_name == "postgresql"
+                            )
+                        )
         except exc.OperationalError as e:
             raise WorkspaceDatabaseConnectionError(str(e)) from e
 
