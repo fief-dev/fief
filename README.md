@@ -14,7 +14,7 @@
 ## Contributing
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-22-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-23-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 All contributions to improve the project are welcome! In particular, bug and documentation fixes are really appreciated.
@@ -57,6 +57,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     </tr>
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://meltingrocks.com/"><img src="https://avatars.githubusercontent.com/u/37904?v=4?s=100" width="100px;" alt="Mathieu Virbel"/><br /><sub><b>Mathieu Virbel</b></sub></a><br /><a href="https://github.com/fief-dev/fief/issues?q=author%3Atito" title="Bug reports">🐛</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/corv89"><img src="https://avatars.githubusercontent.com/u/7198687?v=4?s=100" width="100px;" alt="corv89"/><br /><sub><b>corv89</b></sub></a><br /><a href="https://github.com/fief-dev/fief/issues?q=author%3Acorv89" title="Bug reports">🐛</a></td>
     </tr>
   </tbody>
 </table>
