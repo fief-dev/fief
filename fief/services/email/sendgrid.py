@@ -49,7 +49,7 @@ class Sendgrid(EmailProvider):
 
             self._client.send(message)
 
-        except SendGridException as e:
+        except (SendGridException, HTTPError) as e:
             raise SendEmailError(str(e)) from e
 
     def create_domain(self, domain: str) -> EmailDomain:
