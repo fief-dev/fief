@@ -198,6 +198,15 @@
       "contributions": [
         "financial"
       ]
+    },
+    {
+      "login": "tito",
+      "name": "Mathieu Virbel",
+      "avatar_url": "https://avatars.githubusercontent.com/u/37904?v=4",
+      "profile": "https://meltingrocks.com/",
+      "contributions": [
+        "bug"
+      ]
     }
   ],
   "contributorsPerLine": 7,
