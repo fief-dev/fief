@@ -5,8 +5,12 @@ from fief.dependencies.oauth_provider import get_oauth_providers
 from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.exceptions import OAuthException
 from fief.locale import gettext_lazy as _
-from fief.models import LoginSession, OAuthProvider, Tenant
-from fief.repositories import LoginSessionRepository, TenantRepository
+from fief.models import LoginSession, OAuthProvider, OAuthSession, Tenant
+from fief.repositories import (
+    LoginSessionRepository,
+    OAuthSessionRepository,
+    TenantRepository,
+)
 from fief.schemas.oauth import OAuthError
 from fief.settings import settings
 
@@ -63,3 +67,59 @@ async def get_oauth_provider(
         )
 
     return oauth_provider
+
+
+async def get_oauth_session(
+    code: str | None = Query(None),
+    state: str | None = Query(None),
+    error: str | None = Query(None),
+    oauth_session_repository: OAuthSessionRepository = Depends(
+        get_workspace_repository(OAuthSessionRepository)
+    ),
+) -> OAuthSession:
+    if error is not None:
+        raise OAuthException(
+            OAuthError.get_oauth_error(error),
+            fatal=True,
+        )
+
+    if code is None:
+        raise OAuthException(
+            OAuthError.get_missing_code(_("Missing authorization code.")),
+            fatal=True,
+        )
+
+    oauth_session = (
+        await oauth_session_repository.get_by_token(state)
+        if state is not None
+        else None
+    )
+    if oauth_session is None:
+        raise OAuthException(
+            OAuthError.get_invalid_session(_("Invalid OAuth session.")),
+            fatal=True,
+        )
+
+    return oauth_session
+
+
+async def get_optional_login_session(
+    token: str | None = Cookie(None, alias=settings.login_session_cookie_name),
+    login_session_repository: LoginSessionRepository = Depends(
+        get_workspace_repository(LoginSessionRepository)
+    ),
+    oauth_session: OAuthSession = Depends(get_oauth_session),
+) -> LoginSession | None:
+    if token is None:
+        return None
+
+    login_session = await login_session_repository.get_by_token(token)
+    if (
+        login_session is None
+        or login_session.client.tenant_id != oauth_session.tenant_id
+    ):
+        raise OAuthException(
+            OAuthError.get_invalid_session(_("Invalid login session.")), fatal=True
+        )
+
+    return login_session

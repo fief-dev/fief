@@ -535,3 +535,71 @@ class TestOAuthCallback:
         assert registration_session.flow == RegistrationSessionFlow.OAUTH
         assert registration_session.oauth_account_id == oauth_account.id
         assert registration_session.email == oauth_account.account_email
+
+    async def test_secondary_tenant_invalid_login_session(
+        self, test_client_auth: httpx.AsyncClient, test_data: TestData
+    ):
+        login_session = test_data["login_sessions"]["default"]
+        oauth_session = test_data["oauth_sessions"]["secondary_google"]
+
+        cookies = {}
+        cookies[settings.login_session_cookie_name] = login_session.token
+
+        response = await test_client_auth.get(
+            "/oauth/callback",
+            params={
+                "code": "CODE",
+                "redirect_uri": oauth_session.redirect_uri,
+                "state": oauth_session.token,
+            },
+            cookies=cookies,
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    async def test_secondary_tenant(
+        self,
+        mocker: MockerFixture,
+        test_client_auth: httpx.AsyncClient,
+        test_data: TestData,
+    ):
+        login_session = test_data["login_sessions"]["secondary"]
+        client = login_session.client
+        tenant = client.tenant
+        path_prefix = tenant.slug if not tenant.default else ""
+
+        oauth_session = test_data["oauth_sessions"]["secondary_google"]
+
+        cookies = {}
+        cookies[settings.login_session_cookie_name] = login_session.token
+
+        oauth_provider_service_mock = MagicMock(spec=BaseOAuth2)
+        oauth_provider_service_mock.get_access_token.side_effect = AsyncMock(
+            return_value={
+                "access_token": "ACCESS_TOKEN",
+                "expires_in": 3600,
+                "expires_at": int(datetime.now(UTC).timestamp() + 3600),
+                "refresh_token": "REFRESH_TOKEN",
+            }
+        )
+        oauth_provider_service_mock.get_id_email.side_effect = AsyncMock(
+            return_value=("NEW_ACCOUNT", "louis@bretagne.duchy")
+        )
+        mocker.patch(
+            "fief.apps.auth.routers.oauth.get_oauth_provider_service"
+        ).return_value = oauth_provider_service_mock
+
+        response = await test_client_auth.get(
+            "/oauth/callback",
+            params={
+                "code": "CODE",
+                "redirect_uri": oauth_session.redirect_uri,
+                "state": oauth_session.token,
+            },
+            cookies=cookies,
+        )
+
+        assert response.status_code == status.HTTP_302_FOUND
+
+        redirect_uri = response.headers["Location"]
+        assert redirect_uri.endswith(f"{path_prefix}/register")

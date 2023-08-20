@@ -604,6 +604,11 @@ oauth_sessions: ModelMapping[OAuthSession] = {
         oauth_provider=oauth_providers["google"],
         tenant=tenants["default"],
     ),
+    "secondary_google": OAuthSession(
+        redirect_uri="http://api.fief.dev/oauth/callback",
+        oauth_provider=oauth_providers["google"],
+        tenant=tenants["secondary"],
+    ),
 }
 
 authorization_code_codes: Mapping[str, tuple[str, str]] = {

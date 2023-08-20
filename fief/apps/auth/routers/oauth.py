@@ -5,10 +5,11 @@ from fastapi.responses import RedirectResponse
 from httpx_oauth.errors import GetIdEmailError
 from httpx_oauth.oauth2 import GetAccessTokenError
 
-from fief.dependencies.auth import get_optional_login_session
 from fief.dependencies.authentication_flow import get_authentication_flow
 from fief.dependencies.oauth import (
     get_oauth_provider,
+    get_oauth_session,
+    get_optional_login_session,
     get_optional_login_session_with_tenant_query,
     get_tenant_by_query,
 )
@@ -73,8 +74,7 @@ async def callback(
     request: Request,
     code: str | None = Query(None),
     code_verifier: str | None = Query(None),
-    state: str | None = Query(None),
-    error: str | None = Query(None),
+    oauth_session: OAuthSession = Depends(get_oauth_session),
     login_session: LoginSession | None = Depends(get_optional_login_session),
     oauth_providers: list[OAuthProvider] | None = Depends(get_oauth_providers),
     oauth_session_repository: OAuthSessionRepository = Depends(
@@ -87,31 +87,7 @@ async def callback(
     registration_flow: RegistrationFlow = Depends(get_registration_flow),
     session_token: SessionToken | None = Depends(get_session_token),
 ):
-    if error is not None:
-        raise OAuthException(
-            OAuthError.get_oauth_error(error),
-            oauth_providers=oauth_providers,
-            fatal=True,
-        )
-
-    if code is None:
-        raise OAuthException(
-            OAuthError.get_missing_code(_("Missing authorization code.")),
-            oauth_providers=oauth_providers,
-            fatal=True,
-        )
-
-    oauth_session = (
-        await oauth_session_repository.get_by_token(state)
-        if state is not None
-        else None
-    )
-    if oauth_session is None:
-        raise OAuthException(
-            OAuthError.get_invalid_session(_("Invalid OAuth session.")),
-            oauth_providers=oauth_providers,
-            fatal=True,
-        )
+    assert code is not None
 
     tenant = oauth_session.tenant
     oauth_provider = oauth_session.oauth_provider
