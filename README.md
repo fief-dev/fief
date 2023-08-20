@@ -14,7 +14,7 @@
 ## Contributing
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-21-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-22-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 All contributions to improve the project are welcome! In particular, bug and documentation fixes are really appreciated.
@@ -54,6 +54,9 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/rotil"><img src="https://avatars.githubusercontent.com/u/42150485?v=4?s=100" width="100px;" alt="rotil"/><br /><sub><b>rotil</b></sub></a><br /><a href="#security-rotil" title="Security">🛡️</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/bingyulee"><img src="https://avatars.githubusercontent.com/u/4936030?v=4?s=100" width="100px;" alt="李秉祐"/><br /><sub><b>李秉祐</b></sub></a><br /><a href="#translation-bingyulee" title="Translation">🌍</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://dubinets.io"><img src="https://avatars.githubusercontent.com/u/3114081?v=4?s=100" width="100px;" alt="Lev Dubinets"/><br /><sub><b>Lev Dubinets</b></sub></a><br /><a href="#financial-ldub" title="Financial">💵</a></td>
+    </tr>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://meltingrocks.com/"><img src="https://avatars.githubusercontent.com/u/37904?v=4?s=100" width="100px;" alt="Mathieu Virbel"/><br /><sub><b>Mathieu Virbel</b></sub></a><br /><a href="https://github.com/fief-dev/fief/issues?q=author%3Atito" title="Bug reports">🐛</a></td>
     </tr>
   </tbody>
 </table>
