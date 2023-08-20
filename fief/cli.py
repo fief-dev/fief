@@ -17,7 +17,6 @@ from sqlalchemy.orm import sessionmaker
 from fief import __version__
 from fief.crypto.encryption import generate_key
 from fief.paths import ALEMBIC_CONFIG_FILE
-from fief.services.user_manager import InvalidPasswordError, UserAlreadyExistsError
 from fief.services.workspace_db import (
     WorkspaceDatabase,
     WorkspaceDatabaseConnectionError,
@@ -217,6 +216,7 @@ async def create_main_user(
         CreateMainFiefUserError,
         create_main_fief_user,
     )
+    from fief.services.user_manager import InvalidPasswordError, UserAlreadyExistsError
 
     try:
         await create_main_fief_user(user_email, user_password)
@@ -397,6 +397,10 @@ def run_server(
             from fief.services.main_workspace import (
                 MainWorkspaceAlreadyExists,
                 create_main_fief_workspace,
+            )
+            from fief.services.user_manager import (
+                InvalidPasswordError,
+                UserAlreadyExistsError,
             )
 
             try:
