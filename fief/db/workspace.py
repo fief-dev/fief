@@ -77,6 +77,6 @@ async def get_workspace_session(
     engine = workspace_engine_manager.get_engine(
         workspace.get_database_connection_parameters()
     )
-    async with get_connection(engine, workspace.get_schema_name()) as connection:
+    async with get_connection(engine, workspace.schema_name) as connection:
         async with AsyncSession(bind=connection, expire_on_commit=False) as session:
             yield session

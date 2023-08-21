@@ -27,10 +27,12 @@ class WorkspaceDatabase:
     def migrate(
         self,
         database_connection_parameters: DatabaseConnectionParameters,
-        schema_name: str,
+        schema_name: str | None,
     ) -> str:
         try:
-            self._ensure_schema(database_connection_parameters, schema_name)
+            if schema_name is not None:
+                self._create_schema(database_connection_parameters, schema_name)
+
             with self._get_engine(
                 database_connection_parameters, schema_name
             ) as engine:
@@ -46,25 +48,24 @@ class WorkspaceDatabase:
     def drop(
         self,
         database_connection_parameters: DatabaseConnectionParameters,
-        schema_name: str,
+        schema_name: str | None,
     ) -> None:
         try:
             with self._get_engine(database_connection_parameters) as engine:
                 dialect_name = engine.dialect.name
-                if dialect_name == "sqlite":
+                if dialect_name == "sqlite" or schema_name is None:
                     url, _ = database_connection_parameters
                     drop_database(url)
-                    return
-
-                inspector = inspect(engine)
-                schemas = inspector.get_schema_names()
-                if schema_name in schemas:
-                    with engine.begin() as connection:
-                        connection.execute(
-                            DropSchema(
-                                schema_name, cascade=dialect_name == "postgresql"
+                else:
+                    inspector = inspect(engine)
+                    schemas = inspector.get_schema_names()
+                    if schema_name in schemas:
+                        with engine.begin() as connection:
+                            connection.execute(
+                                DropSchema(
+                                    schema_name, cascade=dialect_name == "postgresql"
+                                )
                             )
-                        )
         except exc.OperationalError as e:
             raise WorkspaceDatabaseConnectionError(str(e)) from e
 
@@ -108,7 +109,7 @@ class WorkspaceDatabase:
 
         engine.dispose()
 
-    def _ensure_schema(
+    def _create_schema(
         self,
         database_connection_parameters: DatabaseConnectionParameters,
         schema_name: str,

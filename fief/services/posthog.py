@@ -44,6 +44,6 @@ def get_workspace_properties(workspace: "Workspace") -> dict[str, Any]:
     return {
         "server": get_server_id(),
         "users_count": workspace.users_count,
-        "byod": workspace.database_type is not None,
+        "byod": workspace.is_byod,
         "database_type": workspace.database_type,
     }

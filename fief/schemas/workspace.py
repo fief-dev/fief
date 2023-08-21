@@ -6,6 +6,7 @@ from fief.errors import APIErrorCode
 
 class WorkspaceCreate(BaseModel):
     name: str
+    database_use_schema: bool = False
     database_type: DatabaseType | None = None
     database_host: str | None = None
     database_port: int | None = None

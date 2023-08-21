@@ -32,7 +32,7 @@ class Workspaces:
                 WorkspaceStats(
                     workspace=workspace,
                     reachable=True,
-                    external_db=workspace.database_type is not None,
+                    external_db=workspace.is_byod,
                     nb_users=workspace.users_count,
                 )
             )
