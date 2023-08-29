@@ -70,7 +70,7 @@ class UserField(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
         String(length=320), index=True, nullable=False, unique=True
     )
     type: Mapped[UserFieldType] = mapped_column(
-        SQLEnum(UserFieldType), index=True, nullable=True
+        SQLEnum(UserFieldType, name="fief_userfieldtype"), index=True, nullable=True
     )
     configuration: Mapped[UserFieldConfiguration] = mapped_column(JSON, nullable=False)
 

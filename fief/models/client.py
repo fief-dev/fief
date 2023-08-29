@@ -46,7 +46,11 @@ class Client(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
     first_party: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
     client_type: Mapped[ClientType] = mapped_column(
-        Enum(ClientType, values_callable=lambda x: [e.value for e in x]),
+        Enum(
+            ClientType,
+            name="fief_clienttype",
+            values_callable=lambda x: [e.value for e in x],
+        ),
         nullable=False,
         default=ClientType.CONFIDENTIAL,
         server_default=ClientType.CONFIDENTIAL,

@@ -32,7 +32,7 @@ class LoginSession(UUIDModel, CreatedUpdatedAt, ExpiresAt, WorkspaceBase):
     state: Mapped[str | None] = mapped_column(String(length=2048), nullable=True)
     nonce: Mapped[str | None] = mapped_column(String(length=255), nullable=True)
     acr: Mapped[ACR] = mapped_column(
-        Enum(ACR, values_callable=lambda x: [e.value for e in x]),
+        Enum(ACR, name="fief_acr", values_callable=lambda x: [e.value for e in x]),
         nullable=False,
         default=ACR.LEVEL_ZERO,
     )
