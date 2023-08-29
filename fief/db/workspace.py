@@ -1,7 +1,7 @@
 import contextlib
 import sqlite3
 from collections.abc import AsyncGenerator
-from typing import TYPE_CHECKING, Self
+from typing import TYPE_CHECKING, Any, Self
 
 import asyncpg.exceptions
 from sqlalchemy import exc
@@ -49,7 +49,7 @@ async def get_connection(
     schema_name: str | None = None,
 ) -> AsyncGenerator[AsyncConnection, None]:
     dialect_name = engine.dialect.name
-    options = {"table_prefix": table_prefix}
+    options: dict[str, Any] = {"table_prefix": table_prefix}
     if dialect_name != "sqlite":
         options["schema_translate_map"] = {None: schema_name}
     try:

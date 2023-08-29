@@ -5,8 +5,8 @@ Revises: 1f410bdb7d63
 Create Date: 2023-08-28 16:56:32.354188
 
 """
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 from sqlalchemy.dialects import postgresql
 
 import fief

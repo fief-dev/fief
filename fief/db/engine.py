@@ -2,8 +2,8 @@ from sqlalchemy import event
 from sqlalchemy.ext.asyncio import AsyncEngine, async_sessionmaker, create_async_engine
 
 from fief.db.types import DatabaseConnectionParameters
-from fief.settings import settings
 from fief.models.base import TABLE_PREFIX_PLACEHOLDER
+from fief.settings import settings
 
 
 def create_engine(

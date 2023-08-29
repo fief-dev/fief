@@ -5,7 +5,7 @@ from sqlalchemy import JSON, String
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from fief.models.base import WorkspaceBase, TABLE_PREFIX_PLACEHOLDER
+from fief.models.base import TABLE_PREFIX_PLACEHOLDER, WorkspaceBase
 from fief.models.generics import CreatedUpdatedAt, UUIDModel
 
 if TYPE_CHECKING:

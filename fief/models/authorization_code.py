@@ -6,7 +6,7 @@ from sqlalchemy import Enum, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql.sqltypes import JSON, String
 
-from fief.models.base import WorkspaceBase, TABLE_PREFIX_PLACEHOLDER
+from fief.models.base import TABLE_PREFIX_PLACEHOLDER, WorkspaceBase
 from fief.models.client import Client
 from fief.models.generics import (
     GUID,

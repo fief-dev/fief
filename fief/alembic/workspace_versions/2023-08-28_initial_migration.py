@@ -5,10 +5,9 @@ Revises:
 Create Date: 2023-08-28 17:05:23.479609
 
 """
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 from sqlalchemy.dialects import postgresql
-
 
 import fief
 
@@ -515,11 +514,16 @@ def upgrade():
 
     if dialect == "postgresql":
         client_type_enum = postgresql.ENUM(
-            "public", "confidential", name=f"{table_prefix}clienttype", create_type=False
+            "public",
+            "confidential",
+            name=f"{table_prefix}clienttype",
+            create_type=False,
         )
         client_type_enum.create(connection, checkfirst=True)
     else:
-        client_type_enum = sa.Enum("public", "confidential", name=f"{table_prefix}clienttype")
+        client_type_enum = sa.Enum(
+            "public", "confidential", name=f"{table_prefix}clienttype"
+        )
 
     op.create_table(
         f"{table_prefix}clients",
@@ -654,7 +658,9 @@ def upgrade():
     )
 
     if dialect == "postgresql":
-        acr_enum = postgresql.ENUM("0", "1", name=f"{table_prefix}acr", create_type=False)
+        acr_enum = postgresql.ENUM(
+            "0", "1", name=f"{table_prefix}acr", create_type=False
+        )
         acr_enum.create(connection, checkfirst=True)
     else:
         acr_enum = sa.Enum("0", "1", name=f"{table_prefix}acr")
