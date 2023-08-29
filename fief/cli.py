@@ -97,6 +97,7 @@ def migrate_workspaces():
             try:
                 alembic_revision = workspace_db.migrate(
                     workspace.get_database_connection_parameters(False),
+                    workspace.database_table_prefix,
                     workspace.schema_name,
                 )
                 workspace.alembic_revision = alembic_revision

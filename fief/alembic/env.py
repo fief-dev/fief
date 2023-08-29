@@ -27,6 +27,7 @@ target_metadata = getattr(models, config.get_main_option("target_base")).metadat
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
+table_prefix = config.attributes.get("table_prefix", "")
 
 
 def run_migrations_offline():
@@ -82,6 +83,7 @@ def run_migrations_online():
             connection=connection,
             target_metadata=target_metadata,
             version_table=config.get_main_option("version_table_name"),
+            table_prefix=table_prefix,
         )
 
         with context.begin_transaction():

@@ -66,6 +66,7 @@ class WorkspaceManager:
         try:
             alembic_revision = self.workspace_db.migrate(
                 workspace.get_database_connection_parameters(False),
+                workspace.database_table_prefix,
                 workspace.schema_name,
             )
         except WorkspaceDatabaseConnectionError:

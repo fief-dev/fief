@@ -29,6 +29,9 @@ class Workspace(UUIDModel, CreatedUpdatedAt, MainBase):
     database_use_schema: Mapped[bool] = mapped_column(
         Boolean, nullable=False, default=False
     )
+    database_table_prefix: Mapped[str] = mapped_column(
+        String(length=255), default="fief_", nullable=False
+    )
     database_host: Mapped[str | None] = mapped_column(
         StringEncryptedType(Text, settings.encryption_key, FernetEngine), nullable=True
     )

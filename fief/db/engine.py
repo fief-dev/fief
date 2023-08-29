@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncEngine, async_sessionmaker, create_async
 
 from fief.db.types import DatabaseConnectionParameters
 from fief.settings import settings
+from fief.models.base import TABLE_PREFIX_PLACEHOLDER
 
 
 def create_engine(
@@ -37,6 +38,15 @@ def create_engine(
         def do_begin(conn):
             # emit our own BEGIN
             conn.exec_driver_sql("BEGIN")
+
+    @event.listens_for(engine.sync_engine, "before_cursor_execute", retval=True)
+    def before_cursor_execute(
+        conn, cursor, statement, parameters, context, executemany
+    ):
+        table_prefix = context.execution_options.get("table_prefix", None)
+        if table_prefix is not None:
+            statement = statement.replace(TABLE_PREFIX_PLACEHOLDER, table_prefix)
+        return statement, parameters
 
     return engine
 

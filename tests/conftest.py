@@ -156,7 +156,9 @@ async def workspace(
 
     workspace_db = WorkspaceDatabase()
     revision = workspace_db.migrate(
-        workspace.get_database_connection_parameters(False), workspace.schema_name
+        workspace.get_database_connection_parameters(False),
+        workspace.database_table_prefix,
+        workspace.schema_name,
     )
     workspace.alembic_revision = revision
     main_session.add(workspace)
@@ -182,7 +184,9 @@ async def workspace_engine(workspace: Workspace) -> AsyncGenerator[AsyncEngine, 
 async def workspace_connection(
     workspace_engine: AsyncEngine, workspace: Workspace
 ) -> AsyncGenerator[AsyncConnection, None]:
-    async with get_connection(workspace_engine, workspace.schema_name) as connection:
+    async with get_connection(
+        workspace_engine, schema_name=workspace.schema_name
+    ) as connection:
         yield connection
 
 

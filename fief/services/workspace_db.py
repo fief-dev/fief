@@ -27,6 +27,7 @@ class WorkspaceDatabase:
     def migrate(
         self,
         database_connection_parameters: DatabaseConnectionParameters,
+        table_prefix: str,
         schema_name: str | None,
     ) -> str:
         try:
@@ -40,6 +41,7 @@ class WorkspaceDatabase:
                     config = self._get_alembic_base_config()
                     config.attributes["configure_logger"] = False
                     config.attributes["connection"] = connection
+                    config.attributes["table_prefix"] = table_prefix
                     command.upgrade(config, "head")
         except exc.OperationalError as e:
             raise WorkspaceDatabaseConnectionError(str(e)) from e
