@@ -3,7 +3,7 @@ from datetime import UTC, datetime
 from typing import Any, Generic, Protocol, TypeVar, cast
 
 from pydantic import UUID4
-from sqlalchemy import delete, func, select
+from sqlalchemy import delete, func, over, select
 from sqlalchemy.engine import Result
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import InstrumentedAttribute, RelationshipProperty, contains_eager
@@ -78,10 +78,15 @@ class BaseRepository(BaseRepositoryProtocol, Generic[M]):
         limit=10,
         skip=0,
     ) -> tuple[list[M], int]:
-        paginated_statement = statement.offset(skip).limit(limit)
-        # FIXME: running it concurrently causes issues with SQLite and SQLAlchemy2
-        count = await self._count(statement)
-        results = await self.list(paginated_statement)
+        statement = statement.offset(skip).limit(limit)
+        statement = statement.add_columns(over(func.count()))
+
+        results: list[M] = []
+        count = 0
+        for row in await self._execute_query(statement):
+            results.append(row[0])
+            count = row[1]
+
         return results, count
 
     def orderize(
