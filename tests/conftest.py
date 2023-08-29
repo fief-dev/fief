@@ -185,7 +185,9 @@ async def workspace_connection(
     workspace_engine: AsyncEngine, workspace: Workspace
 ) -> AsyncGenerator[AsyncConnection, None]:
     async with get_connection(
-        workspace_engine, schema_name=workspace.schema_name
+        workspace_engine,
+        table_prefix=workspace.database_table_prefix,
+        schema_name=workspace.schema_name,
     ) as connection:
         yield connection
 
