@@ -39,6 +39,9 @@ def create_engine(
             # emit our own BEGIN
             conn.exec_driver_sql("BEGIN")
 
+    # Trick allowing us to query tables with a dynamic prefix.
+    # We simply replace our placeholder with the actual value on the resulting SQL string.
+    # Taken from: https://docs.sqlalchemy.org/en/20/_modules/examples/sharding/separate_tables.html
     @event.listens_for(engine.sync_engine, "before_cursor_execute", retval=True)
     def before_cursor_execute(
         conn, cursor, statement, parameters, context, executemany
