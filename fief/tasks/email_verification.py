@@ -3,8 +3,10 @@ import uuid
 import dramatiq
 
 from fief import schemas
+from fief.logger import logger
 from fief.models import EmailVerification
 from fief.repositories import EmailVerificationRepository
+from fief.services.email import Null
 from fief.services.email_template.contexts import VerifyEmailContext
 from fief.services.email_template.types import EmailTemplateType
 from fief.tasks.base import ObjectDoesNotExistTaskError, TaskBase
@@ -55,6 +57,13 @@ class OnEmailVerificationRequestedTask(TaskBase):
                 subject=subject,
                 html=html,
             )
+
+            if isinstance(self.email_provider, Null):
+                logger.warning(
+                    "Email verification requested with NULL email provider",
+                    email_verification_id=email_verification_id,
+                    code=code,
+                )
 
 
 on_email_verification_requested = dramatiq.actor(OnEmailVerificationRequestedTask())
