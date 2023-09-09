@@ -5,9 +5,9 @@ import secrets
 
 def get_code_verifier_hash(verifier: str) -> str:
     hasher = hashlib.sha256()
-    hasher.update(verifier.encode("ascii"))
+    hasher.update(verifier.encode("utf-8"))
     digest = hasher.digest()
-    b64_digest = base64.urlsafe_b64encode(digest).decode("ascii")
+    b64_digest = base64.urlsafe_b64encode(digest).decode("utf-8")
     return b64_digest[:-1]  # Remove the padding "=" at the end
 
 

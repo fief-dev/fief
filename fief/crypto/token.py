@@ -8,7 +8,7 @@ from fief.settings import settings
 def get_token_hash(
     token: str, *, secret: str = settings.secret.get_secret_value()
 ) -> str:
-    hash = hmac.new(secret.encode("ascii"), token.encode("ascii"), hashlib.sha256)
+    hash = hmac.new(secret.encode("utf-8"), token.encode("utf-8"), hashlib.sha256)
     return hash.hexdigest()
 
 

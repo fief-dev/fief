@@ -9,7 +9,7 @@ from fief.settings import settings
 def get_verify_code_hash(
     code: str, *, secret: str = settings.secret.get_secret_value()
 ) -> str:
-    hash = hmac.new(secret.encode("ascii"), code.encode("ascii"), hashlib.sha256)
+    hash = hmac.new(secret.encode("utf-8"), code.encode("utf-8"), hashlib.sha256)
     return hash.hexdigest()
 
 
