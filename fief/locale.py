@@ -4,7 +4,7 @@ from typing import Any
 import asgi_babel
 import wtforms.i18n
 from asgi_tools import Request
-from babel import Locale, support
+from babel import Locale, UnknownLocaleError, support
 
 from fief.paths import LOCALE_DIRECTORY
 from fief.settings import settings
@@ -15,7 +15,12 @@ Translations = support.Translations
 async def select_locale(request: Request) -> str | None:
     user_locale_cookie = request.cookies.get(settings.user_locale_cookie_name)
     if user_locale_cookie is not None:
-        return user_locale_cookie
+        try:
+            Locale.parse(user_locale_cookie, sep="-")
+        except (ValueError, UnknownLocaleError):
+            pass
+        else:
+            return user_locale_cookie
     return await asgi_babel.select_locale_by_request(request)
 
 
