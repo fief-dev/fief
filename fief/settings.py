@@ -117,6 +117,8 @@ class Settings(BaseSettings):
     session_cookie_secure: bool = True
     session_lifetime_seconds: int = 86400 * 30
 
+    client_redirect_uri_ssl_required: bool = True
+
     default_authorization_code_lifetime_seconds: int = 600
     default_access_id_token_lifetime_seconds: int = 3600 * 24
     default_refresh_token_lifetime_seconds: int = 3600 * 24 * 30

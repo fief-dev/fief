@@ -3,6 +3,7 @@ import re
 from wtforms import validators
 
 from fief.services.localhost import is_localhost
+from fief.settings import settings
 
 
 class NotHTTPSURLValidationError(validators.ValidationError):
@@ -30,5 +31,9 @@ class RedirectURLValidator(validators.Regexp):
         scheme = match.group("scheme")
         host = match.group("host")
 
-        if scheme == "http" and not is_localhost(host):
+        if (
+            settings.client_redirect_uri_ssl_required
+            and scheme == "http"
+            and not is_localhost(host)
+        ):
             raise NotHTTPSURLValidationError()

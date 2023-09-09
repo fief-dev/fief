@@ -5,10 +5,15 @@ from fief.models.client import ClientType
 from fief.schemas.generics import BaseModel, CreatedUpdatedAt, UUIDSchema
 from fief.schemas.tenant import TenantEmbedded
 from fief.services.localhost import is_localhost
+from fief.settings import settings
 
 
 def validate_redirect_uri(url: AnyUrl) -> AnyUrl:
-    if url.scheme == "http" and (url.host is None or not is_localhost(url.host)):
+    if (
+        settings.client_redirect_uri_ssl_required
+        and url.scheme == "http"
+        and (url.host is None or not is_localhost(url.host))
+    ):
         raise ValueError(APIErrorCode.CLIENT_HTTPS_REQUIRED_ON_REDIRECT_URIS.value)
     return url
 
