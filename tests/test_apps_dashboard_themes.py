@@ -3,7 +3,7 @@ from unittest.mock import MagicMock
 
 import httpx
 import pytest
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 from fastapi import status
 
 from fief.db import AsyncSession
@@ -184,7 +184,9 @@ class TestUpdateTheme:
 
         html = BeautifulSoup(response.text, features="html.parser")
         preview = html.find("div", id="preview")
+        assert preview is not None
         iframe = preview.find("iframe")
+        assert isinstance(iframe, Tag)
         assert iframe.attrs["srcdoc"] is not None
 
         theme_preview_mock.preview.assert_called_once()

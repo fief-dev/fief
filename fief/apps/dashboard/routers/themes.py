@@ -24,8 +24,8 @@ from fief.dependencies.theme import (
 from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.forms import FormHelper
 from fief.logger import AuditLogger
-from fief.models import AuditLogMessage, Theme
-from fief.repositories import TenantRepository, ThemeRepository
+from fief.models import AuditLogMessage, Theme, User
+from fief.repositories import TenantRepository, ThemeRepository, UserRepository
 from fief.services.theme_preview import ThemePreview
 from fief.templates import templates
 
@@ -119,6 +119,7 @@ async def update_theme(
     tenant_repository: TenantRepository = Depends(
         get_workspace_repository(TenantRepository)
     ),
+    user_repository: UserRepository = Depends(get_workspace_repository(UserRepository)),
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
     audit_logger: AuditLogger = Depends(get_audit_logger),
@@ -143,8 +144,13 @@ async def update_theme(
     preview_page = preview if preview is not None else "login"
     tenant = await tenant_repository.get_default()
     assert tenant is not None
+
+    user = await user_repository.get_one_by_tenant(tenant.id)
+    if user is None:
+        user = User.create_sample(tenant)
+
     form_helper.context["preview_content"] = await theme_preview.preview(
-        preview_page, theme, tenant=tenant, request=request
+        preview_page, theme, tenant=tenant, user=user, request=request
     )
 
     page_preview_form = ThemePagePreviewForm(data={"page": preview_page})

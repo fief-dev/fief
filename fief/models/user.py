@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any, Optional, Self
 
 from pydantic import UUID4
 from sqlalchemy import Boolean, ForeignKey, String, event
@@ -64,6 +64,13 @@ class User(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
             "tenant_id": str(self.tenant_id),
             "fields": fields,
         }
+
+    @classmethod
+    def create_sample(cls, tenant: Tenant) -> Self:
+        return cls(
+            email="anne@bretagne.duchy",
+            tenant_id=tenant.id,
+        )
 
 
 @event.listens_for(User.email, "set")
