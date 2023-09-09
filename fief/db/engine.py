@@ -13,6 +13,7 @@ def create_engine(
         database_url,
         connect_args=connect_args,
         echo=False,
+        use_insertmanyvalues=False,  # The default doesn't work with asyncpg starting 2.0.10. Should monitor that.
         pool_recycle=settings.database_pool_recycle_seconds,
         pool_pre_ping=settings.database_pool_pre_ping,
     )
