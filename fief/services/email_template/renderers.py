@@ -74,7 +74,7 @@ class EmailTemplateRenderer:
     async def render(self, type, context: "EmailContext") -> str:
         jinja_environment = await self._get_jinja_environment()
         template_object = jinja_environment.get_template(type.value)
-        return template_object.render(context.dict())
+        return template_object.render(context.model_dump())
 
     async def _get_jinja_environment(self) -> jinja2.Environment:
         if self._jinja_environment is None:
@@ -142,7 +142,7 @@ class EmailSubjectRenderer:
     async def render(self, type, context: "EmailContext") -> str:
         jinja_environment = await self._get_jinja_environment()
         subject_template_object = jinja_environment.get_template(type.value)
-        return subject_template_object.render(context.dict())
+        return subject_template_object.render(context.model_dump())
 
     async def _get_jinja_environment(self) -> jinja2.Environment:
         if self._jinja_environment is None:

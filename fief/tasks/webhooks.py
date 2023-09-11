@@ -28,7 +28,7 @@ class DeliverWebhookTask(TaskBase):
 
             webhook_log_repository = WebhookLogRepository(session)
             webhook_delivery = WebhookDelivery(webhook_log_repository)
-            parsed_event = WebhookEvent.parse_raw(event)
+            parsed_event = WebhookEvent.model_validate_json(event)
             await webhook_delivery.deliver(webhook, parsed_event, attempt=retries + 1)
 
 
@@ -51,7 +51,7 @@ class TriggerWebhooksTask(TaskBase):
         async with self.get_workspace_session(workspace) as session:
             webhook_repository = WebhookRepository(session)
             webhooks = await webhook_repository.all()
-            parsed_event = WebhookEvent.parse_raw(event)
+            parsed_event = WebhookEvent.model_validate_json(event)
             for webhook in webhooks:
                 if parsed_event.type in webhook.events:
                     self.send_task(

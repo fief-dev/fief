@@ -3,7 +3,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from fief.crypto.encryption import FernetEngine, StringEncryptedType
 from fief.models.base import WorkspaceBase
-from fief.models.generics import CreatedUpdatedAt, UUIDModel
+from fief.models.generics import CreatedUpdatedAt, PydanticUrlString, UUIDModel
 from fief.services.oauth_provider import AvailableOAuthProvider
 from fief.settings import settings
 
@@ -24,7 +24,7 @@ class OAuthProvider(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
     scopes: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)
     name: Mapped[str | None] = mapped_column(String(length=255), nullable=True)
     openid_configuration_endpoint: Mapped[str | None] = mapped_column(
-        Text, nullable=True
+        PydanticUrlString(Text), nullable=True
     )
 
     def get_provider_display_name(self) -> str:

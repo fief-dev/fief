@@ -133,7 +133,9 @@ async def create_user_field(
         )
         user_field = UserField()
         form.populate_obj(user_field)
-        user_field.configuration = cast(UserFieldConfiguration, configuration.dict())
+        user_field.configuration = cast(
+            UserFieldConfiguration, configuration.model_dump()
+        )
 
         user_field = await repository.create(user_field)
         audit_logger.log_object_write(AuditLogMessage.OBJECT_CREATED, user_field)
@@ -192,7 +194,9 @@ async def update_user_field(
             **data.pop("configuration")
         )
         form.populate_obj(user_field)
-        user_field.configuration = cast(UserFieldConfiguration, configuration.dict())
+        user_field.configuration = cast(
+            UserFieldConfiguration, configuration.model_dump()
+        )
 
         await repository.update(user_field)
         audit_logger.log_object_write(AuditLogMessage.OBJECT_UPDATED, user_field)

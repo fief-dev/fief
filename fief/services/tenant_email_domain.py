@@ -32,7 +32,9 @@ def email_domain_model_to_dataclass(model: EmailDomain) -> EmailDomainData:
     return EmailDomainData(
         domain_id=model.domain_id,
         domain=model.domain,
-        records=[EmailDomainDNSRecordData(**record.dict()) for record in model.records],
+        records=[
+            EmailDomainDNSRecordData(**record.model_dump()) for record in model.records
+        ],
     )
 
 

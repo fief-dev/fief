@@ -234,7 +234,7 @@ class TestCreateUser:
         assert json["tenant"]["id"] == str(tenant.id)
 
         assert json["fields"]["onboarding_done"] is True
-        assert json["fields"]["last_seen"] == "2022-01-01T13:37:00+00:00"
+        assert json["fields"]["last_seen"] == "2022-01-01T13:37:00Z"
 
         send_task_mock.assert_called_with(
             on_after_register, json["id"], str(workspace.id)
@@ -261,6 +261,7 @@ class TestUpdateUser:
     ):
         response = await test_client_api.patch(f"/users/{not_existing_uuid}", json={})
 
+        print(response.json())
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
     @pytest.mark.authenticated_admin
@@ -340,7 +341,7 @@ class TestUpdateUser:
         assert json["email"] == "anne+updated@bretagne.duchy"
 
         assert json["fields"]["onboarding_done"] is True
-        assert json["fields"]["last_seen"] == "2022-01-01T13:37:00+00:00"
+        assert json["fields"]["last_seen"] == "2022-01-01T13:37:00Z"
 
         assert json["tenant"]["id"] == str(user.tenant_id)
 

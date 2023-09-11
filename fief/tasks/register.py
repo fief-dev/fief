@@ -43,8 +43,8 @@ class OnAfterRegisterTask(TaskBase):
 
         # Send welcome email
         context = WelcomeContext(
-            tenant=schemas.tenant.Tenant.from_orm(tenant),
-            user=schemas.user.UserEmailContext.from_orm(user),
+            tenant=schemas.tenant.Tenant.model_validate(tenant),
+            user=schemas.user.UserEmailContext.model_validate(user),
         )
         async with self._get_email_subject_renderer(
             workspace

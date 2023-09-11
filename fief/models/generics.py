@@ -1,15 +1,15 @@
 import functools
 import uuid
 from datetime import UTC, datetime, timedelta
-from typing import TypeVar
+from typing import Any, TypeVar
 
-from pydantic import UUID4
+from pydantic import UUID4, AnyUrl
 from sqlalchemy import TIMESTAMP
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Mapped, MappedColumn, mapped_column
 from sqlalchemy.sql import func
-from sqlalchemy.types import CHAR, TypeDecorator
+from sqlalchemy.types import CHAR, TypeDecorator, TypeEngine
 
 
 class GUID(TypeDecorator):
@@ -118,6 +118,26 @@ class ExpiresAt(BaseModel):
         return mapped_column(
             TIMESTAMPAware(timezone=True), nullable=False, index=True, default=default
         )
+
+
+def PydanticUrlString(
+    sa_type: TypeEngine[Any] | type[TypeEngine[Any]],
+) -> type[TypeDecorator]:
+    """
+    Returns an SQLAlchemy type decorator that automatically converts
+    `AnyUrl` objects coming from Pydantic to a proper string.
+    """
+
+    class _PydanticUrlString(TypeDecorator[str | AnyUrl]):
+        impl = sa_type
+        cache_ok = True
+
+        def process_bind_param(self, value: str | AnyUrl | None, dialect):
+            if isinstance(value, AnyUrl):
+                return str(value)
+            return value
+
+    return _PydanticUrlString
 
 
 M = TypeVar("M", bound=BaseModel)

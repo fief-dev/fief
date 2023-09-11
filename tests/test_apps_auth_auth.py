@@ -1405,7 +1405,7 @@ class TestAuthLogout:
         if cookie is not None:
             cookies[settings.session_cookie_name] = cookie
 
-        redirect_uri = "https://www.bretagne.duchy"
+        redirect_uri = "https://www.bretagne.duchy/"
         response = await test_client_auth.get(
             f"{path_prefix}/logout",
             params={"redirect_uri": redirect_uri},
@@ -1430,7 +1430,7 @@ class TestAuthLogout:
         cookies = {}
         cookies[settings.session_cookie_name] = session_token_tokens["regular"][0]
 
-        redirect_uri = "https://www.bretagne.duchy"
+        redirect_uri = "https://www.bretagne.duchy/"
         response = await test_client_auth.get(
             f"{path_prefix}/logout",
             params={"redirect_uri": redirect_uri},

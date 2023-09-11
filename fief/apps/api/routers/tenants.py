@@ -36,7 +36,7 @@ async def list_tenants(
     tenants, count = paginated_tenants
     return PaginatedResults(
         count=count,
-        results=[schemas.tenant.Tenant.from_orm(tenant) for tenant in tenants],
+        results=[schemas.tenant.Tenant.model_validate(tenant) for tenant in tenants],
     )
 
 
@@ -89,7 +89,7 @@ async def create_tenant(
 
     slug = await repository.get_available_slug(tenant_create.name)
     tenant = Tenant(
-        **tenant_create.dict(exclude={"oauth_providers"}),
+        **tenant_create.model_dump(exclude={"oauth_providers"}),
         slug=slug,
         oauth_providers=oauth_providers,
     )
@@ -108,7 +108,7 @@ async def create_tenant(
     audit_logger.log_object_write(AuditLogMessage.OBJECT_CREATED, client)
     trigger_webhooks(ClientCreated, client, schemas.client.Client)
 
-    return schemas.tenant.Tenant.from_orm(tenant)
+    return schemas.tenant.Tenant.model_validate(tenant)
 
 
 @router.patch("/{id:uuid}", name="tenants:update", response_model=schemas.tenant.Tenant)
@@ -146,7 +146,7 @@ async def update_tenant(
                 )
             tenant.oauth_providers.append(oauth_provider)
 
-    tenant_update_dict = tenant_update.dict(
+    tenant_update_dict = tenant_update.model_dump(
         exclude={"oauth_providers"}, exclude_unset=True
     )
     for field, value in tenant_update_dict.items():
@@ -156,7 +156,7 @@ async def update_tenant(
     audit_logger.log_object_write(AuditLogMessage.OBJECT_UPDATED, tenant)
     trigger_webhooks(TenantUpdated, tenant, schemas.tenant.Tenant)
 
-    return schemas.tenant.Tenant.from_orm(tenant)
+    return schemas.tenant.Tenant.model_validate(tenant)
 
 
 @router.delete(

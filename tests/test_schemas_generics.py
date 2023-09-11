@@ -3,7 +3,7 @@ from typing import Any
 import pytest
 from pydantic import BaseModel, ValidationError
 
-from fief.schemas.generics import Address, PhoneNumber, Timezone
+from fief.schemas.generics import Address, CountryCode, PhoneNumber, Timezone
 
 
 class TestPhoneNumber:
@@ -30,6 +30,32 @@ class TestPhoneNumber:
         o = TestPhoneNumber.Model(phone_number=phone_number)
 
         assert o.phone_number == formatted
+
+
+class TestCountryCode:
+    class Model(BaseModel):
+        country: CountryCode
+
+    @pytest.mark.parametrize("country", ["FRANCE", "ZZ"])
+    def test_invalid(self, country: str):
+        with pytest.raises(ValidationError) as e:
+            TestCountryCode.Model(country=country)
+
+        errors = e.value.errors()
+        assert len(errors) == 1
+        assert errors[0]["loc"] == ("country",)
+
+    @pytest.mark.parametrize(
+        "country,formatted",
+        [
+            ("fr", "FR"),
+            ("US", "US"),
+        ],
+    )
+    def test_valid(self, country: str, formatted: str):
+        o = TestCountryCode.Model(country=country)
+
+        assert o.country == formatted
 
 
 class TestAddress:

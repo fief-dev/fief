@@ -21,7 +21,8 @@ def webhook_delivery(workspace_session: AsyncSession) -> WebhookDelivery:
 def webhook_event(test_data: TestData) -> WebhookEvent:
     object = test_data["clients"]["default_tenant"]
     return WebhookEvent(
-        type=ClientCreated.key(), data=schemas.client.Client.from_orm(object).dict()
+        type=ClientCreated.key(),
+        data=schemas.client.Client.model_validate(object).model_dump(),
     )
 
 
@@ -47,7 +48,7 @@ class TestWebhookDelivery:
 
         assert "X-Fief-Webhook-Signature" in request.headers
         assert "X-Fief-Webhook-Timestamp" in request.headers
-        assert request.content == webhook_event.json().encode("utf-8")
+        assert request.content == webhook_event.model_dump_json().encode("utf-8")
 
         assert request.headers["user-agent"] == f"fief-server-webhooks/{__version__}"
 

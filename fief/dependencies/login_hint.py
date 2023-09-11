@@ -1,8 +1,8 @@
 import urllib.parse
 import uuid
 
+from email_validator import EmailNotValidError, validate_email
 from fastapi import Cookie, Depends
-from pydantic import EmailError, EmailStr
 
 from fief.dependencies.oauth_provider import get_oauth_providers
 from fief.models import OAuthProvider
@@ -21,9 +21,13 @@ async def get_login_hint(
     unquoted_login_hint = urllib.parse.unquote(login_hint)
 
     try:
-        return EmailStr.validate(unquoted_login_hint)
-    except EmailError:
+        validated_email = validate_email(
+            unquoted_login_hint, check_deliverability=False
+        )
+    except EmailNotValidError:
         pass
+    else:
+        return validated_email.normalized
 
     try:
         oauth_provider_id = uuid.UUID(unquoted_login_hint)

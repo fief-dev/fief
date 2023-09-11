@@ -1,6 +1,6 @@
 from typing import Any
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from fief.db import AsyncSession
 from fief.repositories import TenantRepository, UserRepository
@@ -12,9 +12,7 @@ from fief.services.email_template.types import EmailTemplateType
 class EmailContext(BaseModel):
     tenant: Tenant
     user: UserEmailContext
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
     @classmethod
     async def create_sample_context(cls, session: AsyncSession):

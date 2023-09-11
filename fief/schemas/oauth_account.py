@@ -15,4 +15,4 @@ class OAuthAccount(UUIDSchema, CreatedUpdatedAt):
 class OAuthAccountAccessToken(UUIDSchema):
     account_id: str
     access_token: str
-    expires_at: datetime | None
+    expires_at: datetime | None = None

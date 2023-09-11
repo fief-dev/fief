@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field
 
 
 class AuthorizeError(BaseModel):
-    error: str = Field(..., regex="invalid_redirect_uri|invalid_client")
+    error: str = Field(..., pattern="invalid_redirect_uri|invalid_client")
     error_description: Any | None = None
     error_uri: str | None = None
 
@@ -20,7 +20,7 @@ class AuthorizeError(BaseModel):
 class AuthorizeRedirectError(BaseModel):
     error: str = Field(
         ...,
-        regex="invalid_request|unauthorized_client|access_denied|unsupported_response_type|invalid_scope|server_error|temporarily_unavailable|interaction_required|login_required|account_selection_required|consent_required|invalid_request_uri|invalid_request_object|request_not_supported|request_uri_not_supported|registration_not_supported",
+        pattern="invalid_request|unauthorized_client|access_denied|unsupported_response_type|invalid_scope|server_error|temporarily_unavailable|interaction_required|login_required|account_selection_required|consent_required|invalid_request_uri|invalid_request_object|request_not_supported|request_uri_not_supported|registration_not_supported",
     )
     error_description: Any | None = None
     error_uri: str | None = None
@@ -48,7 +48,7 @@ class AuthorizeRedirectError(BaseModel):
 
 class LoginError(BaseModel):
     error: str = Field(
-        ..., regex="missing_session|invalid_session|registration_disabled"
+        ..., pattern="missing_session|invalid_session|registration_disabled"
     )
     error_description: Any | None = None
     error_uri: str | None = None
@@ -69,7 +69,7 @@ class LoginError(BaseModel):
 class TokenResponse(BaseModel):
     access_token: str
     id_token: str
-    token_type: str = Field("bearer", regex="bearer")
+    token_type: str = Field("bearer", pattern="bearer")
     expires_in: int
     refresh_token: str | None = None
 
@@ -77,7 +77,7 @@ class TokenResponse(BaseModel):
 class TokenError(BaseModel):
     error: str = Field(
         ...,
-        regex="invalid_request|invalid_client|invalid_grant|unauthorized_client|unsupported_grant_type|invalid_scope",
+        pattern="invalid_request|invalid_client|invalid_grant|unauthorized_client|unsupported_grant_type|invalid_scope",
     )
     error_description: Any | None = None
     error_uri: str | None = None
@@ -104,7 +104,7 @@ class TokenError(BaseModel):
 
 
 class LogoutError(BaseModel):
-    error: str = Field(..., regex="invalid_request")
+    error: str = Field(..., pattern="invalid_request")
     error_description: Any | None = None
     error_uri: str | None = None
 

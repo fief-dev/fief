@@ -14,8 +14,8 @@ class WebhookCreate(BaseModel):
 
 
 class WebhookUpdate(BaseModel):
-    url: HttpUrl | None
-    events: list[WebhookEventType] | None
+    url: HttpUrl | None = None
+    events: list[WebhookEventType] | None = None
 
 
 class BaseWebhook(UUIDSchema, CreatedUpdatedAt):

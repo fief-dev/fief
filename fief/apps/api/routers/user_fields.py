@@ -40,7 +40,7 @@ async def list_user_fields(
     return PaginatedResults(
         count=count,
         results=[
-            schemas.user_field.UserField.from_orm(user_field)
+            schemas.user_field.UserField.model_validate(user_field)
             for user_field in user_fields
         ],
     )
@@ -78,12 +78,12 @@ async def create_user_field(
             detail=APIErrorCode.USER_FIELD_SLUG_ALREADY_EXISTS,
         )
 
-    user_field = UserField(**user_field_create.dict())
+    user_field = UserField(**user_field_create.model_dump())
     user_field = await repository.create(user_field)
     audit_logger.log_object_write(AuditLogMessage.OBJECT_CREATED, user_field)
     trigger_webhooks(UserFieldCreated, user_field, schemas.user_field.UserField)
 
-    return schemas.user_field.UserField.from_orm(user_field)
+    return schemas.user_field.UserField.model_validate(user_field)
 
 
 @router.patch(
@@ -109,7 +109,7 @@ async def update_user_field(
                 detail=APIErrorCode.USER_FIELD_SLUG_ALREADY_EXISTS,
             )
 
-    user_field_update_dict = user_field_update.dict(exclude_unset=True)
+    user_field_update_dict = user_field_update.model_dump(exclude_unset=True)
     for field, value in user_field_update_dict.items():
         setattr(user_field, field, value)
 
@@ -117,7 +117,7 @@ async def update_user_field(
     audit_logger.log_object_write(AuditLogMessage.OBJECT_UPDATED, user_field)
     trigger_webhooks(UserFieldUpdated, user_field, schemas.user_field.UserField)
 
-    return schemas.user_field.UserField.from_orm(user_field)
+    return schemas.user_field.UserField.model_validate(user_field)
 
 
 @router.delete(

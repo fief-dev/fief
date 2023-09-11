@@ -38,7 +38,7 @@ async def list_permissions(
     return PaginatedResults(
         count=count,
         results=[
-            schemas.permission.Permission.from_orm(permission)
+            schemas.permission.Permission.model_validate(permission)
             for permission in permissions
         ],
     )
@@ -74,12 +74,12 @@ async def create_permission(
             detail=APIErrorCode.PERMISSION_CREATE_CODENAME_ALREADY_EXISTS,
         )
 
-    permission = Permission(**permission_create.dict())
+    permission = Permission(**permission_create.model_dump())
     permission = await repository.create(permission)
     audit_logger.log_object_write(AuditLogMessage.OBJECT_CREATED, permission)
     trigger_webhooks(PermissionCreated, permission, schemas.permission.Permission)
 
-    return schemas.permission.Permission.from_orm(permission)
+    return schemas.permission.Permission.model_validate(permission)
 
 
 @router.patch(
@@ -105,7 +105,7 @@ async def update_permission(
                 detail=APIErrorCode.PERMISSION_UPDATE_CODENAME_ALREADY_EXISTS,
             )
 
-    permission_update_dict = permission_update.dict(exclude_unset=True)
+    permission_update_dict = permission_update.model_dump(exclude_unset=True)
     for field, value in permission_update_dict.items():
         setattr(permission, field, value)
 
@@ -113,7 +113,7 @@ async def update_permission(
     audit_logger.log_object_write(AuditLogMessage.OBJECT_UPDATED, permission)
     trigger_webhooks(PermissionUpdated, permission, schemas.permission.Permission)
 
-    return schemas.permission.Permission.from_orm(permission)
+    return schemas.permission.Permission.model_validate(permission)
 
 
 @router.delete(

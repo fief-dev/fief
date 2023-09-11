@@ -10,9 +10,9 @@ class BaseWebhookLog(UUIDSchema, CreatedUpdatedAt):
     attempt: int
     payload: str
     success: bool
-    response: str | None
-    error_type: str | None
-    error_message: str | None
+    response: str | None = None
+    error_type: str | None = None
+    error_message: str | None = None
 
 
 class WebhookLog(BaseWebhookLog):

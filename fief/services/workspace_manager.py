@@ -49,7 +49,7 @@ class WorkspaceManager:
         default_redirect_uris: list[str] | None = None,
         default_encryption_key: str | None = None,
     ) -> Workspace:
-        workspace = Workspace(**workspace_create.dict())
+        workspace = Workspace(**workspace_create.model_dump())
 
         if default_domain is None:
             # Create workspace on available subdomain

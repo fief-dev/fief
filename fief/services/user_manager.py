@@ -123,7 +123,7 @@ class UserManager:
 
         hashed_password = self.password_helper.hash(user_create.password)
         user = User(
-            **user_create.dict(exclude={"password", "fields", "tenant_id"}),
+            **user_create.model_dump(exclude={"password", "fields", "tenant_id"}),
             hashed_password=hashed_password,
             tenant_id=tenant,
         )
@@ -276,7 +276,7 @@ class UserManager:
         request: Request | None = None,
     ) -> User:
         user = await self.set_user_attributes(
-            user, **user_update.dict(exclude_unset=True, exclude={"fields"})
+            user, **user_update.model_dump(exclude_unset=True, exclude={"fields"})
         )
 
         if user_update.fields is not None:

@@ -361,7 +361,7 @@ async def logout(
     if session_token is not None:
         await session_token_repository.delete(session_token)
 
-    response = RedirectResponse(redirect_uri, status_code=status.HTTP_302_FOUND)
+    response = RedirectResponse(str(redirect_uri), status_code=status.HTTP_302_FOUND)
 
     response.delete_cookie(
         settings.session_cookie_name,

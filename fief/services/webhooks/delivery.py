@@ -21,7 +21,7 @@ class WebhookDelivery:
 
     async def deliver(self, webhook: Webhook, event: WebhookEvent, attempt: int = 1):
         async with httpx.AsyncClient() as client:
-            payload = event.json()
+            payload = event.model_dump_json()
             signature, ts = self._get_signature(payload, webhook.secret)
 
             webhook_log = WebhookLog(

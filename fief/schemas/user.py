@@ -2,8 +2,7 @@ import uuid
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
-from pydantic import UUID4, EmailStr, Field, SecretStr
-from pydantic.generics import GenericModel
+from pydantic import UUID4, ConfigDict, EmailStr, Field, SecretStr
 
 from fief.schemas.generics import BaseModel, CreatedUpdatedAt
 from fief.schemas.tenant import TenantEmbedded
@@ -21,23 +20,21 @@ class UserRead(CreatedUpdatedAt):
     tenant_id: UUID4
     tenant: TenantEmbedded
     fields: dict[str, Any]
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class UserFields(BaseModel):
     def get_value(self, field: str) -> Any:
         value = getattr(self, field)
         if isinstance(value, BaseModel):
-            return value.dict()
+            return value.model_dump()
         return value
 
 
 UF = TypeVar("UF", bound=UserFields)
 
 
-class UserCreate(GenericModel, Generic[UF]):
+class UserCreate(BaseModel, Generic[UF]):
     email: EmailStr
     password: str
     fields: UF = Field(default_factory=dict, exclude=True)  # type: ignore
@@ -66,14 +63,14 @@ class UserChangePassword(BaseModel):
     password: SecretStr
 
 
-class UserUpdate(GenericModel, Generic[UF]):
-    fields: UF | None = Field(exclude=True)
+class UserUpdate(BaseModel, Generic[UF]):
+    fields: UF | None = Field(None, exclude=True)
 
 
 class UserUpdateAdmin(UserUpdate[UF], Generic[UF]):
-    email: EmailStr | None
-    email_verified: bool | None
-    password: str | None
+    email: EmailStr | None = None
+    email_verified: bool | None = None
+    password: str | None = None
 
 
 class CreateAccessToken(BaseModel):
@@ -83,7 +80,7 @@ class CreateAccessToken(BaseModel):
 
 class AccessTokenResponse(BaseModel):
     access_token: str
-    token_type: str = Field("bearer", regex="bearer")
+    token_type: str = Field("bearer", pattern="bearer")
     expires_in: int
 
 
@@ -92,9 +89,7 @@ class UserEmailContext(CreatedUpdatedAt):
     email: EmailStr
     tenant_id: UUID4
     fields: dict[str, Any]
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
     @classmethod
     def create_sample(cls, tenant: "Tenant") -> "UserEmailContext":

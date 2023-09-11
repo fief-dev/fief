@@ -27,7 +27,9 @@ async def list_webhooks(
     webhooks, count = paginated_webhooks
     return PaginatedResults(
         count=count,
-        results=[schemas.webhook.Webhook.from_orm(webhook) for webhook in webhooks],
+        results=[
+            schemas.webhook.Webhook.model_validate(webhook) for webhook in webhooks
+        ],
     )
 
 
@@ -44,11 +46,11 @@ async def create_webhook(
     ),
     audit_logger: AuditLogger = Depends(get_audit_logger),
 ) -> schemas.webhook.WebhookSecret:
-    webhook = Webhook(**webhook_create.dict())
+    webhook = Webhook(**webhook_create.model_dump())
     webhook = await repository.create(webhook)
     audit_logger.log_object_write(AuditLogMessage.OBJECT_CREATED, webhook)
 
-    return schemas.webhook.WebhookSecret.from_orm(webhook)
+    return schemas.webhook.WebhookSecret.model_validate(webhook)
 
 
 @router.get("/{id:uuid}", name="webhooks:get", response_model=schemas.webhook.Webhook)
@@ -67,14 +69,14 @@ async def update_webhook(
     ),
     audit_logger: AuditLogger = Depends(get_audit_logger),
 ) -> schemas.webhook.Webhook:
-    webhook_update_dict = webhook_update.dict(exclude_unset=True)
+    webhook_update_dict = webhook_update.model_dump(exclude_unset=True)
     for field, value in webhook_update_dict.items():
         setattr(webhook, field, value)
 
     await repository.update(webhook)
     audit_logger.log_object_write(AuditLogMessage.OBJECT_UPDATED, webhook)
 
-    return schemas.webhook.Webhook.from_orm(webhook)
+    return schemas.webhook.Webhook.model_validate(webhook)
 
 
 @router.post(
@@ -127,7 +129,7 @@ async def list_webhook_logs(
     return PaginatedResults(
         count=count,
         results=[
-            schemas.webhook_log.WebhookLog.from_orm(webhook_log)
+            schemas.webhook_log.WebhookLog.model_validate(webhook_log)
             for webhook_log in webhook_logs
         ],
     )

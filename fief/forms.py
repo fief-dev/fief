@@ -362,7 +362,7 @@ class PasswordCreateFieldForm(BaseForm):
     )
 
 
-USER_FIELD_FORM_FIELD_MAP: Mapping[UserFieldType, Field] = {
+USER_FIELD_FORM_FIELD_MAP: Mapping[UserFieldType, type[Field]] = {
     UserFieldType.STRING: StringField,
     UserFieldType.INTEGER: IntegerField,
     UserFieldType.BOOLEAN: BooleanField,

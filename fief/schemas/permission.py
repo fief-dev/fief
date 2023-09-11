@@ -9,8 +9,8 @@ class PermissionCreate(BaseModel):
 
 
 class PermissionUpdate(BaseModel):
-    name: str | None
-    codename: str | None
+    name: str | None = None
+    codename: str | None = None
 
 
 class BasePermission(UUIDSchema, CreatedUpdatedAt):

@@ -341,7 +341,7 @@ def info():
 
         typer.secho(f"Fief version: {__version__}", bold=True)
         typer.secho("Settings", bold=True)
-        for key, value in settings.dict().items():
+        for key, value in settings.model_dump().items():
             typer.echo(f"{key}: {value}")
     except ValidationError as e:
         typer.secho(

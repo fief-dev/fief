@@ -1,21 +1,21 @@
-from typing import Any
-
-from pydantic import HttpUrl, SecretStr, root_validator
+from pydantic import HttpUrl, SecretStr, model_validator
+from pydantic_core import PydanticCustomError
 
 from fief.errors import APIErrorCode
 from fief.schemas.generics import BaseModel, CreatedUpdatedAt, UUIDSchema
 from fief.services.oauth_provider import AvailableOAuthProvider
 
 
-def validate_openid_provider(cls, values: dict[str, Any]):
-    provider: AvailableOAuthProvider = values["provider"]
+def validate_openid_provider(oauth_provider: "OAuthProviderCreate"):
+    provider: AvailableOAuthProvider = oauth_provider.provider
     if provider == AvailableOAuthProvider.OPENID:
-        openid_configuration_endpoint = values.get("openid_configuration_endpoint")
+        openid_configuration_endpoint = oauth_provider.openid_configuration_endpoint
         if openid_configuration_endpoint is None:
-            raise ValueError(
-                APIErrorCode.OAUTH_PROVIDER_MISSING_OPENID_CONFIGURATION_ENDPOINT.value
+            raise PydanticCustomError(
+                APIErrorCode.OAUTH_PROVIDER_MISSING_OPENID_CONFIGURATION_ENDPOINT.value,
+                APIErrorCode.OAUTH_PROVIDER_MISSING_OPENID_CONFIGURATION_ENDPOINT.value,
             )
-    return values
+    return oauth_provider
 
 
 class OAuthProviderCreate(BaseModel):
@@ -26,25 +26,21 @@ class OAuthProviderCreate(BaseModel):
     name: str | None = None
     openid_configuration_endpoint: HttpUrl | None = None
 
-    _validate_openid_provider = root_validator(allow_reuse=True)(
-        validate_openid_provider
-    )
+    _validate_openid_provider = model_validator(mode="after")(validate_openid_provider)
 
 
 class OAuthProviderUpdate(BaseModel):
-    client_id: str | None
-    client_secret: str | None
-    scopes: list[str] | None
-    name: str | None
-    openid_configuration_endpoint: HttpUrl | None
+    client_id: str | None = None
+    client_secret: str | None = None
+    scopes: list[str] | None = None
+    name: str | None = None
+    openid_configuration_endpoint: HttpUrl | None = None
 
 
 class OAuthProviderUpdateProvider(OAuthProviderUpdate):
     provider: AvailableOAuthProvider
 
-    _validate_openid_provider = root_validator(allow_reuse=True)(
-        validate_openid_provider
-    )
+    _validate_openid_provider = model_validator(mode="after")(validate_openid_provider)
 
 
 class BaseOAuthProvider(UUIDSchema, CreatedUpdatedAt):

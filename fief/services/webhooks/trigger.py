@@ -18,9 +18,14 @@ def trigger_webhooks(
     send_task: SendTask,
 ) -> None:
     event: WebhookEvent = WebhookEvent(
-        type=event_type.key(), data=schema_class.from_orm(object).dict()
+        type=event_type.key(),
+        data=schema_class.model_validate(object).model_dump(mode="json"),
     )
-    send_task(trigger_webhooks_task, workspace_id=str(workspace_id), event=event.json())
+    send_task(
+        trigger_webhooks_task,
+        workspace_id=str(workspace_id),
+        event=event.model_dump_json(),
+    )
 
 
 class TriggerWebhooks(Protocol):

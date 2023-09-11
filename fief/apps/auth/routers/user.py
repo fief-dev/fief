@@ -44,7 +44,7 @@ async def userinfo(user: User = Depends(current_active_user)):
         "requestBody": {
             "content": {
                 "application/json": {
-                    "schema": UserUpdate.schema(
+                    "schema": UserUpdate.model_json_schema(
                         ref_template="#/paths/~1api~1profile/patch/requestBody/content/application~1json/schema/definitions/{model}"
                     )
                 }
