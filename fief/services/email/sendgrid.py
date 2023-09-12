@@ -24,8 +24,10 @@ class DomainDoesNotExistError(CreateDomainError):
 class Sendgrid(EmailProvider):
     DOMAIN_AUTHENTICATION = True
 
-    def __init__(self, api_key: str) -> None:
+    def __init__(self, api_key: str, from_email: str = None, from_name: str = None) -> None:
         self._client = SendGridAPIClient(api_key=api_key)
+        self._from_email = from_email
+        self._from_name  = from_name
 
     def send_email(
         self,
@@ -36,7 +38,10 @@ class Sendgrid(EmailProvider):
         html: str | None = None,
         text: str | None = None,
     ):
-        from_email, from_name = sender
+        if self._from_email is not None:
+            from_email, from_name = self._from_email, self._from_name
+        else:
+            from_email, from_name = sender
         to_email, to_name = recipient
         try:
             message = Mail(
