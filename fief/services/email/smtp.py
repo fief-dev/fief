@@ -1,4 +1,5 @@
 import smtplib
+import ssl
 from email.message import EmailMessage
 
 from fief.services.email.base import (
@@ -48,16 +49,13 @@ class SMTP(EmailProvider):
             if text is not None:
                 message.add_alternative(text, subtype="plain")
 
-            if self.ssl:
-                with smtplib.SMTP_SSL(self.host, self.port) as server:
-                    if self.username and self.password:
-                        server.login(self.username, self.password)
-                    server.send_message(message)
-            else:
-                with smtplib.SMTP(self.host, self.port) as server:
-                    if self.username and self.password:
-                        server.login(self.username, self.password)
-                    server.send_message(message)
+            with smtplib.SMTP(self.host, self.port) as server:
+                if self.ssl:
+                    context = ssl.create_default_context()
+                    server.starttls(context=context)
+                if self.username and self.password:
+                    server.login(self.username, self.password)
+                server.send_message(message)
         except smtplib.SMTPException as e:
             raise SendEmailError(str(e)) from e
 
