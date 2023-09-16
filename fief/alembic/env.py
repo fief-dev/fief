@@ -28,6 +28,7 @@ target_metadata = getattr(models, config.get_main_option("target_base")).metadat
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
 table_prefix = config.attributes.get("table_prefix", "")
+version_table = f"{table_prefix}{config.get_main_option('version_table_name')}"
 
 
 def run_migrations_offline():
@@ -82,7 +83,7 @@ def run_migrations_online():
         context.configure(
             connection=connection,
             target_metadata=target_metadata,
-            version_table=config.get_main_option("version_table_name"),
+            version_table=version_table,
             table_prefix=table_prefix,
         )
 
