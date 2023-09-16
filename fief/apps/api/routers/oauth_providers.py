@@ -50,7 +50,7 @@ async def list_oauth_providers(
     return PaginatedResults(
         count=count,
         results=[
-            schemas.oauth_provider.OAuthProvider.from_orm(oauth_provider)
+            schemas.oauth_provider.OAuthProvider.model_validate(oauth_provider)
             for oauth_provider in oauth_providers
         ],
     )
@@ -81,7 +81,7 @@ async def create_oauth_provider(
     audit_logger: AuditLogger = Depends(get_audit_logger),
     trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ) -> schemas.oauth_provider.OAuthProvider:
-    oauth_provider = OAuthProvider(**oauth_provider_create.dict())
+    oauth_provider = OAuthProvider(**oauth_provider_create.model_dump())
     oauth_provider = await repository.create(oauth_provider)
     audit_logger.log_object_write(AuditLogMessage.OBJECT_CREATED, oauth_provider)
     trigger_webhooks(
@@ -90,7 +90,7 @@ async def create_oauth_provider(
         schemas.oauth_provider.OAuthProvider,
     )
 
-    return schemas.oauth_provider.OAuthProvider.from_orm(oauth_provider)
+    return schemas.oauth_provider.OAuthProvider.model_validate(oauth_provider)
 
 
 @router.patch(
@@ -107,16 +107,18 @@ async def update_oauth_provider(
     audit_logger: AuditLogger = Depends(get_audit_logger),
     trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ) -> schemas.oauth_provider.OAuthProvider:
-    oauth_provider_update_dict = oauth_provider_update.dict(exclude_unset=True)
+    oauth_provider_update_dict = oauth_provider_update.model_dump(exclude_unset=True)
 
     try:
         oauth_provider_update_provider = (
-            schemas.oauth_provider.OAuthProviderUpdateProvider.from_orm(oauth_provider)
+            schemas.oauth_provider.OAuthProviderUpdateProvider.model_validate(
+                oauth_provider
+            )
         )
         schemas.oauth_provider.OAuthProviderUpdateProvider(
-            **oauth_provider_update_provider.copy(
+            **oauth_provider_update_provider.model_copy(
                 update=oauth_provider_update_dict
-            ).dict()
+            ).model_dump()
         )
     except ValidationError as e:
         raise RequestValidationError(e.errors()) from e
@@ -132,7 +134,7 @@ async def update_oauth_provider(
         schemas.oauth_provider.OAuthProvider,
     )
 
-    return schemas.oauth_provider.OAuthProvider.from_orm(oauth_provider)
+    return schemas.oauth_provider.OAuthProvider.model_validate(oauth_provider)
 
 
 @router.delete(

@@ -2,7 +2,8 @@ from typing import Any, Literal
 
 from fastapi import Depends, HTTPException, status
 from fastapi.exceptions import RequestValidationError
-from pydantic import UUID4, ValidationError, create_model, validator
+from pydantic import UUID4, ValidationError, create_model
+from pydantic.fields import FieldInfo
 from sqlalchemy import select
 
 from fief.dependencies.pagination import (
@@ -18,7 +19,7 @@ from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.models import UserField
 from fief.models.user_field import UserFieldType
 from fief.repositories import UserFieldRepository
-from fief.schemas.generics import true_bool_validator
+from fief.schemas.generics import TrueOnlyBoolean
 from fief.schemas.user import (
     UF,
     UserCreate,
@@ -104,7 +105,7 @@ async def get_validated_user_field_create(
         body=(user_field_create_internal_model, ...),
     )
     try:
-        validated_user_field_create = body_model(body=user_field_create.dict())
+        validated_user_field_create = body_model(body=user_field_create.model_dump())
     except ValidationError as e:
         raise RequestValidationError(e.errors()) from e
     else:
@@ -144,7 +145,10 @@ async def get_validated_user_field_update(
     )
     try:
         validated_user_field_update = body_model(
-            body={"type": user_field.type, **user_field_update.dict(exclude_unset=True)}
+            body={
+                "type": user_field.type,
+                **user_field_update.model_dump(exclude_unset=True),
+            }
         )
     except ValidationError as e:
         raise RequestValidationError(e.errors()) from e
@@ -175,6 +179,7 @@ def _get_pydantic_specification(user_fields: list[UserField]) -> tuple[Any, Any]
         field_type = get_user_field_pydantic_type(field)
         required = field.get_required()
         default = None
+        validate_default = None
 
         if field.type == UserFieldType.BOOLEAN:
             """
@@ -188,19 +193,22 @@ def _get_pydantic_specification(user_fields: list[UserField]) -> tuple[Any, Any]
             Besides, we attach a special meaning to "required" booleans:
             it means that the value MUST BE "True".
             It can be useful for consent checkboxes for example.
-            That's why in this case, we add a custom validator checking the value
-            is only "True".
+            That's why in this case, we assign it a custom `TrueOnlyBoolean` type.
             """
             if required:
-                validators[f"{field.slug}_validator"] = validator(
-                    field.slug, allow_reuse=True, always=True
-                )(true_bool_validator)
+                field_type = TrueOnlyBoolean
             required = False
             default = False
+            validate_default = True
+
+        field_info = FieldInfo(
+            default=default if default is not None else (... if required else None),
+            validate_default=validate_default,
+        )
 
         fields[field.slug] = (
             field_type if required else (field_type | None),
-            default if default is not None else (... if required else None),
+            field_info,
         )
     return fields, validators
 

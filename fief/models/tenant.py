@@ -10,7 +10,7 @@ from starlette.routing import Router
 from fief.crypto.jwk import generate_signature_jwk_string, load_jwk
 from fief.models.base import WorkspaceBase, get_prefixed_tablename
 from fief.models.email_domain import EmailDomain
-from fief.models.generics import GUID, CreatedUpdatedAt, UUIDModel
+from fief.models.generics import GUID, CreatedUpdatedAt, PydanticUrlString, UUIDModel
 from fief.models.oauth_provider import OAuthProvider
 from fief.models.theme import Theme
 from fief.settings import settings
@@ -47,7 +47,7 @@ class Tenant(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
     )
 
     application_url: Mapped[str | None] = mapped_column(
-        String(length=512), default=None, nullable=True
+        PydanticUrlString(String)(length=512), default=None, nullable=True
     )
 
     theme_id: Mapped[UUID4 | None] = mapped_column(
@@ -56,7 +56,7 @@ class Tenant(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
     theme: Mapped[Theme | None] = relationship("Theme")
 
     logo_url: Mapped[str | None] = mapped_column(
-        String(length=512), default=None, nullable=True
+        PydanticUrlString(String)(length=512), default=None, nullable=True
     )
 
     oauth_providers: Mapped[list[OAuthProvider]] = relationship(

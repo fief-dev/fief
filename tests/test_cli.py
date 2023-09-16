@@ -3,7 +3,6 @@ from pytest_mock import MockerFixture
 from typer.testing import CliRunner
 
 from fief.cli import app
-from fief.settings import Settings
 
 runner = CliRunner()
 
@@ -11,7 +10,9 @@ runner = CliRunner()
 class TestCLIInfo:
     def test_missing_settings(self, mocker: MockerFixture):
         mocked_get_settings = mocker.patch("fief.cli.get_settings")
-        mocked_get_settings.side_effect = ValidationError([], Settings)
+        mocked_get_settings.side_effect = ValidationError.from_exception_data(
+            "Error", []
+        )
 
         result = runner.invoke(app, ["info"])
         assert result.exit_code == 1

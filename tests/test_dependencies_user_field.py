@@ -176,7 +176,7 @@ class TestGetUserCreateModel:
             "fields",
             "consent",
         )
-        assert errors[0]["type"] == "value_error.boolean.must_be_true"
+        assert errors[0]["type"] == "boolean.must_be_true"
 
     async def test_required_boolean_field_true(self):
         user_fields: list[UserField] = [
@@ -233,7 +233,7 @@ class TestGetUserCreateModel:
             "fields",
             "choice",
         )
-        assert errors[0]["type"] == "type_error.enum"
+        assert errors[0]["type"] == "enum"
 
     async def test_valid_choice(self):
         user_fields: list[UserField] = [

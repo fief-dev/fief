@@ -31,7 +31,7 @@ async def list_roles(
     roles, count = paginated_roles
     return PaginatedResults(
         count=count,
-        results=[schemas.role.Role.from_orm(role) for role in roles],
+        results=[schemas.role.Role.model_validate(role) for role in roles],
     )
 
 
@@ -55,7 +55,7 @@ async def create_role(
     audit_logger: AuditLogger = Depends(get_audit_logger),
     trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ) -> schemas.role.Role:
-    role = Role(**role_create.dict(exclude={"permissions"}))
+    role = Role(**role_create.model_dump(exclude={"permissions"}))
 
     for permission_id in role_create.permissions:
         permission = await permission_repository.get_by_id(permission_id)
@@ -71,7 +71,7 @@ async def create_role(
     audit_logger.log_object_write(AuditLogMessage.OBJECT_CREATED, role)
     trigger_webhooks(RoleCreated, role, schemas.role.Role)
 
-    return schemas.role.Role.from_orm(role)
+    return schemas.role.Role.model_validate(role)
 
 
 @router.patch(
@@ -91,7 +91,9 @@ async def update_role(
     audit_logger: AuditLogger = Depends(get_audit_logger),
     trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ) -> schemas.role.Role:
-    role_update_dict = role_update.dict(exclude_unset=True, exclude={"permissions"})
+    role_update_dict = role_update.model_dump(
+        exclude_unset=True, exclude={"permissions"}
+    )
     for field, value in role_update_dict.items():
         setattr(role, field, value)
 
@@ -123,7 +125,7 @@ async def update_role(
         str(workspace.id),
     )
 
-    return schemas.role.Role.from_orm(role)
+    return schemas.role.Role.model_validate(role)
 
 
 @router.delete(

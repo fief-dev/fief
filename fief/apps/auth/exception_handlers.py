@@ -85,7 +85,7 @@ exception_handlers[OAuthException] = login_exception_handler
 async def token_request_exception_handler(request: Request, exc: TokenRequestException):
     return JSONResponse(
         status_code=status.HTTP_400_BAD_REQUEST,
-        content=exc.error.dict(exclude_none=True),
+        content=exc.error.model_dump(exclude_none=True),
     )
 
 

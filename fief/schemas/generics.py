@@ -1,17 +1,16 @@
 from datetime import datetime
-from typing import Any, Generic, TypeVar
+from typing import Annotated, Generic, TypeVar
 
 import phonenumbers
 import pycountry
 import pytz
-from pydantic import UUID4, Field, PydanticValueError
+from pydantic import UUID4, AfterValidator, ConfigDict, Field, StringConstraints
 from pydantic import BaseModel as PydanticBaseModel
-from pydantic.generics import GenericModel
+from pydantic_core import PydanticCustomError
 
 
 class BaseModel(PydanticBaseModel):
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 PM = TypeVar("PM", bound=BaseModel)
@@ -26,74 +25,61 @@ class CreatedUpdatedAt(BaseModel):
     updated_at: datetime
 
 
-class PaginatedResults(GenericModel, Generic[PM]):
+class PaginatedResults(BaseModel, Generic[PM]):
     count: int
     results: list[PM]
 
 
-class TrueBooleanError(PydanticValueError):
-    code = "boolean.must_be_true"
-    msg_template = "value must be true"
+NonEmptyString = Annotated[str, StringConstraints(min_length=1)]
 
 
-def true_bool_validator(cls, v: bool):
+def true_only_boolean(v: bool):
     if v is False:
-        raise TrueBooleanError()
+        raise PydanticCustomError("boolean.must_be_true", "value must be true")
     return v
 
 
-class PhoneNumberError(PydanticValueError):
-    code = "phone_number.invalid"
-    msg_template = "value is not a valid phone number"
+TrueOnlyBoolean = Annotated[bool, AfterValidator(true_only_boolean)]
 
 
-class PhoneNumberMissingRegionError(PhoneNumberError):
-    code = "phone_number.missing_region"
-    msg_template = "value is missing the country code"
+def validate_phone_number(v: str) -> str:
+    try:
+        parsed = phonenumbers.parse(v)
+    except phonenumbers.phonenumberutil.NumberParseException as e:
+        raise PydanticCustomError(
+            "phone_number.missing_region", "value is missing the country code"
+        ) from e
+    if not phonenumbers.is_valid_number(parsed):
+        raise PydanticCustomError(
+            "phone_number.invalid", "value is not a valid phone number"
+        )
+    return phonenumbers.format_number(parsed, phonenumbers.PhoneNumberFormat.E164)
 
 
-class PhoneNumber(str):
+PhoneNumber = Annotated[str, AfterValidator(validate_phone_number)]
+
+
+def validate_country_code(v: str) -> str:
+    country = pycountry.countries.get(alpha_2=v)
+    if country is None:
+        raise PydanticCustomError(
+            "country_code.invalid", "value is not a valid country code"
+        )
+    return country.alpha_2
+
+
+class CountryCodeSchema:
     @classmethod
-    def __modify_schema__(cls, field_schema: dict[str, Any]) -> None:
-        field_schema.update(type="string")
-
-    @classmethod
-    def __get_validators__(cls):
-        yield cls.validate
-
-    @classmethod
-    def validate(cls, value: str) -> str:
-        try:
-            parsed = phonenumbers.parse(value)
-        except phonenumbers.phonenumberutil.NumberParseException as e:
-            raise PhoneNumberMissingRegionError() from e
-        if not phonenumbers.is_valid_number(parsed):
-            raise PhoneNumberError()
-        return phonenumbers.format_number(parsed, phonenumbers.PhoneNumberFormat.E164)
-
-
-class CountryCodeError(PydanticValueError):
-    code = "country_code.invalid"
-    msg_template = "value is not a valid country code"
-
-
-class CountryCode(str):
-    @classmethod
-    def __modify_schema__(cls, field_schema: dict[str, Any]) -> None:
+    def __get_pydantic_json_schema__(cls, core_schema, handler):
         countries = sorted(pycountry.countries, key=lambda c: c.name)
+        field_schema = handler(core_schema)
         field_schema.update(
             enum=[country.alpha_2 for country in countries],
         )
+        return field_schema
 
-    @classmethod
-    def __get_validators__(cls):
-        yield cls.validate
 
-    @classmethod
-    def validate(cls, value: str) -> str:
-        if pycountry.countries.get(alpha_2=value) is None:
-            raise CountryCodeError()
-        return value
+CountryCode = Annotated[str, CountryCodeSchema, AfterValidator(validate_country_code)]
 
 
 class Address(BaseModel):
@@ -105,27 +91,23 @@ class Address(BaseModel):
     country: CountryCode
 
 
-class TimezoneError(PydanticValueError):
-    code = "timezone.invalid"
-    msg_template = "value is not a valid timezone"
+def validate_timezone(v: str) -> str:
+    try:
+        timezone = pytz.timezone(v)
+    except pytz.exceptions.UnknownTimeZoneError as e:
+        raise PydanticCustomError(
+            "timezone.invalid", "value is not a valid timezone"
+        ) from e
+    else:
+        return str(timezone)
 
 
-class Timezone(str):
+class TimezoneSchema:
     @classmethod
-    def __modify_schema__(cls, field_schema: dict[str, Any]) -> None:
+    def __get_pydantic_json_schema__(cls, core_schema, handler):
+        field_schema = handler(core_schema)
         field_schema.update(enum=sorted(pytz.common_timezones), title="timezone")
+        return field_schema
 
-    @classmethod
-    def __get_validators__(cls):
-        yield cls.validate
 
-    @classmethod
-    def validate(cls, value: Any) -> str:
-        if not isinstance(value, str):
-            raise TypeError()
-        try:
-            timezone = pytz.timezone(value)
-        except pytz.exceptions.UnknownTimeZoneError as e:
-            raise TimezoneError() from e
-        else:
-            return str(timezone)
+Timezone = Annotated[str, TimezoneSchema, AfterValidator(validate_timezone)]

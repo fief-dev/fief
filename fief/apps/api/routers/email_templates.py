@@ -43,7 +43,7 @@ async def list_email_templates(
     return PaginatedResults(
         count=count,
         results=[
-            schemas.email_template.EmailTemplate.from_orm(email_template)
+            schemas.email_template.EmailTemplate.model_validate(email_template)
             for email_template in email_templates
         ],
     )
@@ -57,7 +57,7 @@ async def list_email_templates(
 async def get_email_template(
     email_template: EmailTemplate = Depends(get_email_template_by_id_or_404),
 ) -> schemas.email_template.EmailTemplate:
-    return schemas.email_template.EmailTemplate.from_orm(email_template)
+    return schemas.email_template.EmailTemplate.model_validate(email_template)
 
 
 @router.patch(
@@ -75,7 +75,7 @@ async def update_email_template(
     audit_logger: AuditLogger = Depends(get_audit_logger),
     trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ) -> schemas.email_template.EmailTemplate:
-    email_template_update_dict = email_template_update.dict(exclude_unset=True)
+    email_template_update_dict = email_template_update.model_dump(exclude_unset=True)
 
     context_class = EMAIL_TEMPLATE_CONTEXT_CLASS_MAP[email_template.type]
     sample_context = await context_class.create_sample_context(session)
@@ -111,4 +111,4 @@ async def update_email_template(
         schemas.email_template.EmailTemplate,
     )
 
-    return schemas.email_template.EmailTemplate.from_orm(email_template)
+    return schemas.email_template.EmailTemplate.model_validate(email_template)

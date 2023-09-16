@@ -17,8 +17,8 @@ class OnAfterForgotPasswordTask(TaskBase):
         tenant = await self._get_tenant(user.tenant_id, workspace)
 
         context = ForgotPasswordContext(
-            tenant=schemas.tenant.Tenant.from_orm(tenant),
-            user=schemas.user.UserEmailContext.from_orm(user),
+            tenant=schemas.tenant.Tenant.model_validate(tenant),
+            user=schemas.user.UserEmailContext.model_validate(user),
             reset_url=reset_url,
         )
 

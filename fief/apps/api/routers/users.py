@@ -75,7 +75,7 @@ async def list_users(
     users, count = paginated_users
     return PaginatedResults(
         count=count,
-        results=[schemas.user.UserRead.from_orm(user) for user in users],
+        results=[schemas.user.UserRead.model_validate(user) for user in users],
     )
 
 
@@ -83,7 +83,7 @@ async def list_users(
 async def get_user(
     user: User = Depends(get_user_by_id_or_404),
 ) -> schemas.user.UserRead:
-    return schemas.user.UserRead.from_orm(user)
+    return schemas.user.UserRead.model_validate(user)
 
 
 @router.post(
@@ -131,7 +131,7 @@ async def create_user(
 
     user = await user_repository.get_by_id(created_user.id, (joinedload(User.tenant),))
 
-    return schemas.user.UserRead.from_orm(user)
+    return schemas.user.UserRead.model_validate(user)
 
 
 @router.patch("/{id:uuid}", name="users:update", response_model=schemas.user.UserRead)
@@ -160,7 +160,7 @@ async def update_user(
             status_code=status.HTTP_400_BAD_REQUEST,
         )
 
-    return schemas.user.UserRead.from_orm(user)
+    return schemas.user.UserRead.model_validate(user)
 
 
 @router.delete(
@@ -194,7 +194,7 @@ async def list_user_permissions(
     return PaginatedResults(
         count=count,
         results=[
-            schemas.user_permission.UserPermission.from_orm(user_permission)
+            schemas.user_permission.UserPermission.model_validate(user_permission)
             for user_permission in user_permissions
         ],
     )
@@ -352,7 +352,8 @@ async def list_user_roles(
     return PaginatedResults(
         count=count,
         results=[
-            schemas.user_role.UserRole.from_orm(user_role) for user_role in user_roles
+            schemas.user_role.UserRole.model_validate(user_role)
+            for user_role in user_roles
         ],
     )
 
@@ -450,7 +451,7 @@ async def list_user_oauth_accounts(
     return PaginatedResults(
         count=count,
         results=[
-            schemas.oauth_account.OAuthAccount.from_orm(oauth_account)
+            schemas.oauth_account.OAuthAccount.model_validate(oauth_account)
             for oauth_account in oauth_accounts
         ],
     )

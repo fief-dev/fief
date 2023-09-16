@@ -29,7 +29,7 @@ async def list_clients(
     clients, count = paginated_clients
     return PaginatedResults(
         count=count,
-        results=[schemas.client.Client.from_orm(client) for client in clients],
+        results=[schemas.client.Client.model_validate(client) for client in clients],
     )
 
 
@@ -60,12 +60,15 @@ async def create_client(
             detail=APIErrorCode.CLIENT_CREATE_UNKNOWN_TENANT,
         )
 
-    client = Client(**client_create.dict())
+    client = Client(
+        **client_create.model_dump(exclude={"redirect_uris"}),
+        redirect_uris=[str(u) for u in client_create.redirect_uris],
+    )
     client = await repository.create(client)
     audit_logger.log_object_write(AuditLogMessage.OBJECT_CREATED, client)
     trigger_webhooks(ClientCreated, client, schemas.client.Client)
 
-    return schemas.client.Client.from_orm(client)
+    return schemas.client.Client.model_validate(client)
 
 
 @router.patch("/{id:uuid}", name="clients:update", response_model=schemas.client.Client)
@@ -76,15 +79,17 @@ async def update_client(
     audit_logger: AuditLogger = Depends(get_audit_logger),
     trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ) -> schemas.client.Client:
-    client_update_dict = client_update.dict(exclude_unset=True)
+    client_update_dict = client_update.model_dump(exclude_unset=True)
     for field, value in client_update_dict.items():
+        if field == "redirect_uris":
+            value = [str(u) for u in value]
         setattr(client, field, value)
 
     await repository.update(client)
     audit_logger.log_object_write(AuditLogMessage.OBJECT_UPDATED, client)
     trigger_webhooks(ClientUpdated, client, schemas.client.Client)
 
-    return schemas.client.Client.from_orm(client)
+    return schemas.client.Client.model_validate(client)
 
 
 @router.post(

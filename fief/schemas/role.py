@@ -11,9 +11,9 @@ class RoleCreate(BaseModel):
 
 
 class RoleUpdate(BaseModel):
-    name: str | None
-    granted_by_default: bool | None
-    permissions: list[UUID4] | None
+    name: str | None = None
+    granted_by_default: bool | None = None
+    permissions: list[UUID4] | None = None
 
 
 class BaseRole(UUIDSchema, CreatedUpdatedAt):

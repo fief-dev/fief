@@ -4,14 +4,14 @@ from typing import Any
 from urllib.parse import urlparse
 
 from pydantic import (
-    BaseSettings,
     DirectoryPath,
     EmailStr,
     Field,
     SecretStr,
-    root_validator,
-    validator,
+    field_validator,
+    model_validator,
 )
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from fief.crypto.encryption import is_valid_key
 from fief.db.types import (
@@ -35,8 +35,7 @@ class InvalidEncryptionKeyError(ValueError):
 class InitialSettings(BaseSettings):
     secrets_dir: str | None = None
 
-    class Config:
-        env_file = ".env"
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 
 initial_settings = InitialSettings()
@@ -107,7 +106,7 @@ class Settings(BaseSettings):
     registration_session_cookie_secure: bool = True
     registration_session_lifetime_seconds: int = 600
 
-    email_verification_code_length = 6
+    email_verification_code_length: int = 6
     email_verification_lifetime_seconds: int = 3600
 
     oauth_session_lifetime_seconds: int = 600
@@ -123,7 +122,7 @@ class Settings(BaseSettings):
     default_access_id_token_lifetime_seconds: int = 3600 * 24
     default_refresh_token_lifetime_seconds: int = 3600 * 24 * 30
 
-    webhooks_max_attempts = 5
+    webhooks_max_attempts: int = 5
 
     fief_domain: str = "localhost:8000"
     fief_client_id: str
@@ -139,11 +138,12 @@ class Settings(BaseSettings):
 
     fief_documentation_url: str = "https://docs.fief.dev"
 
-    class Config:
-        env_file = ".env"
-        secrets_dir = initial_settings.secrets_dir
+    model_config = SettingsConfigDict(
+        env_file=".env", extra="ignore", secrets_dir=initial_settings.secrets_dir
+    )
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
+    @classmethod
     def parse_database_url(cls, values):
         database_url = values.get("database_url")
         if database_url is not None:
@@ -155,7 +155,8 @@ class Settings(BaseSettings):
             values["database_name"] = parsed_database_url.path[1:]
         return values
 
-    @validator("encryption_key", pre=True)
+    @field_validator("encryption_key", mode="before")
+    @classmethod
     def validate_encryption_key(cls, value: str | None) -> bytes | None:
         if value is None:
             return value
@@ -166,7 +167,8 @@ class Settings(BaseSettings):
 
         return key
 
-    @validator("database_port", pre=True)
+    @field_validator("database_port", mode="before")
+    @classmethod
     def validate_empty_port(cls, value: str | None) -> str | None:
         if value is None or value == "":
             return None

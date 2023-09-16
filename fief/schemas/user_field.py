@@ -3,21 +3,21 @@ from datetime import date, datetime
 from enum import Enum
 from typing import Any, Generic, TypeVar
 
-from pydantic import BaseModel, StrictBool, StrictInt, StrictStr, constr
-from pydantic.generics import GenericModel
+from pydantic import BaseModel, StrictBool, StrictInt, StrictStr
 
 from fief.models import UserField as UserFieldModel
 from fief.models import UserFieldType
 from fief.schemas.generics import (
     Address,
     CreatedUpdatedAt,
+    NonEmptyString,
     PhoneNumber,
     Timezone,
     UUIDSchema,
 )
 
 USER_FIELD_TYPE_MAP: Mapping[UserFieldType, type[Any]] = {
-    UserFieldType.STRING: constr(min_length=1),
+    UserFieldType.STRING: NonEmptyString,
     UserFieldType.INTEGER: int,
     UserFieldType.BOOLEAN: bool,
     UserFieldType.DATE: date,
@@ -54,6 +54,7 @@ def get_user_field_pydantic_type(field: UserFieldModel) -> type[Any]:
             [(value, value) for (value, _) in choices],
             type=str,
         )
+
     return USER_FIELD_TYPE_MAP[field.type]
 
 
@@ -63,23 +64,20 @@ class UserFieldConfigurationBase(BaseModel):
     at_update: bool
 
 
-class ChoiceTupleType(tuple[str, str]):
-    pass
+ChoiceTupleType = tuple[str, str]
 
 
 class UserFieldConfiguration(UserFieldConfigurationBase):
-    choices: list[ChoiceTupleType] | None
-    default: Timezone | StrictBool | StrictInt | StrictStr | None
+    choices: list[ChoiceTupleType] | None = None
+    default: Timezone | StrictBool | StrictInt | StrictStr | None = None
 
 
-class UserFieldConfigurationDefault(
-    GenericModel, Generic[D], UserFieldConfigurationBase
-):
-    default: D | None
+class UserFieldConfigurationDefault(UserFieldConfigurationBase, Generic[D]):
+    default: D | None = None
 
 
 class UserFieldConfigurationChoice(UserFieldConfigurationDefault[str]):
-    choices: list[ChoiceTupleType] | None
+    choices: list[ChoiceTupleType] | None = None
 
 
 class UserFieldCreate(BaseModel):
@@ -90,9 +88,9 @@ class UserFieldCreate(BaseModel):
 
 
 class UserFieldUpdate(BaseModel):
-    name: str | None
-    slug: str | None
-    configuration: UserFieldConfiguration | None
+    name: str | None = None
+    slug: str | None = None
+    configuration: UserFieldConfiguration | None = None
 
 
 class BaseUserField(UUIDSchema, CreatedUpdatedAt):

@@ -99,4 +99,4 @@ async def token(
 
     response.headers["Cache-Control"] = "no-store"
     response.headers["Pragma"] = "no-cache"
-    return token_response.dict(exclude_none=True)
+    return token_response.model_dump(exclude_none=True)

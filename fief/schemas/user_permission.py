@@ -12,7 +12,7 @@ class UserPermissionCreate(BaseModel):
 class BaseUserPermission(CreatedUpdatedAt):
     user_id: UUID4
     permission_id: UUID4
-    from_role_id: UUID4 | None
+    from_role_id: UUID4 | None = None
 
 
 class UserPermission(BaseUserPermission):

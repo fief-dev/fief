@@ -47,7 +47,7 @@ class TestGetEmailSender:
     def test_email_domain_verified(self, test_data: TestData):
         email_domain = test_data["email_domains"]["bretagne.duchy"]
         email_domain.records = [
-            record.copy(update={"verified": True}).dict()  # type: ignore
+            record.model_copy(update={"verified": True}).model_dump()  # type: ignore
             for record in email_domain.records
         ]
         tenant = get_tenant(

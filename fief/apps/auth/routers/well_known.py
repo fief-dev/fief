@@ -67,7 +67,7 @@ async def get_openid_configuration(
         service_documentation=settings.fief_documentation_url,
     )
 
-    return configuration.dict(exclude_unset=True)
+    return configuration.model_dump(exclude_unset=True)
 
 
 @router.get("/jwks.json", name="well_known:jwks")

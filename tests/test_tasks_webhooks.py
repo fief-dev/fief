@@ -49,7 +49,7 @@ class TestTasksDeliverWebhook:
         )
 
         await deliver_webhook.run(
-            str(workspace.id), str(webhook.id), webhook_event.json()
+            str(workspace.id), str(webhook.id), webhook_event.model_dump_json()
         )
 
         assert route_mock.called
@@ -78,7 +78,7 @@ class TestTasksDeliverWebhook:
 
         with pytest.raises(WebhookDeliveryError):
             await deliver_webhook.run(
-                str(workspace.id), str(webhook.id), webhook_event.json()
+                str(workspace.id), str(webhook.id), webhook_event.model_dump_json()
             )
 
 
@@ -98,7 +98,7 @@ class TestTasksTriggerWebhooks:
             main_session_manager, workspace_session_manager, send_task=send_task_mock
         )
 
-        await trigger_webhooks.run(str(workspace.id), webhook_event.json())
+        await trigger_webhooks.run(str(workspace.id), webhook_event.model_dump_json())
 
         assert send_task_mock.call_count == 1
         assert send_task_mock.call_args[1]["webhook_id"] == str(
@@ -119,7 +119,7 @@ class TestTasksTriggerWebhooks:
             main_session_manager, workspace_session_manager, send_task=send_task_mock
         )
 
-        await trigger_webhooks.run(str(workspace.id), webhook_event.json())
+        await trigger_webhooks.run(str(workspace.id), webhook_event.model_dump_json())
 
         assert send_task_mock.call_count == 2
         webhook_ids = [
@@ -142,7 +142,7 @@ class TestTasksTriggerWebhooks:
             main_session_manager, workspace_session_manager, send_task=send_task_mock
         )
 
-        await trigger_webhooks.run(str(workspace.id), webhook_event.json())
+        await trigger_webhooks.run(str(workspace.id), webhook_event.model_dump_json())
 
         assert send_task_mock.call_count == 2
         webhook_ids = [

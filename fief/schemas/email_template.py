@@ -3,8 +3,8 @@ from fief.services.email_template.types import EmailTemplateType
 
 
 class EmailTemplateUpdate(BaseModel):
-    subject: str | None
-    content: str | None
+    subject: str | None = None
+    content: str | None = None
 
 
 class EmailTemplateBase(UUIDSchema, CreatedUpdatedAt):
