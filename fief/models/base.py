@@ -1,14 +1,15 @@
 from sqlalchemy.orm import DeclarativeBase
 
-from fief.settings import settings
-
 
 class MainBase(DeclarativeBase):
     pass
 
 
+TABLE_PREFIX_PLACEHOLDER = "__FIEF__"
+
+
 def get_prefixed_tablename(name: str) -> str:
-    return f"{settings.workspace_table_prefix}{name}"
+    return f"{TABLE_PREFIX_PLACEHOLDER}{name}"
 
 
 class WorkspaceBase(DeclarativeBase):

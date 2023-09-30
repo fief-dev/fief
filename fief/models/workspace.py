@@ -1,6 +1,6 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
-from sqlalchemy import Enum, Integer, String, Text
+from sqlalchemy import Boolean, Enum, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from fief.crypto.encryption import FernetEngine, StringEncryptedType
@@ -25,6 +25,12 @@ class Workspace(UUIDModel, CreatedUpdatedAt, MainBase):
 
     database_type: Mapped[DatabaseType | None] = mapped_column(
         Enum(DatabaseType), nullable=True
+    )
+    database_use_schema: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False
+    )
+    database_table_prefix: Mapped[str] = mapped_column(
+        String(length=255), default="fief_", nullable=False
     )
     database_host: Mapped[str | None] = mapped_column(
         StringEncryptedType(Text, settings.encryption_key, FernetEngine), nullable=True
@@ -57,9 +63,6 @@ class Workspace(UUIDModel, CreatedUpdatedAt, MainBase):
         "WorkspaceUser", back_populates="workspace", cascade="all, delete"
     )
 
-    def __repr__(self) -> str:
-        return f"Workspace(id={self.id}, name={self.name}, domain={self.domain})"
-
     def get_database_connection_parameters(
         self, asyncio=True
     ) -> DatabaseConnectionParameters:
@@ -68,13 +71,13 @@ class Workspace(UUIDModel, CreatedUpdatedAt, MainBase):
 
         If it's not specified on the model, the instance database URL is returned.
         """
-        if self.database_type is None:
+        if self.is_byod:
             url = settings.get_database_connection_parameters(
-                asyncio, schema=self.get_schema_name()
+                asyncio, schema=self.schema_name
             )
         else:
             url = create_database_connection_parameters(
-                self.database_type,
+                cast(DatabaseType, self.database_type),
                 asyncio=asyncio,
                 username=self.database_username,
                 password=self.database_password,
@@ -82,14 +85,35 @@ class Workspace(UUIDModel, CreatedUpdatedAt, MainBase):
                 port=int(self.database_port) if self.database_port else None,
                 database=self.database_name,
                 path=settings.database_location,
-                schema=self.get_schema_name(),
+                schema=self.schema_name,
                 ssl_mode=self.database_ssl_mode,
             )
 
         return url
 
-    def get_schema_name(self) -> str:
+    @property
+    def is_byod(self) -> bool:
+        """Whether this workspace use a BYOD database."""
+        return self.database_type is None
+
+    @property
+    def use_schema(self) -> bool:
         """
-        Return the SQL schema name where the data is stored.
+        Whether we should use a database schema.
         """
-        return str(self.id)
+        # Main database: use a schema to avoid collisions with other WS.
+        if self.is_byod:
+            return True
+
+        # BYOD: check the database_use_schema property
+        # Mainly for backward compatibility: new BYOD workspaces don't use schema
+        return self.database_use_schema
+
+    @property
+    def schema_name(self) -> str | None:
+        """
+        SQL schema name where the data is stored.
+        """
+        if self.use_schema:
+            return str(self.id)
+        return None

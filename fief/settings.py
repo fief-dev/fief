@@ -75,8 +75,6 @@ class Settings(BaseSettings):
     default_from_email: str = "contact@fief.dev"
     default_from_name: str | None = "Fief"
 
-    workspace_table_prefix: str = "fief_"
-
     csrf_check_enabled: bool = True
     csrf_cookie_name: str = "fief_csrftoken"
     csrf_cookie_secure: bool = True

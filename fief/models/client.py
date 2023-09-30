@@ -9,7 +9,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql.sqltypes import JSON
 
 from fief.crypto.jwk import load_jwk
-from fief.models.base import WorkspaceBase
+from fief.models.base import TABLE_PREFIX_PLACEHOLDER, WorkspaceBase
 from fief.models.generics import GUID, CreatedUpdatedAt, UUIDModel
 from fief.models.tenant import Tenant
 from fief.settings import settings
@@ -48,7 +48,7 @@ class Client(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
     client_type: Mapped[ClientType] = mapped_column(
         Enum(
             ClientType,
-            name="fief_clienttype",
+            name=f"{TABLE_PREFIX_PLACEHOLDER}clienttype",
             values_callable=lambda x: [e.value for e in x],
         ),
         nullable=False,

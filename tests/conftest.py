@@ -145,6 +145,7 @@ async def workspace(
         name="Duché de Bretagne",
         domain="bretagne.localhost:8000",
         database_type=database_type,
+        database_use_schema=True,
         database_host=url.host,
         database_port=url.port,
         database_username=url.username,
@@ -156,7 +157,9 @@ async def workspace(
 
     workspace_db = WorkspaceDatabase()
     revision = workspace_db.migrate(
-        workspace.get_database_connection_parameters(False), workspace.get_schema_name()
+        workspace.get_database_connection_parameters(False),
+        workspace.database_table_prefix,
+        workspace.schema_name,
     )
     workspace.alembic_revision = revision
     main_session.add(workspace)
@@ -183,7 +186,9 @@ async def workspace_connection(
     workspace_engine: AsyncEngine, workspace: Workspace
 ) -> AsyncGenerator[AsyncConnection, None]:
     async with get_connection(
-        workspace_engine, workspace.get_schema_name()
+        workspace_engine,
+        table_prefix=workspace.database_table_prefix,
+        schema_name=workspace.schema_name,
     ) as connection:
         yield connection
 

@@ -1,7 +1,7 @@
 import contextlib
 import sqlite3
 from collections.abc import AsyncGenerator
-from typing import TYPE_CHECKING, Self
+from typing import TYPE_CHECKING, Any, Self
 
 import asyncpg.exceptions
 from sqlalchemy import exc
@@ -43,10 +43,13 @@ class WorkspaceEngineManager:
 
 @contextlib.asynccontextmanager
 async def get_connection(
-    engine: AsyncEngine, schema_name: str | None = None
+    engine: AsyncEngine,
+    *,
+    table_prefix: str | None = None,
+    schema_name: str | None = None,
 ) -> AsyncGenerator[AsyncConnection, None]:
     dialect_name = engine.dialect.name
-    options = {}
+    options: dict[str, Any] = {"table_prefix": table_prefix}
     if dialect_name != "sqlite":
         options["schema_translate_map"] = {None: schema_name}
     try:
@@ -77,6 +80,10 @@ async def get_workspace_session(
     engine = workspace_engine_manager.get_engine(
         workspace.get_database_connection_parameters()
     )
-    async with get_connection(engine, workspace.get_schema_name()) as connection:
+    async with get_connection(
+        engine,
+        table_prefix=workspace.database_table_prefix,
+        schema_name=workspace.schema_name,
+    ) as connection:
         async with AsyncSession(bind=connection, expire_on_commit=False) as session:
             yield session

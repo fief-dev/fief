@@ -5,7 +5,7 @@ from sqlalchemy import JSON, String
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from fief.models.base import WorkspaceBase
+from fief.models.base import TABLE_PREFIX_PLACEHOLDER, WorkspaceBase
 from fief.models.generics import CreatedUpdatedAt, UUIDModel
 
 if TYPE_CHECKING:
@@ -70,7 +70,9 @@ class UserField(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
         String(length=320), index=True, nullable=False, unique=True
     )
     type: Mapped[UserFieldType] = mapped_column(
-        SQLEnum(UserFieldType, name="fief_userfieldtype"), index=True, nullable=True
+        SQLEnum(UserFieldType, name=f"{TABLE_PREFIX_PLACEHOLDER}userfieldtype"),
+        index=True,
+        nullable=True,
     )
     configuration: Mapped[UserFieldConfiguration] = mapped_column(JSON, nullable=False)
 

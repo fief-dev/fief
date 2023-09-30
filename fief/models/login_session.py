@@ -6,7 +6,7 @@ from sqlalchemy import Enum, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql.sqltypes import JSON, String
 
-from fief.models.base import WorkspaceBase
+from fief.models.base import TABLE_PREFIX_PLACEHOLDER, WorkspaceBase
 from fief.models.client import Client
 from fief.models.generics import GUID, CreatedUpdatedAt, ExpiresAt, UUIDModel
 from fief.services.acr import ACR
@@ -32,7 +32,11 @@ class LoginSession(UUIDModel, CreatedUpdatedAt, ExpiresAt, WorkspaceBase):
     state: Mapped[str | None] = mapped_column(String(length=2048), nullable=True)
     nonce: Mapped[str | None] = mapped_column(String(length=255), nullable=True)
     acr: Mapped[ACR] = mapped_column(
-        Enum(ACR, name="fief_acr", values_callable=lambda x: [e.value for e in x]),
+        Enum(
+            ACR,
+            name=f"{TABLE_PREFIX_PLACEHOLDER}acr",
+            values_callable=lambda x: [e.value for e in x],
+        ),
         nullable=False,
         default=ACR.LEVEL_ZERO,
     )

@@ -49,6 +49,9 @@ class WorkspaceCreateStep3Form(CSRFBaseForm):
     database_ssl_mode = SelectField(
         label="SSL mode", validators=[validators.InputRequired()]
     )
+    database_table_prefix = StringField(
+        label="Table prefix", default="fief_", validators=[validators.InputRequired()]
+    )
 
     def prefill_from_database_type(self):
         database_type = DatabaseType[self.database_type.data]

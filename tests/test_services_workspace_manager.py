@@ -49,6 +49,7 @@ def workspace_create(
     return WorkspaceCreate(
         name="Burgundy",
         database_type=database_type,
+        database_use_schema=True,
         database_host=url.host,
         database_port=url.port,
         database_username=url.username,

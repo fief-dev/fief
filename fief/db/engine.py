@@ -2,6 +2,7 @@ from sqlalchemy import event
 from sqlalchemy.ext.asyncio import AsyncEngine, async_sessionmaker, create_async_engine
 
 from fief.db.types import DatabaseConnectionParameters
+from fief.models.base import TABLE_PREFIX_PLACEHOLDER
 from fief.settings import settings
 
 
@@ -37,6 +38,18 @@ def create_engine(
         def do_begin(conn):
             # emit our own BEGIN
             conn.exec_driver_sql("BEGIN")
+
+    # Trick allowing us to query tables with a dynamic prefix.
+    # We simply replace our placeholder with the actual value on the resulting SQL string.
+    # Taken from: https://docs.sqlalchemy.org/en/20/_modules/examples/sharding/separate_tables.html
+    @event.listens_for(engine.sync_engine, "before_cursor_execute", retval=True)
+    def before_cursor_execute(
+        conn, cursor, statement, parameters, context, executemany
+    ):
+        table_prefix = context.execution_options.get("table_prefix", None)
+        if table_prefix is not None:
+            statement = statement.replace(TABLE_PREFIX_PLACEHOLDER, table_prefix)
+        return statement, parameters
 
     return engine
 

@@ -35,6 +35,7 @@ class TestMigrate:
         with pytest.raises(WorkspaceDatabaseConnectionError):
             workspace_db.migrate(
                 (engine.make_url("postgresql://foo:bar@localhost:1234/foobar"), {}),
+                "fief_",
                 "workspace-schema",
             )
 
@@ -45,7 +46,7 @@ class TestMigrate:
     ):
         database_connection_params, _ = test_database_url
         schema = "workspace_schema"
-        workspace_db.migrate(database_connection_params, schema)
+        workspace_db.migrate(database_connection_params, "fief_", schema)
 
         with workspace_db._get_engine(database_connection_params, schema) as engine:
             inspector = inspect(engine)
@@ -70,7 +71,7 @@ class TestDrop:
     ):
         database_connection_params, database_type = test_database_url
         schema = "workspace_schema"
-        workspace_db.migrate(database_connection_params, schema)
+        workspace_db.migrate(database_connection_params, "fief_", schema)
 
         workspace_db.drop(database_connection_params, schema)
 

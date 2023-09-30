@@ -188,6 +188,7 @@ class TestCreateWorkspaceStep3:
                 "database_password": "herminetincture",
                 "database_name": "fief",
                 "database_ssl_mode": PostreSQLSSLMode.ALLOW.value,
+                "database_table_prefix": "fief_",
                 "csrf_token": csrf_token,
             },
         )
@@ -241,6 +242,7 @@ class TestCreateWorkspaceStep3CheckConnection:
                 "database_password": "herminetincture",
                 "database_name": "fief",
                 "database_ssl_mode": PostreSQLSSLMode.ALLOW.value,
+                "database_table_prefix": "fief_",
                 "csrf_token": csrf_token,
             },
         )
@@ -270,6 +272,7 @@ class TestCreateWorkspaceStep3CheckConnection:
                 "database_password": "herminetincture",
                 "database_name": "fief",
                 "database_ssl_mode": PostreSQLSSLMode.ALLOW.value,
+                "database_table_prefix": "fief_",
                 "csrf_token": csrf_token,
             },
         )
@@ -355,6 +358,7 @@ class TestCreateWorkspaceStep4:
                             "database_password": "herminetincture",
                             "database_name": "fief",
                             "database_ssl_mode": PostreSQLSSLMode.ALLOW.value,
+                            "database_table_prefix": "fief_",
                         }
                     }
                 )
@@ -396,6 +400,7 @@ class TestCreateWorkspaceStep4:
                             "database_password": "herminetincture",
                             "database_name": "fief",
                             "database_ssl_mode": PostreSQLSSLMode.ALLOW.value,
+                            "database_table_prefix": "fief_",
                         }
                     }
                 )

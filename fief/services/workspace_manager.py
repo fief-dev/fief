@@ -66,7 +66,8 @@ class WorkspaceManager:
         try:
             alembic_revision = self.workspace_db.migrate(
                 workspace.get_database_connection_parameters(False),
-                workspace.get_schema_name(),
+                workspace.database_table_prefix,
+                workspace.schema_name,
             )
         except WorkspaceDatabaseConnectionError:
             await self.workspace_repository.delete(workspace)
@@ -136,10 +137,10 @@ class WorkspaceManager:
 
     async def delete(self, workspace: Workspace, user_id: UUID4 | None = None) -> None:
         # Delete cloud data. Keep data on BYOD untouched.
-        if workspace.database_type is None:
+        if not workspace.is_byod:
             self.workspace_db.drop(
                 workspace.get_database_connection_parameters(False),
-                workspace.get_schema_name(),
+                workspace.schema_name,
             )
 
         await self.workspace_repository.delete(workspace)

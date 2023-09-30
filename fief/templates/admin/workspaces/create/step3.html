@@ -28,6 +28,7 @@
     {% if form.database_ssl_mode.data in UNSAFE_SSL_MODES %}
       <div class="text-xs text-yellow-500">In this mode, your data may pass unencrypted on the Internet. We strongly recommend to use a mode requiring SSL.</div>
     {% endif %}
+    {{ forms.form_field(form.database_table_prefix) }}
     {{ forms.form_csrf_token(form) }}
     {% if error %}
       {% call alerts.error() %}
