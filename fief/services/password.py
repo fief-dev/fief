@@ -2,8 +2,8 @@ from typing import Self
 
 from zxcvbn_rs_py import zxcvbn
 
-from fief.settings import settings
 from fief.locale import gettext_lazy as _
+from fief.settings import settings
 
 MIN_PASSWORD_LENGTH = settings.password_min_length
 MAX_PASSWORD_LENGTH = 128
