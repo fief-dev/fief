@@ -136,6 +136,9 @@ class Settings(BaseSettings):
 
     fief_documentation_url: str = "https://docs.fief.dev"
 
+    password_min_length: int = 8
+    password_min_score: int = Field(ge=0, le=4, default=3)
+
     model_config = SettingsConfigDict(
         env_file=".env", extra="ignore", secrets_dir=initial_settings.secrets_dir
     )
