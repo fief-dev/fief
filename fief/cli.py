@@ -17,6 +17,7 @@ from sqlalchemy.orm import sessionmaker
 from fief import __version__
 from fief.crypto.encryption import generate_key
 from fief.paths import ALEMBIC_CONFIG_FILE
+from fief.services.password import PasswordValidation
 from fief.services.workspace_db import (
     WorkspaceDatabase,
     WorkspaceDatabaseConnectionError,
@@ -284,13 +285,22 @@ def quickstart(
     ),
 ):
     """Generate secrets and environment variables to help users getting started quickly."""
+
+    password_validation = PasswordValidation.validate(user_password)
+    if not password_validation.valid:
+        typer.secho(
+            f"Sorry, your password does not meet our complexity requirements. Please re-run with a more complex password.",
+            fg=typer.colors.RED,
+        )
+        for message in password_validation.messages:
+            print(f"Error message: {message}")
+        raise typer.Exit(code=1)
     typer.secho(
         "⚠️  Be sure to save the generated secrets somewhere safe for subsequent runs. Otherwise, you may lose access to the data.",
         bold=True,
         fg="red",
         err=True,
     )
-
     environment_variables = {
         "SECRET": secrets.token_urlsafe(64),
         "FIEF_CLIENT_ID": secrets.token_urlsafe(),
