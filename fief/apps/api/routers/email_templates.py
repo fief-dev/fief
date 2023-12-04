@@ -92,8 +92,12 @@ async def update_email_template(
         repository, templates_overrides={email_template.type: email_template_preview}
     )
     try:
-        await email_subject_renderer.render(EmailTemplateType[email_template_preview.type], sample_context)  # type: ignore
-        await email_template_renderer.render(EmailTemplateType[email_template_preview.type], sample_context)  # type: ignore
+        await email_subject_renderer.render(
+            EmailTemplateType[email_template_preview.type], sample_context
+        )  # type: ignore
+        await email_template_renderer.render(
+            EmailTemplateType[email_template_preview.type], sample_context
+        )  # type: ignore
     except jinja2.exceptions.TemplateError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

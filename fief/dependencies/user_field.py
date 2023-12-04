@@ -88,7 +88,7 @@ async def get_user_field_create_internal_model(user_field_create: UserFieldCreat
 
     return create_model(
         "UserFieldCreateInternal",
-        type=(Literal[user_field_type], ...),  # type: ignore
+        type=(Literal[user_field_type], ...),  # pyright: ignore
         configuration=(configuration_type, ...),
         __base__=UserFieldCreate,
     )
@@ -126,7 +126,7 @@ async def get_user_field_update_internal_model(
 
     return create_model(
         "UserFieldUpdateInternal",
-        type=(Literal[user_field_type], ...),  # type: ignore
+        type=(Literal[user_field_type], ...),  # pyright: ignore
         configuration=(configuration_type | None, None),
         __base__=UserFieldUpdate,
     )
@@ -221,7 +221,7 @@ async def get_user_create_model(
         "UserFields",
         **fields,
         __validators__=validators,
-        __base__=UserFields,  # type: ignore
+        __base__=UserFields,
     )
     return UserCreate[user_fields_model]  # type: ignore
 
@@ -234,7 +234,7 @@ async def get_user_create_admin_model(
         "UserFields",
         **fields,
         __validators__=validators,
-        __base__=UserFields,  # type: ignore
+        __base__=UserFields,
     )
     return UserCreateAdmin[user_fields_model]  # type: ignore
 
@@ -247,7 +247,7 @@ async def get_user_update_model(
         "UserFields",
         **fields,
         __validators__=validators,
-        __base__=UserFields,  # type: ignore
+        __base__=UserFields,
     )
     return UserUpdate[user_fields_model]  # type: ignore
 
@@ -260,6 +260,6 @@ async def get_admin_user_update_model(
         "UserFields",
         **fields,
         __validators__=validators,
-        __base__=UserFields,  # type: ignore
+        __base__=UserFields,
     )
     return UserUpdateAdmin[user_fields_model]  # type: ignore

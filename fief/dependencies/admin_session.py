@@ -28,8 +28,9 @@ async def get_optional_admin_session_token(
 
 async def get_admin_session_token(
     request: Request,
-    admin_session_token: AdminSessionToken
-    | None = Depends(get_optional_admin_session_token),
+    admin_session_token: AdminSessionToken | None = Depends(
+        get_optional_admin_session_token
+    ),
 ) -> AdminSessionToken:
     if admin_session_token is None:
         raise HTTPException(

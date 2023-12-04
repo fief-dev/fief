@@ -289,7 +289,7 @@ def quickstart(
     password_validation = PasswordValidation.validate(user_password)
     if not password_validation.valid:
         typer.secho(
-            f"Sorry, your password does not meet our complexity requirements. Please re-run with a more complex password.",
+            "Sorry, your password does not meet our complexity requirements. Please re-run with a more complex password.",
             fg=typer.colors.RED,
         )
         for message in password_validation.messages:

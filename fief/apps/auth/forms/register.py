@@ -22,8 +22,9 @@ RF = TypeVar("RF", bound=RegisterFormBase)
 
 async def get_register_form_class(
     registration_user_fields: list[UserField] = Depends(get_registration_user_fields),
-    registration_session: RegistrationSession
-    | None = Depends(get_optional_registration_session),
+    registration_session: RegistrationSession | None = Depends(
+        get_optional_registration_session
+    ),
 ) -> type[RF]:
     class RegisterFormFields(BaseForm):
         pass

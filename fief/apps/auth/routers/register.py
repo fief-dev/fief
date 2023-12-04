@@ -43,8 +43,9 @@ async def register(
     register_form_class: type[RF] = Depends(get_register_form_class),
     registration_flow: RegistrationFlow = Depends(get_registration_flow),
     authentication_flow: AuthenticationFlow = Depends(get_authentication_flow),
-    registration_session: RegistrationSession
-    | None = Depends(get_optional_registration_session),
+    registration_session: RegistrationSession | None = Depends(
+        get_optional_registration_session
+    ),
     oauth_providers: list[OAuthProvider] | None = Depends(get_oauth_providers),
     tenant: Tenant = Depends(get_current_tenant),
     context: BaseContext = Depends(get_base_context),

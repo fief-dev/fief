@@ -544,20 +544,20 @@ async def test_client_generator(
     async def _test_client_generator(app: FastAPI):
         app.dependency_overrides = {}
         app.dependency_overrides[get_main_async_session] = lambda: main_session
-        app.dependency_overrides[
-            get_current_workspace_session
-        ] = lambda: workspace_session
+        app.dependency_overrides[get_current_workspace_session] = (
+            lambda: workspace_session
+        )
         app.dependency_overrides[get_workspace_db] = lambda: workspace_db_mock
-        app.dependency_overrides[
-            get_workspace_engine_manager
-        ] = lambda: WorkspaceEngineManager()
+        app.dependency_overrides[get_workspace_engine_manager] = (
+            lambda: WorkspaceEngineManager()
+        )
         app.dependency_overrides[get_workspace_manager] = lambda: workspace_manager_mock
         app.dependency_overrides[get_send_task] = lambda: send_task_mock
         app.dependency_overrides[get_fief] = lambda: fief_client_mock
         app.dependency_overrides[get_theme_preview] = lambda: theme_preview_mock
-        app.dependency_overrides[
-            get_tenant_email_domain
-        ] = lambda: tenant_email_domain_mock
+        app.dependency_overrides[get_tenant_email_domain] = (
+            lambda: tenant_email_domain_mock
+        )
         settings.fief_admin_session_cookie_domain = ""
 
         async with asgi_lifespan.LifespanManager(app):

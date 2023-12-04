@@ -1,5 +1,6 @@
 [tool.mypy]
 plugins = ["sqlalchemy.ext.mypy.plugin", "pydantic.mypy"]
+warn_unused_ignores = true
 
 [[tool.mypy.overrides]]
 module = "furl.*"
@@ -115,7 +116,6 @@ python = "3.11"
 dependencies = [
   "asgi-lifespan",
   "beautifulsoup4",
-  "black",
   "coverage[toml]",
   "gevent",
   "httpx",
@@ -136,12 +136,12 @@ test = "pytest {args}"
 test-cov-xml = "pytest --cov fief/ --cov-report=xml --exitfirst"
 
 lint = [
-  "black . ",
+  "ruff format .",
   "ruff --fix .",
   "mypy fief/",
 ]
 lint-check = [
-  "black --check .",
+  "ruff format --check .",
   "ruff .",
   "mypy fief/",
 ]

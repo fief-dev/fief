@@ -200,7 +200,7 @@ async def get_user_access_token(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=APIErrorCode.OAUTH_PROVIDER_REFRESH_TOKEN_ERROR,
             ) from e
-        oauth_account.access_token = access_token_dict["access_token"]  # type: ignore
+        oauth_account.access_token = access_token_dict["access_token"]
         try:
             oauth_account.expires_at = datetime.fromtimestamp(
                 access_token_dict["expires_at"], tz=UTC

@@ -5,7 +5,10 @@ from pydantic import BaseModel, HttpUrl
 from fief.schemas.generics import CreatedUpdatedAt, UUIDSchema
 from fief.services.webhooks.models import WEBHOOK_EVENTS
 
-WebhookEventType = StrEnum("WebhookEventType", [event.key() for event in WEBHOOK_EVENTS])  # type: ignore
+WebhookEventType = StrEnum(  # type: ignore
+    "WebhookEventType",
+    [event.key() for event in WEBHOOK_EVENTS],
+)
 
 
 class WebhookCreate(BaseModel):

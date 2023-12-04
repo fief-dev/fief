@@ -20,7 +20,7 @@ class GUID(TypeDecorator):
     """
 
     class UUIDChar(CHAR):
-        python_type = UUID4  # type: ignore
+        python_type = UUID4
 
     impl = UUIDChar
     cache_ok = True

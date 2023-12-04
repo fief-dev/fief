@@ -68,8 +68,9 @@ async def authorize(
     scope: list[str] = Depends(get_authorize_scope),
     prompt: str | None = Depends(get_authorize_prompt),
     screen: str = Depends(get_authorize_screen),
-    code_challenge_tuple: tuple[str, str]
-    | None = Depends(get_authorize_code_challenge),
+    code_challenge_tuple: tuple[str, str] | None = Depends(
+        get_authorize_code_challenge
+    ),
     nonce: str | None = Depends(get_nonce),
     state: str | None = Query(None),
     login_hint: str | None = Query(None),

@@ -119,8 +119,12 @@ async def update_email_template(
             templates_overrides={email_template.type: email_template_preview},
         )
         try:
-            subject = await email_subject_renderer.render(EmailTemplateType[email_template_preview.type], sample_context)  # type: ignore
-            content = await email_template_renderer.render(EmailTemplateType[email_template_preview.type], sample_context)  # type: ignore
+            subject = await email_subject_renderer.render(
+                EmailTemplateType[email_template_preview.type], sample_context
+            )  # type: ignore
+            content = await email_template_renderer.render(
+                EmailTemplateType[email_template_preview.type], sample_context
+            )  # type: ignore
         except jinja2.exceptions.TemplateError as e:
             return await form_helper.get_error_response(
                 f"The template is invalid: {e!r}", "invalid_template"
@@ -142,8 +146,12 @@ async def update_email_template(
     else:
         email_subject_renderer = EmailSubjectRenderer(repository)
         email_template_renderer = EmailTemplateRenderer(repository)
-        subject = await email_subject_renderer.render(EmailTemplateType[email_template.type], sample_context)  # type: ignore
-        content = await email_template_renderer.render(EmailTemplateType[email_template.type], sample_context)  # type: ignore
+        subject = await email_subject_renderer.render(
+            EmailTemplateType[email_template.type], sample_context
+        )  # type: ignore
+        content = await email_template_renderer.render(
+            EmailTemplateType[email_template.type], sample_context
+        )  # type: ignore
 
     form_helper.context["subject_preview"] = subject
     form_helper.context["content_preview"] = content
