@@ -57,21 +57,24 @@ async def get_list_context(
 
 @router.get("/", name="dashboard.webhooks:list")
 async def list_webhooks(
+    request: Request,
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
 ):
     return templates.TemplateResponse(
-        "admin/webhooks/list.html", {**context, **list_context}
+        request, "admin/webhooks/list.html", {**context, **list_context}
     )
 
 
 @router.get("/{id:uuid}", name="dashboard.webhooks:get")
 async def get_webhook(
+    request: Request,
     webhook: Webhook = Depends(get_webhook_by_id_or_404),
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
 ):
     return templates.TemplateResponse(
+        request,
         "admin/webhooks/get.html",
         {**context, **list_context, "webhook": webhook},
     )
@@ -104,6 +107,7 @@ async def create_webhook(
         audit_logger.log_object_write(AuditLogMessage.OBJECT_CREATED, webhook)
 
         return templates.TemplateResponse(
+            request,
             "admin/webhooks/secret.html",
             {**context, **list_context, "webhook": webhook, "secret": webhook.secret},
             status_code=status.HTTP_201_CREATED,
@@ -150,6 +154,7 @@ async def update_webhook(
 
 @router.post("/{id:uuid}/secret", name="dashboard.webhooks:secret")
 async def regenerate_webhook_secret(
+    request: Request,
     webhook: Webhook = Depends(get_webhook_by_id_or_404),
     repository: WebhookRepository = Depends(
         get_workspace_repository(WebhookRepository)
@@ -163,6 +168,7 @@ async def regenerate_webhook_secret(
     audit_logger.log_object_write(AuditLogMessage.OBJECT_UPDATED, webhook)
 
     return templates.TemplateResponse(
+        request,
         "admin/webhooks/secret.html",
         {**context, **list_context, "webhook": webhook, "secret": secret},
         headers={"X-Fief-Object-Id": str(webhook.id)},
@@ -192,6 +198,7 @@ async def delete_webhook(
         )
     else:
         return templates.TemplateResponse(
+            request,
             "admin/webhooks/delete.html",
             {**context, **list_context, "webhook": webhook},
         )
@@ -232,11 +239,13 @@ async def get_logs_list_context(
 
 @router.get("/{id:uuid}/logs", name="dashboard.webhooks:logs")
 async def list_webhook_logs(
+    request: Request,
     webhook: Webhook = Depends(get_webhook_by_id_or_404),
     list_context=Depends(get_logs_list_context),
     context: BaseContext = Depends(get_base_context),
 ):
     return templates.TemplateResponse(
+        request,
         "admin/webhooks/logs/list.html",
         {**context, **list_context, "webhook": webhook},
     )
@@ -244,11 +253,13 @@ async def list_webhook_logs(
 
 @router.get("/{id:uuid}/logs/{log_id:uuid}", name="dashboard.webhooks:log")
 async def get_webhook_log(
+    request: Request,
     webhook_log: WebhookLog = Depends(get_webhook_log_by_id_and_webhook_or_404),
     list_context=Depends(get_logs_list_context),
     context: BaseContext = Depends(get_base_context),
 ):
     return templates.TemplateResponse(
+        request,
         "admin/webhooks/logs/get.html",
         {**context, **list_context, "webhook_log": webhook_log},
     )

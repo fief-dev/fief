@@ -2,11 +2,12 @@ import json
 
 from fastapi import APIRouter, Depends, Query, Request, status
 from fastapi.responses import RedirectResponse
+from fief_client import FiefAsync
 
 from fief.crypto.token import generate_token
 from fief.dependencies.admin_authentication import is_authenticated_admin_session
 from fief.dependencies.admin_session import get_admin_session_token
-from fief.dependencies.fief import FiefAsyncRelativeEndpoints, get_fief
+from fief.dependencies.fief import get_fief
 from fief.dependencies.main_repositories import get_main_repository
 from fief.models import AdminSessionToken
 from fief.repositories import AdminSessionTokenRepository
@@ -19,7 +20,7 @@ router = APIRouter()
 async def login(
     request: Request,
     screen: str = Query("login"),
-    fief: FiefAsyncRelativeEndpoints = Depends(get_fief),
+    fief: FiefAsync = Depends(get_fief),
 ):
     url = await fief.auth_url(
         redirect_uri=str(request.url_for("dashboard.auth:callback")),
@@ -33,7 +34,7 @@ async def login(
 async def callback(
     request: Request,
     code: str = Query(...),
-    fief: FiefAsyncRelativeEndpoints = Depends(get_fief),
+    fief: FiefAsync = Depends(get_fief),
     repository: AdminSessionTokenRepository = Depends(
         get_main_repository(AdminSessionTokenRepository)
     ),

@@ -18,7 +18,7 @@ from fief.services.workspace_db import WorkspaceDatabase
 
 
 async def get_host(
-    host: str | None = Header(None, include_in_schema=False)
+    host: str | None = Header(None, include_in_schema=False),
 ) -> str | None:
     return host
 

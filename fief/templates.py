@@ -1,9 +1,9 @@
-from collections.abc import Mapping
 from typing import Any
 
 from fastapi.templating import Jinja2Templates
 from jinja2 import pass_context, runtime
 from starlette.background import BackgroundTask
+from starlette.requests import Request
 from starlette.routing import Router
 
 from fief.locale import get_translations
@@ -39,18 +39,25 @@ class LocaleJinja2Templates(Jinja2Templates):
 
         return env
 
-    def TemplateResponse(
+    def TemplateResponse(  # type: ignore
         self,
+        request: Request,
         name: str,
-        context: dict,
+        context: dict | None = None,
         status_code: int = 200,
-        headers: Mapping[str, str] | None = None,
+        headers: dict[str, str] | None = None,
         media_type: str | None = None,
         background: BackgroundTask | None = None,
     ):
         self.env.install_gettext_translations(get_translations(), newstyle=True)  # type: ignore
         return super().TemplateResponse(
-            name, context, status_code, headers, media_type, background
+            request=request,
+            name=name,
+            context=context,
+            status_code=status_code,
+            headers=headers,
+            media_type=media_type,
+            background=background,
         )
 
 

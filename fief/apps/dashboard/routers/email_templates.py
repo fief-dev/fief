@@ -66,11 +66,12 @@ async def get_list_context(
 
 @router.get("/", name="dashboard.email_templates:list")
 async def list_email_templates(
+    request: Request,
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
 ):
     return templates.TemplateResponse(
-        "admin/email_templates/list.html", {**context, **list_context}
+        request, "admin/email_templates/list.html", {**context, **list_context}
     )
 
 
@@ -120,10 +121,12 @@ async def update_email_template(
         )
         try:
             subject = await email_subject_renderer.render(
-                EmailTemplateType[email_template_preview.type], sample_context
+                EmailTemplateType[email_template_preview.type],
+                sample_context,
             )  # type: ignore
             content = await email_template_renderer.render(
-                EmailTemplateType[email_template_preview.type], sample_context
+                EmailTemplateType[email_template_preview.type],
+                sample_context,
             )  # type: ignore
         except jinja2.exceptions.TemplateError as e:
             return await form_helper.get_error_response(

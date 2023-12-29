@@ -109,7 +109,6 @@ class FormHelper(Generic[F]):
         self.object = object
         self.data = data
         self.context: dict = {
-            "request": request,
             **(context if context is not None else {}),
         }
 
@@ -143,7 +142,7 @@ class FormHelper(Generic[F]):
         await self.get_form()
         status_code = status.HTTP_200_OK if self._valid else status.HTTP_400_BAD_REQUEST
         return templates.TemplateResponse(
-            self.template, self.context, status_code=status_code
+            self.request, self.template, self.context, status_code=status_code
         )
 
     async def get_error_response(
@@ -156,6 +155,7 @@ class FormHelper(Generic[F]):
     ) -> _TemplateResponse:
         self.context.update({"error": error, "fatal_error": fatal})
         return templates.TemplateResponse(
+            self.request,
             self.template,
             self.context,
             status_code=status_code,

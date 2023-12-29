@@ -88,20 +88,23 @@ async def get_list_template(hx_combobox: bool = Header(False)) -> str:
 
 @router.get("/", name="dashboard.tenants:list")
 async def list_tenants(
+    request: Request,
     template: str = Depends(get_list_template),
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
 ):
-    return templates.TemplateResponse(template, {**context, **list_context})
+    return templates.TemplateResponse(request, template, {**context, **list_context})
 
 
 @router.get("/{id:uuid}", name="dashboard.tenants:get")
 async def get_tenant(
+    request: Request,
     tenant: Tenant = Depends(get_tenant_by_id_or_404),
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
 ):
     return templates.TemplateResponse(
+        request,
         "admin/tenants/get/general.html",
         {**context, **list_context, "tenant": tenant, "tab": "general"},
     )
@@ -399,6 +402,7 @@ async def delete_tenant(
     users_count = await user_repository.count_by_tenant(tenant.id)
     clients_count = await client_repository.count_by_tenant(tenant.id)
     return templates.TemplateResponse(
+        request,
         "admin/tenants/delete.html",
         {
             **context,

@@ -56,11 +56,12 @@ async def get_list_context(
 
 @router.get("/", name="dashboard.api_keys:list")
 async def list_api_keys(
+    request: Request,
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
 ):
     return templates.TemplateResponse(
-        "admin/api_keys/list.html", {**context, **list_context}
+        request, "admin/api_keys/list.html", {**context, **list_context}
     )
 
 
@@ -93,6 +94,7 @@ async def create_api_key(
         audit_logger.log_object_write(AuditLogMessage.OBJECT_CREATED, api_key)
 
         return templates.TemplateResponse(
+            request,
             "admin/api_keys/token.html",
             {**context, **list_context, "api_key": api_key, "token": token},
             status_code=status.HTTP_201_CREATED,
@@ -125,6 +127,7 @@ async def delete_api_key(
         )
     else:
         return templates.TemplateResponse(
+            request,
             "admin/api_keys/delete.html",
             {**context, **list_context, "api_key": api_key},
         )

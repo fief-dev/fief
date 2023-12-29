@@ -1,4 +1,4 @@
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, Request
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
@@ -60,8 +60,8 @@ for exc, handler in exception_handlers.items():
 @app.get(
     "/", name="dashboard:index", dependencies=[Depends(is_authenticated_admin_session)]
 )
-async def index(context: BaseContext = Depends(get_base_context)):
-    return templates.TemplateResponse("admin/index.html", {**context})
+async def index(request: Request, context: BaseContext = Depends(get_base_context)):
+    return templates.TemplateResponse(request, "admin/index.html", {**context})
 
 
 __all__ = ["app"]

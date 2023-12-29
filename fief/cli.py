@@ -239,7 +239,7 @@ async def create_main_user(
 @workspaces.command("create-main-admin-api-key")
 @asyncio_command
 async def create_main_admin_api_key(
-    token: str = typer.Argument(..., help="The admin API key token")
+    token: str = typer.Argument(..., help="The admin API key token"),
 ):
     """Create a main Fief admin API key."""
     from fief.services.main_workspace import (

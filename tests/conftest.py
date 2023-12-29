@@ -13,6 +13,7 @@ import pytest
 import pytest_asyncio
 from dramatiq import Actor, Message
 from fastapi import FastAPI
+from fief_client import FiefAsync
 from sqlalchemy_utils import create_database, drop_database
 
 from fief.apps import api_app, auth_app, dashboard_app
@@ -24,7 +25,7 @@ from fief.db.types import DatabaseConnectionParameters, DatabaseType, get_driver
 from fief.db.workspace import WorkspaceEngineManager, get_connection
 from fief.dependencies.current_workspace import get_current_workspace_session
 from fief.dependencies.db import get_main_async_session, get_workspace_engine_manager
-from fief.dependencies.fief import FiefAsyncRelativeEndpoints, get_fief
+from fief.dependencies.fief import get_fief
 from fief.dependencies.tasks import get_send_task
 from fief.dependencies.tenant_email_domain import get_tenant_email_domain
 from fief.dependencies.theme import get_theme_preview
@@ -251,7 +252,7 @@ async def workspace_manager_mock() -> MagicMock:
 
 @pytest_asyncio.fixture
 async def fief_client_mock() -> MagicMock:
-    return MagicMock(spec=FiefAsyncRelativeEndpoints)
+    return MagicMock(spec=FiefAsync)
 
 
 @pytest_asyncio.fixture

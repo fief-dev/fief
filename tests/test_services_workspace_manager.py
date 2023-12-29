@@ -43,7 +43,7 @@ async def test_database_url(
 
 @pytest.fixture
 def workspace_create(
-    test_database_url: tuple[DatabaseConnectionParameters, DatabaseType]
+    test_database_url: tuple[DatabaseConnectionParameters, DatabaseType],
 ) -> WorkspaceCreate:
     (url, _), database_type = test_database_url
     return WorkspaceCreate(

@@ -69,20 +69,23 @@ async def get_list_template(hx_combobox: bool = Header(False)) -> str:
 
 @router.get("/", name="dashboard.oauth_providers:list")
 async def list_oauth_providers(
+    request: Request,
     template: str = Depends(get_list_template),
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
 ):
-    return templates.TemplateResponse(template, {**context, **list_context})
+    return templates.TemplateResponse(request, template, {**context, **list_context})
 
 
 @router.get("/{id:uuid}", name="dashboard.oauth_providers:get")
 async def get_oauth_provider(
+    request: Request,
     oauth_provider: OAuthProvider = Depends(get_oauth_provider_by_id_or_404),
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
 ):
     return templates.TemplateResponse(
+        request,
         "admin/oauth_providers/get.html",
         {**context, **list_context, "oauth_provider": oauth_provider},
     )
@@ -205,6 +208,7 @@ async def delete_oauth_provider(
         )
     else:
         return templates.TemplateResponse(
+            request,
             "admin/oauth_providers/delete.html",
             {**context, **list_context, "oauth_provider": oauth_provider},
         )

@@ -139,21 +139,24 @@ async def get_list_context(
 
 @router.get("/", name="dashboard.users:list")
 async def list_users(
+    request: Request,
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
 ):
     return templates.TemplateResponse(
-        "admin/users/list.html", {**context, **list_context}
+        request, "admin/users/list.html", {**context, **list_context}
     )
 
 
 @router.get("/{id:uuid}", name="dashboard.users:get")
 async def get_user(
+    request: Request,
     user: User = Depends(get_user_by_id_or_404),
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
 ):
     return templates.TemplateResponse(
+        request,
         "admin/users/get/account.html",
         {**context, **list_context, "user": user, "tab": "account"},
     )
@@ -339,6 +342,7 @@ async def create_user_access_token(
         )
 
         return templates.TemplateResponse(
+            request,
             "admin/users/access_token_result.html",
             {
                 **context,
@@ -354,6 +358,7 @@ async def create_user_access_token(
 
 @router.post("/{id:uuid}/verify-request", name="dashboard.users:verify_email_request")
 async def verify_email_request(
+    request: Request,
     user: User = Depends(get_user_by_id_or_404),
     user_manager: UserManager = Depends(get_user_manager),
     context: BaseContext = Depends(get_base_context),
@@ -362,6 +367,7 @@ async def verify_email_request(
         await user_manager.request_verify_email(user, user.email)
 
     return templates.TemplateResponse(
+        request,
         "admin/users/get/verify_email_requested.html",
         {**context, "user": user},
         status_code=status.HTTP_202_ACCEPTED,
@@ -393,7 +399,9 @@ async def delete_user(
         )
     else:
         return templates.TemplateResponse(
-            "admin/users/delete.html", {**context, **list_context, "user": user}
+            request,
+            "admin/users/delete.html",
+            {**context, **list_context, "user": user},
         )
 
 
@@ -625,12 +633,14 @@ async def delete_user_role(
 
 @router.get("/{id:uuid}/oauth-accounts", name="dashboard.users:oauth_accounts")
 async def user_oauth_accounts(
+    request: Request,
     user: User = Depends(get_user_by_id_or_404),
     oauth_accounts: list[OAuthAccount] = Depends(get_user_oauth_accounts),
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
 ):
     return templates.TemplateResponse(
+        request,
         "admin/users/get/oauth_accounts.html",
         {
             **context,

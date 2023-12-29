@@ -11,9 +11,9 @@ exception_handlers: dict[type[Exception], Callable] = {}
 async def http_exception_handler(request: Request, exc: StarletteHTTPException):
     headers = getattr(exc, "headers", None)
     return templates.TemplateResponse(
+        request,
         "admin/error.html",
         {
-            "request": request,
             "status_code": exc.status_code,
             "detail": exc.detail,
         },

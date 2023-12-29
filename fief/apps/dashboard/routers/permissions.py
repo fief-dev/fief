@@ -142,6 +142,7 @@ async def delete_permission(
         )
     else:
         return templates.TemplateResponse(
+            request,
             "admin/permissions/delete.html",
             {**form_helper.context, "permission": permission},
         )

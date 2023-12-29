@@ -65,20 +65,23 @@ async def get_list_template(hx_combobox: bool = Header(False)) -> str:
 
 @router.get("/", name="dashboard.roles:list")
 async def list_roles(
+    request: Request,
     template: str = Depends(get_list_template),
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
 ):
-    return templates.TemplateResponse(template, {**context, **list_context})
+    return templates.TemplateResponse(request, template, {**context, **list_context})
 
 
 @router.get("/{id:uuid}", name="dashboard.roles:get")
 async def get_role(
+    request: Request,
     role: Role = Depends(get_role_by_id_or_404),
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
 ):
     return templates.TemplateResponse(
+        request,
         "admin/roles/get.html",
         {**context, **list_context, "role": role},
     )
@@ -223,6 +226,7 @@ async def delete_role(
         )
     else:
         return templates.TemplateResponse(
+            request,
             "admin/roles/delete.html",
             {**context, **list_context, "role": role},
         )

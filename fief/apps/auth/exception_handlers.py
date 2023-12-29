@@ -21,9 +21,9 @@ exception_handlers: dict[type[Exception], Callable] = {}
 
 async def authorize_exception_handler(request: Request, exc: AuthorizeException):
     return templates.TemplateResponse(
+        request,
         "auth/authorize.html",
         {
-            "request": request,
             "error": exc.error.error_description,
             "tenant": exc.tenant,
             "fatal_error": True,
@@ -64,10 +64,10 @@ async def login_exception_handler(
     form = await form_helper.get_form()
 
     return templates.TemplateResponse(
+        request,
         "auth/login.html",
         {
             "form": form,
-            "request": request,
             "error": exc.error.error_description,
             "oauth_providers": exc.oauth_providers,
             "tenant": exc.tenant,
@@ -94,9 +94,9 @@ exception_handlers[TokenRequestException] = token_request_exception_handler
 
 async def logout_exception_handler(request: Request, exc: LogoutException):
     return templates.TemplateResponse(
+        request,
         "auth/logout.html",
         {
-            "request": request,
             "error": exc.error.error_description,
             "tenant": exc.tenant,
             "fatal_error": True,

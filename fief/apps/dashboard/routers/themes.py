@@ -64,11 +64,12 @@ async def get_list_template(hx_combobox: bool = Header(False)) -> str:
 
 @router.get("/", name="dashboard.themes:list")
 async def list_themes(
+    request: Request,
     template: str = Depends(get_list_template),
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
 ):
-    return templates.TemplateResponse(template, {**context, **list_context})
+    return templates.TemplateResponse(request, template, {**context, **list_context})
 
 
 @router.api_route("/create", methods=["GET", "POST"], name="dashboard.themes:create")

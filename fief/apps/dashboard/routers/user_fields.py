@@ -72,21 +72,24 @@ async def get_list_context(
 
 @router.get("/", name="dashboard.user_fields:list")
 async def list_user_fields(
+    request: Request,
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
 ):
     return templates.TemplateResponse(
-        "admin/user_fields/list.html", {**context, **list_context}
+        request, "admin/user_fields/list.html", {**context, **list_context}
     )
 
 
 @router.get("/{id:uuid}", name="dashboard.user_fields:get")
 async def get_user_field(
+    request: Request,
     user_field: UserField = Depends(get_user_field_by_id_or_404),
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
 ):
     return templates.TemplateResponse(
+        request,
         "admin/user_fields/get.html",
         {**context, **list_context, "user_field": user_field},
     )
@@ -236,6 +239,7 @@ async def delete_user_field(
         )
     else:
         return templates.TemplateResponse(
+            request,
             "admin/user_fields/delete.html",
             {**context, **list_context, "user_field": user_field},
         )

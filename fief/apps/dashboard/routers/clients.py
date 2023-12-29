@@ -68,20 +68,23 @@ async def get_list_template(hx_combobox: bool = Header(False)) -> str:
 
 @router.get("/", name="dashboard.clients:list")
 async def list_clients(
+    request: Request,
     template: str = Depends(get_list_template),
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
 ):
-    return templates.TemplateResponse(template, {**context, **list_context})
+    return templates.TemplateResponse(request, template, {**context, **list_context})
 
 
 @router.get("/{id:uuid}", name="dashboard.clients:get")
 async def get_client(
+    request: Request,
     client: Client = Depends(get_client_by_id_or_404),
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
 ):
     return templates.TemplateResponse(
+        request,
         "admin/clients/get/general.html",
         {**context, **list_context, "client": client, "tab": "general"},
     )
@@ -209,6 +212,7 @@ async def update_client(
     name="dashboard.clients:encryption_key",
 )
 async def create_encryption_key(
+    request: Request,
     client: Client = Depends(get_client_by_id_or_404),
     repository: ClientRepository = Depends(get_workspace_repository(ClientRepository)),
     context: BaseContext = Depends(get_base_context),
@@ -222,6 +226,7 @@ async def create_encryption_key(
     trigger_webhooks(ClientUpdated, client, schemas.client.Client)
 
     return templates.TemplateResponse(
+        request,
         "admin/clients/encryption_key.html",
         {**context, "client": client, "key": key.export(as_dict=True)},
     )
@@ -252,6 +257,7 @@ async def delete_client(
         )
     else:
         return templates.TemplateResponse(
+            request,
             "admin/clients/delete.html",
             {**context, **list_context, "client": client},
         )
