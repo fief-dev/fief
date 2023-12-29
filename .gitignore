@@ -90,6 +90,7 @@ celerybeat-schedule
 .venv
 venv/
 ENV/
+.hatch
 
 # Spyder project settings
 .spyderproject
@@ -103,9 +104,6 @@ ENV/
 
 # mypy
 .mypy_cache/
-
-# .vscode
-.vscode/
 
 # OS files
 .DS_Store
