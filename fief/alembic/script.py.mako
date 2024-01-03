@@ -19,8 +19,10 @@ depends_on = ${repr(depends_on)}
 
 
 def upgrade():
+    table_prefix = op.get_context().opts["table_prefix"]
     ${upgrades if upgrades else "pass"}
 
 
 def downgrade():
+    table_prefix = op.get_context().opts["table_prefix"]
     ${downgrades if downgrades else "pass"}
