@@ -8,7 +8,7 @@ from fastapi import status
 
 from fief.db import AsyncSession
 from fief.errors import APIErrorCode
-from fief.models import User, Workspace
+from fief.models import User
 from fief.repositories import UserPermissionRepository, UserRoleRepository
 from fief.tasks import on_after_register, on_user_role_created, on_user_role_deleted
 from tests.data import TestData, tenants, users
@@ -16,7 +16,6 @@ from tests.helpers import HTTPXResponseAssertion
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestListUsers:
     async def test_unauthorized(
         self,
@@ -93,7 +92,6 @@ class TestListUsers:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestCreateUser:
     async def test_unauthorized(
         self,
@@ -209,7 +207,6 @@ class TestCreateUser:
         test_client_api: httpx.AsyncClient,
         test_data: TestData,
         send_task_mock: MagicMock,
-        workspace: Workspace,
     ):
         tenant = test_data["tenants"]["default"]
         response = await test_client_api.post(
@@ -236,13 +233,10 @@ class TestCreateUser:
         assert json["fields"]["onboarding_done"] is True
         assert json["fields"]["last_seen"] == "2022-01-01T13:37:00Z"
 
-        send_task_mock.assert_called_with(
-            on_after_register, json["id"], str(workspace.id)
-        )
+        send_task_mock.assert_called_with(on_after_register, json["id"])
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestUpdateUser:
     async def test_unauthorized(
         self,
@@ -347,7 +341,6 @@ class TestUpdateUser:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestDeleteUser:
     async def test_unauthorized(
         self,
@@ -377,7 +370,6 @@ class TestDeleteUser:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestCreateUserAccessToken:
     async def test_unauthorized(
         self, test_client_api: httpx.AsyncClient, test_data: TestData
@@ -456,7 +448,6 @@ class TestCreateUserAccessToken:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestListUserPermissions:
     async def test_unauthorized(
         self,
@@ -500,7 +491,6 @@ class TestListUserPermissions:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestCreateUserPermission:
     async def test_unauthorized(
         self,
@@ -575,7 +565,7 @@ class TestCreateUserPermission:
         permission_alias: str,
         test_client_api: httpx.AsyncClient,
         test_data: TestData,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
     ):
         permission = test_data["permissions"][permission_alias]
         user = test_data["users"]["regular"]
@@ -585,7 +575,7 @@ class TestCreateUserPermission:
 
         assert response.status_code == status.HTTP_201_CREATED
 
-        user_permission_repository = UserPermissionRepository(workspace_session)
+        user_permission_repository = UserPermissionRepository(main_session)
         user_permissions = await user_permission_repository.list(
             user_permission_repository.get_by_user_statement(user.id, direct_only=True)
         )
@@ -596,7 +586,6 @@ class TestCreateUserPermission:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestDeleteUserPermission:
     async def test_unauthorized(
         self,
@@ -643,7 +632,7 @@ class TestDeleteUserPermission:
         self,
         test_client_api: httpx.AsyncClient,
         test_data: TestData,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
     ):
         permission = test_data["permissions"]["castles:delete"]
         user = test_data["users"]["regular"]
@@ -653,7 +642,7 @@ class TestDeleteUserPermission:
 
         assert response.status_code == status.HTTP_204_NO_CONTENT
 
-        user_permission_repository = UserPermissionRepository(workspace_session)
+        user_permission_repository = UserPermissionRepository(main_session)
         user_permissions = await user_permission_repository.list(
             user_permission_repository.get_by_user_statement(user.id, direct_only=True)
         )
@@ -661,7 +650,6 @@ class TestDeleteUserPermission:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestListUserRoles:
     async def test_unauthorized(
         self,
@@ -702,7 +690,6 @@ class TestListUserRoles:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestCreateUserRole:
     async def test_unauthorized(
         self,
@@ -769,8 +756,7 @@ class TestCreateUserRole:
         self,
         test_client_api: httpx.AsyncClient,
         test_data: TestData,
-        workspace: Workspace,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
         send_task_mock: MagicMock,
     ):
         role = test_data["roles"]["castles_manager"]
@@ -781,7 +767,7 @@ class TestCreateUserRole:
 
         assert response.status_code == status.HTTP_201_CREATED
 
-        user_role_repository = UserRoleRepository(workspace_session)
+        user_role_repository = UserRoleRepository(main_session)
         user_roles = await user_role_repository.list(
             user_role_repository.get_by_user_statement(user.id)
         )
@@ -789,12 +775,11 @@ class TestCreateUserRole:
         assert role.id in [user_role.role_id for user_role in user_roles]
 
         send_task_mock.assert_called_with(
-            on_user_role_created, str(user.id), str(role.id), str(workspace.id)
+            on_user_role_created, str(user.id), str(role.id)
         )
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestDeleteUserRole:
     async def test_unauthorized(
         self,
@@ -837,8 +822,7 @@ class TestDeleteUserRole:
         self,
         test_client_api: httpx.AsyncClient,
         test_data: TestData,
-        workspace: Workspace,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
         send_task_mock: MagicMock,
     ):
         role = test_data["roles"]["castles_visitor"]
@@ -847,19 +831,18 @@ class TestDeleteUserRole:
 
         assert response.status_code == status.HTTP_204_NO_CONTENT
 
-        user_role_repository = UserRoleRepository(workspace_session)
+        user_role_repository = UserRoleRepository(main_session)
         user_roles = await user_role_repository.list(
             user_role_repository.get_by_user_statement(user.id)
         )
         assert len(user_roles) == 0
 
         send_task_mock.assert_called_with(
-            on_user_role_deleted, str(user.id), str(role.id), str(workspace.id)
+            on_user_role_deleted, str(user.id), str(role.id)
         )
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestListUserOAuthAccounts:
     async def test_unauthorized(
         self,

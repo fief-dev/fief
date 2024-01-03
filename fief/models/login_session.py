@@ -6,14 +6,14 @@ from sqlalchemy import Enum, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql.sqltypes import JSON, String
 
-from fief.models.base import TABLE_PREFIX_PLACEHOLDER, WorkspaceBase
+from fief.models.base import TABLE_PREFIX_PLACEHOLDER, Base
 from fief.models.client import Client
 from fief.models.generics import GUID, CreatedUpdatedAt, ExpiresAt, UUIDModel
 from fief.services.acr import ACR
 from fief.settings import settings
 
 
-class LoginSession(UUIDModel, CreatedUpdatedAt, ExpiresAt, WorkspaceBase):
+class LoginSession(UUIDModel, CreatedUpdatedAt, ExpiresAt, Base):
     __tablename__ = "login_sessions"
     __lifetime_seconds__ = settings.login_session_lifetime_seconds
 

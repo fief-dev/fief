@@ -1,7 +1,6 @@
 from fief.tasks.audit_log import write_audit_log
 from fief.tasks.base import SendTask, send_task
-from fief.tasks.cleanup import cleanup, cleanup_workspace
-from fief.tasks.count_users import count_users, count_users_workspace
+from fief.tasks.cleanup import cleanup
 from fief.tasks.email_verification import on_email_verification_requested
 from fief.tasks.forgot_password import on_after_forgot_password
 from fief.tasks.register import on_after_register
@@ -13,9 +12,6 @@ __all__ = [
     "send_task",
     "SendTask",
     "cleanup",
-    "cleanup_workspace",
-    "count_users",
-    "count_users_workspace",
     "on_after_forgot_password",
     "on_after_register",
     "on_email_verification_requested",

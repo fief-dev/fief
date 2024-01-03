@@ -3,7 +3,7 @@ from typing import Generic
 from fastapi import Depends
 
 from fief.db import AsyncSession
-from fief.dependencies.current_workspace import get_current_workspace_session
+from fief.dependencies.db import get_main_async_session
 from fief.repositories import get_repository
 from fief.repositories.base import REPOSITORY
 
@@ -13,6 +13,6 @@ class get_workspace_repository(Generic[REPOSITORY]):
         self.repository_class = repository_class
 
     async def __call__(
-        self, session: AsyncSession = Depends(get_current_workspace_session)
+        self, session: AsyncSession = Depends(get_main_async_session)
     ) -> REPOSITORY:
         return get_repository(self.repository_class, session)

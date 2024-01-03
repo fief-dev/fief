@@ -8,7 +8,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from starlette.routing import Router
 
 from fief.crypto.jwk import generate_signature_jwk_string, load_jwk
-from fief.models.base import WorkspaceBase, get_prefixed_tablename
+from fief.models.base import Base, get_prefixed_tablename
 from fief.models.email_domain import EmailDomain
 from fief.models.generics import GUID, CreatedUpdatedAt, PydanticUrlString, UUIDModel
 from fief.models.oauth_provider import OAuthProvider
@@ -17,7 +17,7 @@ from fief.settings import settings
 
 TenantOAuthProvider = Table(
     get_prefixed_tablename("tenants_oauth_providers"),
-    WorkspaceBase.metadata,
+    Base.metadata,
     Column(
         "tenant_id",
         ForeignKey(f"{get_prefixed_tablename('tenants')}.id", ondelete="CASCADE"),
@@ -33,7 +33,7 @@ TenantOAuthProvider = Table(
 )
 
 
-class Tenant(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
+class Tenant(UUIDModel, CreatedUpdatedAt, Base):
     __tablename__ = "tenants"
 
     name: Mapped[str] = mapped_column(String(length=255), nullable=False)
@@ -77,8 +77,8 @@ class Tenant(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
     def get_sign_jwk(self) -> jwk.JWK:
         return load_jwk(self.sign_jwk)
 
-    def get_host(self, domain: str) -> str:
-        host = f"https://{domain}"
+    def get_host(self) -> str:
+        host = f"https://{settings.fief_domain}"
         if not self.default:
             host += f"/{self.slug}"
         return host

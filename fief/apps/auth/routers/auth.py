@@ -27,7 +27,6 @@ from fief.dependencies.auth import (
     has_valid_session_token,
 )
 from fief.dependencies.authentication_flow import get_authentication_flow
-from fief.dependencies.current_workspace import get_current_workspace
 from fief.dependencies.login_hint import LoginHint, get_login_hint
 from fief.dependencies.oauth_provider import get_oauth_providers
 from fief.dependencies.session_token import (
@@ -42,7 +41,7 @@ from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.exceptions import LogoutException
 from fief.forms import FormHelper
 from fief.locale import gettext_lazy as _
-from fief.models import Client, LoginSession, OAuthProvider, Tenant, User, Workspace
+from fief.models import Client, LoginSession, OAuthProvider, Tenant, User
 from fief.models.session_token import SessionToken
 from fief.repositories.session_token import SessionTokenRepository
 from fief.schemas.auth import LogoutError
@@ -279,7 +278,6 @@ async def consent(
     prompt: str | None = Depends(get_consent_prompt),
     needs_consent: bool = Depends(get_needs_consent),
     tenant: Tenant = Depends(get_current_tenant),
-    workspace: Workspace = Depends(get_current_workspace),
     authentication_flow: AuthenticationFlow = Depends(get_authentication_flow),
     context: BaseContext = Depends(get_base_context),
 ):
@@ -302,7 +300,6 @@ async def consent(
             user=session_token.user,
             client=login_session.client,
             tenant=tenant,
-            workspace=workspace,
         )
         response = await authentication_flow.delete_login_session(
             response, login_session
@@ -323,7 +320,6 @@ async def consent(
                     user=session_token.user,
                     client=login_session.client,
                     tenant=tenant,
-                    workspace=workspace,
                 )
             )
         # Deny

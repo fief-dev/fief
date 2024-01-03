@@ -3,13 +3,13 @@ from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql.sqltypes import String
 
-from fief.models.base import WorkspaceBase
+from fief.models.base import Base
 from fief.models.generics import GUID, CreatedUpdatedAt, ExpiresAt, UUIDModel
 from fief.models.user import User
 from fief.settings import settings
 
 
-class EmailVerification(UUIDModel, CreatedUpdatedAt, ExpiresAt, WorkspaceBase):
+class EmailVerification(UUIDModel, CreatedUpdatedAt, ExpiresAt, Base):
     __tablename__ = "email_verifications"
     __lifetime_seconds__ = settings.email_verification_lifetime_seconds
 

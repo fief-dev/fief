@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 from sqlalchemy import Boolean, Column, ForeignKey, String, Table
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from fief.models.base import WorkspaceBase, get_prefixed_tablename
+from fief.models.base import Base, get_prefixed_tablename
 from fief.models.generics import CreatedUpdatedAt, UUIDModel
 from fief.models.permission import Permission
 
@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
 RolePermission = Table(
     get_prefixed_tablename("roles_permissions"),
-    WorkspaceBase.metadata,
+    Base.metadata,
     Column(
         "role_id",
         ForeignKey(f"{get_prefixed_tablename('roles')}.id", ondelete="CASCADE"),
@@ -26,7 +26,7 @@ RolePermission = Table(
 )
 
 
-class Role(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
+class Role(UUIDModel, CreatedUpdatedAt, Base):
     __tablename__ = "roles"
 
     name: Mapped[str] = mapped_column(String(length=255), nullable=False)

@@ -13,17 +13,15 @@ from sqlalchemy.orm import selectinload
 
 from fief.db import AsyncSession
 from fief.db.main import get_single_main_async_session
-from fief.db.workspace import WorkspaceEngineManager, get_workspace_session
 from fief.locale import BabelMiddleware, get_babel_middleware_kwargs
 from fief.logger import logger
-from fief.models import Tenant, User, Workspace
+from fief.models import Tenant, User
 from fief.models.generics import BaseModel
 from fief.paths import EMAIL_TEMPLATES_DIRECTORY
 from fief.repositories import (
     EmailTemplateRepository,
     TenantRepository,
     UserRepository,
-    WorkspaceRepository,
 )
 from fief.services.email import EmailProvider
 from fief.services.email_template.renderers import (
@@ -54,17 +52,6 @@ def send_task(task: dramatiq.Actor, *args, **kwargs):
     task.send(*args, **kwargs)
 
 
-@contextlib.asynccontextmanager
-async def get_workspace_session_task(
-    workspace: Workspace,
-) -> AsyncGenerator[AsyncSession, None]:
-    async with WorkspaceEngineManager() as workspace_engine_manager:
-        async with get_workspace_session(
-            workspace, workspace_engine_manager
-        ) as session:
-            yield session
-
-
 email_provider = settings.get_email_provider()
 
 
@@ -85,14 +72,10 @@ class TaskBase:
         get_main_session: Callable[
             ..., contextlib.AbstractAsyncContextManager[AsyncSession]
         ] = get_single_main_async_session,
-        get_workspace_session: Callable[
-            ..., contextlib.AbstractAsyncContextManager[AsyncSession]
-        ] = get_workspace_session_task,
         email_provider: EmailProvider = email_provider,
         send_task: SendTask = send_task,
     ) -> None:
         self.get_main_session = get_main_session
-        self.get_workspace_session = get_workspace_session
         self.email_provider = email_provider
         self.send_task = send_task
 
@@ -109,24 +92,16 @@ class TaskBase:
             logger.info("Done task", task=self.__name__)
             return result
 
-    async def _get_workspace(self, workspace_id: UUID4) -> Workspace:
+    async def _get_user(self, user_id: UUID4) -> User:
         async with self.get_main_session() as session:
-            repository = WorkspaceRepository(session)
-            workspace = await repository.get_by_id(workspace_id)
-            if workspace is None:
-                raise TaskError()
-            return workspace
-
-    async def _get_user(self, user_id: UUID4, workspace: Workspace) -> User:
-        async with self.get_workspace_session(workspace) as session:
             repository = UserRepository(session)
             user = await repository.get_by_id(user_id)
             if user is None:
                 raise TaskError()
             return user
 
-    async def _get_tenant(self, tenant_id: UUID4, workspace: Workspace) -> Tenant:
-        async with self.get_workspace_session(workspace) as session:
+    async def _get_tenant(self, tenant_id: UUID4) -> Tenant:
+        async with self.get_main_session() as session:
             repository = TenantRepository(session)
             tenant = await repository.get_by_id(
                 tenant_id, (selectinload(Tenant.email_domain),)
@@ -137,16 +112,16 @@ class TaskBase:
 
     @contextlib.asynccontextmanager
     async def _get_email_template_renderer(
-        self, workspace: Workspace
+        self,
     ) -> AsyncGenerator[EmailTemplateRenderer, None]:
-        async with self.get_workspace_session(workspace) as session:
+        async with self.get_main_session() as session:
             repository = EmailTemplateRepository(session)
             yield EmailTemplateRenderer(repository)
 
     @contextlib.asynccontextmanager
     async def _get_email_subject_renderer(
-        self, workspace: Workspace
+        self,
     ) -> AsyncGenerator[EmailSubjectRenderer, None]:
-        async with self.get_workspace_session(workspace) as session:
+        async with self.get_main_session() as session:
             repository = EmailTemplateRepository(session)
             yield EmailSubjectRenderer(repository)

@@ -13,7 +13,6 @@ from tests.helpers import HTTPXResponseAssertion
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestListThemes:
     async def test_unauthorized(
         self,
@@ -54,7 +53,6 @@ class TestListThemes:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestCreateTheme:
     async def test_unauthorized(
         self,
@@ -85,7 +83,7 @@ class TestCreateTheme:
         self,
         test_client_dashboard: httpx.AsyncClient,
         csrf_token: str,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
     ):
         response = await test_client_dashboard.post(
             "/customization/themes/create",
@@ -97,7 +95,7 @@ class TestCreateTheme:
 
         assert response.status_code == status.HTTP_201_CREATED
 
-        theme_repository = ThemeRepository(workspace_session)
+        theme_repository = ThemeRepository(main_session)
         theme = await theme_repository.get_by_id(
             uuid.UUID(response.headers["X-Fief-Object-Id"])
         )
@@ -106,7 +104,6 @@ class TestCreateTheme:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestUpdateTheme:
     async def test_unauthorized(
         self,
@@ -199,7 +196,7 @@ class TestUpdateTheme:
         test_client_dashboard: httpx.AsyncClient,
         test_data: TestData,
         csrf_token: str,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
     ):
         theme = test_data["themes"]["default"]
         response = await test_client_dashboard.post(
@@ -213,14 +210,13 @@ class TestUpdateTheme:
 
         assert response.status_code == status.HTTP_200_OK
 
-        theme_repository = ThemeRepository(workspace_session)
+        theme_repository = ThemeRepository(main_session)
         updated_theme = await theme_repository.get_by_id(theme.id)
         assert updated_theme is not None
         assert updated_theme.primary_color == "#ff0000"
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestSetDefaultTheme:
     async def test_unauthorized(
         self,
@@ -252,7 +248,7 @@ class TestSetDefaultTheme:
         self,
         test_client_dashboard: httpx.AsyncClient,
         test_data: TestData,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
     ):
         custom_theme = test_data["themes"]["custom"]
         response = await test_client_dashboard.post(
@@ -261,7 +257,7 @@ class TestSetDefaultTheme:
 
         assert response.status_code == status.HTTP_200_OK
 
-        theme_repository = ThemeRepository(workspace_session)
+        theme_repository = ThemeRepository(main_session)
         for theme in await theme_repository.all():
             if theme.id == custom_theme.id:
                 assert theme.default is True

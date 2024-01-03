@@ -3,11 +3,11 @@ import secrets
 from sqlalchemy import JSON, String
 from sqlalchemy.orm import Mapped, mapped_column
 
-from fief.models.base import WorkspaceBase
+from fief.models.base import Base
 from fief.models.generics import CreatedUpdatedAt, PydanticUrlString, UUIDModel
 
 
-class Webhook(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
+class Webhook(UUIDModel, CreatedUpdatedAt, Base):
     __tablename__ = "webhooks"
 
     url: Mapped[str] = mapped_column(

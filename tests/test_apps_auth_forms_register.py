@@ -7,7 +7,7 @@ from fief.models import UserField, UserFieldType
 
 @pytest.mark.asyncio
 class TestGetRegisterFormClass:
-    async def test_basic(self):
+    async def test_basic(self) -> None:
         user_fields: list[UserField] = [
             UserField(
                 name="First name",
@@ -22,7 +22,9 @@ class TestGetRegisterFormClass:
                 },
             ),
         ]
-        form_class = await get_register_form_class(user_fields, None)
+        form_class: type[RegisterFormBase] = await get_register_form_class(
+            user_fields, None
+        )
         assert issubclass(form_class, RegisterFormBase)
 
         form = form_class(
@@ -39,7 +41,7 @@ class TestGetRegisterFormClass:
         assert form.validate() is True
         assert form.fields.first_name.data == "Anne"
 
-    async def test_missing_required_field(self):
+    async def test_missing_required_field(self) -> None:
         user_fields: list[UserField] = [
             UserField(
                 name="First name",
@@ -54,7 +56,9 @@ class TestGetRegisterFormClass:
                 },
             ),
         ]
-        form_class = await get_register_form_class(user_fields, None)
+        form_class: type[RegisterFormBase] = await get_register_form_class(
+            user_fields, None
+        )
         assert issubclass(form_class, RegisterFormBase)
 
         form = form_class(
@@ -66,7 +70,7 @@ class TestGetRegisterFormClass:
         assert len(form.errors) == 1
         assert form.fields.first_name.errors == ["This field is required."]
 
-    async def test_invalid_empty_string(self):
+    async def test_invalid_empty_string(self) -> None:
         user_fields: list[UserField] = [
             UserField(
                 name="First name",
@@ -81,7 +85,9 @@ class TestGetRegisterFormClass:
                 },
             ),
         ]
-        form_class = await get_register_form_class(user_fields, None)
+        form_class: type[RegisterFormBase] = await get_register_form_class(
+            user_fields, None
+        )
         assert issubclass(form_class, RegisterFormBase)
 
         form = form_class(
@@ -99,7 +105,7 @@ class TestGetRegisterFormClass:
         assert len(form.errors) == 1
         assert form.fields.first_name.errors == ["This field is required."]
 
-    async def test_missing_boolean_field(self):
+    async def test_missing_boolean_field(self) -> None:
         user_fields: list[UserField] = [
             UserField(
                 name="Subscribe to newsletter",
@@ -114,7 +120,9 @@ class TestGetRegisterFormClass:
                 },
             ),
         ]
-        form_class = await get_register_form_class(user_fields, None)
+        form_class: type[RegisterFormBase] = await get_register_form_class(
+            user_fields, None
+        )
         assert issubclass(form_class, RegisterFormBase)
 
         form = form_class(
@@ -125,7 +133,7 @@ class TestGetRegisterFormClass:
         assert form.validate() is True
         assert form.fields.newsletter.data is False
 
-    async def test_provided_boolean_field(self):
+    async def test_provided_boolean_field(self) -> None:
         user_fields: list[UserField] = [
             UserField(
                 name="Subscribe to newsletter",
@@ -140,7 +148,9 @@ class TestGetRegisterFormClass:
                 },
             ),
         ]
-        form_class = await get_register_form_class(user_fields, None)
+        form_class: type[RegisterFormBase] = await get_register_form_class(
+            user_fields, None
+        )
         assert issubclass(form_class, RegisterFormBase)
 
         form = form_class(
@@ -173,7 +183,9 @@ class TestGetRegisterFormClass:
                 },
             ),
         ]
-        form_class = await get_register_form_class(user_fields, None)
+        form_class: type[RegisterFormBase] = await get_register_form_class(
+            user_fields, None
+        )
         assert issubclass(form_class, RegisterFormBase)
 
         data = {"email": "anne@bretagne.duchy", "password": "herminetincture"}
@@ -185,7 +197,7 @@ class TestGetRegisterFormClass:
         assert len(form.errors) == 1
         assert form.fields.consent.errors == ["This field is required."]
 
-    async def test_required_boolean_field_true(self):
+    async def test_required_boolean_field_true(self) -> None:
         user_fields: list[UserField] = [
             UserField(
                 name="Consent",
@@ -200,7 +212,9 @@ class TestGetRegisterFormClass:
                 },
             ),
         ]
-        form_class = await get_register_form_class(user_fields, None)
+        form_class: type[RegisterFormBase] = await get_register_form_class(
+            user_fields, None
+        )
         assert issubclass(form_class, RegisterFormBase)
 
         form = form_class(
@@ -217,7 +231,7 @@ class TestGetRegisterFormClass:
         assert form.validate() is True
         assert form.fields.consent.data is True
 
-    async def test_invalid_choice(self):
+    async def test_invalid_choice(self) -> None:
         user_fields: list[UserField] = [
             UserField(
                 name="Choice",
@@ -232,7 +246,9 @@ class TestGetRegisterFormClass:
                 },
             ),
         ]
-        form_class = await get_register_form_class(user_fields, None)
+        form_class: type[RegisterFormBase] = await get_register_form_class(
+            user_fields, None
+        )
         assert issubclass(form_class, RegisterFormBase)
 
         form = form_class(
@@ -250,7 +266,7 @@ class TestGetRegisterFormClass:
         assert len(form.errors) == 1
         assert form.fields.choice.errors == ["Not a valid choice."]
 
-    async def test_valid_choice(self):
+    async def test_valid_choice(self) -> None:
         user_fields: list[UserField] = [
             UserField(
                 name="Choice",
@@ -265,7 +281,9 @@ class TestGetRegisterFormClass:
                 },
             ),
         ]
-        form_class = await get_register_form_class(user_fields, None)
+        form_class: type[RegisterFormBase] = await get_register_form_class(
+            user_fields, None
+        )
         assert issubclass(form_class, RegisterFormBase)
 
         form = form_class(
@@ -282,7 +300,7 @@ class TestGetRegisterFormClass:
         assert form.validate() is True
         assert form.fields.choice.data == "a"
 
-    async def test_phone_number(self):
+    async def test_phone_number(self) -> None:
         user_fields: list[UserField] = [
             UserField(
                 name="Phone number",
@@ -297,7 +315,9 @@ class TestGetRegisterFormClass:
                 },
             ),
         ]
-        form_class = await get_register_form_class(user_fields, None)
+        form_class: type[RegisterFormBase] = await get_register_form_class(
+            user_fields, None
+        )
         assert issubclass(form_class, RegisterFormBase)
 
         form = form_class(
@@ -314,7 +334,7 @@ class TestGetRegisterFormClass:
         assert form.validate() is True
         assert form.fields.phone_number.data == "+33102030405"
 
-    async def test_optional_address(self):
+    async def test_optional_address(self) -> None:
         user_fields: list[UserField] = [
             UserField(
                 name="Address",
@@ -329,7 +349,9 @@ class TestGetRegisterFormClass:
                 },
             ),
         ]
-        form_class = await get_register_form_class(user_fields, None)
+        form_class: type[RegisterFormBase] = await get_register_form_class(
+            user_fields, None
+        )
         assert issubclass(form_class, RegisterFormBase)
 
         form = form_class(

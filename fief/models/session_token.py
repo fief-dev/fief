@@ -2,13 +2,13 @@ from pydantic import UUID4
 from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from fief.models.base import WorkspaceBase
+from fief.models.base import Base
 from fief.models.generics import GUID, CreatedUpdatedAt, ExpiresAt, UUIDModel
 from fief.models.user import User
 from fief.settings import settings
 
 
-class SessionToken(UUIDModel, CreatedUpdatedAt, ExpiresAt, WorkspaceBase):
+class SessionToken(UUIDModel, CreatedUpdatedAt, ExpiresAt, Base):
     __tablename__ = "session_tokens"
     __lifetime_seconds__ = settings.session_lifetime_seconds
 

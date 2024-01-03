@@ -3,7 +3,6 @@ from fastapi import APIRouter, Depends, Response
 from fief.crypto.access_token import generate_access_token
 from fief.crypto.id_token import generate_id_token
 from fief.crypto.token import generate_token
-from fief.dependencies.current_workspace import get_current_workspace
 from fief.dependencies.logger import get_audit_logger
 from fief.dependencies.permission import (
     UserPermissionsGetter,
@@ -17,7 +16,7 @@ from fief.dependencies.token import (
 )
 from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.logger import AuditLogger
-from fief.models import AuditLogMessage, RefreshToken, Tenant, User, Workspace
+from fief.models import AuditLogMessage, RefreshToken, Tenant, User
 from fief.repositories import RefreshTokenRepository
 from fief.schemas.auth import TokenResponse
 
@@ -33,7 +32,6 @@ async def token(
     refresh_token_repository: RefreshTokenRepository = Depends(
         get_workspace_repository(RefreshTokenRepository)
     ),
-    workspace: Workspace = Depends(get_current_workspace),
     tenant: Tenant = Depends(get_current_tenant),
     audit_logger: AuditLogger = Depends(get_audit_logger),
 ):
@@ -45,7 +43,7 @@ async def token(
     client = grant_request["client"]
     permissions = await get_user_permissions(user)
 
-    tenant_host = tenant.get_host(workspace.domain)
+    tenant_host = tenant.get_host()
     access_token = generate_access_token(
         tenant.get_sign_jwk(),
         tenant_host,

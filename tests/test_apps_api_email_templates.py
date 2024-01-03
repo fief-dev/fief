@@ -10,7 +10,6 @@ from tests.helpers import HTTPXResponseAssertion
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestListEmailTemplates:
     async def test_unauthorized(
         self,
@@ -32,7 +31,6 @@ class TestListEmailTemplates:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestGetEmailTemplate:
     async def test_unauthorized(
         self,
@@ -69,7 +67,6 @@ class TestGetEmailTemplate:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestUpdateEmailTemplate:
     async def test_unauthorized(
         self,

@@ -7,7 +7,6 @@ from bs4 import BeautifulSoup
 from fastapi import status
 
 from fief.db import AsyncSession
-from fief.models import Workspace
 from fief.repositories import RoleRepository
 from fief.tasks import on_role_updated
 from tests.data import TestData
@@ -15,7 +14,6 @@ from tests.helpers import HTTPXResponseAssertion, unordered_list
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestListRoles:
     async def test_unauthorized(
         self,
@@ -56,7 +54,6 @@ class TestListRoles:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestGetRole:
     async def test_unauthorized(
         self,
@@ -98,7 +95,6 @@ class TestGetRole:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestCreateRole:
     async def test_unauthorized(
         self,
@@ -151,7 +147,7 @@ class TestCreateRole:
         test_client_dashboard: httpx.AsyncClient,
         csrf_token: str,
         test_data: TestData,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
     ):
         response = await test_client_dashboard.post(
             "/access-control/roles/create",
@@ -168,7 +164,7 @@ class TestCreateRole:
 
         assert response.status_code == status.HTTP_201_CREATED
 
-        role_repository = RoleRepository(workspace_session)
+        role_repository = RoleRepository(main_session)
         role = await role_repository.get_by_id(
             uuid.UUID(response.headers["X-Fief-Object-Id"])
         )
@@ -183,7 +179,6 @@ class TestCreateRole:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestUpdateRole:
     async def test_unauthorized(
         self,
@@ -259,8 +254,7 @@ class TestUpdateRole:
         test_client_dashboard: httpx.AsyncClient,
         test_data: TestData,
         csrf_token: str,
-        workspace_session: AsyncSession,
-        workspace: Workspace,
+        main_session: AsyncSession,
         send_task_mock: MagicMock,
     ):
         role = test_data["roles"]["castles_visitor"]
@@ -279,7 +273,7 @@ class TestUpdateRole:
 
         assert response.status_code == status.HTTP_200_OK
 
-        role_repository = RoleRepository(workspace_session)
+        role_repository = RoleRepository(main_session)
         updated_role = await role_repository.get_by_id(role.id)
         assert updated_role is not None
         assert updated_role.name == "Updated name"
@@ -299,12 +293,10 @@ class TestUpdateRole:
                 ]
             ),
             unordered_list([str(test_data["permissions"]["castles:read"].id)]),
-            str(workspace.id),
         )
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestDeleteRole:
     async def test_unauthorized(
         self,
@@ -335,10 +327,7 @@ class TestDeleteRole:
     @pytest.mark.authenticated_admin(mode="session")
     @pytest.mark.htmx(target="modal")
     async def test_valid_get(
-        self,
-        test_client_dashboard: httpx.AsyncClient,
-        test_data: TestData,
-        workspace: Workspace,
+        self, test_client_dashboard: httpx.AsyncClient, test_data: TestData
     ):
         role = test_data["roles"]["castles_visitor"]
         response = await test_client_dashboard.get(
@@ -351,7 +340,7 @@ class TestDeleteRole:
         submit_button = html.find(
             "button",
             attrs={
-                "hx-delete": f"http://{workspace.domain}/access-control/roles/{role.id}/delete"
+                "hx-delete": f"http://api.fief.dev/access-control/roles/{role.id}/delete"
             },
         )
         assert submit_button is not None

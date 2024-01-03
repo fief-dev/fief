@@ -20,7 +20,7 @@
 {% endmacro %}
 
 {% macro base_url_column(tenant) %}
-{% set base_url = tenant.get_host(current_workspace.domain) %}
+{% set base_url = tenant.get_host() %}
 <div class="flex items-center">
   {{ base_url }}
   {{ buttons.clipboard(base_url) }}

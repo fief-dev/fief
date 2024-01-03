@@ -19,9 +19,9 @@ from tests.data import TestData
 
 @pytest.fixture
 def email_template_repository(
-    workspace_session: AsyncSession,
+    main_session: AsyncSession,
 ) -> EmailTemplateRepository:
-    return EmailTemplateRepository(workspace_session)
+    return EmailTemplateRepository(main_session)
 
 
 @pytest.fixture

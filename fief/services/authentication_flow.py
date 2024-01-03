@@ -19,7 +19,6 @@ from fief.models import (
     SessionToken,
     Tenant,
     User,
-    Workspace,
 )
 from fief.repositories import (
     AuthorizationCodeRepository,
@@ -162,7 +161,6 @@ class AuthenticationFlow:
         user: User,
         client: Client,
         tenant: Tenant,
-        workspace: Workspace,
     ) -> RedirectResponse:
         code, code_hash = generate_token()
         c_hash = get_validation_hash(code)
@@ -192,7 +190,7 @@ class AuthenticationFlow:
         if login_session.state is not None:
             params["state"] = login_session.state
 
-        tenant_host = tenant.get_host(workspace.domain)
+        tenant_host = tenant.get_host()
         access_token: str | None = None
 
         if login_session.response_type in ["code token", "code id_token token"]:

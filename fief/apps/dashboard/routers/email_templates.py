@@ -13,7 +13,7 @@ from fief.apps.dashboard.forms.email_template import EmailTemplateUpdateForm
 from fief.apps.dashboard.responses import HXRedirectResponse
 from fief.db import AsyncSession
 from fief.dependencies.admin_authentication import is_authenticated_admin_session
-from fief.dependencies.current_workspace import get_current_workspace_session
+from fief.dependencies.db import get_main_async_session
 from fief.dependencies.email_template import (
     get_email_template_by_id_or_404,
     get_paginated_email_templates,
@@ -87,7 +87,7 @@ async def update_email_template(
     repository: EmailTemplateRepository = Depends(
         get_workspace_repository(EmailTemplateRepository)
     ),
-    session: AsyncSession = Depends(get_current_workspace_session),
+    session: AsyncSession = Depends(get_main_async_session),
     context: BaseContext = Depends(get_base_context),
     audit_logger: AuditLogger = Depends(get_audit_logger),
     trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),

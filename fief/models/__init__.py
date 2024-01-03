@@ -2,7 +2,7 @@ from fief.models.admin_api_key import AdminAPIKey
 from fief.models.admin_session_token import AdminSessionToken
 from fief.models.audit_log import AuditLog, AuditLogMessage
 from fief.models.authorization_code import AuthorizationCode
-from fief.models.base import MainBase, WorkspaceBase
+from fief.models.base import Base
 from fief.models.client import Client, ClientType
 from fief.models.email_domain import EmailDomain
 from fief.models.email_template import EmailTemplate
@@ -30,13 +30,9 @@ from fief.models.user_permission import UserPermission
 from fief.models.user_role import UserRole
 from fief.models.webhook import Webhook
 from fief.models.webhook_log import WebhookLog
-from fief.models.workspace import Workspace
-from fief.models.workspace_user import WorkspaceUser
 
 __all__ = [
-    "Workspace",
-    "WorkspaceBase",
-    "WorkspaceUser",
+    "Base",
     "AdminAPIKey",
     "AdminSessionToken",
     "AuthorizationCode",
@@ -49,7 +45,6 @@ __all__ = [
     "AuditLog",
     "AuditLogMessage",
     "LoginSession",
-    "MainBase",
     "OAuthAccount",
     "OAuthProvider",
     "OAuthSession",

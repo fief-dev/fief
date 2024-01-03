@@ -11,7 +11,6 @@ from fief.apps.dashboard.dependencies import (
 from fief.apps.dashboard.forms.role import RoleCreateForm, RoleUpdateForm
 from fief.apps.dashboard.responses import HXRedirectResponse
 from fief.dependencies.admin_authentication import is_authenticated_admin_session
-from fief.dependencies.current_workspace import get_current_workspace
 from fief.dependencies.logger import get_audit_logger
 from fief.dependencies.pagination import PaginatedObjects
 from fief.dependencies.role import get_paginated_roles, get_role_by_id_or_404
@@ -20,7 +19,7 @@ from fief.dependencies.webhooks import TriggerWebhooks, get_trigger_webhooks
 from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.forms import FormHelper
 from fief.logger import AuditLogger
-from fief.models import AuditLogMessage, Role, Workspace
+from fief.models import AuditLogMessage, Role
 from fief.repositories import PermissionRepository, RoleRepository
 from fief.services.webhooks.models import RoleCreated, RoleDeleted, RoleUpdated
 from fief.tasks import SendTask, on_role_updated
@@ -149,7 +148,6 @@ async def update_role(
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
     send_task: SendTask = Depends(get_send_task),
-    workspace: Workspace = Depends(get_current_workspace),
     audit_logger: AuditLogger = Depends(get_audit_logger),
     trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ):
@@ -193,7 +191,6 @@ async def update_role(
             str(role.id),
             list(set(map(str, added_permissions))),
             list(set(map(str, deleted_permissions))),
-            str(workspace.id),
         )
 
         return HXRedirectResponse(request.url_for("dashboard.roles:get", id=role.id))

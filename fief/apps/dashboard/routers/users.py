@@ -21,9 +21,6 @@ from fief.apps.dashboard.forms.user import (
 from fief.apps.dashboard.responses import HXRedirectResponse
 from fief.crypto.access_token import generate_access_token
 from fief.dependencies.admin_authentication import is_authenticated_admin_session
-from fief.dependencies.current_workspace import (
-    get_current_workspace,
-)
 from fief.dependencies.logger import get_audit_logger
 from fief.dependencies.pagination import PaginatedObjects
 from fief.dependencies.permission import (
@@ -54,7 +51,6 @@ from fief.models import (
     UserField,
     UserPermission,
     UserRole,
-    Workspace,
 )
 from fief.repositories import (
     ClientRepository,
@@ -294,7 +290,6 @@ async def create_user_access_token(
     client_repository: ClientRepository = Depends(
         get_workspace_repository(ClientRepository)
     ),
-    workspace: Workspace = Depends(get_current_workspace),
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
     audit_logger: AuditLogger = Depends(get_audit_logger),
@@ -320,7 +315,7 @@ async def create_user_access_token(
             )
         form.client.data = client
 
-        tenant_host = tenant.get_host(workspace.domain)
+        tenant_host = tenant.get_host()
         permissions = await get_user_permissions(user)
 
         access_token = generate_access_token(
@@ -538,7 +533,6 @@ async def user_roles(
     user_role_repository: UserRoleRepository = Depends(
         get_workspace_repository(UserRoleRepository)
     ),
-    workspace: Workspace = Depends(get_current_workspace),
     send_task: SendTask = Depends(get_send_task),
     audit_logger: AuditLogger = Depends(get_audit_logger),
     trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
@@ -584,9 +578,7 @@ async def user_roles(
         )
         trigger_webhooks(UserRoleCreated, user_role, schemas.user_role.UserRole)
 
-        send_task(
-            tasks.on_user_role_created, str(user.id), str(role.id), str(workspace.id)
-        )
+        send_task(tasks.on_user_role_created, str(user.id), str(role.id))
 
         return HXRedirectResponse(
             request.url_for("dashboard.users:roles", id=user.id),
@@ -605,7 +597,6 @@ async def delete_user_role(
     user_role_repository: UserRoleRepository = Depends(
         get_workspace_repository(UserRoleRepository)
     ),
-    workspace: Workspace = Depends(get_current_workspace),
     send_task: SendTask = Depends(get_send_task),
     audit_logger: AuditLogger = Depends(get_audit_logger),
     trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
@@ -623,7 +614,7 @@ async def delete_user_role(
     )
     trigger_webhooks(UserRoleDeleted, user_role, schemas.user_role.UserRole)
 
-    send_task(tasks.on_user_role_deleted, str(user.id), str(role_id), str(workspace.id))
+    send_task(tasks.on_user_role_deleted, str(user.id), str(role_id))
 
     return HXRedirectResponse(
         request.url_for("dashboard.users:roles", id=user.id),

@@ -5,7 +5,7 @@ from pydantic import UUID4
 from sqlalchemy import JSON, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from fief.models.base import WorkspaceBase
+from fief.models.base import Base
 from fief.models.generics import GUID, TIMESTAMPAware, UUIDModel
 from fief.models.user import User
 
@@ -24,7 +24,7 @@ class AuditLogMessage(StrEnum):
     OAUTH_PROVIDER_USER_ACCESS_TOKEN_GET = "OAUTH_PROVIDER_USER_ACCESS_TOKEN_GET"
 
 
-class AuditLog(UUIDModel, WorkspaceBase):
+class AuditLog(UUIDModel, Base):
     __tablename__ = "audit_logs"
 
     timestamp: Mapped[datetime] = mapped_column(

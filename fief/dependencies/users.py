@@ -10,9 +10,6 @@ from sqlalchemy.orm import joinedload
 
 from fief.crypto.access_token import InvalidAccessToken, read_access_token
 from fief.crypto.password import password_helper
-from fief.dependencies.current_workspace import (
-    get_current_workspace,
-)
 from fief.dependencies.logger import get_audit_logger
 from fief.dependencies.pagination import (
     GetPaginatedObjects,
@@ -45,7 +42,6 @@ from fief.models import (
     UserField,
     UserPermission,
     UserRole,
-    Workspace,
 )
 from fief.repositories import (
     EmailVerificationRepository,
@@ -61,7 +57,6 @@ from fief.tasks import SendTask
 
 
 async def get_user_manager(
-    workspace: Workspace = Depends(get_current_workspace),
     user_repository: UserRepository = Depends(get_workspace_repository(UserRepository)),
     email_verification_repository: EmailVerificationRepository = Depends(
         get_workspace_repository(EmailVerificationRepository)
@@ -72,7 +67,6 @@ async def get_user_manager(
     trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ):
     return UserManager(
-        workspace=workspace,
         password_helper=password_helper,
         user_repository=user_repository,
         email_verification_repository=email_verification_repository,

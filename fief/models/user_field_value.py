@@ -6,7 +6,7 @@ from sqlalchemy import JSON, Boolean, Date, ForeignKey, Integer, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql.schema import UniqueConstraint
 
-from fief.models.base import WorkspaceBase
+from fief.models.base import Base
 from fief.models.generics import GUID, CreatedUpdatedAt, TIMESTAMPAware, UUIDModel
 from fief.models.user import User
 from fief.models.user_field import UserField, UserFieldType
@@ -17,7 +17,7 @@ else:
     from sqlalchemy.ext.hybrid import hybrid_property
 
 
-class UserFieldValue(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
+class UserFieldValue(UUIDModel, CreatedUpdatedAt, Base):
     __tablename__ = "user_field_values"
     __table_args__ = (UniqueConstraint("user_field_id", "user_id"),)
 

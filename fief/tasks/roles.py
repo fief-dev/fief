@@ -15,15 +15,9 @@ class OnRoleUpdated(TaskBase):
     __name__ = "on_role_updated"
 
     async def run(
-        self,
-        role_id: str,
-        added_permissions: list[str],
-        deleted_permissions: list[str],
-        workspace_id: str,
+        self, role_id: str, added_permissions: list[str], deleted_permissions: list[str]
     ):
-        workspace = await self._get_workspace(uuid.UUID(workspace_id))
-
-        async with self.get_workspace_session(workspace) as session:
+        async with self.get_main_session() as session:
             role_repository = RoleRepository(session)
             user_role_repository = UserRoleRepository(session)
             user_permission_repository = UserPermissionRepository(session)

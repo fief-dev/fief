@@ -9,7 +9,6 @@ from tests.helpers import HTTPXResponseAssertion
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestListWebhooks:
     async def test_unauthorized(
         self,
@@ -34,7 +33,6 @@ class TestListWebhooks:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestGetWebhook:
     async def test_unauthorized(
         self,
@@ -67,7 +65,6 @@ class TestGetWebhook:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestCreateWebhook:
     async def test_unauthorized(
         self,
@@ -112,7 +109,6 @@ class TestCreateWebhook:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestUpdateWebhook:
     async def test_unauthorized(
         self,
@@ -166,7 +162,6 @@ class TestUpdateWebhook:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestRegenerateWebhookSecret:
     async def test_unauthorized(
         self,
@@ -193,7 +188,6 @@ class TestRegenerateWebhookSecret:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestDeleteWebhook:
     async def test_unauthorized(
         self,
@@ -223,7 +217,6 @@ class TestDeleteWebhook:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestListWebhookLogs:
     async def test_unauthorized(
         self,

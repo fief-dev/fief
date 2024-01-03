@@ -8,7 +8,6 @@ from fastapi import status
 
 from fief.crypto.token import get_token_hash
 from fief.db import AsyncSession
-from fief.models import Workspace
 from fief.repositories import (
     EmailVerificationRepository,
     GrantRepository,
@@ -29,7 +28,6 @@ from tests.types import TenantParams
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestAuthAuthorize:
     @pytest.mark.parametrize(
         "params,error",
@@ -398,7 +396,7 @@ class TestAuthAuthorize:
         acr: ACR,
         tenant_params: TenantParams,
         test_client_auth: httpx.AsyncClient,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
     ):
         params = {
             **params,
@@ -421,7 +419,7 @@ class TestAuthAuthorize:
         assert location.endswith(f"{tenant_params.path_prefix}{redirection}")
 
         login_session_cookie = response.cookies[settings.login_session_cookie_name]
-        login_session_repository = LoginSessionRepository(workspace_session)
+        login_session_repository = LoginSessionRepository(main_session)
         login_session = await login_session_repository.get_by_token(
             login_session_cookie
         )
@@ -500,7 +498,6 @@ class TestAuthAuthorize:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestAuthGetLogin:
     async def test_invalid_login_session(
         self, tenant_params: TenantParams, test_client_auth: httpx.AsyncClient
@@ -541,7 +538,6 @@ class TestAuthGetLogin:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestAuthPostLogin:
     async def test_invalid_login_session(
         self,
@@ -594,7 +590,7 @@ class TestAuthPostLogin:
         test_client_auth_csrf: httpx.AsyncClient,
         csrf_token: str,
         test_data: TestData,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
     ):
         login_session = test_data["login_sessions"]["default"]
         client = login_session.client
@@ -620,7 +616,7 @@ class TestAuthPostLogin:
         assert redirect_uri.endswith(f"{path_prefix}/verify-request")
 
         session_cookie = response.cookies[settings.session_cookie_name]
-        session_token_repository = SessionTokenRepository(workspace_session)
+        session_token_repository = SessionTokenRepository(main_session)
         session_token = await session_token_repository.get_by_token(
             get_token_hash(session_cookie)
         )
@@ -634,7 +630,7 @@ class TestAuthPostLogin:
         test_client_auth_csrf: httpx.AsyncClient,
         csrf_token: str,
         test_data: TestData,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
     ):
         login_session = test_data["login_sessions"]["default"]
         client = login_session.client
@@ -662,7 +658,7 @@ class TestAuthPostLogin:
         assert redirect_uri.endswith(f"{path_prefix}/verify-request")
 
         session_cookie = response.cookies[settings.session_cookie_name]
-        session_token_repository = SessionTokenRepository(workspace_session)
+        session_token_repository = SessionTokenRepository(main_session)
         new_session_token = await session_token_repository.get_by_token(
             get_token_hash(session_cookie)
         )
@@ -674,7 +670,6 @@ class TestAuthPostLogin:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestAuthVerifyEmailRequest:
     @pytest.mark.parametrize("cookie", [None, "INVALID_SESSION_TOKEN"])
     async def test_invalid_session_token(
@@ -744,8 +739,7 @@ class TestAuthVerifyEmailRequest:
         self,
         test_client_auth: httpx.AsyncClient,
         test_data: TestData,
-        workspace: Workspace,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
         send_task_mock: MagicMock,
     ):
         user = test_data["users"]["not_verified_email"]
@@ -768,16 +762,15 @@ class TestAuthVerifyEmailRequest:
         await email_verification_requested_assertions(
             user=user,
             email=user.email,
-            workspace=workspace,
             send_task_mock=send_task_mock,
-            session=workspace_session,
+            session=main_session,
         )
 
     async def test_resend(
         self,
         test_client_auth: httpx.AsyncClient,
         test_data: TestData,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
     ):
         user = test_data["users"]["not_verified_email"]
         tenant = user.tenant
@@ -799,13 +792,12 @@ class TestAuthVerifyEmailRequest:
         )
         assert response.status_code == status.HTTP_302_FOUND
 
-        email_verification_repository = EmailVerificationRepository(workspace_session)
+        email_verification_repository = EmailVerificationRepository(main_session)
         email_verifications = await email_verification_repository.get_by_user(user.id)
         assert len(email_verifications) == 1
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestAuthGetVerifyEmail:
     async def test_invalid_login_session(
         self,
@@ -868,7 +860,6 @@ class TestAuthGetVerifyEmail:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestAuthPostVerifyEmail:
     async def test_invalid_login_session(
         self,
@@ -957,7 +948,7 @@ class TestAuthPostVerifyEmail:
         redirect_path: str,
         test_client_auth_csrf: httpx.AsyncClient,
         csrf_token: str,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
         test_data: TestData,
     ):
         user = test_data["users"]["not_verified_email"]
@@ -985,20 +976,19 @@ class TestAuthPostVerifyEmail:
         redirect_uri = response.headers["Location"]
         assert redirect_uri.endswith(f"{path_prefix}{redirect_path}")
 
-        email_verification_repository = EmailVerificationRepository(workspace_session)
+        email_verification_repository = EmailVerificationRepository(main_session)
         deleted_email_verification = await email_verification_repository.get_by_id(
             email_verification.id
         )
         assert deleted_email_verification is None
 
-        user_repository = UserRepository(workspace_session)
+        user_repository = UserRepository(main_session)
         updated_user = await user_repository.get_by_id(user.id)
         assert updated_user is not None
         assert updated_user.email_verified is True
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestAuthGetConsent:
     @pytest.mark.parametrize(
         "cookie,error",
@@ -1066,7 +1056,7 @@ class TestAuthGetConsent:
         self,
         test_client_auth: httpx.AsyncClient,
         test_data: TestData,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
     ):
         login_session = test_data["login_sessions"]["default_none_prompt"]
         client = login_session.client
@@ -1090,7 +1080,7 @@ class TestAuthGetConsent:
         assert redirect_params["error"] == "consent_required"
         assert redirect_params["state"] == login_session.state
 
-        login_session_repository = LoginSessionRepository(workspace_session)
+        login_session_repository = LoginSessionRepository(main_session)
         used_login_session = await login_session_repository.get_by_token(
             login_session.token
         )
@@ -1100,7 +1090,7 @@ class TestAuthGetConsent:
         self,
         test_client_auth: httpx.AsyncClient,
         test_data: TestData,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
     ):
         login_session = test_data["login_sessions"]["granted_default"]
         client = login_session.client
@@ -1122,14 +1112,14 @@ class TestAuthGetConsent:
             redirect_uri=redirect_uri,
             login_session=login_session,
             session_token=session_token,
-            session=workspace_session,
+            session=main_session,
         )
 
         set_cookie_header = response.headers["Set-Cookie"]
         assert set_cookie_header.startswith(f'{settings.login_session_cookie_name}=""')
         assert "Max-Age=0" in set_cookie_header
 
-        login_session_repository = LoginSessionRepository(workspace_session)
+        login_session_repository = LoginSessionRepository(main_session)
         used_login_session = await login_session_repository.get_by_token(
             login_session.token
         )
@@ -1156,7 +1146,7 @@ class TestAuthGetConsent:
         self,
         test_client_auth: httpx.AsyncClient,
         test_data: TestData,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
     ):
         login_session = test_data["login_sessions"]["first_party_default"]
         client = login_session.client
@@ -1178,14 +1168,14 @@ class TestAuthGetConsent:
             redirect_uri=redirect_uri,
             login_session=login_session,
             session_token=session_token,
-            session=workspace_session,
+            session=main_session,
         )
 
         set_cookie_header = response.headers["Set-Cookie"]
         assert set_cookie_header.startswith(f'{settings.login_session_cookie_name}=""')
         assert "Max-Age=0" in set_cookie_header
 
-        login_session_repository = LoginSessionRepository(workspace_session)
+        login_session_repository = LoginSessionRepository(main_session)
         used_login_session = await login_session_repository.get_by_token(
             login_session.token
         )
@@ -1193,7 +1183,6 @@ class TestAuthGetConsent:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestAuthPostConsent:
     @pytest.mark.parametrize(
         "cookie,error",
@@ -1269,7 +1258,7 @@ class TestAuthPostConsent:
         test_client_auth_csrf: httpx.AsyncClient,
         csrf_token: str,
         test_data: TestData,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
     ):
         login_session = test_data["login_sessions"][login_session_alias]
         client = login_session.client
@@ -1295,20 +1284,20 @@ class TestAuthPostConsent:
             redirect_uri=redirect_uri,
             login_session=login_session,
             session_token=session_token,
-            session=workspace_session,
+            session=main_session,
         )
 
         set_cookie_header = response.headers["Set-Cookie"]
         assert set_cookie_header.startswith(f'{settings.login_session_cookie_name}=""')
         assert "Max-Age=0" in set_cookie_header
 
-        login_session_repository = LoginSessionRepository(workspace_session)
+        login_session_repository = LoginSessionRepository(main_session)
         used_login_session = await login_session_repository.get_by_token(
             login_session.token
         )
         assert used_login_session is None
 
-        grant_repository = GrantRepository(workspace_session)
+        grant_repository = GrantRepository(main_session)
         grant = await grant_repository.get_by_user_and_client(
             session_token.user_id, client.id
         )
@@ -1330,7 +1319,7 @@ class TestAuthPostConsent:
         test_client_auth_csrf: httpx.AsyncClient,
         csrf_token: str,
         test_data: TestData,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
     ):
         login_session = test_data["login_sessions"][login_session_alias]
         client = login_session.client
@@ -1362,7 +1351,7 @@ class TestAuthPostConsent:
         assert set_cookie_header.startswith(f'{settings.login_session_cookie_name}=""')
         assert "Max-Age=0" in set_cookie_header
 
-        login_session_repository = LoginSessionRepository(workspace_session)
+        login_session_repository = LoginSessionRepository(main_session)
         used_login_session = await login_session_repository.get_by_token(
             login_session.token
         )
@@ -1370,7 +1359,6 @@ class TestAuthPostConsent:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestAuthLogout:
     async def test_missing_redirect_uri(
         self,
@@ -1421,7 +1409,7 @@ class TestAuthLogout:
         self,
         test_client_auth: httpx.AsyncClient,
         test_data: TestData,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
     ):
         session_token = test_data["session_tokens"]["regular"]
         tenant = session_token.user.tenant
@@ -1444,7 +1432,7 @@ class TestAuthLogout:
 
         assert "Set-Cookie" in response.headers
 
-        session_token_repository = SessionTokenRepository(workspace_session)
+        session_token_repository = SessionTokenRepository(main_session)
         deleted_session_token = await session_token_repository.get_by_token(
             session_token_tokens["regular"][1]
         )

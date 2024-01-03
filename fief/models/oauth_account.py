@@ -6,7 +6,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql.schema import UniqueConstraint
 
 from fief.crypto.encryption import FernetEngine, StringEncryptedType
-from fief.models.base import WorkspaceBase
+from fief.models.base import Base
 from fief.models.generics import GUID, CreatedUpdatedAt, TIMESTAMPAware, UUIDModel
 from fief.models.oauth_provider import OAuthProvider
 from fief.models.tenant import Tenant
@@ -14,7 +14,7 @@ from fief.models.user import User
 from fief.settings import settings
 
 
-class OAuthAccount(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
+class OAuthAccount(UUIDModel, CreatedUpdatedAt, Base):
     __tablename__ = "oauth_accounts"
     __table_args__ = (UniqueConstraint("oauth_provider_id", "user_id"),)
 

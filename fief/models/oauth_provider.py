@@ -2,13 +2,13 @@ from sqlalchemy import JSON, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from fief.crypto.encryption import FernetEngine, StringEncryptedType
-from fief.models.base import WorkspaceBase
+from fief.models.base import Base
 from fief.models.generics import CreatedUpdatedAt, PydanticUrlString, UUIDModel
 from fief.services.oauth_provider import AvailableOAuthProvider
 from fief.settings import settings
 
 
-class OAuthProvider(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
+class OAuthProvider(UUIDModel, CreatedUpdatedAt, Base):
     __tablename__ = "oauth_providers"
 
     provider: Mapped[AvailableOAuthProvider] = mapped_column(

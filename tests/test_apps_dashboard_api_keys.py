@@ -7,13 +7,12 @@ from fastapi import status
 
 from fief.crypto.token import generate_token, get_token_hash
 from fief.db import AsyncSession
-from fief.models import AdminAPIKey, Workspace
+from fief.models import AdminAPIKey
 from fief.repositories import AdminAPIKeyRepository
 from tests.helpers import HTTPXResponseAssertion
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestListAPIKeys:
     async def test_unauthorized(
         self,
@@ -37,7 +36,6 @@ class TestListAPIKeys:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestCreateAPIKey:
     async def test_unauthorized(
         self,
@@ -85,7 +83,6 @@ class TestCreateAPIKey:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestDeleteAPIKey:
     async def test_unauthorized(
         self,
@@ -115,16 +112,11 @@ class TestDeleteAPIKey:
     @pytest.mark.authenticated_admin(mode="session")
     @pytest.mark.htmx(target="modal")
     async def test_valid_get(
-        self,
-        test_client_dashboard: httpx.AsyncClient,
-        main_session: AsyncSession,
-        workspace: Workspace,
+        self, test_client_dashboard: httpx.AsyncClient, main_session: AsyncSession
     ):
         api_key_repository = AdminAPIKeyRepository(main_session)
         _, token_hash = generate_token()
-        api_key = AdminAPIKey(
-            name="New API Key", token=token_hash, workspace_id=workspace.id
-        )
+        api_key = AdminAPIKey(name="New API Key", token=token_hash)
         api_key = await api_key_repository.create(api_key)
 
         response = await test_client_dashboard.get(f"/api-keys/{api_key.id}/delete")
@@ -134,25 +126,18 @@ class TestDeleteAPIKey:
         html = BeautifulSoup(response.text, features="html.parser")
         submit_button = html.find(
             "button",
-            attrs={
-                "hx-delete": f"http://{workspace.domain}/api-keys/{api_key.id}/delete"
-            },
+            attrs={"hx-delete": f"http://api.fief.dev/api-keys/{api_key.id}/delete"},
         )
         assert submit_button is not None
 
     @pytest.mark.authenticated_admin(mode="session")
     @pytest.mark.htmx(target="modal")
     async def test_valid_delete(
-        self,
-        test_client_dashboard: httpx.AsyncClient,
-        main_session: AsyncSession,
-        workspace: Workspace,
+        self, test_client_dashboard: httpx.AsyncClient, main_session: AsyncSession
     ):
         api_key_repository = AdminAPIKeyRepository(main_session)
         _, token_hash = generate_token()
-        api_key = AdminAPIKey(
-            name="New API Key", token=token_hash, workspace_id=workspace.id
-        )
+        api_key = AdminAPIKey(name="New API Key", token=token_hash)
         api_key = await api_key_repository.create(api_key)
 
         response = await test_client_dashboard.delete(f"/api-keys/{api_key.id}/delete")

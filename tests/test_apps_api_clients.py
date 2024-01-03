@@ -14,7 +14,6 @@ from tests.helpers import HTTPXResponseAssertion
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestListClients:
     async def test_unauthorized(
         self,
@@ -44,7 +43,6 @@ class TestListClients:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestGetClient:
     async def test_unauthorized(
         self,
@@ -81,7 +79,6 @@ class TestGetClient:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestCreateClient:
     async def test_unauthorized(
         self,
@@ -211,7 +208,6 @@ class TestCreateClient:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestUpdateClient:
     async def test_unauthorized(
         self,
@@ -302,7 +298,6 @@ class TestUpdateClient:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestCreateEncryptionKey:
     async def test_unauthorized(
         self,
@@ -320,7 +315,7 @@ class TestCreateEncryptionKey:
         self,
         test_client_api: httpx.AsyncClient,
         test_data: TestData,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
     ):
         client = test_data["clients"]["default_tenant"]
         response = await test_client_api.post(f"/clients/{client.id}/encryption-key")
@@ -332,7 +327,7 @@ class TestCreateEncryptionKey:
         assert key.has_private is True
         assert key.has_public is True
 
-        repository = ClientRepository(workspace_session)
+        repository = ClientRepository(main_session)
         updated_client = await repository.get_by_id(client.id)
         assert updated_client is not None
         assert updated_client.encrypt_jwk is not None
@@ -343,7 +338,6 @@ class TestCreateEncryptionKey:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestDeleteClient:
     async def test_unauthorized(
         self,

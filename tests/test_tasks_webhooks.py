@@ -7,7 +7,6 @@ from dramatiq import Message
 from dramatiq.middleware import CurrentMessage
 from pytest_mock import MockerFixture
 
-from fief.models import Workspace
 from fief.services.webhooks.delivery import WebhookDeliveryError
 from fief.services.webhooks.models import (
     ClientCreated,
@@ -31,9 +30,7 @@ class TestTasksDeliverWebhook:
         mocker: MockerFixture,
         respx_mock: respx.MockRouter,
         webhook_event: WebhookEvent,
-        workspace: Workspace,
         main_session_manager,
-        workspace_session_manager,
         test_data: TestData,
     ):
         get_current_message_mock = mocker.patch.object(
@@ -44,13 +41,9 @@ class TestTasksDeliverWebhook:
         webhook = test_data["webhooks"]["all"]
         route_mock = respx_mock.post(webhook.url).mock(return_value=httpx.Response(200))
 
-        deliver_webhook = DeliverWebhookTask(
-            main_session_manager, workspace_session_manager
-        )
+        deliver_webhook = DeliverWebhookTask(main_session_manager)
 
-        await deliver_webhook.run(
-            str(workspace.id), str(webhook.id), webhook_event.model_dump_json()
-        )
+        await deliver_webhook.run(str(webhook.id), webhook_event.model_dump_json())
 
         assert route_mock.called
 
@@ -59,9 +52,7 @@ class TestTasksDeliverWebhook:
         mocker: MockerFixture,
         respx_mock: respx.MockRouter,
         webhook_event: WebhookEvent,
-        workspace: Workspace,
         main_session_manager,
-        workspace_session_manager,
         test_data: TestData,
     ):
         get_current_message_mock = mocker.patch.object(
@@ -72,33 +63,27 @@ class TestTasksDeliverWebhook:
         webhook = test_data["webhooks"]["all"]
         respx_mock.post(webhook.url).mock(return_value=httpx.Response(400))
 
-        deliver_webhook = DeliverWebhookTask(
-            main_session_manager, workspace_session_manager
-        )
+        deliver_webhook = DeliverWebhookTask(main_session_manager)
 
         with pytest.raises(WebhookDeliveryError):
-            await deliver_webhook.run(
-                str(workspace.id), str(webhook.id), webhook_event.model_dump_json()
-            )
+            await deliver_webhook.run(str(webhook.id), webhook_event.model_dump_json())
 
 
 @pytest.mark.asyncio
 class TestTasksTriggerWebhooks:
     async def test_client_created_event(
         self,
-        workspace: Workspace,
         main_session_manager,
-        workspace_session_manager,
         test_data: TestData,
         send_task_mock: MagicMock,
     ):
         webhook_event = WebhookEvent(type=ClientCreated.key(), data={})
 
         trigger_webhooks = TriggerWebhooksTask(
-            main_session_manager, workspace_session_manager, send_task=send_task_mock
+            main_session_manager, send_task=send_task_mock
         )
 
-        await trigger_webhooks.run(str(workspace.id), webhook_event.model_dump_json())
+        await trigger_webhooks.run(webhook_event.model_dump_json())
 
         assert send_task_mock.call_count == 1
         assert send_task_mock.call_args[1]["webhook_id"] == str(
@@ -107,19 +92,17 @@ class TestTasksTriggerWebhooks:
 
     async def test_user_registered_event(
         self,
-        workspace: Workspace,
         main_session_manager,
-        workspace_session_manager,
         test_data: TestData,
         send_task_mock: MagicMock,
     ):
         webhook_event = WebhookEvent(type=UserCreated.key(), data={})
 
         trigger_webhooks = TriggerWebhooksTask(
-            main_session_manager, workspace_session_manager, send_task=send_task_mock
+            main_session_manager, send_task=send_task_mock
         )
 
-        await trigger_webhooks.run(str(workspace.id), webhook_event.model_dump_json())
+        await trigger_webhooks.run(webhook_event.model_dump_json())
 
         assert send_task_mock.call_count == 2
         webhook_ids = [
@@ -130,19 +113,17 @@ class TestTasksTriggerWebhooks:
 
     async def test_user_role_deleted_event(
         self,
-        workspace: Workspace,
         main_session_manager,
-        workspace_session_manager,
         test_data: TestData,
         send_task_mock: MagicMock,
     ):
         webhook_event = WebhookEvent(type=UserRoleDeleted.key(), data={})
 
         trigger_webhooks = TriggerWebhooksTask(
-            main_session_manager, workspace_session_manager, send_task=send_task_mock
+            main_session_manager, send_task=send_task_mock
         )
 
-        await trigger_webhooks.run(str(workspace.id), webhook_event.model_dump_json())
+        await trigger_webhooks.run(webhook_event.model_dump_json())
 
         assert send_task_mock.call_count == 2
         webhook_ids = [

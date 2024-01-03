@@ -18,7 +18,6 @@ from fief.models import (
     User,
     UserField,
     UserFieldValue,
-    Workspace,
 )
 from fief.repositories import EmailVerificationRepository, UserRepository
 from fief.services.password import PasswordValidation
@@ -72,7 +71,6 @@ class UserManager:
     def __init__(
         self,
         *,
-        workspace: Workspace,
         password_helper: PasswordHelper,
         user_repository: UserRepository,
         email_verification_repository: EmailVerificationRepository,
@@ -81,7 +79,6 @@ class UserManager:
         audit_logger: AuditLogger,
         trigger_webhooks: TriggerWebhooks,
     ):
-        self.workspace = workspace
         self.password_helper = password_helper
         self.user_repository = user_repository
         self.email_verification_repository = email_verification_repository
@@ -324,7 +321,7 @@ class UserManager:
     async def on_after_register(self, user: User, *, request: Request | None = None):
         self.audit_logger(AuditLogMessage.USER_REGISTERED, subject_user_id=user.id)
         self.trigger_webhooks(UserCreated, user, schemas.user.UserRead)
-        self.send_task(on_after_register, str(user.id), str(self.workspace.id))
+        self.send_task(on_after_register, str(user.id))
 
     async def on_after_update(self, user: User, *, request: Request | None = None):
         self.audit_logger(AuditLogMessage.USER_UPDATED, subject_user_id=user.id)
@@ -347,7 +344,6 @@ class UserManager:
         self.send_task(
             on_email_verification_requested,
             str(email_verification.id),
-            str(self.workspace.id),
             code,
         )
 
@@ -365,7 +361,6 @@ class UserManager:
         self.send_task(
             on_after_forgot_password,
             str(user.id),
-            str(self.workspace.id),
             reset_url.url,
         )
 

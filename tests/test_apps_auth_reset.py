@@ -6,7 +6,7 @@ from fastapi import status
 from jwcrypto import jwt
 
 from fief.crypto.password import password_helper
-from fief.models import User, Workspace
+from fief.models import User
 from fief.services.user_manager import RESET_PASSWORD_TOKEN_AUDIENCE
 from fief.settings import settings
 from fief.tasks import on_after_forgot_password
@@ -29,7 +29,6 @@ def generate_jwt(user: User) -> str:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestGetForgotPassword:
     async def test_valid(
         self, tenant_params: TenantParams, test_client_auth: httpx.AsyncClient
@@ -40,7 +39,6 @@ class TestGetForgotPassword:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestPostForgotPassword:
     @pytest.mark.parametrize(
         "data",
@@ -84,7 +82,6 @@ class TestPostForgotPassword:
         test_client_auth_csrf: httpx.AsyncClient,
         csrf_token: str,
         test_data: TestData,
-        workspace: Workspace,
         send_task_mock: MagicMock,
     ):
         user = test_data["users"]["regular"]
@@ -98,13 +95,11 @@ class TestPostForgotPassword:
         send_task_mock.assert_called_with(
             on_after_forgot_password,
             str(user.id),
-            str(workspace.id),
             str_match(r"/reset.*token="),
         )
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestGetResetPassword:
     async def test_missing_token(
         self, tenant_params: TenantParams, test_client_auth: httpx.AsyncClient
@@ -127,7 +122,6 @@ class TestGetResetPassword:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestPostResetPassword:
     @pytest.mark.parametrize(
         "data",

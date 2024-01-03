@@ -14,9 +14,8 @@ from fief.tasks.base import ObjectDoesNotExistTaskError, TaskBase
 class DeliverWebhookTask(TaskBase):
     __name__ = "deliver_webhook"
 
-    async def run(self, workspace_id: str, webhook_id: str, event: str):
-        workspace = await self._get_workspace(uuid.UUID(workspace_id))
-        async with self.get_workspace_session(workspace) as session:
+    async def run(self, webhook_id: str, event: str):
+        async with self.get_main_session() as session:
             webhook_repository = WebhookRepository(session)
             webhook = await webhook_repository.get_by_id(uuid.UUID(webhook_id))
 
@@ -46,19 +45,15 @@ deliver_webhook = dramatiq.actor(
 class TriggerWebhooksTask(TaskBase):
     __name__ = "trigger_webhooks"
 
-    async def run(self, workspace_id: str, event: str):
-        workspace = await self._get_workspace(uuid.UUID(workspace_id))
-        async with self.get_workspace_session(workspace) as session:
+    async def run(self, event: str):
+        async with self.get_main_session() as session:
             webhook_repository = WebhookRepository(session)
             webhooks = await webhook_repository.all()
             parsed_event = WebhookEvent.model_validate_json(event)
             for webhook in webhooks:
                 if parsed_event.type in webhook.events:
                     self.send_task(
-                        deliver_webhook,
-                        workspace_id=workspace_id,
-                        webhook_id=str(webhook.id),
-                        event=event,
+                        deliver_webhook, webhook_id=str(webhook.id), event=event
                     )
 
 

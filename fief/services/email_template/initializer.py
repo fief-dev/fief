@@ -1,13 +1,9 @@
 from pathlib import Path
-from typing import TYPE_CHECKING
 
-from fief.db.workspace import WorkspaceEngineManager, get_workspace_session
+from fief.db.main import get_single_main_async_session
 from fief.models import EmailTemplate
 from fief.repositories.email_template import EmailTemplateRepository
 from fief.services.email_template.types import EmailTemplateType
-
-if TYPE_CHECKING:  # pragma: no cover
-    from fief.models import Workspace
 
 
 class EmailTemplateInitializer:
@@ -53,13 +49,8 @@ class EmailTemplateInitializer:
             return file.read()
 
 
-async def init_email_templates(workspace: "Workspace"):
-    async with WorkspaceEngineManager() as workspace_engine_manager:
-        async with get_workspace_session(
-            workspace, workspace_engine_manager
-        ) as session:
-            email_template_repository = EmailTemplateRepository(session)
-            email_template_initializer = EmailTemplateInitializer(
-                email_template_repository
-            )
-            await email_template_initializer.init_templates()
+async def init_email_templates():
+    async with get_single_main_async_session() as session:
+        email_template_repository = EmailTemplateRepository(session)
+        email_template_initializer = EmailTemplateInitializer(email_template_repository)
+        await email_template_initializer.init_templates()
