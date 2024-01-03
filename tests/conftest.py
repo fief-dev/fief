@@ -4,7 +4,6 @@ import json
 import secrets
 import uuid
 from collections.abc import AsyncGenerator, Callable, Generator
-from datetime import UTC, datetime
 from typing import cast
 from unittest.mock import MagicMock, patch
 
@@ -18,7 +17,6 @@ from fief_client import FiefAsync
 from sqlalchemy_utils import create_database, drop_database
 
 from fief.apps import api_app, auth_app, dashboard_app
-from fief.crypto.access_token import generate_access_token
 from fief.crypto.token import generate_token
 from fief.db import AsyncEngine, AsyncSession
 from fief.db.engine import create_engine
@@ -29,7 +27,6 @@ from fief.dependencies.tasks import get_send_task
 from fief.dependencies.tenant_email_domain import get_tenant_email_domain
 from fief.dependencies.theme import get_theme_preview
 from fief.models import AdminAPIKey, AdminSessionToken, Base, User
-from fief.services.acr import ACR
 from fief.services.tenant_email_domain import TenantEmailDomain
 from fief.services.theme_preview import ThemePreview
 from fief.settings import settings
@@ -293,51 +290,6 @@ def tenant_params(request, test_data: TestData) -> TenantParams:
 
 
 @pytest.fixture
-def access_token(
-    request: pytest.FixtureRequest, test_data: TestData, tenant_params: TenantParams
-) -> Callable[[httpx.AsyncClient], httpx.AsyncClient]:
-    def _access_token(http_client: httpx.AsyncClient) -> httpx.AsyncClient:
-        marker = request.node.get_closest_marker("access_token")
-        if marker:
-            from_tenant_params: bool = marker.kwargs.get("from_tenant_params", False)
-            if from_tenant_params:
-                user = tenant_params.user
-            else:
-                user_alias = marker.kwargs["user"]
-                user = test_data["users"][user_alias]
-
-            acr: ACR = marker.kwargs.get("acr", ACR.LEVEL_ZERO)
-
-            user_tenant = user.tenant
-            client = next(
-                client
-                for _, client in test_data["clients"].items()
-                if client.tenant_id == user_tenant.id
-            )
-
-            user_permissions = [
-                permission.permission.codename
-                for permission in test_data["user_permissions"].values()
-            ]
-
-            access_token = generate_access_token(
-                user_tenant.get_sign_jwk(),
-                user_tenant.get_host(),
-                client,
-                datetime.now(UTC),
-                acr,
-                user,
-                ["openid"],
-                user_permissions,
-                3600,
-            )
-            http_client.headers["Authorization"] = f"Bearer {access_token}"
-        return http_client
-
-    return _access_token
-
-
-@pytest.fixture
 def csrf_token() -> str:
     return secrets.token_urlsafe()
 
@@ -350,7 +302,6 @@ async def test_client_generator(
     theme_preview_mock: MagicMock,
     tenant_email_domain_mock: MagicMock,
     authenticated_admin: Callable[[httpx.AsyncClient], httpx.AsyncClient],
-    access_token: Callable[[httpx.AsyncClient], httpx.AsyncClient],
 ) -> HTTPClientGeneratorType:
     @contextlib.asynccontextmanager
     async def _test_client_generator(app: FastAPI):
@@ -369,7 +320,6 @@ async def test_client_generator(
                 app=app, base_url="http://api.fief.dev"
             ) as test_client:
                 test_client = authenticated_admin(test_client)
-                test_client = access_token(test_client)
                 yield test_client
 
     return _test_client_generator
