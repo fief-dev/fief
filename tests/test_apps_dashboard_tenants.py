@@ -8,7 +8,7 @@ from fastapi import status
 from sqlalchemy import select
 
 from fief.db import AsyncSession
-from fief.models import Client, Workspace
+from fief.models import Client
 from fief.repositories import ClientRepository, TenantRepository
 from fief.services.tenant_email_domain import (
     DomainAuthenticationNotImplementedError,
@@ -19,7 +19,6 @@ from tests.helpers import HTTPXResponseAssertion
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestListTenants:
     async def test_unauthorized(
         self,
@@ -59,7 +58,6 @@ class TestListTenants:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestGetTenant:
     async def test_unauthorized(
         self,
@@ -99,7 +97,6 @@ class TestGetTenant:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestTenantEmail:
     async def test_unauthorized(
         self,
@@ -198,13 +195,13 @@ class TestTenantEmail:
         test_data: TestData,
         csrf_token: str,
         tenant_email_domain_mock: MagicMock,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
     ):
         tenant = test_data["tenants"]["default"]
         email_domain = test_data["email_domains"]["bretagne.duchy"]
 
         async def authenticate_domain_mock(*args, **kwargs):
-            tenant_repository = TenantRepository(workspace_session)
+            tenant_repository = TenantRepository(main_session)
             _tenant = await tenant_repository.get_by_id(tenant.id)
             assert _tenant is not None
             _tenant.email_domain = email_domain
@@ -226,7 +223,7 @@ class TestTenantEmail:
 
         assert response.status_code == status.HTTP_200_OK
 
-        tenant_repository = TenantRepository(workspace_session)
+        tenant_repository = TenantRepository(main_session)
         updated_tenant = await tenant_repository.get_by_id(tenant.id)
         assert updated_tenant is not None
         assert updated_tenant.email_from_name == "Anne"
@@ -235,7 +232,6 @@ class TestTenantEmail:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestTenantEmailDomainAuthentication:
     async def test_unauthorized(
         self,
@@ -279,11 +275,11 @@ class TestTenantEmailDomainAuthentication:
         self,
         test_client_dashboard: httpx.AsyncClient,
         test_data: TestData,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
     ):
         tenant = test_data["tenants"]["default"]
         email_domain = test_data["email_domains"]["bretagne.duchy"]
-        tenant_repository = TenantRepository(workspace_session)
+        tenant_repository = TenantRepository(main_session)
         tenant.email_domain = email_domain
         await tenant_repository.update(tenant)
 
@@ -301,7 +297,6 @@ class TestTenantEmailDomainAuthentication:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestTenantEmailDomainVerify:
     async def test_unauthorized(
         self,
@@ -344,12 +339,12 @@ class TestTenantEmailDomainVerify:
         self,
         test_client_dashboard: httpx.AsyncClient,
         test_data: TestData,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
         tenant_email_domain_mock: MagicMock,
     ):
         tenant = test_data["tenants"]["default"]
         email_domain = test_data["email_domains"]["bretagne.duchy"]
-        tenant_repository = TenantRepository(workspace_session)
+        tenant_repository = TenantRepository(main_session)
         tenant.email_domain = email_domain
         await tenant_repository.update(tenant)
 
@@ -368,17 +363,17 @@ class TestTenantEmailDomainVerify:
         self,
         test_client_dashboard: httpx.AsyncClient,
         test_data: TestData,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
         tenant_email_domain_mock: MagicMock,
     ):
         tenant = test_data["tenants"]["default"]
         email_domain = test_data["email_domains"]["bretagne.duchy"]
-        tenant_repository = TenantRepository(workspace_session)
+        tenant_repository = TenantRepository(main_session)
         tenant.email_domain = email_domain
         await tenant_repository.update(tenant)
 
         async def verify_domain_mock(*args, **kwargs):
-            tenant_repository = TenantRepository(workspace_session)
+            tenant_repository = TenantRepository(main_session)
             _tenant = await tenant_repository.get_by_id(tenant.id)
             assert _tenant is not None
             _tenant.email_domain = email_domain
@@ -404,7 +399,6 @@ class TestTenantEmailDomainVerify:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestCreateTenant:
     async def test_unauthorized(
         self,
@@ -495,7 +489,7 @@ class TestCreateTenant:
         test_client_dashboard: httpx.AsyncClient,
         test_data: TestData,
         csrf_token: str,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
     ):
         theme_id: str | None = (
             str(test_data["themes"][theme_alias].id)
@@ -517,7 +511,7 @@ class TestCreateTenant:
 
         assert response.status_code == status.HTTP_201_CREATED
 
-        tenant_repository = TenantRepository(workspace_session)
+        tenant_repository = TenantRepository(main_session)
         tenant = await tenant_repository.get_by_id(
             uuid.UUID(response.headers["X-Fief-Object-Id"])
         )
@@ -535,7 +529,7 @@ class TestCreateTenant:
         assert len(tenant.oauth_providers) == 1
         assert tenant.oauth_providers[0].id == oauth_provider.id
 
-        client_repository = ClientRepository(workspace_session)
+        client_repository = ClientRepository(main_session)
         clients = await client_repository.list(
             select(Client).where(Client.tenant_id == tenant.id)
         )
@@ -547,7 +541,6 @@ class TestCreateTenant:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestUpdateTenant:
     async def test_unauthorized(
         self,
@@ -669,7 +662,7 @@ class TestUpdateTenant:
         test_client_dashboard: httpx.AsyncClient,
         test_data: TestData,
         csrf_token: str,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
     ):
         theme_id: str | None = (
             str(test_data["themes"][theme_alias].id)
@@ -692,7 +685,7 @@ class TestUpdateTenant:
 
         assert response.status_code == status.HTTP_200_OK
 
-        tenant_repository = TenantRepository(workspace_session)
+        tenant_repository = TenantRepository(main_session)
         updated_tenant = await tenant_repository.get_by_id(tenant.id)
         assert updated_tenant is not None
         assert updated_tenant.name == "Updated name"
@@ -707,7 +700,6 @@ class TestUpdateTenant:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestDeleteTenant:
     async def test_unauthorized(
         self,
@@ -736,10 +728,7 @@ class TestDeleteTenant:
     @pytest.mark.authenticated_admin(mode="session")
     @pytest.mark.htmx(target="modal")
     async def test_valid_get(
-        self,
-        test_client_dashboard: httpx.AsyncClient,
-        test_data: TestData,
-        workspace: Workspace,
+        self, test_client_dashboard: httpx.AsyncClient, test_data: TestData
     ):
         tenant = test_data["tenants"]["default"]
         response = await test_client_dashboard.get(f"/tenants/{tenant.id}/delete")
@@ -749,9 +738,7 @@ class TestDeleteTenant:
         html = BeautifulSoup(response.text, features="html.parser")
         submit_button = html.find(
             "button",
-            attrs={
-                "hx-delete": f"http://{workspace.domain}/tenants/{tenant.id}/delete"
-            },
+            attrs={"hx-delete": f"http://api.fief.dev/tenants/{tenant.id}/delete"},
         )
         assert submit_button is not None
 

@@ -21,12 +21,12 @@ async def test_get_by_email_and_tenant(
     email: str,
     tenant_alias: str,
     user_alias: str | None,
-    workspace_session: AsyncSession,
+    main_session: AsyncSession,
     test_data: TestData,
 ):
     tenant = test_data["tenants"][tenant_alias]
 
-    user_repository = UserRepository(workspace_session)
+    user_repository = UserRepository(main_session)
 
     user = await user_repository.get_by_email_and_tenant(email, tenant.id)
 

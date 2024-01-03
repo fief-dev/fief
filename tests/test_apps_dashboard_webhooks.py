@@ -6,14 +6,12 @@ from bs4 import BeautifulSoup
 from fastapi import status
 
 from fief.db import AsyncSession
-from fief.models import Workspace
 from fief.repositories import WebhookRepository
 from tests.data import TestData
 from tests.helpers import HTTPXResponseAssertion
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestListWebhooks:
     async def test_unauthorized(
         self,
@@ -39,7 +37,6 @@ class TestListWebhooks:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestGetWebhook:
     async def test_unauthorized(
         self,
@@ -79,7 +76,6 @@ class TestGetWebhook:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestCreateWebhook:
     async def test_unauthorized(
         self,
@@ -113,7 +109,7 @@ class TestCreateWebhook:
         test_client_dashboard: httpx.AsyncClient,
         test_data: TestData,
         csrf_token: str,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
     ):
         response = await test_client_dashboard.post(
             "/webhooks/create",
@@ -126,7 +122,7 @@ class TestCreateWebhook:
 
         assert response.status_code == status.HTTP_201_CREATED
 
-        webhook_repository = WebhookRepository(workspace_session)
+        webhook_repository = WebhookRepository(main_session)
         webhook = await webhook_repository.get_by_id(
             uuid.UUID(response.headers["X-Fief-Object-Id"])
         )
@@ -136,7 +132,6 @@ class TestCreateWebhook:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestUpdateWebhook:
     async def test_unauthorized(
         self,
@@ -191,7 +186,7 @@ class TestUpdateWebhook:
         test_client_dashboard: httpx.AsyncClient,
         test_data: TestData,
         csrf_token: str,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
     ):
         webhook = test_data["webhooks"]["all"]
         response = await test_client_dashboard.post(
@@ -205,14 +200,13 @@ class TestUpdateWebhook:
 
         assert response.status_code == status.HTTP_200_OK
 
-        webhook_repository = WebhookRepository(workspace_session)
+        webhook_repository = WebhookRepository(main_session)
         updated_webhook = await webhook_repository.get_by_id(webhook.id)
         assert updated_webhook is not None
         assert updated_webhook.events == ["user.created"]
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestRegenerateWebhookSecret:
     async def test_unauthorized(
         self,
@@ -244,7 +238,7 @@ class TestRegenerateWebhookSecret:
         self,
         test_client_dashboard: httpx.AsyncClient,
         test_data: TestData,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
     ):
         webhook = test_data["webhooks"]["all"]
         response = await test_client_dashboard.post(f"/webhooks/{webhook.id}/secret")
@@ -254,14 +248,13 @@ class TestRegenerateWebhookSecret:
         html = BeautifulSoup(response.text, features="html.parser")
         secret = html.find("pre").text
 
-        webhook_repository = WebhookRepository(workspace_session)
+        webhook_repository = WebhookRepository(main_session)
         updated_webhook = await webhook_repository.get_by_id(webhook.id)
         assert updated_webhook is not None
         assert updated_webhook.secret == secret
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestDeleteWebhook:
     async def test_unauthorized(
         self,
@@ -290,10 +283,7 @@ class TestDeleteWebhook:
     @pytest.mark.authenticated_admin(mode="session")
     @pytest.mark.htmx(target="modal")
     async def test_valid_get(
-        self,
-        test_client_dashboard: httpx.AsyncClient,
-        test_data: TestData,
-        workspace: Workspace,
+        self, test_client_dashboard: httpx.AsyncClient, test_data: TestData
     ):
         webhook = test_data["webhooks"]["all"]
         response = await test_client_dashboard.get(f"/webhooks/{webhook.id}/delete")
@@ -303,9 +293,7 @@ class TestDeleteWebhook:
         html = BeautifulSoup(response.text, features="html.parser")
         submit_button = html.find(
             "button",
-            attrs={
-                "hx-delete": f"http://{workspace.domain}/webhooks/{webhook.id}/delete"
-            },
+            attrs={"hx-delete": f"http://api.fief.dev/webhooks/{webhook.id}/delete"},
         )
         assert submit_button is not None
 
@@ -323,7 +311,6 @@ class TestDeleteWebhook:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestGetWebhookLogs:
     async def test_unauthorized(
         self,
@@ -371,7 +358,6 @@ class TestGetWebhookLogs:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestGetWebhookLog:
     async def test_unauthorized(
         self,

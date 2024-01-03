@@ -10,10 +10,8 @@ from fief.tasks.base import ObjectDoesNotExistTaskError, TaskBase
 class OnUserRoleCreated(TaskBase):
     __name__ = "on_user_role_created"
 
-    async def run(self, user_id: str, role_id: str, workspace_id: str):
-        workspace = await self._get_workspace(uuid.UUID(workspace_id))
-
-        async with self.get_workspace_session(workspace) as session:
+    async def run(self, user_id: str, role_id: str):
+        async with self.get_main_session() as session:
             role_repository = RoleRepository(session)
             user_permission_repository = UserPermissionRepository(session)
 
@@ -37,10 +35,8 @@ class OnUserRoleCreated(TaskBase):
 class OnUserRoleDeleted(TaskBase):
     __name__ = "on_user_role_deleted"
 
-    async def run(self, user_id: str, role_id: str, workspace_id: str):
-        workspace = await self._get_workspace(uuid.UUID(workspace_id))
-
-        async with self.get_workspace_session(workspace) as session:
+    async def run(self, user_id: str, role_id: str):
+        async with self.get_main_session() as session:
             user_permission_repository = UserPermissionRepository(session)
             await user_permission_repository.delete_by_user_and_role(
                 uuid.UUID(user_id), uuid.UUID(role_id)

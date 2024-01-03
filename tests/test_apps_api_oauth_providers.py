@@ -21,7 +21,6 @@ from tests.helpers import HTTPXResponseAssertion
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestListOAuthProviders:
     async def test_unauthorized(
         self,
@@ -43,7 +42,6 @@ class TestListOAuthProviders:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestGetOAuthProvider:
     async def test_unauthorized(
         self,
@@ -73,7 +71,6 @@ class TestGetOAuthProvider:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestCreateOAuthProvider:
     async def test_unauthorized(
         self,
@@ -122,7 +119,7 @@ class TestCreateOAuthProvider:
         self,
         payload: dict[str, str],
         test_client_api: httpx.AsyncClient,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
     ):
         response = await test_client_api.post(
             "/oauth-providers/",
@@ -140,7 +137,7 @@ class TestCreateOAuthProvider:
         assert json["client_id"] == "**********"
         assert json["client_secret"] == "**********"
 
-        repository = OAuthProviderRepository(workspace_session)
+        repository = OAuthProviderRepository(main_session)
         oauth_provider = await repository.get_by_id(uuid.UUID(json["id"]))
         assert oauth_provider is not None
         assert oauth_provider.client_id == "CLIENT_ID"
@@ -148,7 +145,6 @@ class TestCreateOAuthProvider:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestUpdateOAuthProvider:
     async def test_unauthorized(
         self,
@@ -232,7 +228,6 @@ class TestUpdateOAuthProvider:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestDeleteOAuthProvider:
     async def test_unauthorized(
         self,
@@ -262,7 +257,6 @@ class TestDeleteOAuthProvider:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestGetOAuthProviderUserAccessToken:
     async def test_unauthorized(
         self,
@@ -380,7 +374,7 @@ class TestGetOAuthProviderUserAccessToken:
         mocker: MockerFixture,
         test_client_api: httpx.AsyncClient,
         test_data: TestData,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
     ):
         oauth_provider_service_mock = MagicMock(spec=BaseOAuth2)
         expires_at = datetime.now(UTC).replace(microsecond=0) + timedelta(seconds=3600)
@@ -411,7 +405,7 @@ class TestGetOAuthProviderUserAccessToken:
         assert json["access_token"] == "REFRESHED_ACCESS_TOKEN"
         assert "expires_at" in json
 
-        oauth_account_repository = OAuthAccountRepository(workspace_session)
+        oauth_account_repository = OAuthAccountRepository(main_session)
         updated_oauth_account = await oauth_account_repository.get_by_id(
             oauth_account.id
         )

@@ -12,7 +12,6 @@ from tests.helpers import HTTPXResponseAssertion
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestListEmailTemplates:
     async def test_unauthorized(
         self,
@@ -38,7 +37,6 @@ class TestListEmailTemplates:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestUpdateEmailTemplate:
     async def test_unauthorized(
         self,
@@ -179,7 +177,7 @@ class TestUpdateEmailTemplate:
         test_client_dashboard: httpx.AsyncClient,
         test_data: TestData,
         csrf_token: str,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
     ):
         email_template = test_data["email_templates"]["welcome"]
         response = await test_client_dashboard.post(
@@ -193,7 +191,7 @@ class TestUpdateEmailTemplate:
 
         assert response.status_code == status.HTTP_200_OK
 
-        email_template_repository = EmailTemplateRepository(workspace_session)
+        email_template_repository = EmailTemplateRepository(main_session)
         updated_email_template = await email_template_repository.get_by_id(
             email_template.id
         )

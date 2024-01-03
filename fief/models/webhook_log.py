@@ -5,12 +5,12 @@ from pydantic import UUID4
 from sqlalchemy import Boolean, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from fief.models.base import WorkspaceBase
+from fief.models.base import Base
 from fief.models.generics import GUID, CreatedUpdatedAt, UUIDModel
 from fief.models.webhook import Webhook
 
 
-class WebhookLog(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
+class WebhookLog(UUIDModel, CreatedUpdatedAt, Base):
     __tablename__ = "webhook_logs"
 
     webhook_id: Mapped[UUID4] = mapped_column(

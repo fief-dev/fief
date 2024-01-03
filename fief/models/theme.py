@@ -1,11 +1,11 @@
 from sqlalchemy import Boolean, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
 
-from fief.models.base import WorkspaceBase
+from fief.models.base import Base
 from fief.models.generics import CreatedUpdatedAt, UUIDModel
 
 
-class Theme(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
+class Theme(UUIDModel, CreatedUpdatedAt, Base):
     __tablename__ = "themes"
 
     name: Mapped[str] = mapped_column(String(length=255), nullable=False)

@@ -14,7 +14,6 @@ from tests.helpers import HTTPXResponseAssertion
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestListTenants:
     async def test_unauthorized(
         self,
@@ -51,7 +50,6 @@ class TestListTenants:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestGetTenant:
     async def test_unauthorized(
         self,
@@ -81,7 +79,6 @@ class TestGetTenant:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestCreateTenant:
     async def test_unauthorized(
         self,
@@ -98,7 +95,7 @@ class TestCreateTenant:
         self,
         logo_url: str | None,
         test_client_api: httpx.AsyncClient,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
     ):
         response = await test_client_api.post(
             "/tenants/", json={"name": "Tertiary", "logo_url": logo_url}
@@ -112,7 +109,7 @@ class TestCreateTenant:
         assert json["logo_url"] == logo_url
         assert json["default"] is False
 
-        client_repository = ClientRepository(workspace_session)
+        client_repository = ClientRepository(main_session)
         clients = await client_repository.list(
             select(Client).where(Client.tenant_id == uuid.UUID(json["id"]))
         )
@@ -201,7 +198,6 @@ class TestCreateTenant:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestUpdateTenant:
     async def test_unauthorized(
         self,
@@ -317,7 +313,6 @@ class TestUpdateTenant:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestDeleteTenant:
     async def test_unauthorized(
         self,

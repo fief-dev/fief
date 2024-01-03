@@ -11,7 +11,6 @@ from tests.helpers import HTTPXResponseAssertion
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestListUserFields:
     async def test_unauthorized(
         self,
@@ -33,7 +32,6 @@ class TestListUserFields:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestGetUserField:
     async def test_unauthorized(
         self,
@@ -63,7 +61,6 @@ class TestGetUserField:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestCreateUserField:
     async def test_unauthorized(
         self,
@@ -202,7 +199,6 @@ class TestCreateUserField:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestUpdateUserField:
     async def test_unauthorized(
         self,
@@ -280,7 +276,6 @@ class TestUpdateUserField:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestDeleteUserField:
     async def test_unauthorized(
         self,

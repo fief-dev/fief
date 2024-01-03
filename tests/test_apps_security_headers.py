@@ -7,7 +7,6 @@ from tests.helpers import security_headers_assertions
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 async def test_admin_app(test_client_api: httpx.AsyncClient):
     response = await test_client_api.get("/openapi.json")
 
@@ -16,7 +15,6 @@ async def test_admin_app(test_client_api: httpx.AsyncClient):
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 @pytest.mark.authenticated_admin(mode="session")
 async def test_dashboard_app(test_client_dashboard: httpx.AsyncClient):
     response = await test_client_dashboard.get("/")
@@ -26,7 +24,6 @@ async def test_dashboard_app(test_client_dashboard: httpx.AsyncClient):
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 async def test_auth_app(
     tenant_params: TenantParams, test_client_auth: httpx.AsyncClient
 ):

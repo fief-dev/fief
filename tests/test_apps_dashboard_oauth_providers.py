@@ -6,14 +6,12 @@ from bs4 import BeautifulSoup
 from fastapi import status
 
 from fief.db import AsyncSession
-from fief.models import Workspace
 from fief.repositories import OAuthProviderRepository
 from tests.data import TestData
 from tests.helpers import HTTPXResponseAssertion
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestListOAuthProviders:
     async def test_unauthorized(
         self,
@@ -39,7 +37,6 @@ class TestListOAuthProviders:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestGetOAuthProvider:
     async def test_unauthorized(
         self,
@@ -83,7 +80,6 @@ class TestGetOAuthProvider:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestCreateOAuthProvider:
     async def test_unauthorized(
         self,
@@ -172,7 +168,7 @@ class TestCreateOAuthProvider:
         payload: dict[str, str],
         test_client_dashboard: httpx.AsyncClient,
         csrf_token: str,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
     ):
         response = await test_client_dashboard.post(
             "/oauth-providers/create",
@@ -186,7 +182,7 @@ class TestCreateOAuthProvider:
 
         assert response.status_code == status.HTTP_201_CREATED
 
-        oauth_provider_repository = OAuthProviderRepository(workspace_session)
+        oauth_provider_repository = OAuthProviderRepository(main_session)
         oauth_provider = await oauth_provider_repository.get_by_id(
             uuid.UUID(response.headers["X-Fief-Object-Id"])
         )
@@ -197,7 +193,6 @@ class TestCreateOAuthProvider:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestUpdateOAuthProvider:
     async def test_unauthorized(
         self,
@@ -250,7 +245,7 @@ class TestUpdateOAuthProvider:
         test_client_dashboard: httpx.AsyncClient,
         test_data: TestData,
         csrf_token: str,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
     ):
         oauth_provider = test_data["oauth_providers"]["google"]
         response = await test_client_dashboard.post(
@@ -266,7 +261,7 @@ class TestUpdateOAuthProvider:
 
         assert response.status_code == status.HTTP_200_OK
 
-        oauth_provider_repository = OAuthProviderRepository(workspace_session)
+        oauth_provider_repository = OAuthProviderRepository(main_session)
         updated_oauth_provider = await oauth_provider_repository.get_by_id(
             oauth_provider.id
         )
@@ -280,7 +275,7 @@ class TestUpdateOAuthProvider:
         test_client_dashboard: httpx.AsyncClient,
         test_data: TestData,
         csrf_token: str,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
     ):
         oauth_provider = test_data["oauth_providers"]["google"]
         response = await test_client_dashboard.post(
@@ -295,7 +290,7 @@ class TestUpdateOAuthProvider:
 
         assert response.status_code == status.HTTP_200_OK
 
-        oauth_provider_repository = OAuthProviderRepository(workspace_session)
+        oauth_provider_repository = OAuthProviderRepository(main_session)
         updated_oauth_provider = await oauth_provider_repository.get_by_id(
             oauth_provider.id
         )
@@ -304,7 +299,6 @@ class TestUpdateOAuthProvider:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestDeleteOAuthProvider:
     async def test_unauthorized(
         self,
@@ -335,10 +329,7 @@ class TestDeleteOAuthProvider:
     @pytest.mark.authenticated_admin(mode="session")
     @pytest.mark.htmx(target="modal")
     async def test_valid_get(
-        self,
-        test_client_dashboard: httpx.AsyncClient,
-        test_data: TestData,
-        workspace: Workspace,
+        self, test_client_dashboard: httpx.AsyncClient, test_data: TestData
     ):
         oauth_provider = test_data["oauth_providers"]["google"]
         response = await test_client_dashboard.get(
@@ -351,7 +342,7 @@ class TestDeleteOAuthProvider:
         submit_button = html.find(
             "button",
             attrs={
-                "hx-delete": f"http://{workspace.domain}/oauth-providers/{oauth_provider.id}/delete"
+                "hx-delete": f"http://api.fief.dev/oauth-providers/{oauth_provider.id}/delete"
             },
         )
         assert submit_button is not None

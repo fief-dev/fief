@@ -14,7 +14,7 @@ from fief.crypto.id_token import get_validation_hash
 from fief.crypto.token import get_token_hash
 from fief.crypto.verify_code import get_verify_code_hash
 from fief.db import AsyncSession
-from fief.models import AuthorizationCode, LoginSession, SessionToken, User, Workspace
+from fief.models import AuthorizationCode, LoginSession, SessionToken, User
 from fief.repositories import AuthorizationCodeRepository, EmailVerificationRepository
 from fief.services.acr import ACR
 from fief.tasks import on_email_verification_requested
@@ -54,18 +54,9 @@ def api_unauthorized_assertions(response: httpx.Response):
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
 
-def api_unauthorized_alt_workspace_assertions(response: httpx.Response):
-    assert response.status_code == status.HTTP_403_FORBIDDEN
-
-
 def dashboard_unauthorized_assertions(response: httpx.Response):
     assert response.status_code == status.HTTP_307_TEMPORARY_REDIRECT
     assert response.headers["Location"].endswith("/auth/login")
-
-
-def dashboard_unauthorized_alt_workspace_assertions(response: httpx.Response):
-    assert response.status_code == status.HTTP_307_TEMPORARY_REDIRECT
-    assert response.headers["Location"] == "http://gascony.localhost/admin/"
 
 
 async def access_token_assertions(
@@ -235,7 +226,6 @@ async def email_verification_requested_assertions(
     *,
     user: User,
     email: str,
-    workspace: Workspace,
     send_task_mock: MagicMock,
     session: AsyncSession,
 ):
@@ -248,7 +238,6 @@ async def email_verification_requested_assertions(
     send_task_mock.assert_called_once()
     assert send_task_mock.call_args[0][0] == on_email_verification_requested
     assert send_task_mock.call_args[0][1] == str(email_verification.id)
-    assert send_task_mock.call_args[0][2] == str(workspace.id)
     assert (
-        get_verify_code_hash(send_task_mock.call_args[0][3]) == email_verification.code
+        get_verify_code_hash(send_task_mock.call_args[0][2]) == email_verification.code
     )

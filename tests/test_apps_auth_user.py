@@ -6,7 +6,6 @@ from fastapi import status
 
 from fief.db import AsyncSession
 from fief.errors import APIErrorCode
-from fief.models import Workspace
 from fief.repositories import EmailVerificationRepository, UserRepository
 from fief.services.acr import ACR
 from tests.data import TestData, email_verification_codes
@@ -15,7 +14,6 @@ from tests.types import TenantParams
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 @pytest.mark.parametrize("method", ["GET", "POST"])
 class TestUserUserinfo:
     @pytest.mark.parametrize(
@@ -64,7 +62,6 @@ class TestUserUserinfo:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestUserUpdateProfile:
     @pytest.mark.parametrize(
         "authorization",
@@ -127,7 +124,6 @@ class TestUserUpdateProfile:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestUserChangePassword:
     @pytest.mark.parametrize(
         "authorization",
@@ -194,7 +190,6 @@ class TestUserChangePassword:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestUserChangeEmail:
     @pytest.mark.parametrize(
         "authorization",
@@ -258,9 +253,8 @@ class TestUserChangeEmail:
         self,
         test_data: TestData,
         test_client_auth: httpx.AsyncClient,
-        workspace: Workspace,
         send_task_mock: MagicMock,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
     ):
         user = test_data["users"]["regular"]
         tenant = user.tenant
@@ -276,14 +270,12 @@ class TestUserChangeEmail:
         await email_verification_requested_assertions(
             user=user,
             email="anne+updated@bretagne.duchy",
-            workspace=workspace,
             send_task_mock=send_task_mock,
-            session=workspace_session,
+            session=main_session,
         )
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestUserVerifyEmail:
     @pytest.mark.parametrize(
         "authorization",
@@ -349,7 +341,7 @@ class TestUserVerifyEmail:
         self,
         test_data: TestData,
         test_client_auth: httpx.AsyncClient,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
     ):
         user = test_data["users"]["regular"]
         code = email_verification_codes["regular_update_email"][0]
@@ -364,13 +356,13 @@ class TestUserVerifyEmail:
 
         assert response.status_code == status.HTTP_200_OK
 
-        email_verification_repository = EmailVerificationRepository(workspace_session)
+        email_verification_repository = EmailVerificationRepository(main_session)
         deleted_email_verification = await email_verification_repository.get_by_id(
             email_verification.id
         )
         assert deleted_email_verification is None
 
-        user_repository = UserRepository(workspace_session)
+        user_repository = UserRepository(main_session)
         updated_user = await user_repository.get_by_id(user.id)
         assert updated_user is not None
         assert updated_user.email == email_verification.email

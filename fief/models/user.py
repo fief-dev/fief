@@ -5,7 +5,7 @@ from sqlalchemy import Boolean, ForeignKey, String, event
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql.schema import UniqueConstraint
 
-from fief.models.base import WorkspaceBase
+from fief.models.base import Base
 from fief.models.generics import GUID, CreatedUpdatedAt, UUIDModel
 from fief.models.tenant import Tenant
 from fief.models.user_field import UserField
@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from fief.models.user_field_value import UserFieldValue
 
 
-class User(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
+class User(UUIDModel, CreatedUpdatedAt, Base):
     __tablename__ = "users"
     __table_args__ = (UniqueConstraint("email", "tenant_id"),)
 

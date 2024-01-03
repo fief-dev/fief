@@ -1,12 +1,12 @@
 from sqlalchemy import String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
-from fief.models.base import WorkspaceBase
+from fief.models.base import Base
 from fief.models.generics import CreatedUpdatedAt, UUIDModel
 from fief.services.email_template.types import EmailTemplateType
 
 
-class EmailTemplate(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
+class EmailTemplate(UUIDModel, CreatedUpdatedAt, Base):
     __tablename__ = "email_templates"
 
     type: Mapped[EmailTemplateType] = mapped_column(

@@ -8,7 +8,6 @@ from tests.data import TestData
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 async def test_switch_language(
     test_client_auth: httpx.AsyncClient, test_data: TestData
 ):

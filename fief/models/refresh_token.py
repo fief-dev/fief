@@ -4,7 +4,7 @@ from pydantic import UUID4
 from sqlalchemy import JSON, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from fief.models.base import WorkspaceBase
+from fief.models.base import Base
 from fief.models.client import Client
 from fief.models.generics import (
     GUID,
@@ -16,7 +16,7 @@ from fief.models.generics import (
 from fief.models.user import User
 
 
-class RefreshToken(UUIDModel, CreatedUpdatedAt, ExpiresAt, WorkspaceBase):
+class RefreshToken(UUIDModel, CreatedUpdatedAt, ExpiresAt, Base):
     __tablename__ = "refresh_tokens"
 
     token: Mapped[str] = mapped_column(

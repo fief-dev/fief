@@ -41,9 +41,9 @@ GetTenantEmailDomain = Callable[[EmailProvider], TenantEmailDomain]
 
 
 @pytest.fixture
-def get_tenant_email_domain(workspace_session: AsyncSession) -> GetTenantEmailDomain:
-    tenant_repository = TenantRepository(workspace_session)
-    email_domain_repository = EmailDomainRepository(workspace_session)
+def get_tenant_email_domain(main_session: AsyncSession) -> GetTenantEmailDomain:
+    tenant_repository = TenantRepository(main_session)
+    email_domain_repository = EmailDomainRepository(main_session)
 
     def _get_tenant_email_domain(email_provider: EmailProvider) -> TenantEmailDomain:
         return TenantEmailDomain(
@@ -87,12 +87,12 @@ class TestAuthenticateDomain:
         test_data: TestData,
         email_provider: MagicMock,
         get_tenant_email_domain: GetTenantEmailDomain,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
     ):
         tenant = test_data["tenants"]["default"]
-        workspace_session.add(
+        main_session.add(
             tenant
-        )  # Trick to make tenant "editable" in the workspace_session context
+        )  # Trick to make tenant "editable" in the main_session context
         tenant.email_domain = None
         tenant.email_from_email = "anne@bretagne.duchy"
 

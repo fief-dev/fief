@@ -7,14 +7,12 @@ from bs4 import BeautifulSoup
 from fastapi import status
 
 from fief.db import AsyncSession
-from fief.models import Workspace
 from fief.repositories import UserFieldRepository
 from tests.data import TestData
 from tests.helpers import HTTPXResponseAssertion
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestListUserFields:
     async def test_unauthorized(
         self,
@@ -40,7 +38,6 @@ class TestListUserFields:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestGetUserField:
     async def test_unauthorized(
         self,
@@ -80,7 +77,6 @@ class TestGetUserField:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestCreateUserField:
     async def test_unauthorized(
         self,
@@ -272,7 +268,7 @@ class TestCreateUserField:
         default_output: Any | None,
         test_client_dashboard: httpx.AsyncClient,
         csrf_token: str,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
     ):
         response = await test_client_dashboard.post(
             "/user-fields/create",
@@ -294,7 +290,7 @@ class TestCreateUserField:
 
         assert response.status_code == status.HTTP_201_CREATED
 
-        user_field_repository = UserFieldRepository(workspace_session)
+        user_field_repository = UserFieldRepository(main_session)
         user_field = await user_field_repository.get_by_id(
             uuid.UUID(response.headers["X-Fief-Object-Id"])
         )
@@ -304,7 +300,6 @@ class TestCreateUserField:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestUpdateUserField:
     async def test_unauthorized(
         self,
@@ -403,7 +398,7 @@ class TestUpdateUserField:
         test_client_dashboard: httpx.AsyncClient,
         test_data: TestData,
         csrf_token: str,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
     ):
         user_field = test_data["user_fields"]["given_name"]
         response = await test_client_dashboard.post(
@@ -422,7 +417,7 @@ class TestUpdateUserField:
 
         assert response.status_code == status.HTTP_200_OK
 
-        user_field_repository = UserFieldRepository(workspace_session)
+        user_field_repository = UserFieldRepository(main_session)
         updated_user_field = await user_field_repository.get_by_id(user_field.id)
         assert updated_user_field is not None
         assert updated_user_field.name == "Updated name"
@@ -434,7 +429,7 @@ class TestUpdateUserField:
         test_client_dashboard: httpx.AsyncClient,
         test_data: TestData,
         csrf_token: str,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
     ):
         user_field = test_data["user_fields"]["gender"]
         response = await test_client_dashboard.post(
@@ -456,7 +451,7 @@ class TestUpdateUserField:
 
         assert response.status_code == status.HTTP_200_OK
 
-        user_field_repository = UserFieldRepository(workspace_session)
+        user_field_repository = UserFieldRepository(main_session)
         updated_user_field = await user_field_repository.get_by_id(user_field.id)
         assert updated_user_field is not None
         assert updated_user_field.configuration["choices"] is not None
@@ -469,7 +464,7 @@ class TestUpdateUserField:
         test_client_dashboard: httpx.AsyncClient,
         test_data: TestData,
         csrf_token: str,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
     ):
         user_field = test_data["user_fields"]["birthdate"]
         response = await test_client_dashboard.post(
@@ -488,14 +483,13 @@ class TestUpdateUserField:
 
         assert response.status_code == status.HTTP_200_OK
 
-        user_field_repository = UserFieldRepository(workspace_session)
+        user_field_repository = UserFieldRepository(main_session)
         updated_user_field = await user_field_repository.get_by_id(user_field.id)
         assert updated_user_field is not None
         assert updated_user_field.configuration["default"] is None
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestDeleteUserField:
     async def test_unauthorized(
         self,
@@ -526,10 +520,7 @@ class TestDeleteUserField:
     @pytest.mark.authenticated_admin(mode="session")
     @pytest.mark.htmx(target="modal")
     async def test_valid_get(
-        self,
-        test_client_dashboard: httpx.AsyncClient,
-        test_data: TestData,
-        workspace: Workspace,
+        self, test_client_dashboard: httpx.AsyncClient, test_data: TestData
     ):
         user_field = test_data["user_fields"]["given_name"]
         response = await test_client_dashboard.get(
@@ -542,7 +533,7 @@ class TestDeleteUserField:
         submit_button = html.find(
             "button",
             attrs={
-                "hx-delete": f"http://{workspace.domain}/user-fields/{user_field.id}/delete"
+                "hx-delete": f"http://api.fief.dev/user-fields/{user_field.id}/delete"
             },
         )
         assert submit_button is not None

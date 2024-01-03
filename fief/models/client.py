@@ -9,7 +9,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql.sqltypes import JSON
 
 from fief.crypto.jwk import load_jwk
-from fief.models.base import TABLE_PREFIX_PLACEHOLDER, WorkspaceBase
+from fief.models.base import TABLE_PREFIX_PLACEHOLDER, Base
 from fief.models.generics import GUID, CreatedUpdatedAt, UUIDModel
 from fief.models.tenant import Tenant
 from fief.settings import settings
@@ -39,7 +39,7 @@ class ClientType(StrEnum):
         return cls(str(item)) if not isinstance(item, cls) else item
 
 
-class Client(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
+class Client(UUIDModel, CreatedUpdatedAt, Base):
     __tablename__ = "clients"
 
     name: Mapped[str] = mapped_column(String(length=255), nullable=False)

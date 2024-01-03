@@ -11,7 +11,6 @@ from tests.helpers import HTTPXResponseAssertion
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestListPermissions:
     async def test_unauthorized(
         self,
@@ -46,7 +45,6 @@ class TestListPermissions:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestGetPermission:
     async def test_unauthorized(
         self,
@@ -76,7 +74,6 @@ class TestGetPermission:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestCreatePermission:
     async def test_unauthorized(
         self,
@@ -122,7 +119,6 @@ class TestCreatePermission:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestUpdatePermission:
     async def test_unauthorized(
         self,
@@ -186,7 +182,6 @@ class TestUpdatePermission:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestDeletePermission:
     async def test_unauthorized(
         self,

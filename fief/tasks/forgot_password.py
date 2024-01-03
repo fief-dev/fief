@@ -11,10 +11,9 @@ from fief.tasks.base import TaskBase
 class OnAfterForgotPasswordTask(TaskBase):
     __name__ = "on_after_forgot_password"
 
-    async def run(self, user_id: str, workspace_id: str, reset_url: str):
-        workspace = await self._get_workspace(uuid.UUID(workspace_id))
-        user = await self._get_user(uuid.UUID(user_id), workspace)
-        tenant = await self._get_tenant(user.tenant_id, workspace)
+    async def run(self, user_id: str, reset_url: str):
+        user = await self._get_user(uuid.UUID(user_id))
+        tenant = await self._get_tenant(user.tenant_id)
 
         context = ForgotPasswordContext(
             tenant=schemas.tenant.Tenant.model_validate(tenant),
@@ -22,16 +21,12 @@ class OnAfterForgotPasswordTask(TaskBase):
             reset_url=reset_url,
         )
 
-        async with self._get_email_subject_renderer(
-            workspace
-        ) as email_subject_renderer:
+        async with self._get_email_subject_renderer() as email_subject_renderer:
             subject = await email_subject_renderer.render(
                 EmailTemplateType.FORGOT_PASSWORD, context
             )
 
-        async with self._get_email_template_renderer(
-            workspace
-        ) as email_template_renderer:
+        async with self._get_email_template_renderer() as email_template_renderer:
             html = await email_template_renderer.render(
                 EmailTemplateType.FORGOT_PASSWORD, context
             )

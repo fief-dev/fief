@@ -6,7 +6,6 @@ from bs4 import BeautifulSoup
 from fastapi import status
 
 from fief.db import AsyncSession
-from fief.models import Workspace
 from fief.repositories import EmailVerificationRepository, UserRepository
 from fief.settings import settings
 from tests.data import TestData, email_verification_codes, session_token_tokens
@@ -15,7 +14,6 @@ from tests.types import TenantParams
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestAuthUpdateProfile:
     async def test_unauthorized(
         self, tenant_params: TenantParams, test_client_auth_csrf: httpx.AsyncClient
@@ -62,7 +60,7 @@ class TestAuthUpdateProfile:
         test_client_auth_csrf: httpx.AsyncClient,
         csrf_token: str,
         test_data: TestData,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
     ):
         session_token = session_token_tokens["regular"]
         cookies = {}
@@ -81,7 +79,7 @@ class TestAuthUpdateProfile:
 
         assert response.status_code == status.HTTP_200_OK
 
-        user_repository = UserRepository(workspace_session)
+        user_repository = UserRepository(main_session)
         user = await user_repository.get_by_id(test_data["users"]["regular"].id)
         assert user is not None
         assert user.fields["given_name"] == "Isabeau"
@@ -90,7 +88,6 @@ class TestAuthUpdateProfile:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestAuthUpdatePassword:
     async def test_unauthorized(
         self, tenant_params: TenantParams, test_client_auth_csrf: httpx.AsyncClient
@@ -225,7 +222,6 @@ class TestAuthUpdatePassword:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestAuthEmailChange:
     async def test_unauthorized(
         self, tenant_params: TenantParams, test_client_auth_csrf: httpx.AsyncClient
@@ -319,8 +315,7 @@ class TestAuthEmailChange:
         tenant_params: TenantParams,
         csrf_token: str,
         test_client_auth_csrf: httpx.AsyncClient,
-        workspace: Workspace,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
         send_task_mock: MagicMock,
     ):
         cookies = {}
@@ -341,14 +336,12 @@ class TestAuthEmailChange:
         await email_verification_requested_assertions(
             user=tenant_params.user,
             email="anne+updated@bretagne.duchy",
-            workspace=workspace,
             send_task_mock=send_task_mock,
-            session=workspace_session,
+            session=main_session,
         )
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestAuthEmailVerify:
     async def test_unauthorized(
         self, tenant_params: TenantParams, test_client_auth_csrf: httpx.AsyncClient
@@ -417,7 +410,7 @@ class TestAuthEmailVerify:
         self,
         csrf_token: str,
         test_client_auth_csrf: httpx.AsyncClient,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
         test_data: TestData,
     ):
         user = test_data["users"]["regular"]
@@ -440,13 +433,13 @@ class TestAuthEmailVerify:
         assert response.status_code == status.HTTP_200_OK
         assert "/" in response.headers["HX-Location"]
 
-        email_verification_repository = EmailVerificationRepository(workspace_session)
+        email_verification_repository = EmailVerificationRepository(main_session)
         deleted_email_verification = await email_verification_repository.get_by_id(
             email_verification.id
         )
         assert deleted_email_verification is None
 
-        user_repository = UserRepository(workspace_session)
+        user_repository = UserRepository(main_session)
         updated_user = await user_repository.get_by_id(user.id)
         assert updated_user is not None
         assert updated_user.email == email_verification.email

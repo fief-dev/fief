@@ -14,13 +14,12 @@ from fief.tasks.user_permissions import on_user_role_created
 class OnAfterRegisterTask(TaskBase):
     __name__ = "on_after_register"
 
-    async def run(self, user_id: str, workspace_id: str):
-        workspace = await self._get_workspace(uuid.UUID(workspace_id))
-        user = await self._get_user(uuid.UUID(user_id), workspace)
-        tenant = await self._get_tenant(user.tenant_id, workspace)
+    async def run(self, user_id: str):
+        user = await self._get_user(uuid.UUID(user_id))
+        tenant = await self._get_tenant(user.tenant_id)
 
         # Grant default roles
-        async with self.get_workspace_session(workspace) as session:
+        async with self.get_main_session() as session:
             role_repository = RoleRepository(session)
             user_role_repository = UserRoleRepository(session)
 
@@ -38,7 +37,6 @@ class OnAfterRegisterTask(TaskBase):
                     on_user_role_created,
                     str(user.id),
                     str(user_role.role_id),
-                    str(workspace.id),
                 )
 
         # Send welcome email
@@ -46,16 +44,12 @@ class OnAfterRegisterTask(TaskBase):
             tenant=schemas.tenant.Tenant.model_validate(tenant),
             user=schemas.user.UserEmailContext.model_validate(user),
         )
-        async with self._get_email_subject_renderer(
-            workspace
-        ) as email_subject_renderer:
+        async with self._get_email_subject_renderer() as email_subject_renderer:
             subject = await email_subject_renderer.render(
                 EmailTemplateType.WELCOME, context
             )
 
-        async with self._get_email_template_renderer(
-            workspace
-        ) as email_template_renderer:
+        async with self._get_email_template_renderer() as email_template_renderer:
             html = await email_template_renderer.render(
                 EmailTemplateType.WELCOME, context
             )

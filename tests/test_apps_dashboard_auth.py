@@ -13,7 +13,6 @@ from tests.helpers import HTTPXResponseAssertion
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestAuthLogin:
     async def test_success(
         self,
@@ -39,7 +38,6 @@ class TestAuthLogin:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestAuthCallback:
     async def test_missing_code(self, test_client_dashboard: httpx.AsyncClient):
         response = await test_client_dashboard.get("/auth/callback")
@@ -78,7 +76,6 @@ class TestAuthCallback:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestAuthProfile:
     async def test_unauthorized(
         self,
@@ -100,7 +97,6 @@ class TestAuthProfile:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestAuthLogout:
     async def test_unauthorized(self, test_client_dashboard: httpx.AsyncClient):
         response = await test_client_dashboard.get("/auth/logout")

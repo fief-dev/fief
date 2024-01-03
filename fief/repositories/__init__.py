@@ -25,12 +25,8 @@ from fief.repositories.user_permission import UserPermissionRepository
 from fief.repositories.user_role import UserRoleRepository
 from fief.repositories.webhook import WebhookRepository
 from fief.repositories.webhook_log import WebhookLogRepository
-from fief.repositories.workspace import WorkspaceRepository
-from fief.repositories.workspace_user import WorkspaceUserRepository
 
 __all__ = [
-    "WorkspaceRepository",
-    "WorkspaceUserRepository",
     "AdminAPIKeyRepository",
     "AdminSessionTokenRepository",
     "AuditLogRepository",

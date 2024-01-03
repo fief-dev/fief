@@ -34,12 +34,11 @@ class AuditLogger:
     def __init__(
         self,
         logger: "Logger",
-        workspace_id: uuid.UUID,
         *,
         admin_user_id: UUID4 | None = None,
         admin_api_key_id: UUID4 | None = None,
     ) -> None:
-        self.logger = logger.bind(audit=True, workspace_id=str(workspace_id))
+        self.logger = logger.bind(audit=True)
         self.admin_user_id = admin_user_id
         self.admin_api_key_id = admin_api_key_id
 

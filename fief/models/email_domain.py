@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from sqlalchemy import JSON, String
 from sqlalchemy.orm import Mapped, mapped_column
 
-from fief.models.base import WorkspaceBase
+from fief.models.base import Base
 from fief.models.generics import CreatedUpdatedAt, UUIDModel
 
 if TYPE_CHECKING:
@@ -21,7 +21,7 @@ class EmailDomainDNSRecord(BaseModel):
     verified: bool
 
 
-class EmailDomain(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
+class EmailDomain(UUIDModel, CreatedUpdatedAt, Base):
     __tablename__ = "email_domains"
 
     email_provider: Mapped[str] = mapped_column(String(length=255), nullable=False)

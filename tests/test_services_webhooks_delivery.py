@@ -13,8 +13,8 @@ from tests.data import TestData
 
 
 @pytest.fixture
-def webhook_delivery(workspace_session: AsyncSession) -> WebhookDelivery:
-    return WebhookDelivery(WebhookLogRepository(workspace_session))
+def webhook_delivery(main_session: AsyncSession) -> WebhookDelivery:
+    return WebhookDelivery(WebhookLogRepository(main_session))
 
 
 @pytest.fixture
@@ -34,7 +34,7 @@ class TestWebhookDelivery:
         webhook_delivery: WebhookDelivery,
         webhook_event: WebhookEvent,
         test_data: TestData,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
     ):
         webhook = test_data["webhooks"]["all"]
         route_mock = respx_mock.post(webhook.url).mock(
@@ -52,7 +52,7 @@ class TestWebhookDelivery:
 
         assert request.headers["user-agent"] == f"fief-server-webhooks/{__version__}"
 
-        webhook_log_repository = WebhookLogRepository(workspace_session)
+        webhook_log_repository = WebhookLogRepository(main_session)
         webhook_logs = await webhook_log_repository.list(
             select(WebhookLog).order_by(WebhookLog.created_at.desc())
         )
@@ -72,7 +72,7 @@ class TestWebhookDelivery:
         webhook_delivery: WebhookDelivery,
         webhook_event: WebhookEvent,
         test_data: TestData,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
     ):
         webhook = test_data["webhooks"]["all"]
         route_mock = respx_mock.post(webhook.url).mock(
@@ -84,7 +84,7 @@ class TestWebhookDelivery:
 
         assert route_mock.called
 
-        webhook_log_repository = WebhookLogRepository(workspace_session)
+        webhook_log_repository = WebhookLogRepository(main_session)
         webhook_logs = await webhook_log_repository.list(
             select(WebhookLog).order_by(WebhookLog.created_at.desc())
         )
@@ -105,7 +105,7 @@ class TestWebhookDelivery:
         webhook_delivery: WebhookDelivery,
         webhook_event: WebhookEvent,
         test_data: TestData,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
     ):
         webhook = test_data["webhooks"]["all"]
         route_mock = respx_mock.post(webhook.url).mock(
@@ -117,7 +117,7 @@ class TestWebhookDelivery:
 
         assert route_mock.called
 
-        webhook_log_repository = WebhookLogRepository(workspace_session)
+        webhook_log_repository = WebhookLogRepository(main_session)
         webhook_logs = await webhook_log_repository.list(
             select(WebhookLog).order_by(WebhookLog.created_at.desc())
         )

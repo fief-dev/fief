@@ -8,7 +8,7 @@ from fief.schemas.user import UserCreate
 
 @pytest.mark.asyncio
 class TestGetUserCreateModel:
-    async def test_basic(self):
+    async def test_basic(self) -> None:
         user_fields: list[UserField] = [
             UserField(
                 name="First name",
@@ -23,7 +23,7 @@ class TestGetUserCreateModel:
                 },
             ),
         ]
-        model = await get_user_create_model(user_fields)
+        model: type[UserCreate] = await get_user_create_model(user_fields)
 
         assert issubclass(model, UserCreate)
 
@@ -38,7 +38,7 @@ class TestGetUserCreateModel:
         assert isinstance(user_create, model)
         assert user_create.fields.first_name == "Anne"
 
-    async def test_missing_required_field(self):
+    async def test_missing_required_field(self) -> None:
         user_fields: list[UserField] = [
             UserField(
                 name="First name",
@@ -53,7 +53,7 @@ class TestGetUserCreateModel:
                 },
             ),
         ]
-        model = await get_user_create_model(user_fields)
+        model: type[UserCreate] = await get_user_create_model(user_fields)
 
         with pytest.raises(ValidationError) as e:
             model(email="anne@bretagne.duchy", password="herminetincture", fields={})
@@ -65,7 +65,7 @@ class TestGetUserCreateModel:
             "first_name",
         )
 
-    async def test_invalid_empty_string(self):
+    async def test_invalid_empty_string(self) -> None:
         user_fields: list[UserField] = [
             UserField(
                 name="First name",
@@ -80,7 +80,7 @@ class TestGetUserCreateModel:
                 },
             ),
         ]
-        model = await get_user_create_model(user_fields)
+        model: type[UserCreate] = await get_user_create_model(user_fields)
 
         with pytest.raises(ValidationError) as e:
             model(
@@ -96,7 +96,7 @@ class TestGetUserCreateModel:
             "first_name",
         )
 
-    async def test_missing_boolean_field(self):
+    async def test_missing_boolean_field(self) -> None:
         user_fields: list[UserField] = [
             UserField(
                 name="Subscribe to newsletter",
@@ -111,7 +111,7 @@ class TestGetUserCreateModel:
                 },
             ),
         ]
-        model = await get_user_create_model(user_fields)
+        model: type[UserCreate] = await get_user_create_model(user_fields)
 
         user_create = model(
             email="anne@bretagne.duchy", password="herminetincture", fields={}
@@ -119,7 +119,7 @@ class TestGetUserCreateModel:
 
         assert user_create.fields.newsletter is False
 
-    async def test_provided_boolean_field(self):
+    async def test_provided_boolean_field(self) -> None:
         user_fields: list[UserField] = [
             UserField(
                 name="Subscribe to newsletter",
@@ -134,7 +134,7 @@ class TestGetUserCreateModel:
                 },
             ),
         ]
-        model = await get_user_create_model(user_fields)
+        model: type[UserCreate] = await get_user_create_model(user_fields)
 
         user_create = model(
             email="anne@bretagne.duchy",
@@ -160,7 +160,7 @@ class TestGetUserCreateModel:
                 },
             ),
         ]
-        model = await get_user_create_model(user_fields)
+        model: type[UserCreate] = await get_user_create_model(user_fields)
 
         with pytest.raises(ValidationError) as e:
             fields = {}
@@ -178,7 +178,7 @@ class TestGetUserCreateModel:
         )
         assert errors[0]["type"] == "boolean.must_be_true"
 
-    async def test_required_boolean_field_true(self):
+    async def test_required_boolean_field_true(self) -> None:
         user_fields: list[UserField] = [
             UserField(
                 name="Consent",
@@ -193,7 +193,7 @@ class TestGetUserCreateModel:
                 },
             ),
         ]
-        model = await get_user_create_model(user_fields)
+        model: type[UserCreate] = await get_user_create_model(user_fields)
 
         user_create = model(
             email="anne@bretagne.duchy",
@@ -203,7 +203,7 @@ class TestGetUserCreateModel:
 
         assert user_create.fields.consent is True
 
-    async def test_invalid_choice(self):
+    async def test_invalid_choice(self) -> None:
         user_fields: list[UserField] = [
             UserField(
                 name="Choice",
@@ -218,7 +218,7 @@ class TestGetUserCreateModel:
                 },
             ),
         ]
-        model = await get_user_create_model(user_fields)
+        model: type[UserCreate] = await get_user_create_model(user_fields)
 
         with pytest.raises(ValidationError) as e:
             model(
@@ -235,7 +235,7 @@ class TestGetUserCreateModel:
         )
         assert errors[0]["type"] == "enum"
 
-    async def test_valid_choice(self):
+    async def test_valid_choice(self) -> None:
         user_fields: list[UserField] = [
             UserField(
                 name="Choice",
@@ -250,7 +250,7 @@ class TestGetUserCreateModel:
                 },
             ),
         ]
-        model = await get_user_create_model(user_fields)
+        model: type[UserCreate] = await get_user_create_model(user_fields)
 
         user_create = model(
             email="anne@bretagne.duchy",

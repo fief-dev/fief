@@ -8,7 +8,6 @@ from fastapi import status
 
 from fief.db import AsyncSession
 from fief.errors import APIErrorCode
-from fief.models import Workspace
 from fief.repositories import UserPermissionRepository
 from fief.tasks import on_role_updated
 from tests.data import TestData, data_mapping
@@ -16,7 +15,6 @@ from tests.helpers import HTTPXResponseAssertion, unordered_list
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestListRoles:
     async def test_unauthorized(
         self,
@@ -58,7 +56,6 @@ class TestListRoles:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestGetRole:
     async def test_unauthorized(
         self,
@@ -88,7 +85,6 @@ class TestGetRole:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestCreateRole:
     async def test_unauthorized(
         self,
@@ -145,7 +141,6 @@ class TestCreateRole:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestUpdateRole:
     async def test_unauthorized(
         self,
@@ -191,7 +186,6 @@ class TestUpdateRole:
         self,
         test_client_api: httpx.AsyncClient,
         test_data: TestData,
-        workspace: Workspace,
         send_task_mock: MagicMock,
     ):
         role = test_data["roles"]["castles_visitor"]
@@ -227,12 +221,10 @@ class TestUpdateRole:
                 ]
             ),
             unordered_list([str(test_data["permissions"]["castles:read"].id)]),
-            str(workspace.id),
         )
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestDeleteRole:
     async def test_unauthorized(
         self,
@@ -258,7 +250,7 @@ class TestDeleteRole:
         self,
         test_client_api: httpx.AsyncClient,
         test_data: TestData,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
     ):
         role = test_data["roles"]["castles_visitor"]
         response = await test_client_api.delete(f"/roles/{role.id}")
@@ -266,7 +258,7 @@ class TestDeleteRole:
         assert response.status_code == status.HTTP_204_NO_CONTENT
 
         user = test_data["users"]["regular"]
-        user_permission_repository = UserPermissionRepository(workspace_session)
+        user_permission_repository = UserPermissionRepository(main_session)
         user_permissions = await user_permission_repository.list(
             user_permission_repository.get_by_user_statement(user.id)
         )

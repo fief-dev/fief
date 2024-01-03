@@ -3,9 +3,8 @@ from fastapi.param_functions import Depends
 from jwcrypto import jwk
 from starlette.routing import Router
 
-from fief.dependencies.current_workspace import get_current_workspace
 from fief.dependencies.tenant import get_current_tenant
-from fief.models import Tenant, Workspace
+from fief.models import Tenant
 from fief.schemas.well_known import OpenIDProviderMetadata
 from fief.services.acr import ACR
 from fief.services.response_type import ALLOWED_RESPONSE_TYPES
@@ -16,9 +15,7 @@ router = APIRouter()
 
 @router.get("/openid-configuration", name="well_known:openid_configuration")
 async def get_openid_configuration(
-    request: Request,
-    workspace: Workspace = Depends(get_current_workspace),
-    tenant: Tenant = Depends(get_current_tenant),
+    request: Request, tenant: Tenant = Depends(get_current_tenant)
 ):
     url_for_params = {}
     if not tenant.default:
@@ -35,7 +32,7 @@ async def get_openid_configuration(
         return str(url_path.make_absolute_url(base_url))
 
     configuration = OpenIDProviderMetadata(
-        issuer=tenant.get_host(workspace.domain),
+        issuer=tenant.get_host(),
         authorization_endpoint=_url_for("auth:authorize"),
         token_endpoint=_url_for("auth:token"),
         userinfo_endpoint=_url_for("user:userinfo"),

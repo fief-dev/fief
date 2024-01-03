@@ -8,7 +8,7 @@ from fastapi import status
 
 from fief.crypto.token import get_token_hash
 from fief.db import AsyncSession
-from fief.models import RegistrationSessionFlow, UserField, UserFieldType, Workspace
+from fief.models import RegistrationSessionFlow, UserField, UserFieldType
 from fief.repositories import (
     OAuthAccountRepository,
     RegistrationSessionRepository,
@@ -22,7 +22,6 @@ from tests.types import TenantParams
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestGetRegister:
     async def test_invalid_login_session(
         self, tenant_params: TenantParams, test_client_auth: httpx.AsyncClient
@@ -63,7 +62,7 @@ class TestGetRegister:
         self,
         test_client_auth: httpx.AsyncClient,
         test_data: TestData,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
     ):
         tenant = test_data["tenants"]["default"]
         path_prefix = tenant.slug if not tenant.default else ""
@@ -78,9 +77,7 @@ class TestGetRegister:
         registration_session_cookie = response.cookies[
             settings.registration_session_cookie_name
         ]
-        registration_session_repository = RegistrationSessionRepository(
-            workspace_session
-        )
+        registration_session_repository = RegistrationSessionRepository(main_session)
         registration_session = await registration_session_repository.get_by_token(
             registration_session_cookie
         )
@@ -92,7 +89,7 @@ class TestGetRegister:
         self,
         test_client_auth: httpx.AsyncClient,
         test_data: TestData,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
     ):
         login_session = test_data["login_sessions"]["default"]
         client = login_session.client
@@ -114,9 +111,7 @@ class TestGetRegister:
         registration_session_cookie = response.cookies[
             settings.registration_session_cookie_name
         ]
-        registration_session_repository = RegistrationSessionRepository(
-            workspace_session
-        )
+        registration_session_repository = RegistrationSessionRepository(main_session)
         registration_session = await registration_session_repository.get_by_token(
             registration_session_cookie
         )
@@ -128,7 +123,7 @@ class TestGetRegister:
         self,
         test_client_auth: httpx.AsyncClient,
         test_data: TestData,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
     ):
         login_session = test_data["login_sessions"]["default"]
         registration_session = test_data["registration_sessions"]["secondary_password"]
@@ -152,9 +147,7 @@ class TestGetRegister:
         registration_session_cookie = response.cookies[
             settings.registration_session_cookie_name
         ]
-        registration_session_repository = RegistrationSessionRepository(
-            workspace_session
-        )
+        registration_session_repository = RegistrationSessionRepository(main_session)
         new_registration_session = await registration_session_repository.get_by_token(
             registration_session_cookie
         )
@@ -187,7 +180,6 @@ class TestGetRegister:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestPostRegister:
     async def test_invalid_login_session(
         self,
@@ -340,8 +332,7 @@ class TestPostRegister:
         test_client_auth_csrf: httpx.AsyncClient,
         csrf_token: str,
         test_data: TestData,
-        workspace: Workspace,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
         send_task_mock: MagicMock,
     ):
         login_session = test_data["login_sessions"]["default"]
@@ -367,13 +358,13 @@ class TestPostRegister:
         assert redirect_uri.endswith("/verify-request")
 
         session_cookie = response.cookies[settings.session_cookie_name]
-        session_token_repository = SessionTokenRepository(workspace_session)
+        session_token_repository = SessionTokenRepository(main_session)
         session_token = await session_token_repository.get_by_token(
             get_token_hash(session_cookie)
         )
         assert session_token is not None
 
-        user_repository = UserRepository(workspace_session)
+        user_repository = UserRepository(main_session)
         user = await user_repository.get_by_id(session_token.user_id)
         assert user is not None
         assert user.email == "louis@bretagne.duchy"
@@ -382,17 +373,13 @@ class TestPostRegister:
         login_hint_cookie = response.cookies[settings.login_hint_cookie_name]
         assert urllib.parse.unquote(login_hint_cookie) == "louis@bretagne.duchy"
 
-        registration_session_repository = RegistrationSessionRepository(
-            workspace_session
-        )
+        registration_session_repository = RegistrationSessionRepository(main_session)
         deleted_registration_session = await registration_session_repository.get_by_id(
             registration_session.id
         )
         assert deleted_registration_session is None
 
-        send_task_mock.assert_called_with(
-            on_after_register, str(session_token.user_id), str(workspace.id)
-        )
+        send_task_mock.assert_called_with(on_after_register, str(session_token.user_id))
 
     async def test_no_email_conflict_on_another_tenant(
         self,
@@ -423,7 +410,7 @@ class TestPostRegister:
         test_client_auth_csrf: httpx.AsyncClient,
         csrf_token: str,
         test_data: TestData,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
     ):
         login_session = test_data["login_sessions"]["secondary"]
         registration_session = test_data["registration_sessions"]["secondary_password"]
@@ -449,13 +436,13 @@ class TestPostRegister:
         assert response.status_code == status.HTTP_302_FOUND
 
         session_cookie = response.cookies[settings.session_cookie_name]
-        session_token_repository = SessionTokenRepository(workspace_session)
+        session_token_repository = SessionTokenRepository(main_session)
         session_token = await session_token_repository.get_by_token(
             get_token_hash(session_cookie)
         )
         assert session_token is not None
 
-        user_repository = UserRepository(workspace_session)
+        user_repository = UserRepository(main_session)
         user = await user_repository.get_by_id(session_token.user_id)
         assert user is not None
         assert user.fields == {
@@ -486,7 +473,7 @@ class TestPostRegister:
         test_client_auth_csrf: httpx.AsyncClient,
         csrf_token: str,
         test_data: TestData,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
     ):
         field = UserField(
             name="Accept terms",
@@ -500,8 +487,8 @@ class TestPostRegister:
                 "required": True,
             },
         )
-        workspace_session.add(field)
-        await workspace_session.commit()
+        main_session.add(field)
+        await main_session.commit()
 
         login_session = test_data["login_sessions"]["secondary"]
         registration_session = test_data["registration_sessions"]["secondary_password"]
@@ -527,7 +514,7 @@ class TestPostRegister:
         test_client_auth_csrf: httpx.AsyncClient,
         csrf_token: str,
         test_data: TestData,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
     ):
         login_session = test_data["login_sessions"]["secondary"]
         registration_session = test_data["registration_sessions"]["secondary_password"]
@@ -549,13 +536,13 @@ class TestPostRegister:
         assert response.status_code == status.HTTP_302_FOUND
 
         session_cookie = response.cookies[settings.session_cookie_name]
-        session_token_repository = SessionTokenRepository(workspace_session)
+        session_token_repository = SessionTokenRepository(main_session)
         session_token = await session_token_repository.get_by_token(
             get_token_hash(session_cookie)
         )
         assert session_token is not None
 
-        user_repository = UserRepository(workspace_session)
+        user_repository = UserRepository(main_session)
         user = await user_repository.get_by_id(session_token.user_id)
         assert user is not None
         assert user.fields == {
@@ -567,8 +554,7 @@ class TestPostRegister:
         test_client_auth_csrf: httpx.AsyncClient,
         csrf_token: str,
         test_data: TestData,
-        workspace: Workspace,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
         send_task_mock: MagicMock,
     ):
         login_session = test_data["login_sessions"]["default"]
@@ -593,13 +579,13 @@ class TestPostRegister:
         assert redirect_uri.endswith("/verify-request")
 
         session_cookie = response.cookies[settings.session_cookie_name]
-        session_token_repository = SessionTokenRepository(workspace_session)
+        session_token_repository = SessionTokenRepository(main_session)
         session_token = await session_token_repository.get_by_token(
             get_token_hash(session_cookie)
         )
         assert session_token is not None
 
-        oauth_account_repository = OAuthAccountRepository(workspace_session)
+        oauth_account_repository = OAuthAccountRepository(main_session)
         assert registration_session.oauth_account_id is not None
         oauth_account = await oauth_account_repository.get_by_id(
             registration_session.oauth_account_id
@@ -610,24 +596,20 @@ class TestPostRegister:
         login_hint_cookie = response.cookies[settings.login_hint_cookie_name]
         assert login_hint_cookie == str(oauth_account.oauth_provider_id)
 
-        registration_session_repository = RegistrationSessionRepository(
-            workspace_session
-        )
+        registration_session_repository = RegistrationSessionRepository(main_session)
         deleted_registration_session = await registration_session_repository.get_by_id(
             registration_session.id
         )
         assert deleted_registration_session is None
 
-        send_task_mock.assert_called_with(
-            on_after_register, str(session_token.user_id), str(workspace.id)
-        )
+        send_task_mock.assert_called_with(on_after_register, str(session_token.user_id))
 
     async def test_new_user_oauth_override_default_email(
         self,
         test_client_auth_csrf: httpx.AsyncClient,
         csrf_token: str,
         test_data: TestData,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
     ):
         login_session = test_data["login_sessions"]["default"]
         registration_session = test_data["registration_sessions"]["default_oauth"]
@@ -647,13 +629,13 @@ class TestPostRegister:
         assert response.status_code == status.HTTP_302_FOUND
 
         session_cookie = response.cookies[settings.session_cookie_name]
-        session_token_repository = SessionTokenRepository(workspace_session)
+        session_token_repository = SessionTokenRepository(main_session)
         session_token = await session_token_repository.get_by_token(
             get_token_hash(session_cookie)
         )
         assert session_token is not None
 
-        user_repository = UserRepository(workspace_session)
+        user_repository = UserRepository(main_session)
         user = await user_repository.get_by_id(session_token.user_id)
         assert user is not None
         assert user.email == "louis+fief@bretagne.duchy"

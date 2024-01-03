@@ -1,7 +1,5 @@
 from typing import Protocol
 
-from pydantic import UUID4
-
 from fief.models import M
 from fief.schemas.generics import PM
 from fief.services.webhooks.models import WebhookEvent, WebhookEventType
@@ -14,7 +12,6 @@ def trigger_webhooks(
     object: M,
     schema_class: type[PM],
     *,
-    workspace_id: UUID4,
     send_task: SendTask,
 ) -> None:
     event: WebhookEvent = WebhookEvent(
@@ -23,7 +20,6 @@ def trigger_webhooks(
     )
     send_task(
         trigger_webhooks_task,
-        workspace_id=str(workspace_id),
         event=event.model_dump_json(),
     )
 

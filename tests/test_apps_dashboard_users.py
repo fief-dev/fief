@@ -7,7 +7,6 @@ from bs4 import BeautifulSoup
 from fastapi import status
 
 from fief.db import AsyncSession
-from fief.models import Workspace
 from fief.repositories import (
     UserPermissionRepository,
     UserRepository,
@@ -26,7 +25,6 @@ from tests.helpers import (
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestListUsers:
     async def test_unauthorized(
         self,
@@ -52,7 +50,6 @@ class TestListUsers:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestGetUser:
     async def test_unauthorized(
         self,
@@ -92,7 +89,6 @@ class TestGetUser:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestCreateUser:
     async def test_unauthorized(
         self,
@@ -210,8 +206,7 @@ class TestCreateUser:
         test_data: TestData,
         csrf_token: str,
         send_task_mock: MagicMock,
-        workspace: Workspace,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
     ):
         tenant = test_data["tenants"]["default"]
         response = await test_client_dashboard.post(
@@ -229,7 +224,7 @@ class TestCreateUser:
 
         assert response.status_code == status.HTTP_201_CREATED
 
-        user_repository = UserRepository(workspace_session)
+        user_repository = UserRepository(main_session)
         user = await user_repository.get_by_id(
             uuid.UUID(response.headers["X-Fief-Object-Id"])
         )
@@ -241,13 +236,10 @@ class TestCreateUser:
         assert user.fields["onboarding_done"] is True
         assert user.fields["last_seen"] is not None
 
-        send_task_mock.assert_called_with(
-            on_after_register, str(user.id), str(workspace.id)
-        )
+        send_task_mock.assert_called_with(on_after_register, str(user.id))
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestUpdateUser:
     async def test_unauthorized(
         self,
@@ -341,7 +333,7 @@ class TestUpdateUser:
         test_client_dashboard: httpx.AsyncClient,
         test_data: TestData,
         csrf_token: str,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
     ):
         user = test_data["users"]["regular"]
         response = await test_client_dashboard.post(
@@ -357,7 +349,7 @@ class TestUpdateUser:
 
         assert response.status_code == status.HTTP_200_OK
 
-        user_repository = UserRepository(workspace_session)
+        user_repository = UserRepository(main_session)
         updated_user = await user_repository.get_by_id(user.id)
         assert updated_user is not None
         assert updated_user.email == "anne+updated@bretagne.duchy"
@@ -367,7 +359,6 @@ class TestUpdateUser:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestVerifyEmailRequest:
     async def test_unauthorized(
         self,
@@ -417,8 +408,7 @@ class TestVerifyEmailRequest:
         test_client_dashboard: httpx.AsyncClient,
         test_data: TestData,
         send_task_mock: MagicMock,
-        workspace: Workspace,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
     ):
         user = test_data["users"]["not_verified_email"]
         response = await test_client_dashboard.post(f"/users/{user.id}/verify-request")
@@ -428,14 +418,12 @@ class TestVerifyEmailRequest:
         await email_verification_requested_assertions(
             user=user,
             email=user.email,
-            workspace=workspace,
             send_task_mock=send_task_mock,
-            session=workspace_session,
+            session=main_session,
         )
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestCreateUserAccessToken:
     async def test_unauthorized(
         self,
@@ -542,7 +530,6 @@ class TestCreateUserAccessToken:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestDeleteUser:
     async def test_unauthorized(
         self,
@@ -571,10 +558,7 @@ class TestDeleteUser:
     @pytest.mark.authenticated_admin(mode="session")
     @pytest.mark.htmx(target="modal")
     async def test_valid_get(
-        self,
-        test_client_dashboard: httpx.AsyncClient,
-        test_data: TestData,
-        workspace: Workspace,
+        self, test_client_dashboard: httpx.AsyncClient, test_data: TestData
     ):
         user = test_data["users"]["regular"]
         response = await test_client_dashboard.get(f"/users/{user.id}/delete")
@@ -584,7 +568,7 @@ class TestDeleteUser:
         html = BeautifulSoup(response.text, features="html.parser")
         submit_button = html.find(
             "button",
-            attrs={"hx-delete": f"http://{workspace.domain}/users/{user.id}/delete"},
+            attrs={"hx-delete": f"http://api.fief.dev/users/{user.id}/delete"},
         )
         assert submit_button is not None
 
@@ -602,7 +586,6 @@ class TestDeleteUser:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestUserPermissions:
     async def test_unauthorized(
         self,
@@ -695,7 +678,7 @@ class TestUserPermissions:
         test_client_dashboard: httpx.AsyncClient,
         test_data: TestData,
         csrf_token: str,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
     ):
         permission = test_data["permissions"][permission_alias]
         user = test_data["users"]["regular"]
@@ -707,9 +690,9 @@ class TestUserPermissions:
         assert response.status_code == status.HTTP_201_CREATED
 
         # Force session to expire objects because trigger_webhooks MagicMock retain them in memory
-        workspace_session.expire_all()
+        main_session.expire_all()
 
-        user_permission_repository = UserPermissionRepository(workspace_session)
+        user_permission_repository = UserPermissionRepository(main_session)
         user_permissions = await user_permission_repository.list(
             user_permission_repository.get_by_user_statement(user.id, direct_only=True)
         )
@@ -720,7 +703,6 @@ class TestUserPermissions:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestDeleteUserPermission:
     async def test_unauthorized(
         self,
@@ -768,7 +750,7 @@ class TestDeleteUserPermission:
         self,
         test_client_dashboard: httpx.AsyncClient,
         test_data: TestData,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
     ):
         permission = test_data["permissions"]["castles:delete"]
         user = test_data["users"]["regular"]
@@ -778,7 +760,7 @@ class TestDeleteUserPermission:
 
         assert response.status_code == status.HTTP_204_NO_CONTENT
 
-        user_permission_repository = UserPermissionRepository(workspace_session)
+        user_permission_repository = UserPermissionRepository(main_session)
         user_permissions = await user_permission_repository.list(
             user_permission_repository.get_by_user_statement(user.id, direct_only=True)
         )
@@ -786,7 +768,6 @@ class TestDeleteUserPermission:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestUserRoles:
     async def test_unauthorized(
         self,
@@ -873,8 +854,7 @@ class TestUserRoles:
         test_client_dashboard: httpx.AsyncClient,
         test_data: TestData,
         csrf_token: str,
-        workspace: Workspace,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
         send_task_mock: MagicMock,
     ):
         role = test_data["roles"]["castles_manager"]
@@ -887,9 +867,9 @@ class TestUserRoles:
         assert response.status_code == status.HTTP_201_CREATED
 
         # Force session to expire objects because trigger_webhooks MagicMock retain them in memory
-        workspace_session.expire_all()
+        main_session.expire_all()
 
-        user_role_repository = UserRoleRepository(workspace_session)
+        user_role_repository = UserRoleRepository(main_session)
         user_roles = await user_role_repository.list(
             user_role_repository.get_by_user_statement(user.id)
         )
@@ -897,12 +877,11 @@ class TestUserRoles:
         assert role.id in [user_role.role_id for user_role in user_roles]
 
         send_task_mock.assert_called_with(
-            on_user_role_created, str(user.id), str(role.id), str(workspace.id)
+            on_user_role_created, str(user.id), str(role.id)
         )
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestDeleteUserRole:
     async def test_unauthorized(
         self,
@@ -950,8 +929,7 @@ class TestDeleteUserRole:
         self,
         test_client_dashboard: httpx.AsyncClient,
         test_data: TestData,
-        workspace: Workspace,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
         send_task_mock: MagicMock,
     ):
         user = test_data["users"]["regular"]
@@ -962,19 +940,18 @@ class TestDeleteUserRole:
 
         assert response.status_code == status.HTTP_204_NO_CONTENT
 
-        user_role_repository = UserRoleRepository(workspace_session)
+        user_role_repository = UserRoleRepository(main_session)
         user_roles = await user_role_repository.list(
             user_role_repository.get_by_user_statement(user.id)
         )
         assert len(user_roles) == 0
 
         send_task_mock.assert_called_with(
-            on_user_role_deleted, str(user.id), str(role.id), str(workspace.id)
+            on_user_role_deleted, str(user.id), str(role.id)
         )
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestUserOAuthAccounts:
     async def test_unauthorized(
         self,

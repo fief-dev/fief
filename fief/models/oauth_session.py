@@ -5,7 +5,7 @@ from sqlalchemy import ForeignKey, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql.sqltypes import String
 
-from fief.models.base import WorkspaceBase
+from fief.models.base import Base
 from fief.models.generics import GUID, CreatedUpdatedAt, ExpiresAt, UUIDModel
 from fief.models.oauth_account import OAuthAccount
 from fief.models.oauth_provider import OAuthProvider
@@ -13,7 +13,7 @@ from fief.models.tenant import Tenant
 from fief.settings import settings
 
 
-class OAuthSession(UUIDModel, CreatedUpdatedAt, ExpiresAt, WorkspaceBase):
+class OAuthSession(UUIDModel, CreatedUpdatedAt, ExpiresAt, Base):
     __tablename__ = "oauth_sessions"
     __lifetime_seconds__ = settings.oauth_session_lifetime_seconds
 

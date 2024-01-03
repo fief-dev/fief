@@ -3,14 +3,14 @@ from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql.schema import UniqueConstraint
 
-from fief.models.base import WorkspaceBase
+from fief.models.base import Base
 from fief.models.generics import GUID, CreatedUpdatedAt, UUIDModel
 from fief.models.permission import Permission
 from fief.models.role import Role
 from fief.models.user import User
 
 
-class UserPermission(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
+class UserPermission(UUIDModel, CreatedUpdatedAt, Base):
     __tablename__ = "user_permissions"
     __table_args__ = (UniqueConstraint("user_id", "permission_id", "from_role_id"),)
 

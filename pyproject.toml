@@ -70,6 +70,10 @@ ignore_missing_imports = true
 module = "python_http_client.*"
 ignore_missing_imports = true
 
+[[tool.mypy.overrides]]
+module = "bs4.*"
+ignore_missing_imports = true
+
 [tool.ruff]
 target-version = "py311"
 extend-select = ["I", "TRY", "UP"]
@@ -82,7 +86,7 @@ omit = ["fief/alembic/*"]
 
 [tool.pytest.ini_options]
 addopts = "-n auto --cov fief/ --cov-report=term-missing"
-markers = ["test_data", "workspace_host", "access_token", "authenticated_admin", "htmx"]
+markers = ["test_data", "access_token", "authenticated_admin", "htmx"]
 asyncio_mode = "strict"
 
 [tool.hatch]

@@ -2,7 +2,6 @@ from fastapi import APIRouter, Depends, HTTPException, Response, status
 
 from fief import schemas
 from fief.dependencies.admin_authentication import is_authenticated_admin_api
-from fief.dependencies.current_workspace import get_current_workspace
 from fief.dependencies.logger import get_audit_logger
 from fief.dependencies.pagination import PaginatedObjects
 from fief.dependencies.role import get_paginated_roles, get_role_by_id_or_404
@@ -11,7 +10,7 @@ from fief.dependencies.webhooks import TriggerWebhooks, get_trigger_webhooks
 from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.errors import APIErrorCode
 from fief.logger import AuditLogger
-from fief.models import AuditLogMessage, Role, Workspace
+from fief.models import AuditLogMessage, Role
 from fief.repositories import PermissionRepository, RoleRepository
 from fief.schemas.generics import PaginatedResults
 from fief.services.webhooks.models import RoleCreated, RoleDeleted, RoleUpdated
@@ -87,7 +86,6 @@ async def update_role(
         get_workspace_repository(PermissionRepository)
     ),
     send_task: SendTask = Depends(get_send_task),
-    workspace: Workspace = Depends(get_current_workspace),
     audit_logger: AuditLogger = Depends(get_audit_logger),
     trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ) -> schemas.role.Role:
@@ -122,7 +120,6 @@ async def update_role(
         str(role.id),
         list(set(map(str, added_permissions))),
         list(set(map(str, deleted_permissions))),
-        str(workspace.id),
     )
 
     return schemas.role.Role.model_validate(role)

@@ -15,13 +15,12 @@ from fief.dependencies.admin_api_key import (
     get_paginated_api_keys,
 )
 from fief.dependencies.admin_authentication import is_authenticated_admin_session
-from fief.dependencies.current_workspace import get_current_workspace
 from fief.dependencies.logger import get_audit_logger
 from fief.dependencies.main_repositories import get_main_repository
 from fief.dependencies.pagination import PaginatedObjects
 from fief.forms import FormHelper
 from fief.logger import AuditLogger
-from fief.models import AdminAPIKey, AuditLogMessage, Workspace
+from fief.models import AdminAPIKey, AuditLogMessage
 from fief.repositories import AdminAPIKeyRepository
 from fief.templates import templates
 
@@ -68,7 +67,6 @@ async def list_api_keys(
 @router.api_route("/create", methods=["GET", "POST"], name="dashboard.api_keys:create")
 async def create_api_key(
     request: Request,
-    current_workspace: Workspace = Depends(get_current_workspace),
     repository: AdminAPIKeyRepository = Depends(
         get_main_repository(AdminAPIKeyRepository)
     ),
@@ -87,7 +85,7 @@ async def create_api_key(
         form = await form_helper.get_form()
 
         token, token_hash = generate_token()
-        api_key = AdminAPIKey(token=token_hash, workspace_id=current_workspace.id)
+        api_key = AdminAPIKey(token=token_hash)
         form.populate_obj(api_key)
 
         api_key = await repository.create(api_key)

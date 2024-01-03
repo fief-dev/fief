@@ -8,20 +8,13 @@ from alembic import command
 from alembic.config import Config
 from dramatiq import cli as dramatiq_cli
 from pydantic import ValidationError
-from rich.console import Console
-from rich.table import Table
-from sqlalchemy import create_engine, select
-from sqlalchemy.exc import DBAPIError
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy import create_engine
 
 from fief import __version__
 from fief.crypto.encryption import generate_key
 from fief.paths import ALEMBIC_CONFIG_FILE
 from fief.services.password import PasswordValidation
-from fief.services.workspace_db import (
-    WorkspaceDatabase,
-    WorkspaceDatabaseConnectionError,
-)
+from fief.services.user_manager import InvalidPasswordError, UserAlreadyExistsError
 
 
 def asyncio_command(f):
@@ -38,172 +31,12 @@ def get_settings():
     return settings
 
 
-workspaces = typer.Typer(help="Commands to manage workspaces.")
+app = typer.Typer(help="Commands to manage your Fief instance.")
 
 
-@workspaces.command()
+@app.command("create-admin")
 @asyncio_command
-async def list():
-    """List all workspaces and their number of users."""
-    from fief.services.workspaces import get_workspaces_stats
-
-    stats = await get_workspaces_stats()
-
-    table = Table()
-    table.add_column("Name")
-    table.add_column("Domain")
-    table.add_column("Reachable")
-    table.add_column("Database")
-    table.add_column("Database type")
-    table.add_column("Migration revision")
-    table.add_column("Nb. users")
-    for stat in stats:
-        table.add_row(
-            stat.workspace.name,
-            stat.workspace.domain,
-            "✅" if stat.reachable else "❌",
-            "External" if stat.external_db else "Main",
-            stat.workspace.database_type if stat.external_db else None,
-            stat.workspace.alembic_revision,
-            str(stat.nb_users) if stat.reachable else None,
-            style="red" if not stat.reachable else None,
-        )
-    console = Console()
-    console.print(table)
-
-
-@workspaces.command("migrate")
-def migrate_workspaces():
-    """Apply database migrations to each workspace database."""
-    from fief.models import Workspace
-
-    settings = get_settings()
-
-    url, connect_args = settings.get_database_connection_parameters(False)
-    engine = create_engine(url, connect_args=connect_args)
-    Session = sessionmaker(engine)
-    with Session() as session:
-        workspace_db = WorkspaceDatabase()
-        latest_revision = workspace_db.get_latest_revision()
-        workspaces = (
-            select(Workspace)
-            .where(
-                Workspace.alembic_revision != latest_revision,
-            )
-            .order_by(Workspace.created_at.asc())
-        )
-        for [workspace] in session.execute(workspaces):
-            assert isinstance(workspace, Workspace)
-            typer.secho(f"Migrating {workspace.name}... ", bold=True, nl=False)
-            try:
-                alembic_revision = workspace_db.migrate(
-                    workspace.get_database_connection_parameters(False),
-                    workspace.database_table_prefix,
-                    workspace.schema_name,
-                )
-                workspace.alembic_revision = alembic_revision
-                session.add(workspace)
-                session.commit()
-                typer.secho("Done!")
-            except WorkspaceDatabaseConnectionError:
-                typer.secho("Failed!", fg="red", err=True)
-
-
-@workspaces.command("init-email-templates")
-@asyncio_command
-async def init_email_templates():
-    """Ensure email templates are initialized in each workspace."""
-    from fief.models import Workspace
-    from fief.services.email_template.initializer import init_email_templates
-
-    settings = get_settings()
-
-    url, connect_args = settings.get_database_connection_parameters(False)
-    engine = create_engine(url, connect_args=connect_args)
-    Session = sessionmaker(engine)
-    with Session() as session:
-        workspace_db = WorkspaceDatabase()
-        latest_revision = workspace_db.get_latest_revision()
-        workspaces = select(Workspace).where(
-            Workspace.alembic_revision == latest_revision
-        )
-        for [workspace] in session.execute(workspaces):
-            assert isinstance(workspace, Workspace)
-            typer.secho(f"Checking {workspace.name}... ", bold=True, nl=False)
-            try:
-                await init_email_templates(workspace)
-                typer.secho("Done!")
-            except (ConnectionError, DBAPIError):
-                typer.secho("Failed!", fg="red", err=True)
-
-
-@workspaces.command("init-themes")
-@asyncio_command
-async def init_themes():
-    """Ensure themes are initialized in each workspace."""
-    from fief.models import Workspace
-    from fief.services.theme import init_workspace_default_theme
-
-    settings = get_settings()
-
-    url, connect_args = settings.get_database_connection_parameters(False)
-    engine = create_engine(url, connect_args=connect_args)
-    Session = sessionmaker(engine)
-    with Session() as session:
-        workspace_db = WorkspaceDatabase()
-        latest_revision = workspace_db.get_latest_revision()
-        workspaces = select(Workspace).where(
-            Workspace.alembic_revision == latest_revision
-        )
-        for [workspace] in session.execute(workspaces):
-            assert isinstance(workspace, Workspace)
-            typer.secho(f"Checking {workspace.name}... ", bold=True, nl=False)
-            try:
-                await init_workspace_default_theme(workspace)
-                typer.secho("Done!")
-            except (ConnectionError, DBAPIError):
-                typer.secho("Failed!", fg="red", err=True)
-
-
-@workspaces.command("delete")
-@asyncio_command
-async def delete_workspace(
-    domain: str = typer.Argument(..., help="The workspace domain"),
-):
-    """Delete a workspace."""
-    from fief.services.workspace_manager import (
-        WorkspaceDoesNotExistError,
-        delete_workspace_by_domain,
-    )
-
-    try:
-        await delete_workspace_by_domain(domain)
-        typer.echo("Workspace deleted")
-    except WorkspaceDoesNotExistError as e:
-        typer.secho("This workspace does not exist", fg="red")
-        raise typer.Exit(code=1) from e
-
-
-@workspaces.command("create-main")
-@asyncio_command
-async def create_main_workspace():
-    """Create a main Fief workspace following the environment settings."""
-    from fief.services.main_workspace import (
-        MainWorkspaceAlreadyExists,
-        create_main_fief_workspace,
-    )
-
-    try:
-        await create_main_fief_workspace()
-        typer.echo("Main Fief workspace created")
-    except MainWorkspaceAlreadyExists as e:
-        typer.secho("Main Fief workspace already exists", fg="red")
-        raise typer.Exit(code=1) from e
-
-
-@workspaces.command("create-main-user")
-@asyncio_command
-async def create_main_user(
+async def create_admin(
     user_email: str = typer.Option(..., help="The admin user email"),
     user_password: str = typer.Option(
         ...,
@@ -214,14 +47,11 @@ async def create_main_user(
     ),
 ):
     """Create a main Fief workspace user."""
-    from fief.services.main_workspace import (
-        CreateMainFiefUserError,
-        create_main_fief_user,
-    )
+    from fief.services.main_workspace import CreateMainFiefUserError, create_admin
     from fief.services.user_manager import InvalidPasswordError, UserAlreadyExistsError
 
     try:
-        await create_main_fief_user(user_email, user_password)
+        await create_admin(user_email, user_password)
         typer.echo("Main Fief user created")
     except CreateMainFiefUserError as e:
         typer.secho("An error occured", fg="red")
@@ -236,7 +66,7 @@ async def create_main_user(
         raise typer.Exit(code=1) from e
 
 
-@workspaces.command("create-main-admin-api-key")
+@app.command("create-admin-api-key")
 @asyncio_command
 async def create_main_admin_api_key(
     token: str = typer.Argument(..., help="The admin API key token"),
@@ -244,19 +74,15 @@ async def create_main_admin_api_key(
     """Create a main Fief admin API key."""
     from fief.services.main_workspace import (
         MainFiefAdminApiKeyAlreadyExists,
-        create_main_fief_admin_api_key,
+        create_admin_api_key,
     )
 
     try:
-        await create_main_fief_admin_api_key(token)
+        await create_admin_api_key(token)
         typer.echo("Main Fief admin API key created")
     except MainFiefAdminApiKeyAlreadyExists as e:
         typer.secho("Main Fief admin API key already exists", fg="red")
         raise typer.Exit(code=1) from e
-
-
-app = typer.Typer(help="Commands to manage your Fief instance.")
-app.add_typer(workspaces, name="workspaces")
 
 
 @app.command()
@@ -402,23 +228,6 @@ def run_server(
     async def _pre_run_server():
         if migrate:
             migrate_main()
-            migrate_workspaces()
-
-        if create_main_workspace:
-            from fief.services.main_workspace import (
-                MainWorkspaceAlreadyExists,
-                create_main_fief_workspace,
-            )
-            from fief.services.user_manager import (
-                InvalidPasswordError,
-                UserAlreadyExistsError,
-            )
-
-            try:
-                await create_main_fief_workspace()
-                typer.echo("Main Fief workspace created")
-            except MainWorkspaceAlreadyExists:
-                typer.echo("Main Fief workspace already exists")
 
         if create_main_user:
             settings = get_settings()
@@ -436,11 +245,11 @@ def run_server(
             else:
                 from fief.services.main_workspace import (
                     CreateMainFiefUserError,
-                    create_main_fief_user,
+                    create_admin,
                 )
 
                 try:
-                    await create_main_fief_user(user_email, user_password)
+                    await create_admin(user_email, user_password)
                     typer.echo("Main Fief user created")
                 except CreateMainFiefUserError as e:
                     typer.secho(
@@ -468,11 +277,11 @@ def run_server(
             else:
                 from fief.services.main_workspace import (
                     MainFiefAdminApiKeyAlreadyExists,
-                    create_main_fief_admin_api_key,
+                    create_admin_api_key,
                 )
 
                 try:
-                    await create_main_fief_admin_api_key(token.get_secret_value())
+                    await create_admin_api_key(token.get_secret_value())
                     typer.echo("Main Fief admin API key created")
                 except MainFiefAdminApiKeyAlreadyExists:
                     typer.secho("Main Fief admin API key already exists")

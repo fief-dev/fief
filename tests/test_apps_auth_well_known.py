@@ -3,19 +3,16 @@ import pytest
 from fastapi import status
 from jwcrypto import jwk
 
-from fief.models import Workspace
 from fief.services.response_type import ALLOWED_RESPONSE_TYPES
 from tests.types import TenantParams
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestWellKnownOpenIDConfiguration:
     @pytest.mark.parametrize("x_forwarded_host", [None, "proxy.bretagne.duchy"])
     async def test_return_configuration(
         self,
         x_forwarded_host: str | None,
-        workspace: Workspace,
         tenant_params: TenantParams,
         test_client_auth: httpx.AsyncClient,
     ):
@@ -32,7 +29,7 @@ class TestWellKnownOpenIDConfiguration:
 
         json = response.json()
 
-        assert json["issuer"] == tenant_params.tenant.get_host(workspace.domain)
+        assert json["issuer"] == tenant_params.tenant.get_host()
         for key in json:
             assert json[key] is not None
 
@@ -47,11 +44,10 @@ class TestWellKnownOpenIDConfiguration:
         if x_forwarded_host is not None:
             assert endpoint.startswith(f"http://{x_forwarded_host}")
         else:
-            assert endpoint.startswith(f"http://{workspace.domain}")
+            assert endpoint.startswith("http://api.fief.dev")
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestWellKnownJWKS:
     async def test_return_public_keys(
         self,

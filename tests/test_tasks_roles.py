@@ -3,7 +3,6 @@ import uuid
 import pytest
 
 from fief.db import AsyncSession
-from fief.models import Workspace
 from fief.repositories import UserPermissionRepository
 from fief.tasks.base import TaskError
 from fief.tasks.roles import OnRoleUpdated
@@ -14,40 +13,28 @@ from tests.data import TestData
 class TestTasksOnRoleUpdated:
     async def test_not_existing_role(
         self,
-        workspace: Workspace,
         main_session_manager,
-        workspace_session_manager,
         not_existing_uuid: uuid.UUID,
     ):
-        on_user_role_updated = OnRoleUpdated(
-            main_session_manager, workspace_session_manager
-        )
+        on_user_role_updated = OnRoleUpdated(main_session_manager)
 
         with pytest.raises(TaskError):
-            await on_user_role_updated.run(
-                str(not_existing_uuid), [], [], str(workspace.id)
-            )
+            await on_user_role_updated.run(str(not_existing_uuid), [], [])
 
     async def test_role_created_added_permission(
         self,
-        workspace: Workspace,
         main_session_manager,
-        workspace_session_manager,
         test_data: TestData,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
     ):
-        on_user_role_updated = OnRoleUpdated(
-            main_session_manager, workspace_session_manager
-        )
+        on_user_role_updated = OnRoleUpdated(main_session_manager)
 
         role = test_data["roles"]["castles_visitor"]
         permission = test_data["permissions"]["castles:create"]
-        await on_user_role_updated.run(
-            str(role.id), [str(permission.id)], [], str(workspace.id)
-        )
+        await on_user_role_updated.run(str(role.id), [str(permission.id)], [])
 
         user = test_data["users"]["regular"]
-        user_permission_repository = UserPermissionRepository(workspace_session)
+        user_permission_repository = UserPermissionRepository(main_session)
         user_permissions = await user_permission_repository.list(
             user_permission_repository.get_by_user_statement(user.id)
         )
@@ -58,24 +45,18 @@ class TestTasksOnRoleUpdated:
 
     async def test_role_created_deleted_permission(
         self,
-        workspace: Workspace,
         main_session_manager,
-        workspace_session_manager,
         test_data: TestData,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
     ):
-        on_user_role_updated = OnRoleUpdated(
-            main_session_manager, workspace_session_manager
-        )
+        on_user_role_updated = OnRoleUpdated(main_session_manager)
 
         role = test_data["roles"]["castles_visitor"]
         permission = test_data["permissions"]["castles:read"]
-        await on_user_role_updated.run(
-            str(role.id), [], [str(permission.id)], str(workspace.id)
-        )
+        await on_user_role_updated.run(str(role.id), [], [str(permission.id)])
 
         user = test_data["users"]["regular"]
-        user_permission_repository = UserPermissionRepository(workspace_session)
+        user_permission_repository = UserPermissionRepository(main_session)
         user_permissions = await user_permission_repository.list(
             user_permission_repository.get_by_user_statement(user.id)
         )

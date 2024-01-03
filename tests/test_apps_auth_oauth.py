@@ -25,7 +25,6 @@ from tests.data import TestData
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestOAuthAuthorize:
     async def test_missing_tenant_id(
         self, test_data: TestData, test_client_auth: httpx.AsyncClient
@@ -63,12 +62,12 @@ class TestOAuthAuthorize:
         self,
         test_data: TestData,
         test_client_auth: httpx.AsyncClient,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
     ):
         tenant = test_data["tenants"]["default"]
 
         oauth_provider = test_data["oauth_providers"]["google"]
-        tenant_repository = TenantRepository(workspace_session)
+        tenant_repository = TenantRepository(main_session)
         tenant.oauth_providers = [oauth_provider]
         await tenant_repository.update(tenant)
 
@@ -140,14 +139,14 @@ class TestOAuthAuthorize:
         has_login_session: bool,
         test_client_auth: httpx.AsyncClient,
         test_data: TestData,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
     ):
         login_session = test_data["login_sessions"]["default"]
         client = login_session.client
         tenant = client.tenant
 
         oauth_provider = test_data["oauth_providers"]["google"]
-        tenant_repository = TenantRepository(workspace_session)
+        tenant_repository = TenantRepository(main_session)
         tenant.oauth_providers = [oauth_provider]
         await tenant_repository.update(tenant)
 
@@ -171,7 +170,7 @@ class TestOAuthAuthorize:
         redirect_uri = query_params["redirect_uri"][0]
         scope = query_params["scope"][0]
 
-        repository = OAuthSessionRepository(workspace_session)
+        repository = OAuthSessionRepository(main_session)
         oauth_session = await repository.get_by_token(state)
 
         assert oauth_session is not None
@@ -191,14 +190,14 @@ class TestOAuthAuthorize:
         self,
         test_client_auth: httpx.AsyncClient,
         test_data: TestData,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
     ):
         login_session = test_data["login_sessions"]["secondary"]
         client = login_session.client
         tenant = client.tenant
 
         oauth_provider = test_data["oauth_providers"]["google"]
-        tenant_repository = TenantRepository(workspace_session)
+        tenant_repository = TenantRepository(main_session)
         tenant.oauth_providers = [oauth_provider]
         await tenant_repository.update(tenant)
 
@@ -215,7 +214,6 @@ class TestOAuthAuthorize:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestOAuthCallback:
     @pytest.mark.parametrize(
         "params,error",
@@ -395,7 +393,7 @@ class TestOAuthCallback:
         mocker: MockerFixture,
         test_client_auth: httpx.AsyncClient,
         test_data: TestData,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
     ):
         login_session = test_data["login_sessions"]["default"]
         client = login_session.client
@@ -445,7 +443,7 @@ class TestOAuthCallback:
             assert redirect_uri.endswith(f"{path_prefix}/")
 
         session_cookie = response.cookies[settings.session_cookie_name]
-        session_token_repository = SessionTokenRepository(workspace_session)
+        session_token_repository = SessionTokenRepository(main_session)
         session_token = await session_token_repository.get_by_token(
             get_token_hash(session_cookie)
         )
@@ -454,7 +452,7 @@ class TestOAuthCallback:
         login_hint_cookie = response.cookies[settings.login_hint_cookie_name]
         assert login_hint_cookie == str(oauth_account.oauth_provider_id)
 
-        oauth_account_repository = OAuthAccountRepository(workspace_session)
+        oauth_account_repository = OAuthAccountRepository(main_session)
         updated_oauth_account = await oauth_account_repository.get_by_id(
             oauth_account.id
         )
@@ -470,7 +468,7 @@ class TestOAuthCallback:
         mocker: MockerFixture,
         test_client_auth: httpx.AsyncClient,
         test_data: TestData,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
     ):
         login_session = test_data["login_sessions"]["default"]
         client = login_session.client
@@ -513,7 +511,7 @@ class TestOAuthCallback:
         redirect_uri = response.headers["Location"]
         assert redirect_uri.endswith(f"{path_prefix}/register")
 
-        oauth_account_repository = OAuthAccountRepository(workspace_session)
+        oauth_account_repository = OAuthAccountRepository(main_session)
         oauth_account = await oauth_account_repository.get_by_provider_and_account_id(
             oauth_session.oauth_provider_id, "NEW_ACCOUNT"
         )
@@ -525,9 +523,7 @@ class TestOAuthCallback:
         registration_session_cookie = response.cookies[
             settings.registration_session_cookie_name
         ]
-        registration_session_repository = RegistrationSessionRepository(
-            workspace_session
-        )
+        registration_session_repository = RegistrationSessionRepository(main_session)
         registration_session = await registration_session_repository.get_by_token(
             registration_session_cookie
         )

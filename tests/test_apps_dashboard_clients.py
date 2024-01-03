@@ -7,14 +7,12 @@ from fastapi import status
 from jwcrypto import jwk
 
 from fief.db import AsyncSession
-from fief.models import Workspace
 from fief.repositories import ClientRepository
 from tests.data import TestData
 from tests.helpers import HTTPXResponseAssertion
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestListClients:
     async def test_unauthorized(
         self,
@@ -54,7 +52,6 @@ class TestListClients:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestGetClient:
     async def test_unauthorized(
         self,
@@ -94,7 +91,6 @@ class TestGetClient:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestClientLifetimes:
     async def test_unauthorized(
         self,
@@ -162,7 +158,7 @@ class TestClientLifetimes:
         test_client_dashboard: httpx.AsyncClient,
         test_data: TestData,
         csrf_token: str,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
     ):
         client = test_data["clients"]["default_tenant"]
         response = await test_client_dashboard.post(
@@ -177,7 +173,7 @@ class TestClientLifetimes:
 
         assert response.status_code == status.HTTP_200_OK
 
-        client_repository = ClientRepository(workspace_session)
+        client_repository = ClientRepository(main_session)
         updated_client = await client_repository.get_by_id(client.id)
         assert updated_client is not None
         assert updated_client.authorization_code_lifetime_seconds == 3600
@@ -186,7 +182,6 @@ class TestClientLifetimes:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestCreateClient:
     async def test_unauthorized(
         self,
@@ -282,7 +277,7 @@ class TestCreateClient:
         test_client_dashboard: httpx.AsyncClient,
         test_data: TestData,
         csrf_token: str,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
     ):
         tenant = test_data["tenants"]["default"]
         response = await test_client_dashboard.post(
@@ -301,7 +296,7 @@ class TestCreateClient:
 
         assert response.status_code == status.HTTP_201_CREATED
 
-        client_repository = ClientRepository(workspace_session)
+        client_repository = ClientRepository(main_session)
         client = await client_repository.get_by_id(
             uuid.UUID(response.headers["X-Fief-Object-Id"])
         )
@@ -310,7 +305,6 @@ class TestCreateClient:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestUpdateClient:
     async def test_unauthorized(
         self,
@@ -368,7 +362,7 @@ class TestUpdateClient:
         test_client_dashboard: httpx.AsyncClient,
         test_data: TestData,
         csrf_token: str,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
     ):
         client = test_data["clients"]["default_tenant"]
         response = await test_client_dashboard.post(
@@ -388,7 +382,7 @@ class TestUpdateClient:
 
         assert response.status_code == status.HTTP_200_OK
 
-        client_repository = ClientRepository(workspace_session)
+        client_repository = ClientRepository(main_session)
         updated_client = await client_repository.get_by_id(client.id)
         assert updated_client is not None
         assert updated_client.tenant_id == client.tenant_id
@@ -400,7 +394,7 @@ class TestUpdateClient:
         test_client_dashboard: httpx.AsyncClient,
         test_data: TestData,
         csrf_token: str,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
     ):
         client = test_data["clients"]["default_tenant"]
         response = await test_client_dashboard.post(
@@ -420,14 +414,13 @@ class TestUpdateClient:
 
         assert response.status_code == status.HTTP_200_OK
 
-        client_repository = ClientRepository(workspace_session)
+        client_repository = ClientRepository(main_session)
         updated_client = await client_repository.get_by_id(client.id)
         assert updated_client is not None
         assert updated_client.name == "Updated name"
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestCreateEncryptionKey:
     async def test_unauthorized(
         self,
@@ -461,7 +454,7 @@ class TestCreateEncryptionKey:
         self,
         test_client_dashboard: httpx.AsyncClient,
         test_data: TestData,
-        workspace_session: AsyncSession,
+        main_session: AsyncSession,
     ):
         client = test_data["clients"]["default_tenant"]
         response = await test_client_dashboard.post(
@@ -477,7 +470,7 @@ class TestCreateEncryptionKey:
         assert key.has_private is True
         assert key.has_public is True
 
-        repository = ClientRepository(workspace_session)
+        repository = ClientRepository(main_session)
         updated_client = await repository.get_by_id(client.id)
         assert updated_client is not None
         assert updated_client.encrypt_jwk is not None
@@ -488,7 +481,6 @@ class TestCreateEncryptionKey:
 
 
 @pytest.mark.asyncio
-@pytest.mark.workspace_host
 class TestDeleteClient:
     async def test_unauthorized(
         self,
@@ -517,10 +509,7 @@ class TestDeleteClient:
     @pytest.mark.authenticated_admin(mode="session")
     @pytest.mark.htmx(target="modal")
     async def test_valid_get(
-        self,
-        test_client_dashboard: httpx.AsyncClient,
-        test_data: TestData,
-        workspace: Workspace,
+        self, test_client_dashboard: httpx.AsyncClient, test_data: TestData
     ):
         client = test_data["clients"]["default_tenant"]
         response = await test_client_dashboard.get(f"/clients/{client.id}/delete")
@@ -530,9 +519,7 @@ class TestDeleteClient:
         html = BeautifulSoup(response.text, features="html.parser")
         submit_button = html.find(
             "button",
-            attrs={
-                "hx-delete": f"http://{workspace.domain}/clients/{client.id}/delete"
-            },
+            attrs={"hx-delete": f"http://api.fief.dev/clients/{client.id}/delete"},
         )
         assert submit_button is not None
 

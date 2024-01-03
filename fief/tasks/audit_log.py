@@ -1,5 +1,4 @@
 import json
-import uuid
 from datetime import datetime
 from typing import Any
 
@@ -7,7 +6,7 @@ import dramatiq
 
 from fief.models import AuditLog
 from fief.repositories import AuditLogRepository
-from fief.tasks.base import TaskBase, TaskError
+from fief.tasks.base import TaskBase
 
 
 class WriteAuditLog(TaskBase):
@@ -16,16 +15,9 @@ class WriteAuditLog(TaskBase):
     async def run(self, record: str):
         parsed_record: dict[str, Any] = json.loads(record)
         extra = parsed_record["extra"]
-        workspace_id = extra.get("workspace_id")
 
-        if workspace_id is None:
-            raise TaskError()
-
-        workspace = await self._get_workspace(uuid.UUID(workspace_id))
-
-        async with self.get_workspace_session(workspace) as session:
+        async with self.get_main_session() as session:
             audit_log_repository = AuditLogRepository(session)
-            extra.pop("workspace_id")
             extra.pop("audit")
             subject_user_id = extra.pop("subject_user_id", None)
             object_id = extra.pop("object_id", None)

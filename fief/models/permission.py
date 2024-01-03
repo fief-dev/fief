@@ -1,11 +1,11 @@
 from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column
 
-from fief.models.base import WorkspaceBase
+from fief.models.base import Base
 from fief.models.generics import CreatedUpdatedAt, UUIDModel
 
 
-class Permission(UUIDModel, CreatedUpdatedAt, WorkspaceBase):
+class Permission(UUIDModel, CreatedUpdatedAt, Base):
     __tablename__ = "permissions"
 
     name: Mapped[str] = mapped_column(String(length=255), nullable=False)

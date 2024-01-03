@@ -7,11 +7,11 @@ from pydantic import UUID4
 from sqlalchemy import String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
-from fief.models.base import MainBase
+from fief.models.base import Base
 from fief.models.generics import CreatedUpdatedAt, UUIDModel
 
 
-class AdminSessionToken(UUIDModel, CreatedUpdatedAt, MainBase):
+class AdminSessionToken(UUIDModel, CreatedUpdatedAt, Base):
     __tablename__ = "admin_session_tokens"
 
     token: Mapped[str] = mapped_column(String(length=255), unique=True, nullable=False)
