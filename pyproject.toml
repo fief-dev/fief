@@ -123,6 +123,7 @@ dependencies = [
   "coverage[toml]",
   "gevent",
   "httpx",
+  "libcst",
   "mypy",
   "pytest",
   "pytest-cov",
@@ -165,21 +166,13 @@ lint-check = [
 
 "static.build" = "npm run build"
 
-"migrations.main.create" = [
+"migrations.create" = [
   "hatch run dev.db.start",
   "alembic -c fief/alembic.ini -n main revision --autogenerate -m {args}",
 ]
-"migrations.main.migrate" = [
+"migrations.migrate" = [
   "hatch run dev.db.start",
   "alembic -c fief/alembic.ini -n main upgrade head",
-]
-"migrations.workspace.create" = [
-  "hatch run dev.db.start",
-  "alembic -c fief/alembic.ini -n workspace revision --autogenerate -m {args}",
-]
-"migrations.workspace.migrate" = [
-  "hatch run dev.db.start",
-  "alembic -c fief/alembic.ini -n workspace upgrade head",
 ]
 
 "telemetry.set-posthog-key" = [

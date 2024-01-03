@@ -46,9 +46,9 @@ def create_engine(
     def before_cursor_execute(
         conn, cursor, statement, parameters, context, executemany
     ):
-        table_prefix = context.execution_options.get("table_prefix", None)
-        if table_prefix is not None:
-            statement = statement.replace(TABLE_PREFIX_PLACEHOLDER, table_prefix)
+        statement = statement.replace(
+            TABLE_PREFIX_PLACEHOLDER, settings.database_table_prefix
+        )
         return statement, parameters
 
     return engine

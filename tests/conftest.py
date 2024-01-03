@@ -11,6 +11,8 @@ import asgi_lifespan
 import httpx
 import pytest
 import pytest_asyncio
+from alembic import command
+from alembic.config import Config
 from dramatiq import Actor, Message
 from fastapi import FastAPI
 from fief_client import FiefAsync
@@ -26,7 +28,8 @@ from fief.dependencies.fief import get_fief
 from fief.dependencies.tasks import get_send_task
 from fief.dependencies.tenant_email_domain import get_tenant_email_domain
 from fief.dependencies.theme import get_theme_preview
-from fief.models import AdminAPIKey, AdminSessionToken, Base, User
+from fief.models import AdminAPIKey, AdminSessionToken, User
+from fief.paths import ALEMBIC_CONFIG_FILE
 from fief.services.tenant_email_domain import TenantEmailDomain
 from fief.services.theme_preview import ThemePreview
 from fief.settings import settings
@@ -91,7 +94,14 @@ async def main_engine(
 @pytest_asyncio.fixture(scope="session", autouse=True)
 async def create_main_db(main_engine: AsyncEngine):
     async with main_engine.begin() as connection:
-        await connection.run_sync(Base.metadata.create_all)
+
+        def _run_upgrade(connection):
+            alembic_config = Config(ALEMBIC_CONFIG_FILE, ini_section="main")
+            alembic_config.attributes["connection"] = connection
+            alembic_config.attributes["table_prefix"] = settings.database_table_prefix
+            command.upgrade(alembic_config, "head")
+
+        await connection.run_sync(_run_upgrade)
 
 
 @pytest_asyncio.fixture(scope="session")

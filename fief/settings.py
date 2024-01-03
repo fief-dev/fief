@@ -67,6 +67,7 @@ class Settings(BaseSettings):
     database_location: DirectoryPath = Path.cwd()
     database_pool_recycle_seconds: int = 600
     database_pool_pre_ping: bool = False
+    database_table_prefix: str = "fief_"
 
     redis_url: str = "redis://localhost:6379"
 

@@ -8,10 +8,10 @@ from alembic import command
 from alembic.config import Config
 from dramatiq import cli as dramatiq_cli
 from pydantic import ValidationError
-from sqlalchemy import create_engine
 
 from fief import __version__
 from fief.crypto.encryption import generate_key
+from fief.db.main import create_main_engine
 from fief.paths import ALEMBIC_CONFIG_FILE
 from fief.services.password import PasswordValidation
 from fief.services.user_manager import InvalidPasswordError, UserAlreadyExistsError
@@ -193,16 +193,23 @@ def info():
 
 
 @app.command("migrate")
-def migrate_main():
+@asyncio_command
+async def migrate_main():
     """Apply database migrations to the main database."""
     settings = get_settings()
 
-    url, connect_args = settings.get_database_connection_parameters(False)
-    engine = create_engine(url, connect_args=connect_args)
-    with engine.begin() as connection:
-        alembic_config = Config(ALEMBIC_CONFIG_FILE, ini_section="main")
-        alembic_config.attributes["connection"] = connection
-        command.upgrade(alembic_config, "head")
+    engine = create_main_engine()
+    async with engine.begin() as connection:
+
+        def _run_upgrade(connection):
+            alembic_config = Config(ALEMBIC_CONFIG_FILE, ini_section="main")
+            alembic_config.attributes["connection"] = connection
+            alembic_config.attributes["table_prefix"] = settings.database_table_prefix
+            command.upgrade(alembic_config, "head")
+
+        await connection.run_sync(_run_upgrade)
+
+    await engine.dispose()
 
 
 @app.command("run-server")
@@ -227,7 +234,7 @@ def run_server(
 
     async def _pre_run_server():
         if migrate:
-            migrate_main()
+            await migrate_main()
 
         if create_main_user:
             settings = get_settings()
