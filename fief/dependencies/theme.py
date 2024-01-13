@@ -11,8 +11,8 @@ from fief.dependencies.pagination import (
     get_paginated_objects_getter,
     get_pagination,
 )
+from fief.dependencies.repositories import get_repository
 from fief.dependencies.tenant import get_current_tenant
-from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.models import Tenant, Theme
 from fief.repositories import (
     OAuthProviderRepository,
@@ -26,7 +26,7 @@ async def get_paginated_themes(
     query: str | None = Query(None),
     pagination: Pagination = Depends(get_pagination),
     ordering: Ordering = Depends(OrderingGetter()),
-    repository: ThemeRepository = Depends(get_workspace_repository(ThemeRepository)),
+    repository: ThemeRepository = Depends(ThemeRepository),
     get_paginated_objects: GetPaginatedObjects[Theme] = Depends(
         get_paginated_objects_getter
     ),
@@ -41,7 +41,7 @@ async def get_paginated_themes(
 
 async def get_theme_by_id_or_404(
     id: UUID4,
-    repository: ThemeRepository = Depends(get_workspace_repository(ThemeRepository)),
+    repository: ThemeRepository = Depends(ThemeRepository),
 ) -> Theme:
     theme = await repository.get_by_id(id)
 
@@ -53,10 +53,10 @@ async def get_theme_by_id_or_404(
 
 async def get_theme_preview(
     oauth_provider_repository: OAuthProviderRepository = Depends(
-        get_workspace_repository(OAuthProviderRepository)
+        get_repository(OAuthProviderRepository)
     ),
     user_field_repository: UserFieldRepository = Depends(
-        get_workspace_repository(UserFieldRepository)
+        get_repository(UserFieldRepository)
     ),
 ) -> ThemePreview:
     return ThemePreview(oauth_provider_repository, user_field_repository)
@@ -64,7 +64,7 @@ async def get_theme_preview(
 
 async def get_current_theme(
     tenant: Tenant = Depends(get_current_tenant),
-    repository: ThemeRepository = Depends(get_workspace_repository(ThemeRepository)),
+    repository: ThemeRepository = Depends(ThemeRepository),
 ) -> Theme:
     if tenant.theme_id is not None:
         theme = await repository.get_by_id(tenant.theme_id)

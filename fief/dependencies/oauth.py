@@ -2,7 +2,7 @@ from fastapi import Cookie, Depends, Query
 from pydantic import UUID4
 
 from fief.dependencies.oauth_provider import get_oauth_providers
-from fief.dependencies.workspace_repositories import get_workspace_repository
+from fief.dependencies.repositories import get_repository
 from fief.exceptions import OAuthException
 from fief.locale import gettext_lazy as _
 from fief.models import LoginSession, OAuthProvider, OAuthSession, Tenant
@@ -17,9 +17,7 @@ from fief.settings import settings
 
 async def get_tenant_by_query(
     tenant_id: UUID4 = Query(..., alias="tenant"),
-    tenant_repository: TenantRepository = Depends(
-        get_workspace_repository(TenantRepository)
-    ),
+    tenant_repository: TenantRepository = Depends(TenantRepository),
 ) -> Tenant:
     tenant = await tenant_repository.get_by_id(tenant_id)
 
@@ -34,7 +32,7 @@ async def get_tenant_by_query(
 async def get_optional_login_session_with_tenant_query(
     token: str | None = Cookie(None, alias=settings.login_session_cookie_name),
     login_session_repository: LoginSessionRepository = Depends(
-        get_workspace_repository(LoginSessionRepository)
+        get_repository(LoginSessionRepository)
     ),
     tenant: Tenant = Depends(get_tenant_by_query),
     oauth_providers: list[OAuthProvider] | None = Depends(get_oauth_providers),
@@ -74,7 +72,7 @@ async def get_oauth_session(
     state: str | None = Query(None),
     error: str | None = Query(None),
     oauth_session_repository: OAuthSessionRepository = Depends(
-        get_workspace_repository(OAuthSessionRepository)
+        get_repository(OAuthSessionRepository)
     ),
 ) -> OAuthSession:
     if error is not None:
@@ -106,7 +104,7 @@ async def get_oauth_session(
 async def get_optional_login_session(
     token: str | None = Cookie(None, alias=settings.login_session_cookie_name),
     login_session_repository: LoginSessionRepository = Depends(
-        get_workspace_repository(LoginSessionRepository)
+        get_repository(LoginSessionRepository)
     ),
     oauth_session: OAuthSession = Depends(get_oauth_session),
 ) -> LoginSession | None:

@@ -18,7 +18,6 @@ from fief.dependencies.permission import (
     get_permission_by_id_or_404,
 )
 from fief.dependencies.webhooks import TriggerWebhooks, get_trigger_webhooks
-from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.forms import FormHelper
 from fief.logger import AuditLogger
 from fief.models import AuditLogMessage, Permission
@@ -84,9 +83,7 @@ async def get_form_helper(
 async def list_permissions(
     request: Request,
     form_helper: FormHelper[PermissionCreateForm] = Depends(get_form_helper),
-    repository: PermissionRepository = Depends(
-        get_workspace_repository(PermissionRepository)
-    ),
+    repository: PermissionRepository = Depends(PermissionRepository),
     audit_logger: AuditLogger = Depends(get_audit_logger),
     trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ):
@@ -125,9 +122,7 @@ async def delete_permission(
     request: Request,
     form_helper: FormHelper[PermissionCreateForm] = Depends(get_form_helper),
     permission: Permission = Depends(get_permission_by_id_or_404),
-    repository: PermissionRepository = Depends(
-        get_workspace_repository(PermissionRepository)
-    ),
+    repository: PermissionRepository = Depends(PermissionRepository),
     audit_logger: AuditLogger = Depends(get_audit_logger),
     trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ):

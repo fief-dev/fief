@@ -9,7 +9,6 @@ from fief.dependencies.client import get_client_by_id_or_404, get_paginated_clie
 from fief.dependencies.logger import get_audit_logger
 from fief.dependencies.pagination import PaginatedObjects
 from fief.dependencies.webhooks import TriggerWebhooks, get_trigger_webhooks
-from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.errors import APIErrorCode
 from fief.logger import AuditLogger
 from fief.models import AuditLogMessage, Client
@@ -46,10 +45,8 @@ async def get_webhook(client: Client = Depends(get_client_by_id_or_404)) -> Clie
 )
 async def create_client(
     client_create: schemas.client.ClientCreate,
-    repository: ClientRepository = Depends(get_workspace_repository(ClientRepository)),
-    tenant_repository: TenantRepository = Depends(
-        get_workspace_repository(TenantRepository)
-    ),
+    repository: ClientRepository = Depends(ClientRepository),
+    tenant_repository: TenantRepository = Depends(TenantRepository),
     audit_logger: AuditLogger = Depends(get_audit_logger),
     trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ) -> schemas.client.Client:
@@ -75,7 +72,7 @@ async def create_client(
 async def update_client(
     client_update: schemas.client.ClientUpdate,
     client: Client = Depends(get_client_by_id_or_404),
-    repository: ClientRepository = Depends(get_workspace_repository(ClientRepository)),
+    repository: ClientRepository = Depends(ClientRepository),
     audit_logger: AuditLogger = Depends(get_audit_logger),
     trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ) -> schemas.client.Client:
@@ -99,7 +96,7 @@ async def update_client(
 )
 async def create_encryption_key(
     client: Client = Depends(get_client_by_id_or_404),
-    repository: ClientRepository = Depends(get_workspace_repository(ClientRepository)),
+    repository: ClientRepository = Depends(ClientRepository),
     audit_logger: AuditLogger = Depends(get_audit_logger),
     trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ):
@@ -120,7 +117,7 @@ async def create_encryption_key(
 )
 async def delete_client(
     client: Client = Depends(get_client_by_id_or_404),
-    repository: ClientRepository = Depends(get_workspace_repository(ClientRepository)),
+    repository: ClientRepository = Depends(ClientRepository),
     audit_logger: AuditLogger = Depends(get_audit_logger),
     trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ):

@@ -9,7 +9,6 @@ from fief.dependencies.permission import (
     get_permission_by_id_or_404,
 )
 from fief.dependencies.webhooks import TriggerWebhooks, get_trigger_webhooks
-from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.errors import APIErrorCode
 from fief.logger import AuditLogger
 from fief.models import AuditLogMessage, Permission
@@ -61,9 +60,7 @@ async def get_permission(
 )
 async def create_permission(
     permission_create: schemas.permission.PermissionCreate,
-    repository: PermissionRepository = Depends(
-        get_workspace_repository(PermissionRepository)
-    ),
+    repository: PermissionRepository = Depends(PermissionRepository),
     audit_logger: AuditLogger = Depends(get_audit_logger),
     trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ) -> schemas.permission.Permission:
@@ -90,9 +87,7 @@ async def create_permission(
 async def update_permission(
     permission_update: schemas.permission.PermissionUpdate,
     permission: Permission = Depends(get_permission_by_id_or_404),
-    repository: PermissionRepository = Depends(
-        get_workspace_repository(PermissionRepository)
-    ),
+    repository: PermissionRepository = Depends(PermissionRepository),
     audit_logger: AuditLogger = Depends(get_audit_logger),
     trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ) -> schemas.permission.Permission:
@@ -124,9 +119,7 @@ async def update_permission(
 )
 async def delete_permission(
     permission: Permission = Depends(get_permission_by_id_or_404),
-    repository: PermissionRepository = Depends(
-        get_workspace_repository(PermissionRepository)
-    ),
+    repository: PermissionRepository = Depends(PermissionRepository),
     audit_logger: AuditLogger = Depends(get_audit_logger),
     trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ):

@@ -11,7 +11,6 @@ from fief.dependencies.pagination import (
     get_paginated_objects_getter,
     get_pagination,
 )
-from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.models import Client
 from fief.repositories import ClientRepository
 
@@ -21,7 +20,7 @@ async def get_paginated_clients(
     tenant: UUID4 | None = Query(None),
     pagination: Pagination = Depends(get_pagination),
     ordering: Ordering = Depends(OrderingGetter()),
-    repository: ClientRepository = Depends(get_workspace_repository(ClientRepository)),
+    repository: ClientRepository = Depends(ClientRepository),
     get_paginated_objects: GetPaginatedObjects[Client] = Depends(
         get_paginated_objects_getter
     ),
@@ -39,7 +38,7 @@ async def get_paginated_clients(
 
 async def get_client_by_id_or_404(
     id: UUID4,
-    repository: ClientRepository = Depends(get_workspace_repository(ClientRepository)),
+    repository: ClientRepository = Depends(ClientRepository),
 ) -> Client:
     client = await repository.get_by_id(id)
 

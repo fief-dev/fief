@@ -11,7 +11,7 @@ from fief.dependencies.pagination import (
     get_paginated_objects_getter,
     get_pagination,
 )
-from fief.dependencies.workspace_repositories import get_workspace_repository
+from fief.dependencies.repositories import get_repository
 from fief.models import EmailTemplate
 from fief.repositories import EmailTemplateRepository
 
@@ -20,7 +20,7 @@ async def get_paginated_email_templates(
     pagination: Pagination = Depends(get_pagination),
     ordering: Ordering = Depends(OrderingGetter()),
     repository: EmailTemplateRepository = Depends(
-        get_workspace_repository(EmailTemplateRepository)
+        get_repository(EmailTemplateRepository)
     ),
     get_paginated_objects: GetPaginatedObjects[EmailTemplate] = Depends(
         get_paginated_objects_getter
@@ -33,7 +33,7 @@ async def get_paginated_email_templates(
 async def get_email_template_by_id_or_404(
     id: UUID4,
     repository: EmailTemplateRepository = Depends(
-        get_workspace_repository(EmailTemplateRepository)
+        get_repository(EmailTemplateRepository)
     ),
 ) -> EmailTemplate:
     email_template = await repository.get_by_id(id)

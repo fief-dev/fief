@@ -8,13 +8,13 @@ from fief.dependencies.permission import (
     UserPermissionsGetter,
     get_user_permissions_getter,
 )
+from fief.dependencies.repositories import get_repository
 from fief.dependencies.tenant import get_current_tenant
 from fief.dependencies.token import (
     GrantRequest,
     get_user_from_grant_request,
     validate_grant_request,
 )
-from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.logger import AuditLogger
 from fief.models import AuditLogMessage, RefreshToken, Tenant, User
 from fief.repositories import RefreshTokenRepository
@@ -30,7 +30,7 @@ async def token(
     user: User = Depends(get_user_from_grant_request),
     get_user_permissions: UserPermissionsGetter = Depends(get_user_permissions_getter),
     refresh_token_repository: RefreshTokenRepository = Depends(
-        get_workspace_repository(RefreshTokenRepository)
+        get_repository(RefreshTokenRepository)
     ),
     tenant: Tenant = Depends(get_current_tenant),
     audit_logger: AuditLogger = Depends(get_audit_logger),

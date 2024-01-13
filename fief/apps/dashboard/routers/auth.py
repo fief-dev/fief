@@ -8,7 +8,7 @@ from fief.crypto.token import generate_token
 from fief.dependencies.admin_authentication import is_authenticated_admin_session
 from fief.dependencies.admin_session import get_admin_session_token
 from fief.dependencies.fief import get_fief
-from fief.dependencies.main_repositories import get_main_repository
+from fief.dependencies.repositories import get_repository
 from fief.models import AdminSessionToken
 from fief.repositories import AdminSessionTokenRepository
 from fief.settings import settings
@@ -36,7 +36,7 @@ async def callback(
     code: str = Query(...),
     fief: FiefAsync = Depends(get_fief),
     repository: AdminSessionTokenRepository = Depends(
-        get_main_repository(AdminSessionTokenRepository)
+        get_repository(AdminSessionTokenRepository)
     ),
 ):
     tokens, userinfo = await fief.auth_callback(
@@ -78,7 +78,7 @@ async def logout(
     request: Request,
     session_token: AdminSessionToken = Depends(get_admin_session_token),
     repository: AdminSessionTokenRepository = Depends(
-        get_main_repository(AdminSessionTokenRepository)
+        get_repository(AdminSessionTokenRepository)
     ),
 ):
     await repository.delete(session_token)

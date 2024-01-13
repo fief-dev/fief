@@ -18,7 +18,6 @@ from fief.dependencies.webhook import (
     get_webhook_by_id_or_404,
     get_webhook_log_by_id_and_webhook_or_404,
 )
-from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.forms import FormHelper
 from fief.logger import AuditLogger
 from fief.models import AuditLogMessage, Webhook, WebhookLog
@@ -83,9 +82,7 @@ async def get_webhook(
 @router.api_route("/create", methods=["GET", "POST"], name="dashboard.webhooks:create")
 async def create_webhook(
     request: Request,
-    repository: WebhookRepository = Depends(
-        get_workspace_repository(WebhookRepository)
-    ),
+    repository: WebhookRepository = Depends(WebhookRepository),
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
     audit_logger: AuditLogger = Depends(get_audit_logger),
@@ -123,9 +120,7 @@ async def create_webhook(
 async def update_webhook(
     request: Request,
     webhook: Webhook = Depends(get_webhook_by_id_or_404),
-    repository: WebhookRepository = Depends(
-        get_workspace_repository(WebhookRepository)
-    ),
+    repository: WebhookRepository = Depends(WebhookRepository),
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
     audit_logger: AuditLogger = Depends(get_audit_logger),
@@ -156,9 +151,7 @@ async def update_webhook(
 async def regenerate_webhook_secret(
     request: Request,
     webhook: Webhook = Depends(get_webhook_by_id_or_404),
-    repository: WebhookRepository = Depends(
-        get_workspace_repository(WebhookRepository)
-    ),
+    repository: WebhookRepository = Depends(WebhookRepository),
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
     audit_logger: AuditLogger = Depends(get_audit_logger),
@@ -181,9 +174,7 @@ async def regenerate_webhook_secret(
 async def delete_webhook(
     request: Request,
     webhook: Webhook = Depends(get_webhook_by_id_or_404),
-    repository: WebhookRepository = Depends(
-        get_workspace_repository(WebhookRepository)
-    ),
+    repository: WebhookRepository = Depends(WebhookRepository),
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
     audit_logger: AuditLogger = Depends(get_audit_logger),

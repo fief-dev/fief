@@ -24,7 +24,6 @@ from fief.dependencies.user_field import (
     get_user_field_by_id_or_404,
 )
 from fief.dependencies.webhooks import TriggerWebhooks, get_trigger_webhooks
-from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.forms import FormHelper
 from fief.logger import AuditLogger
 from fief.models import (
@@ -101,9 +100,7 @@ async def get_user_field(
 async def create_user_field(
     request: Request,
     hx_trigger: str | None = Header(None),
-    repository: UserFieldRepository = Depends(
-        get_workspace_repository(UserFieldRepository)
-    ),
+    repository: UserFieldRepository = Depends(UserFieldRepository),
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
     audit_logger: AuditLogger = Depends(get_audit_logger),
@@ -162,9 +159,7 @@ async def update_user_field(
     request: Request,
     hx_trigger: str | None = Header(None),
     user_field: UserField = Depends(get_user_field_by_id_or_404),
-    repository: UserFieldRepository = Depends(
-        get_workspace_repository(UserFieldRepository)
-    ),
+    repository: UserFieldRepository = Depends(UserFieldRepository),
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
     audit_logger: AuditLogger = Depends(get_audit_logger),
@@ -220,9 +215,7 @@ async def update_user_field(
 async def delete_user_field(
     request: Request,
     user_field: UserField = Depends(get_user_field_by_id_or_404),
-    repository: UserFieldRepository = Depends(
-        get_workspace_repository(UserFieldRepository)
-    ),
+    repository: UserFieldRepository = Depends(UserFieldRepository),
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
     audit_logger: AuditLogger = Depends(get_audit_logger),

@@ -20,8 +20,8 @@ from fief.dependencies.oauth_provider import (
     get_paginated_oauth_providers,
 )
 from fief.dependencies.pagination import PaginatedObjects
+from fief.dependencies.repositories import get_repository
 from fief.dependencies.webhooks import TriggerWebhooks, get_trigger_webhooks
-from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.forms import FormHelper
 from fief.logger import AuditLogger
 from fief.models import AuditLogMessage, OAuthProvider
@@ -98,7 +98,7 @@ async def create_oauth_provider(
     request: Request,
     hx_trigger: str | None = Header(None),
     repository: OAuthProviderRepository = Depends(
-        get_workspace_repository(OAuthProviderRepository)
+        get_repository(OAuthProviderRepository)
     ),
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
@@ -143,7 +143,7 @@ async def update_oauth_provider(
     request: Request,
     oauth_provider: OAuthProvider = Depends(get_oauth_provider_by_id_or_404),
     repository: OAuthProviderRepository = Depends(
-        get_workspace_repository(OAuthProviderRepository)
+        get_repository(OAuthProviderRepository)
     ),
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
@@ -186,7 +186,7 @@ async def delete_oauth_provider(
     request: Request,
     oauth_provider: OAuthProvider = Depends(get_oauth_provider_by_id_or_404),
     repository: OAuthProviderRepository = Depends(
-        get_workspace_repository(OAuthProviderRepository)
+        get_repository(OAuthProviderRepository)
     ),
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),

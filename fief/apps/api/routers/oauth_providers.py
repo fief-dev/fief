@@ -14,8 +14,8 @@ from fief.dependencies.oauth_provider import (
     get_paginated_oauth_providers,
 )
 from fief.dependencies.pagination import PaginatedObjects
+from fief.dependencies.repositories import get_repository
 from fief.dependencies.webhooks import TriggerWebhooks, get_trigger_webhooks
-from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.errors import APIErrorCode
 from fief.logger import AuditLogger
 from fief.models import AuditLogMessage, OAuthProvider
@@ -76,7 +76,7 @@ async def get_oauth_provider(
 async def create_oauth_provider(
     oauth_provider_create: schemas.oauth_provider.OAuthProviderCreate,
     repository: OAuthProviderRepository = Depends(
-        get_workspace_repository(OAuthProviderRepository)
+        get_repository(OAuthProviderRepository)
     ),
     audit_logger: AuditLogger = Depends(get_audit_logger),
     trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
@@ -102,7 +102,7 @@ async def update_oauth_provider(
     oauth_provider_update: schemas.oauth_provider.OAuthProviderUpdate,
     oauth_provider: OAuthProvider = Depends(get_oauth_provider_by_id_or_404),
     repository: OAuthProviderRepository = Depends(
-        get_workspace_repository(OAuthProviderRepository)
+        get_repository(OAuthProviderRepository)
     ),
     audit_logger: AuditLogger = Depends(get_audit_logger),
     trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
@@ -146,7 +146,7 @@ async def update_oauth_provider(
 async def delete_oauth_provider(
     oauth_provider: OAuthProvider = Depends(get_oauth_provider_by_id_or_404),
     repository: OAuthProviderRepository = Depends(
-        get_workspace_repository(OAuthProviderRepository)
+        get_repository(OAuthProviderRepository)
     ),
     audit_logger: AuditLogger = Depends(get_audit_logger),
     trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
@@ -169,9 +169,9 @@ async def get_user_access_token(
     user_id: UUID4,
     oauth_provider: OAuthProvider = Depends(get_oauth_provider_by_id_or_404),
     oauth_account_repository: OAuthAccountRepository = Depends(
-        get_workspace_repository(OAuthAccountRepository)
+        get_repository(OAuthAccountRepository)
     ),
-    user_repository: UserRepository = Depends(get_workspace_repository(UserRepository)),
+    user_repository: UserRepository = Depends(UserRepository),
     audit_logger: AuditLogger = Depends(get_audit_logger),
 ) -> OAuthAccount:
     user = await user_repository.get_by_id(user_id)

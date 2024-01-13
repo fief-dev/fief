@@ -2,7 +2,6 @@ from fastapi import Depends, HTTPException, Request, status
 
 from fief.dependencies.admin_api_key import get_optional_admin_api_key
 from fief.dependencies.admin_session import get_admin_session_token
-from fief.dependencies.main_repositories import get_main_repository
 from fief.models import AdminAPIKey, AdminSessionToken
 from fief.repositories import UserRepository
 
@@ -10,7 +9,7 @@ from fief.repositories import UserRepository
 async def is_authenticated_admin_session(
     request: Request,
     session_token: AdminSessionToken = Depends(get_admin_session_token),
-    user_repository: UserRepository = Depends(get_main_repository(UserRepository)),
+    user_repository: UserRepository = Depends(UserRepository),
 ):
     user = await user_repository.get_by_id(session_token.user_id)
     if user is None:

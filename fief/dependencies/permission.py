@@ -14,7 +14,6 @@ from fief.dependencies.pagination import (
     get_paginated_objects_getter,
     get_pagination,
 )
-from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.models import Permission, User
 from fief.repositories import PermissionRepository
 
@@ -23,9 +22,7 @@ async def get_paginated_permissions(
     query: str | None = Query(None),
     pagination: Pagination = Depends(get_pagination),
     ordering: Ordering = Depends(OrderingGetter()),
-    repository: PermissionRepository = Depends(
-        get_workspace_repository(PermissionRepository)
-    ),
+    repository: PermissionRepository = Depends(PermissionRepository),
     get_paginated_objects: GetPaginatedObjects[Permission] = Depends(
         get_paginated_objects_getter
     ),
@@ -43,9 +40,7 @@ async def get_paginated_permissions(
 
 async def get_permission_by_id_or_404(
     id: UUID4,
-    repository: PermissionRepository = Depends(
-        get_workspace_repository(PermissionRepository)
-    ),
+    repository: PermissionRepository = Depends(PermissionRepository),
 ) -> Permission:
     permission = await repository.get_by_id(id)
 
@@ -59,9 +54,7 @@ UserPermissionsGetter = Callable[[User], Coroutine[Any, Any, list[str]]]
 
 
 async def get_user_permissions_getter(
-    repository: PermissionRepository = Depends(
-        get_workspace_repository(PermissionRepository)
-    ),
+    repository: PermissionRepository = Depends(PermissionRepository),
 ) -> UserPermissionsGetter:
     async def _get_user_permissions(user: User) -> list[str]:
         permissions = await repository.list(

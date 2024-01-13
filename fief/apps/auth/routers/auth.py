@@ -29,6 +29,7 @@ from fief.dependencies.auth import (
 from fief.dependencies.authentication_flow import get_authentication_flow
 from fief.dependencies.login_hint import LoginHint, get_login_hint
 from fief.dependencies.oauth_provider import get_oauth_providers
+from fief.dependencies.repositories import get_repository
 from fief.dependencies.session_token import (
     get_session_token,
     get_session_token_or_login,
@@ -37,7 +38,6 @@ from fief.dependencies.session_token import (
 )
 from fief.dependencies.tenant import get_current_tenant
 from fief.dependencies.users import get_user_manager
-from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.exceptions import LogoutException
 from fief.forms import FormHelper
 from fief.locale import gettext_lazy as _
@@ -345,7 +345,7 @@ async def logout(
     redirect_uri: AnyUrl | None = Query(None),
     session_token: SessionToken | None = Depends(get_session_token),
     session_token_repository: SessionTokenRepository = Depends(
-        get_workspace_repository(SessionTokenRepository)
+        get_repository(SessionTokenRepository)
     ),
     tenant: Tenant = Depends(get_current_tenant),
 ):

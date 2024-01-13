@@ -19,10 +19,10 @@ from fief.dependencies.admin_authentication import is_authenticated_admin_sessio
 from fief.dependencies.email_provider import get_email_provider
 from fief.dependencies.logger import get_audit_logger
 from fief.dependencies.pagination import PaginatedObjects
+from fief.dependencies.repositories import get_repository
 from fief.dependencies.tenant import get_paginated_tenants, get_tenant_by_id_or_404
 from fief.dependencies.tenant_email_domain import get_tenant_email_domain
 from fief.dependencies.webhooks import TriggerWebhooks, get_trigger_webhooks
-from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.forms import FormHelper
 from fief.logger import AuditLogger
 from fief.models import AuditLogMessage, Client, OAuthProvider, Tenant
@@ -115,7 +115,7 @@ async def get_tenant(
 )
 async def tenant_email(
     request: Request,
-    repository: TenantRepository = Depends(get_workspace_repository(TenantRepository)),
+    repository: TenantRepository = Depends(TenantRepository),
     tenant: Tenant = Depends(get_tenant_by_id_or_404),
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
@@ -226,15 +226,11 @@ async def tenant_email_domain_verify(
 @router.api_route("/create", methods=["GET", "POST"], name="dashboard.tenants:create")
 async def create_tenant(
     request: Request,
-    repository: TenantRepository = Depends(get_workspace_repository(TenantRepository)),
-    client_repository: ClientRepository = Depends(
-        get_workspace_repository(ClientRepository)
-    ),
-    theme_repository: ThemeRepository = Depends(
-        get_workspace_repository(ThemeRepository)
-    ),
+    repository: TenantRepository = Depends(TenantRepository),
+    client_repository: ClientRepository = Depends(ClientRepository),
+    theme_repository: ThemeRepository = Depends(ThemeRepository),
     oauth_provider_repository: OAuthProviderRepository = Depends(
-        get_workspace_repository(OAuthProviderRepository)
+        get_repository(OAuthProviderRepository)
     ),
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
@@ -309,12 +305,10 @@ async def create_tenant(
 async def update_tenant(
     request: Request,
     tenant: Tenant = Depends(get_tenant_by_id_or_404),
-    repository: TenantRepository = Depends(get_workspace_repository(TenantRepository)),
-    theme_repository: ThemeRepository = Depends(
-        get_workspace_repository(ThemeRepository)
-    ),
+    repository: TenantRepository = Depends(TenantRepository),
+    theme_repository: ThemeRepository = Depends(ThemeRepository),
     oauth_provider_repository: OAuthProviderRepository = Depends(
-        get_workspace_repository(OAuthProviderRepository)
+        get_repository(OAuthProviderRepository)
     ),
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
@@ -379,11 +373,9 @@ async def update_tenant(
 async def delete_tenant(
     request: Request,
     tenant: Tenant = Depends(get_tenant_by_id_or_404),
-    repository: TenantRepository = Depends(get_workspace_repository(TenantRepository)),
-    user_repository: UserRepository = Depends(get_workspace_repository(UserRepository)),
-    client_repository: ClientRepository = Depends(
-        get_workspace_repository(ClientRepository)
-    ),
+    repository: TenantRepository = Depends(TenantRepository),
+    user_repository: UserRepository = Depends(UserRepository),
+    client_repository: ClientRepository = Depends(ClientRepository),
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
     audit_logger: AuditLogger = Depends(get_audit_logger),

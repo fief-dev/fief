@@ -4,7 +4,7 @@ from fief.dependencies.permission import (
     UserPermissionsGetter,
     get_user_permissions_getter,
 )
-from fief.dependencies.workspace_repositories import get_workspace_repository
+from fief.dependencies.repositories import get_repository
 from fief.repositories import (
     AuthorizationCodeRepository,
     GrantRepository,
@@ -16,17 +16,15 @@ from fief.services.authentication_flow import AuthenticationFlow
 
 async def get_authentication_flow(
     authorization_code_repository: AuthorizationCodeRepository = Depends(
-        get_workspace_repository(AuthorizationCodeRepository)
+        get_repository(AuthorizationCodeRepository)
     ),
     login_session_repository: LoginSessionRepository = Depends(
-        get_workspace_repository(LoginSessionRepository)
+        get_repository(LoginSessionRepository)
     ),
     session_token_repository: SessionTokenRepository = Depends(
-        get_workspace_repository(SessionTokenRepository)
+        get_repository(SessionTokenRepository)
     ),
-    grant_repository: GrantRepository = Depends(
-        get_workspace_repository(GrantRepository)
-    ),
+    grant_repository: GrantRepository = Depends(GrantRepository),
     get_user_permissions: UserPermissionsGetter = Depends(get_user_permissions_getter),
 ) -> AuthenticationFlow:
     return AuthenticationFlow(

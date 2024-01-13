@@ -3,7 +3,7 @@ from fastapi.security import APIKeyCookie
 from fief_client import FiefUserInfo
 
 from fief.crypto.token import get_token_hash
-from fief.dependencies.main_repositories import get_main_repository
+from fief.dependencies.repositories import get_repository
 from fief.models import AdminSessionToken
 from fief.repositories import AdminSessionTokenRepository
 from fief.settings import settings
@@ -16,7 +16,7 @@ cookie_scheme = APIKeyCookie(
 async def get_optional_admin_session_token(
     token: str | None = Depends(cookie_scheme),
     repository: AdminSessionTokenRepository = Depends(
-        get_main_repository(AdminSessionTokenRepository)
+        get_repository(AdminSessionTokenRepository)
     ),
 ) -> AdminSessionToken | None:
     if token is None:

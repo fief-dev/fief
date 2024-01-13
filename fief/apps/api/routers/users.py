@@ -14,6 +14,7 @@ from fief.dependencies.permission import (
     UserPermissionsGetter,
     get_user_permissions_getter,
 )
+from fief.dependencies.repositories import get_repository
 from fief.dependencies.tasks import get_send_task
 from fief.dependencies.users import (
     get_admin_user_update,
@@ -26,7 +27,6 @@ from fief.dependencies.users import (
     get_user_manager,
 )
 from fief.dependencies.webhooks import TriggerWebhooks, get_trigger_webhooks
-from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.errors import APIErrorCode
 from fief.logger import AuditLogger
 from fief.models import (
@@ -94,10 +94,8 @@ async def create_user(
     request: Request,
     user_create: schemas.user.UserCreateAdmin = Depends(get_user_create_admin),
     user_manager: UserManager = Depends(get_user_manager),
-    user_repository: UserRepository = Depends(get_workspace_repository(UserRepository)),
-    tenant_repository: TenantRepository = Depends(
-        get_workspace_repository(TenantRepository)
-    ),
+    user_repository: UserRepository = Depends(UserRepository),
+    tenant_repository: TenantRepository = Depends(TenantRepository),
     audit_logger: AuditLogger = Depends(get_audit_logger),
 ):
     tenant = await tenant_repository.get_by_id(user_create.tenant_id)
@@ -169,7 +167,7 @@ async def update_user(
 )
 async def delete_user(
     user: User = Depends(get_user_by_id_or_404),
-    repository: UserRepository = Depends(get_workspace_repository(UserRepository)),
+    repository: UserRepository = Depends(UserRepository),
     audit_logger: AuditLogger = Depends(get_audit_logger),
     trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ):
@@ -207,9 +205,7 @@ async def create_user_access_token(
     create_access_token: schemas.user.CreateAccessToken,
     user: User = Depends(get_user_by_id_or_404),
     get_user_permissions: UserPermissionsGetter = Depends(get_user_permissions_getter),
-    client_repository: ClientRepository = Depends(
-        get_workspace_repository(ClientRepository)
-    ),
+    client_repository: ClientRepository = Depends(ClientRepository),
     audit_logger: AuditLogger = Depends(get_audit_logger),
 ) -> schemas.user.AccessTokenResponse:
     tenant = user.tenant
@@ -257,10 +253,10 @@ async def create_user_permission(
     user_permission_create: schemas.user_permission.UserPermissionCreate,
     user: User = Depends(get_user_by_id_or_404),
     permission_repository: PermissionRepository = Depends(
-        get_workspace_repository(PermissionRepository)
+        get_repository(PermissionRepository)
     ),
     user_permission_repository: UserPermissionRepository = Depends(
-        get_workspace_repository(UserPermissionRepository)
+        get_repository(UserPermissionRepository)
     ),
     audit_logger: AuditLogger = Depends(get_audit_logger),
     trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
@@ -310,7 +306,7 @@ async def delete_user_permission(
     permission_id: UUID4,
     user: User = Depends(get_user_by_id_or_404),
     user_permission_repository: UserPermissionRepository = Depends(
-        get_workspace_repository(UserPermissionRepository)
+        get_repository(UserPermissionRepository)
     ),
     audit_logger: AuditLogger = Depends(get_audit_logger),
     trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
@@ -361,9 +357,9 @@ async def list_user_roles(
 async def create_user_role(
     user_role_create: schemas.user_role.UserRoleCreate,
     user: User = Depends(get_user_by_id_or_404),
-    role_repository: RoleRepository = Depends(get_workspace_repository(RoleRepository)),
+    role_repository: RoleRepository = Depends(RoleRepository),
     user_role_repository: UserRoleRepository = Depends(
-        get_workspace_repository(UserRoleRepository)
+        get_repository(UserRoleRepository)
     ),
     send_task: SendTask = Depends(get_send_task),
     audit_logger: AuditLogger = Depends(get_audit_logger),
@@ -410,7 +406,7 @@ async def delete_user_role(
     role_id: UUID4,
     user: User = Depends(get_user_by_id_or_404),
     user_role_repository: UserRoleRepository = Depends(
-        get_workspace_repository(UserRoleRepository)
+        get_repository(UserRoleRepository)
     ),
     send_task: SendTask = Depends(get_send_task),
     audit_logger: AuditLogger = Depends(get_audit_logger),

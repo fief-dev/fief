@@ -15,8 +15,8 @@ from fief.dependencies.oauth import (
 )
 from fief.dependencies.oauth_provider import get_oauth_providers
 from fief.dependencies.register import get_registration_flow
+from fief.dependencies.repositories import get_repository
 from fief.dependencies.session_token import get_session_token
-from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.exceptions import OAuthException
 from fief.locale import gettext_lazy as _
 from fief.models import (
@@ -47,7 +47,7 @@ async def authorize(
     tenant: Tenant = Depends(get_tenant_by_query),
     oauth_provider: OAuthProvider = Depends(get_oauth_provider),
     oauth_session_repository: OAuthSessionRepository = Depends(
-        get_workspace_repository(OAuthSessionRepository)
+        get_repository(OAuthSessionRepository)
     ),
 ):
     redirect_uri = str(request.url_for("oauth:callback"))
@@ -78,10 +78,10 @@ async def callback(
     login_session: LoginSession | None = Depends(get_optional_login_session),
     oauth_providers: list[OAuthProvider] | None = Depends(get_oauth_providers),
     oauth_session_repository: OAuthSessionRepository = Depends(
-        get_workspace_repository(OAuthSessionRepository)
+        get_repository(OAuthSessionRepository)
     ),
     oauth_account_repository: OAuthAccountRepository = Depends(
-        get_workspace_repository(OAuthAccountRepository)
+        get_repository(OAuthAccountRepository)
     ),
     authentication_flow: AuthenticationFlow = Depends(get_authentication_flow),
     registration_flow: RegistrationFlow = Depends(get_registration_flow),
