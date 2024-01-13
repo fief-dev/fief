@@ -23,7 +23,7 @@ class TestAuthUpdateProfile:
         assert response.status_code == status.HTTP_307_TEMPORARY_REDIRECT
         assert (
             response.headers["Location"]
-            == f"http://bretagne.localhost:8000{tenant_params.path_prefix}/login"
+            == f"http://api.fief.dev{tenant_params.path_prefix}/login"
         )
 
     async def test_authenticated_on_another_tenant(
@@ -36,7 +36,7 @@ class TestAuthUpdateProfile:
         response = await test_client_auth_csrf.get("/", cookies=cookies)
 
         assert response.status_code == status.HTTP_307_TEMPORARY_REDIRECT
-        assert response.headers["Location"] == "http://bretagne.localhost:8000/login"
+        assert response.headers["Location"] == "http://api.fief.dev/login"
 
     @pytest.mark.htmx()
     async def test_valid_get(
@@ -99,7 +99,7 @@ class TestAuthUpdatePassword:
         assert response.status_code == status.HTTP_307_TEMPORARY_REDIRECT
         assert (
             response.headers["Location"]
-            == f"http://bretagne.localhost:8000{tenant_params.path_prefix}/login"
+            == f"http://api.fief.dev{tenant_params.path_prefix}/login"
         )
 
     async def test_authenticated_on_another_tenant(
@@ -112,7 +112,7 @@ class TestAuthUpdatePassword:
         response = await test_client_auth_csrf.get("/password", cookies=cookies)
 
         assert response.status_code == status.HTTP_307_TEMPORARY_REDIRECT
-        assert response.headers["Location"] == "http://bretagne.localhost:8000/login"
+        assert response.headers["Location"] == "http://api.fief.dev/login"
 
     @pytest.mark.htmx()
     async def test_valid_get(
@@ -233,7 +233,7 @@ class TestAuthEmailChange:
         assert response.status_code == status.HTTP_307_TEMPORARY_REDIRECT
         assert (
             response.headers["Location"]
-            == f"http://bretagne.localhost:8000{tenant_params.path_prefix}/login"
+            == f"http://api.fief.dev{tenant_params.path_prefix}/login"
         )
 
     async def test_authenticated_on_another_tenant(
@@ -246,7 +246,7 @@ class TestAuthEmailChange:
         response = await test_client_auth_csrf.get("/email/change", cookies=cookies)
 
         assert response.status_code == status.HTTP_307_TEMPORARY_REDIRECT
-        assert response.headers["Location"] == "http://bretagne.localhost:8000/login"
+        assert response.headers["Location"] == "http://api.fief.dev/login"
 
     @pytest.mark.htmx()
     async def test_valid_get(
@@ -353,7 +353,7 @@ class TestAuthEmailVerify:
         assert response.status_code == status.HTTP_307_TEMPORARY_REDIRECT
         assert (
             response.headers["Location"]
-            == f"http://bretagne.localhost:8000{tenant_params.path_prefix}/login"
+            == f"http://api.fief.dev{tenant_params.path_prefix}/login"
         )
 
     async def test_authenticated_on_another_tenant(
@@ -366,7 +366,7 @@ class TestAuthEmailVerify:
         response = await test_client_auth_csrf.get("/email/verify", cookies=cookies)
 
         assert response.status_code == status.HTTP_307_TEMPORARY_REDIRECT
-        assert response.headers["Location"] == "http://bretagne.localhost:8000/login"
+        assert response.headers["Location"] == "http://api.fief.dev/login"
 
     @pytest.mark.htmx()
     async def test_valid_get(
