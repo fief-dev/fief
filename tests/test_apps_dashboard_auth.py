@@ -31,7 +31,7 @@ class TestAuthLogin:
         assert location == "http://localhost/authorize"
 
         fief_client_mock.auth_url.assert_called_once_with(
-            redirect_uri="http://bretagne.localhost:8000/auth/callback",
+            redirect_uri="http://api.fief.dev/auth/callback",
             scope=["openid"],
             extras_params={"screen": "login"},
         )
@@ -119,7 +119,7 @@ class TestAuthLogout:
         location = response.headers["Location"]
         assert (
             location
-            == f"//{settings.fief_domain}/logout?redirect_uri=http://bretagne.localhost:8000/admin/"
+            == f"//{settings.fief_domain}/logout?redirect_uri=http://api.fief.dev/admin/"
         )
 
         assert "Set-Cookie" in response.headers
