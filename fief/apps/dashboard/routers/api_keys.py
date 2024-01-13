@@ -16,7 +16,6 @@ from fief.dependencies.admin_api_key import (
 )
 from fief.dependencies.admin_authentication import is_authenticated_admin_session
 from fief.dependencies.logger import get_audit_logger
-from fief.dependencies.main_repositories import get_main_repository
 from fief.dependencies.pagination import PaginatedObjects
 from fief.forms import FormHelper
 from fief.logger import AuditLogger
@@ -67,9 +66,7 @@ async def list_api_keys(
 @router.api_route("/create", methods=["GET", "POST"], name="dashboard.api_keys:create")
 async def create_api_key(
     request: Request,
-    repository: AdminAPIKeyRepository = Depends(
-        get_main_repository(AdminAPIKeyRepository)
-    ),
+    repository: AdminAPIKeyRepository = Depends(AdminAPIKeyRepository),
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
     audit_logger: AuditLogger = Depends(get_audit_logger),
@@ -108,9 +105,7 @@ async def create_api_key(
 async def delete_api_key(
     request: Request,
     api_key: AdminAPIKey = Depends(get_api_key_by_id_or_404),
-    repository: AdminAPIKeyRepository = Depends(
-        get_main_repository(AdminAPIKeyRepository)
-    ),
+    repository: AdminAPIKeyRepository = Depends(AdminAPIKeyRepository),
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
     audit_logger: AuditLogger = Depends(get_audit_logger),

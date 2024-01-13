@@ -5,10 +5,10 @@ from fastapi import Cookie, Depends, Query, Request, Response
 
 from fief.dependencies.authentication_flow import get_authentication_flow
 from fief.dependencies.branding import get_show_branding
+from fief.dependencies.repositories import get_repository
 from fief.dependencies.session_token import get_session_token
 from fief.dependencies.tenant import get_current_tenant
 from fief.dependencies.theme import get_current_theme
-from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.exceptions import (
     AuthorizeException,
     AuthorizeRedirectException,
@@ -31,7 +31,7 @@ from fief.settings import settings
 async def get_authorize_client(
     client_id: str | None = Query(None),
     tenant: Tenant = Depends(get_current_tenant),
-    repository: ClientRepository = Depends(get_workspace_repository(ClientRepository)),
+    repository: ClientRepository = Depends(ClientRepository),
 ) -> Client:
     if client_id is None:
         raise AuthorizeException(
@@ -265,7 +265,7 @@ async def has_valid_session_token(
 async def get_optional_login_session(
     token: str | None = Cookie(None, alias=settings.login_session_cookie_name),
     login_session_repository: LoginSessionRepository = Depends(
-        get_workspace_repository(LoginSessionRepository)
+        get_repository(LoginSessionRepository)
     ),
     tenant: Tenant = Depends(get_current_tenant),
 ) -> LoginSession | None:
@@ -302,9 +302,7 @@ async def get_login_session(
 async def get_needs_consent(
     login_session: LoginSession = Depends(get_login_session),
     session_token: SessionToken | None = Depends(get_session_token),
-    grant_repository: GrantRepository = Depends(
-        get_workspace_repository(GrantRepository)
-    ),
+    grant_repository: GrantRepository = Depends(GrantRepository),
 ) -> bool:
     if session_token is None:
         return True

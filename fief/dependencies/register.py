@@ -1,9 +1,9 @@
 from fastapi import Cookie, Depends
 
+from fief.dependencies.repositories import get_repository
 from fief.dependencies.tenant import get_current_tenant
 from fief.dependencies.user_field import get_user_create_model, get_user_fields
 from fief.dependencies.users import get_user_manager
-from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.models import RegistrationSession, Tenant, UserField
 from fief.repositories import OAuthAccountRepository, RegistrationSessionRepository
 from fief.schemas.user import UF, UserCreate
@@ -14,10 +14,10 @@ from fief.settings import settings
 
 async def get_registration_flow(
     registration_session_repository: RegistrationSessionRepository = Depends(
-        get_workspace_repository(RegistrationSessionRepository)
+        get_repository(RegistrationSessionRepository)
     ),
     oauth_account_repository: OAuthAccountRepository = Depends(
-        get_workspace_repository(OAuthAccountRepository)
+        get_repository(OAuthAccountRepository)
     ),
     user_manager: UserManager = Depends(get_user_manager),
     user_create_model: type[UserCreate[UF]] = Depends(get_user_create_model),
@@ -35,7 +35,7 @@ async def get_registration_flow(
 async def get_optional_registration_session(
     token: str | None = Cookie(None, alias=settings.registration_session_cookie_name),
     registration_session_repository: RegistrationSessionRepository = Depends(
-        get_workspace_repository(RegistrationSessionRepository)
+        get_repository(RegistrationSessionRepository)
     ),
     tenant: Tenant = Depends(get_current_tenant),
 ) -> RegistrationSession | None:

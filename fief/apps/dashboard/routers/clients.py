@@ -22,7 +22,6 @@ from fief.dependencies.client import get_client_by_id_or_404, get_paginated_clie
 from fief.dependencies.logger import get_audit_logger
 from fief.dependencies.pagination import PaginatedObjects
 from fief.dependencies.webhooks import TriggerWebhooks, get_trigger_webhooks
-from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.forms import FormHelper
 from fief.logger import AuditLogger
 from fief.models import AuditLogMessage, Client
@@ -95,7 +94,7 @@ async def get_client(
 )
 async def client_lifetimes(
     request: Request,
-    repository: ClientRepository = Depends(get_workspace_repository(ClientRepository)),
+    repository: ClientRepository = Depends(ClientRepository),
     client: Client = Depends(get_client_by_id_or_404),
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
@@ -128,10 +127,8 @@ async def client_lifetimes(
 @router.api_route("/create", methods=["GET", "POST"], name="dashboard.clients:create")
 async def create_client(
     request: Request,
-    repository: ClientRepository = Depends(get_workspace_repository(ClientRepository)),
-    tenant_repository: TenantRepository = Depends(
-        get_workspace_repository(TenantRepository)
-    ),
+    repository: ClientRepository = Depends(ClientRepository),
+    tenant_repository: TenantRepository = Depends(TenantRepository),
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
     audit_logger: AuditLogger = Depends(get_audit_logger),
@@ -178,7 +175,7 @@ async def create_client(
 async def update_client(
     request: Request,
     client: Client = Depends(get_client_by_id_or_404),
-    repository: ClientRepository = Depends(get_workspace_repository(ClientRepository)),
+    repository: ClientRepository = Depends(ClientRepository),
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
     audit_logger: AuditLogger = Depends(get_audit_logger),
@@ -214,7 +211,7 @@ async def update_client(
 async def create_encryption_key(
     request: Request,
     client: Client = Depends(get_client_by_id_or_404),
-    repository: ClientRepository = Depends(get_workspace_repository(ClientRepository)),
+    repository: ClientRepository = Depends(ClientRepository),
     context: BaseContext = Depends(get_base_context),
     audit_logger: AuditLogger = Depends(get_audit_logger),
     trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
@@ -240,7 +237,7 @@ async def create_encryption_key(
 async def delete_client(
     request: Request,
     client: Client = Depends(get_client_by_id_or_404),
-    repository: ClientRepository = Depends(get_workspace_repository(ClientRepository)),
+    repository: ClientRepository = Depends(ClientRepository),
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
     audit_logger: AuditLogger = Depends(get_audit_logger),

@@ -21,7 +21,6 @@ from fief.dependencies.theme import (
     get_theme_by_id_or_404,
     get_theme_preview,
 )
-from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.forms import FormHelper
 from fief.logger import AuditLogger
 from fief.models import AuditLogMessage, Theme, User
@@ -75,7 +74,7 @@ async def list_themes(
 @router.api_route("/create", methods=["GET", "POST"], name="dashboard.themes:create")
 async def create_theme(
     request: Request,
-    repository: ThemeRepository = Depends(get_workspace_repository(ThemeRepository)),
+    repository: ThemeRepository = Depends(ThemeRepository),
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
     audit_logger: AuditLogger = Depends(get_audit_logger),
@@ -116,11 +115,9 @@ async def update_theme(
     preview: str | None = Query(None),
     theme: Theme = Depends(get_theme_by_id_or_404),
     theme_preview: ThemePreview = Depends(get_theme_preview),
-    repository: ThemeRepository = Depends(get_workspace_repository(ThemeRepository)),
-    tenant_repository: TenantRepository = Depends(
-        get_workspace_repository(TenantRepository)
-    ),
-    user_repository: UserRepository = Depends(get_workspace_repository(UserRepository)),
+    repository: ThemeRepository = Depends(ThemeRepository),
+    tenant_repository: TenantRepository = Depends(TenantRepository),
+    user_repository: UserRepository = Depends(UserRepository),
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
     audit_logger: AuditLogger = Depends(get_audit_logger),
@@ -167,7 +164,7 @@ async def update_theme(
 async def set_default_theme(
     request: Request,
     theme: Theme = Depends(get_theme_by_id_or_404),
-    repository: ThemeRepository = Depends(get_workspace_repository(ThemeRepository)),
+    repository: ThemeRepository = Depends(ThemeRepository),
     audit_logger: AuditLogger = Depends(get_audit_logger),
 ):
     default_theme = await repository.get_default()

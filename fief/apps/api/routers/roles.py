@@ -4,10 +4,10 @@ from fief import schemas
 from fief.dependencies.admin_authentication import is_authenticated_admin_api
 from fief.dependencies.logger import get_audit_logger
 from fief.dependencies.pagination import PaginatedObjects
+from fief.dependencies.repositories import get_repository
 from fief.dependencies.role import get_paginated_roles, get_role_by_id_or_404
 from fief.dependencies.tasks import get_send_task
 from fief.dependencies.webhooks import TriggerWebhooks, get_trigger_webhooks
-from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.errors import APIErrorCode
 from fief.logger import AuditLogger
 from fief.models import AuditLogMessage, Role
@@ -47,9 +47,9 @@ async def get_role(role: Role = Depends(get_role_by_id_or_404)) -> Role:
 )
 async def create_role(
     role_create: schemas.role.RoleCreate,
-    repository: RoleRepository = Depends(get_workspace_repository(RoleRepository)),
+    repository: RoleRepository = Depends(RoleRepository),
     permission_repository: PermissionRepository = Depends(
-        get_workspace_repository(PermissionRepository)
+        get_repository(PermissionRepository)
     ),
     audit_logger: AuditLogger = Depends(get_audit_logger),
     trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
@@ -81,9 +81,9 @@ async def create_role(
 async def update_role(
     role_update: schemas.role.RoleUpdate,
     role: Role = Depends(get_role_by_id_or_404),
-    repository: RoleRepository = Depends(get_workspace_repository(RoleRepository)),
+    repository: RoleRepository = Depends(RoleRepository),
     permission_repository: PermissionRepository = Depends(
-        get_workspace_repository(PermissionRepository)
+        get_repository(PermissionRepository)
     ),
     send_task: SendTask = Depends(get_send_task),
     audit_logger: AuditLogger = Depends(get_audit_logger),
@@ -133,7 +133,7 @@ async def update_role(
 )
 async def delete_role(
     role: Role = Depends(get_role_by_id_or_404),
-    repository: RoleRepository = Depends(get_workspace_repository(RoleRepository)),
+    repository: RoleRepository = Depends(RoleRepository),
     audit_logger: AuditLogger = Depends(get_audit_logger),
     trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ):

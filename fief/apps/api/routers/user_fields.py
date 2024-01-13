@@ -11,7 +11,6 @@ from fief.dependencies.user_field import (
     get_validated_user_field_update,
 )
 from fief.dependencies.webhooks import TriggerWebhooks, get_trigger_webhooks
-from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.errors import APIErrorCode
 from fief.logger import AuditLogger
 from fief.models import AuditLogMessage, UserField
@@ -65,9 +64,7 @@ async def create_user_field(
     user_field_create: schemas.user_field.UserFieldCreate = Depends(
         get_validated_user_field_create
     ),
-    repository: UserFieldRepository = Depends(
-        get_workspace_repository(UserFieldRepository)
-    ),
+    repository: UserFieldRepository = Depends(UserFieldRepository),
     audit_logger: AuditLogger = Depends(get_audit_logger),
     trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ) -> schemas.user_field.UserField:
@@ -94,9 +91,7 @@ async def update_user_field(
         get_validated_user_field_update
     ),
     user_field: UserField = Depends(get_user_field_by_id_or_404),
-    repository: UserFieldRepository = Depends(
-        get_workspace_repository(UserFieldRepository)
-    ),
+    repository: UserFieldRepository = Depends(UserFieldRepository),
     audit_logger: AuditLogger = Depends(get_audit_logger),
     trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ) -> schemas.user_field.UserField:
@@ -128,9 +123,7 @@ async def update_user_field(
 )
 async def delete_user_field(
     user_field: UserField = Depends(get_user_field_by_id_or_404),
-    repository: UserFieldRepository = Depends(
-        get_workspace_repository(UserFieldRepository)
-    ),
+    repository: UserFieldRepository = Depends(UserFieldRepository),
     audit_logger: AuditLogger = Depends(get_audit_logger),
     trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
 ):

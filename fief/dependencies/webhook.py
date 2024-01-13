@@ -11,7 +11,6 @@ from fief.dependencies.pagination import (
     get_paginated_objects_getter,
     get_pagination,
 )
-from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.models import Webhook, WebhookLog
 from fief.repositories import WebhookLogRepository, WebhookRepository
 
@@ -19,9 +18,7 @@ from fief.repositories import WebhookLogRepository, WebhookRepository
 async def get_paginated_webhooks(
     pagination: Pagination = Depends(get_pagination),
     ordering: Ordering = Depends(OrderingGetter()),
-    repository: WebhookRepository = Depends(
-        get_workspace_repository(WebhookRepository)
-    ),
+    repository: WebhookRepository = Depends(WebhookRepository),
     get_paginated_objects: GetPaginatedObjects[Webhook] = Depends(
         get_paginated_objects_getter
     ),
@@ -33,9 +30,7 @@ async def get_paginated_webhooks(
 
 async def get_webhook_by_id_or_404(
     id: UUID4,
-    repository: WebhookRepository = Depends(
-        get_workspace_repository(WebhookRepository)
-    ),
+    repository: WebhookRepository = Depends(WebhookRepository),
 ) -> Webhook:
     webhook = await repository.get_by_id(id)
 
@@ -49,9 +44,7 @@ async def get_paginated_webhook_logs(
     webhook: Webhook = Depends(get_webhook_by_id_or_404),
     pagination: Pagination = Depends(get_pagination),
     ordering: Ordering = Depends(OrderingGetter([(["created_at"], True)])),
-    repository: WebhookLogRepository = Depends(
-        get_workspace_repository(WebhookLogRepository)
-    ),
+    repository: WebhookLogRepository = Depends(WebhookLogRepository),
     get_paginated_objects: GetPaginatedObjects[WebhookLog] = Depends(
         get_paginated_objects_getter
     ),
@@ -64,9 +57,7 @@ async def get_paginated_webhook_logs(
 async def get_webhook_log_by_id_and_webhook_or_404(
     log_id: UUID4,
     webhook: Webhook = Depends(get_webhook_by_id_or_404),
-    repository: WebhookLogRepository = Depends(
-        get_workspace_repository(WebhookLogRepository)
-    ),
+    repository: WebhookLogRepository = Depends(WebhookLogRepository),
 ) -> WebhookLog:
     webhook_log = await repository.get_by_id_and_webhook(log_id, webhook.id)
 

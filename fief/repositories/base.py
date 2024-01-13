@@ -2,6 +2,7 @@ from collections.abc import Sequence
 from datetime import UTC, datetime
 from typing import Any, Generic, Protocol, TypeVar, cast
 
+from fastapi import Depends
 from pydantic import UUID4
 from sqlalchemy import delete, func, over, select
 from sqlalchemy.engine import Result
@@ -9,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import InstrumentedAttribute, RelationshipProperty, contains_eager
 from sqlalchemy.sql import Executable, Select
 
+from fief.dependencies.db import get_main_async_session
 from fief.models.generics import M_EXPIRES_AT, M_UUID, M
 
 
@@ -69,7 +71,9 @@ class ExpiresAtRepositoryProtocol(BaseRepositoryProtocol, Protocol[M_EXPIRES_AT]
 
 
 class BaseRepository(BaseRepositoryProtocol, Generic[M]):
-    def __init__(self, session: AsyncSession) -> None:
+    model: type[M]
+
+    def __init__(self, session: AsyncSession = Depends(get_main_async_session)) -> None:
         self.session = session
 
     async def paginate(

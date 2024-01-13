@@ -4,7 +4,6 @@ from pydantic import UUID4
 from sqlalchemy import select
 
 from fief.crypto.token import get_token_hash
-from fief.dependencies.main_repositories import get_main_repository
 from fief.dependencies.pagination import (
     GetPaginatedObjects,
     Ordering,
@@ -22,9 +21,7 @@ bearer_scheme = HTTPBearer(auto_error=False)
 
 async def get_optional_admin_api_key(
     authorization: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
-    repository: AdminAPIKeyRepository = Depends(
-        get_main_repository(AdminAPIKeyRepository)
-    ),
+    repository: AdminAPIKeyRepository = Depends(AdminAPIKeyRepository),
 ) -> AdminAPIKey | None:
     if authorization is None:
         return None
@@ -36,9 +33,7 @@ async def get_optional_admin_api_key(
 async def get_paginated_api_keys(
     pagination: Pagination = Depends(get_pagination),
     ordering: Ordering = Depends(OrderingGetter()),
-    repository: AdminAPIKeyRepository = Depends(
-        get_main_repository(AdminAPIKeyRepository)
-    ),
+    repository: AdminAPIKeyRepository = Depends(AdminAPIKeyRepository),
     get_paginated_objects: GetPaginatedObjects[AdminAPIKey] = Depends(
         get_paginated_objects_getter
     ),
@@ -49,9 +44,7 @@ async def get_paginated_api_keys(
 
 async def get_api_key_by_id_or_404(
     id: UUID4,
-    repository: AdminAPIKeyRepository = Depends(
-        get_main_repository(AdminAPIKeyRepository)
-    ),
+    repository: AdminAPIKeyRepository = Depends(AdminAPIKeyRepository),
 ) -> AdminAPIKey:
     statement = select(AdminAPIKey).where(AdminAPIKey.id == id)
     api_key = await repository.get_one_or_none(statement)

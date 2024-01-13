@@ -9,7 +9,6 @@ from fief.dependencies.webhook import (
     get_paginated_webhooks,
     get_webhook_by_id_or_404,
 )
-from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.logger import AuditLogger
 from fief.models import AuditLogMessage, Webhook, WebhookLog
 from fief.repositories import WebhookRepository
@@ -41,9 +40,7 @@ async def list_webhooks(
 )
 async def create_webhook(
     webhook_create: schemas.webhook.WebhookCreate,
-    repository: WebhookRepository = Depends(
-        get_workspace_repository(WebhookRepository)
-    ),
+    repository: WebhookRepository = Depends(WebhookRepository),
     audit_logger: AuditLogger = Depends(get_audit_logger),
 ) -> schemas.webhook.WebhookSecret:
     webhook = Webhook(**webhook_create.model_dump())
@@ -64,9 +61,7 @@ async def get_webhook(webhook: Webhook = Depends(get_webhook_by_id_or_404)) -> W
 async def update_webhook(
     webhook_update: schemas.webhook.WebhookUpdate,
     webhook: Webhook = Depends(get_webhook_by_id_or_404),
-    repository: WebhookRepository = Depends(
-        get_workspace_repository(WebhookRepository)
-    ),
+    repository: WebhookRepository = Depends(WebhookRepository),
     audit_logger: AuditLogger = Depends(get_audit_logger),
 ) -> schemas.webhook.Webhook:
     webhook_update_dict = webhook_update.model_dump(exclude_unset=True)
@@ -86,9 +81,7 @@ async def update_webhook(
 )
 async def regenerate_webhook_secret(
     webhook: Webhook = Depends(get_webhook_by_id_or_404),
-    repository: WebhookRepository = Depends(
-        get_workspace_repository(WebhookRepository)
-    ),
+    repository: WebhookRepository = Depends(WebhookRepository),
     audit_logger: AuditLogger = Depends(get_audit_logger),
 ):
     webhook.regenerate_secret()
@@ -106,9 +99,7 @@ async def regenerate_webhook_secret(
 )
 async def delete_role(
     webhook: Webhook = Depends(get_webhook_by_id_or_404),
-    repository: WebhookRepository = Depends(
-        get_workspace_repository(WebhookRepository)
-    ),
+    repository: WebhookRepository = Depends(WebhookRepository),
     audit_logger: AuditLogger = Depends(get_audit_logger),
 ):
     await repository.delete(webhook)

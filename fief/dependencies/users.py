@@ -20,6 +20,7 @@ from fief.dependencies.pagination import (
     get_paginated_objects_getter,
     get_pagination,
 )
+from fief.dependencies.repositories import get_repository
 from fief.dependencies.request import get_request_json
 from fief.dependencies.tasks import get_send_task
 from fief.dependencies.tenant import (
@@ -32,7 +33,6 @@ from fief.dependencies.user_field import (
     get_user_update_model,
 )
 from fief.dependencies.webhooks import TriggerWebhooks, get_trigger_webhooks
-from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.errors import APIErrorCode
 from fief.logger import AuditLogger
 from fief.models import (
@@ -57,9 +57,9 @@ from fief.tasks import SendTask
 
 
 async def get_user_manager(
-    user_repository: UserRepository = Depends(get_workspace_repository(UserRepository)),
+    user_repository: UserRepository = Depends(UserRepository),
     email_verification_repository: EmailVerificationRepository = Depends(
-        get_workspace_repository(EmailVerificationRepository)
+        get_repository(EmailVerificationRepository)
     ),
     user_fields: list[UserField] = Depends(get_user_fields),
     send_task: SendTask = Depends(get_send_task),
@@ -137,7 +137,7 @@ async def get_paginated_users(
     tenant: UUID4 | None = Query(None),
     pagination: Pagination = Depends(get_pagination),
     ordering: Ordering = Depends(OrderingGetter()),
-    repository: UserRepository = Depends(get_workspace_repository(UserRepository)),
+    repository: UserRepository = Depends(UserRepository),
     get_paginated_objects: GetPaginatedObjects[User] = Depends(
         get_paginated_objects_getter
     ),
@@ -154,7 +154,7 @@ async def get_paginated_users(
 
 async def get_user_by_id_or_404(
     id: UUID4,
-    repository: UserRepository = Depends(get_workspace_repository(UserRepository)),
+    repository: UserRepository = Depends(UserRepository),
 ) -> User:
     user = await repository.get_by_id(id, (joinedload(User.tenant),))
 
@@ -169,7 +169,7 @@ async def get_paginated_user_permissions(
     ordering: Ordering = Depends(OrderingGetter()),
     user: User = Depends(get_user_by_id_or_404),
     user_permission_repository: UserPermissionRepository = Depends(
-        get_workspace_repository(UserPermissionRepository)
+        get_repository(UserPermissionRepository)
     ),
     get_paginated_objects: GetPaginatedObjects[UserPermission] = Depends(
         get_paginated_objects_getter
@@ -184,7 +184,7 @@ async def get_paginated_user_permissions(
 async def get_user_permissions(
     user: User = Depends(get_user_by_id_or_404),
     user_permission_repository: UserPermissionRepository = Depends(
-        get_workspace_repository(UserPermissionRepository)
+        get_repository(UserPermissionRepository)
     ),
 ) -> list[UserPermission]:
     statement = user_permission_repository.get_by_user_statement(user.id)
@@ -196,7 +196,7 @@ async def get_paginated_user_roles(
     ordering: Ordering = Depends(OrderingGetter()),
     user: User = Depends(get_user_by_id_or_404),
     user_role_repository: UserRoleRepository = Depends(
-        get_workspace_repository(UserRoleRepository)
+        get_repository(UserRoleRepository)
     ),
     get_paginated_objects: GetPaginatedObjects[UserRole] = Depends(
         get_paginated_objects_getter
@@ -211,7 +211,7 @@ async def get_paginated_user_roles(
 async def get_user_roles(
     user: User = Depends(get_user_by_id_or_404),
     user_role_repository: UserRoleRepository = Depends(
-        get_workspace_repository(UserRoleRepository)
+        get_repository(UserRoleRepository)
     ),
 ) -> list[UserRole]:
     statement = user_role_repository.get_by_user_statement(user.id)
@@ -223,7 +223,7 @@ async def get_paginated_user_oauth_accounts(
     ordering: Ordering = Depends(OrderingGetter()),
     user: User = Depends(get_user_by_id_or_404),
     oauth_account_repository: OAuthAccountRepository = Depends(
-        get_workspace_repository(OAuthAccountRepository)
+        get_repository(OAuthAccountRepository)
     ),
     get_paginated_objects: GetPaginatedObjects[OAuthAccount] = Depends(
         get_paginated_objects_getter
@@ -238,7 +238,7 @@ async def get_paginated_user_oauth_accounts(
 async def get_user_oauth_accounts(
     user: User = Depends(get_user_by_id_or_404),
     oauth_account_repository: OAuthAccountRepository = Depends(
-        get_workspace_repository(OAuthAccountRepository)
+        get_repository(OAuthAccountRepository)
     ),
 ) -> list[OAuthAccount]:
     statement = oauth_account_repository.get_by_user_statement(user.id)

@@ -13,10 +13,10 @@ from fief.apps.dashboard.responses import HXRedirectResponse
 from fief.dependencies.admin_authentication import is_authenticated_admin_session
 from fief.dependencies.logger import get_audit_logger
 from fief.dependencies.pagination import PaginatedObjects
+from fief.dependencies.repositories import get_repository
 from fief.dependencies.role import get_paginated_roles, get_role_by_id_or_404
 from fief.dependencies.tasks import get_send_task
 from fief.dependencies.webhooks import TriggerWebhooks, get_trigger_webhooks
-from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.forms import FormHelper
 from fief.logger import AuditLogger
 from fief.models import AuditLogMessage, Role
@@ -89,9 +89,9 @@ async def get_role(
 @router.api_route("/create", methods=["GET", "POST"], name="dashboard.roles:create")
 async def create_role(
     request: Request,
-    repository: RoleRepository = Depends(get_workspace_repository(RoleRepository)),
+    repository: RoleRepository = Depends(RoleRepository),
     permission_repository: PermissionRepository = Depends(
-        get_workspace_repository(PermissionRepository)
+        get_repository(PermissionRepository)
     ),
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
@@ -141,9 +141,9 @@ async def create_role(
 async def update_role(
     request: Request,
     role: Role = Depends(get_role_by_id_or_404),
-    repository: RoleRepository = Depends(get_workspace_repository(RoleRepository)),
+    repository: RoleRepository = Depends(RoleRepository),
     permission_repository: PermissionRepository = Depends(
-        get_workspace_repository(PermissionRepository)
+        get_repository(PermissionRepository)
     ),
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
@@ -206,7 +206,7 @@ async def update_role(
 async def delete_role(
     request: Request,
     role: Role = Depends(get_role_by_id_or_404),
-    repository: RoleRepository = Depends(get_workspace_repository(RoleRepository)),
+    repository: RoleRepository = Depends(RoleRepository),
     list_context=Depends(get_list_context),
     context: BaseContext = Depends(get_base_context),
     audit_logger: AuditLogger = Depends(get_audit_logger),

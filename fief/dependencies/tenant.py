@@ -12,14 +12,13 @@ from fief.dependencies.pagination import (
     get_paginated_objects_getter,
     get_pagination,
 )
-from fief.dependencies.workspace_repositories import get_workspace_repository
 from fief.models import Tenant
 from fief.repositories import TenantRepository
 
 
 async def get_current_tenant(
     request: Request,
-    repository: TenantRepository = Depends(get_workspace_repository(TenantRepository)),
+    repository: TenantRepository = Depends(TenantRepository),
 ) -> Tenant:
     tenant_slug = request.path_params.get("tenant_slug")
     if tenant_slug is None:
@@ -37,7 +36,7 @@ async def get_paginated_tenants(
     query: str | None = Query(None),
     pagination: Pagination = Depends(get_pagination),
     ordering: Ordering = Depends(OrderingGetter()),
-    repository: TenantRepository = Depends(get_workspace_repository(TenantRepository)),
+    repository: TenantRepository = Depends(TenantRepository),
     get_paginated_objects: GetPaginatedObjects[Tenant] = Depends(
         get_paginated_objects_getter
     ),
@@ -52,7 +51,7 @@ async def get_paginated_tenants(
 
 async def get_tenant_by_id_or_404(
     id: UUID4,
-    repository: TenantRepository = Depends(get_workspace_repository(TenantRepository)),
+    repository: TenantRepository = Depends(TenantRepository),
 ) -> Tenant:
     tenant = await repository.get_by_id(
         id, (selectinload(Tenant.theme), selectinload(Tenant.email_domain))
@@ -65,6 +64,6 @@ async def get_tenant_by_id_or_404(
 
 
 async def get_tenants(
-    repository: TenantRepository = Depends(get_workspace_repository(TenantRepository)),
+    repository: TenantRepository = Depends(TenantRepository),
 ) -> list[Tenant]:
     return await repository.all()
