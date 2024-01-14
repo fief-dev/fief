@@ -59,6 +59,10 @@ def dashboard_unauthorized_assertions(response: httpx.Response):
     assert response.headers["Location"].endswith("/auth/login")
 
 
+def dashboard_forbidden_assertions(response: httpx.Response):
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+
 async def access_token_assertions(
     *, access_token: str, jwk: jwk.JWK, user: User, authenticated_at: datetime, acr: ACR
 ):
