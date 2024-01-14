@@ -3,7 +3,7 @@ import contextlib
 import json
 import secrets
 import uuid
-from collections.abc import AsyncGenerator, Callable, Generator
+from collections.abc import AsyncGenerator, Callable, Coroutine, Generator
 from typing import cast
 from unittest.mock import MagicMock, patch
 
@@ -186,10 +186,9 @@ def smtplib_mock() -> Generator[MagicMock, None, None]:
         yield mock
 
 
-@contextlib.asynccontextmanager
 async def create_admin_session_token(
     user: User, main_session: AsyncSession
-) -> AsyncGenerator[tuple[AdminSessionToken, str], None]:
+) -> tuple[AdminSessionToken, str]:
     token, token_hash = generate_token()
     session_token = AdminSessionToken(
         token=token_hash,
@@ -200,7 +199,7 @@ async def create_admin_session_token(
 
     await main_session.commit()
 
-    yield (session_token, token)
+    return session_token, token
 
 
 @contextlib.asynccontextmanager
@@ -218,15 +217,6 @@ async def create_api_key(
 
 
 @pytest_asyncio.fixture
-async def admin_session_token(
-    main_session: AsyncSession, test_data: TestData
-) -> AsyncGenerator[tuple[AdminSessionToken, str], None]:
-    user = test_data["users"]["regular"]
-    async with create_admin_session_token(user, main_session) as result:
-        yield result
-
-
-@pytest_asyncio.fixture
 async def admin_api_key(
     main_session: AsyncSession,
 ) -> AsyncGenerator[tuple[AdminAPIKey, str], None]:
@@ -237,16 +227,19 @@ async def admin_api_key(
 @pytest.fixture
 def authenticated_admin(
     request: pytest.FixtureRequest,
-    admin_session_token: tuple[AdminSessionToken, str],
     admin_api_key: tuple[AdminAPIKey, str],
-) -> Callable[[httpx.AsyncClient], httpx.AsyncClient]:
-    def _authenticated_admin(client: httpx.AsyncClient) -> httpx.AsyncClient:
+    test_data: TestData,
+    main_session: AsyncSession,
+) -> Callable[[httpx.AsyncClient], Coroutine[None, None, httpx.AsyncClient]]:
+    async def _authenticated_admin(client: httpx.AsyncClient) -> httpx.AsyncClient:
         marker = request.node.get_closest_marker("authenticated_admin")
         if marker:
             mode = marker.kwargs.get("mode", "api_key")
             assert mode in {"session", "api_key"}
             if mode == "session":
-                _, token = admin_session_token
+                user_alias = marker.kwargs.get("user", "admin")
+                user = test_data["users"][user_alias]
+                _, token = await create_admin_session_token(user, main_session)
                 client.cookies.set(settings.fief_admin_session_cookie_name, token)
             elif mode == "api_key":
                 _, token = admin_api_key
@@ -311,7 +304,9 @@ async def test_client_generator(
     fief_client_mock: MagicMock,
     theme_preview_mock: MagicMock,
     tenant_email_domain_mock: MagicMock,
-    authenticated_admin: Callable[[httpx.AsyncClient], httpx.AsyncClient],
+    authenticated_admin: Callable[
+        [httpx.AsyncClient], Coroutine[None, None, httpx.AsyncClient]
+    ],
 ) -> HTTPClientGeneratorType:
     @contextlib.asynccontextmanager
     async def _test_client_generator(app: FastAPI):
@@ -329,7 +324,7 @@ async def test_client_generator(
             async with httpx.AsyncClient(
                 app=app, base_url="http://api.fief.dev"
             ) as test_client:
-                test_client = authenticated_admin(test_client)
+                test_client = await authenticated_admin(test_client)
                 yield test_client
 
     return _test_client_generator
@@ -401,12 +396,22 @@ def pytest_generate_tests(metafunc: pytest.Metafunc):
     It helps to quickly add tests for those cases that are critical for security.
     """
     if "unauthorized_dashboard_assertions" in metafunc.fixturenames:
-        from tests.helpers import dashboard_unauthorized_assertions
+        from tests.helpers import (
+            dashboard_forbidden_assertions,
+            dashboard_unauthorized_assertions,
+        )
 
         metafunc.parametrize(
             "unauthorized_dashboard_assertions",
             [
                 pytest.param(dashboard_unauthorized_assertions, id="Unauthorized"),
+                pytest.param(
+                    dashboard_forbidden_assertions,
+                    marks=pytest.mark.authenticated_admin(
+                        mode="session", user="regular"
+                    ),
+                    id="Forbidden",
+                ),
             ],
         )
     elif "unauthorized_api_assertions" in metafunc.fixturenames:

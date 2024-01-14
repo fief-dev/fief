@@ -41,6 +41,11 @@ from fief.models import (
     Webhook,
     WebhookLog,
 )
+from fief.services.admin import (
+    ADMIN_PERMISSION_CODENAME,
+    ADMIN_PERMISSION_NAME,
+    ADMIN_ROLE_NAME,
+)
 from fief.services.email import AvailableEmailProvider
 from fief.services.email_template.types import EmailTemplateType
 from fief.services.oauth_provider import AvailableOAuthProvider
@@ -313,6 +318,15 @@ user_fields: ModelMapping[UserField] = {
 }
 
 users: ModelMapping[User] = {
+    "admin": User(
+        id=uuid.uuid4(),
+        created_at=datetime.now(tz=UTC),
+        email="admin@bretagne.duchy",
+        email_verified=True,
+        user_field_values=[],
+        hashed_password=hashed_password,
+        tenant=tenants["default"],
+    ),
     "regular": User(
         id=uuid.uuid4(),
         created_at=datetime.now(tz=UTC),
@@ -813,6 +827,10 @@ grants: ModelMapping[Grant] = {
 }
 
 permissions: ModelMapping[Permission] = {
+    ADMIN_PERMISSION_CODENAME: Permission(
+        name=ADMIN_PERMISSION_NAME,
+        codename=ADMIN_PERMISSION_CODENAME,
+    ),
     "castles:create": Permission(
         name="Create Castles",
         codename="castles:create",
@@ -832,6 +850,11 @@ permissions: ModelMapping[Permission] = {
 }
 
 roles: ModelMapping[Role] = {
+    "fief_admin": Role(
+        name=ADMIN_ROLE_NAME,
+        granted_by_default=False,
+        permissions=[permissions[ADMIN_PERMISSION_CODENAME]],
+    ),
     "castles_visitor": Role(
         name="Castles Visitor",
         granted_by_default=True,
@@ -850,6 +873,11 @@ roles: ModelMapping[Role] = {
 }
 
 user_permissions: ModelMapping[UserPermission] = {
+    "admin": UserPermission(
+        user=users["admin"],
+        permission=permissions[ADMIN_PERMISSION_CODENAME],
+        from_role=roles["fief_admin"],
+    ),
     "default_castles_visitor_from_role": UserPermission(
         user=users["regular"],
         permission=permissions["castles:read"],

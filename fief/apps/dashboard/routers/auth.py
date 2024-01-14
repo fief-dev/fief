@@ -1,8 +1,8 @@
 import json
 
-from fastapi import APIRouter, Depends, Query, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from fastapi.responses import RedirectResponse
-from fief_client import FiefAsync
+from fief_client import FiefAccessTokenMissingPermission, FiefAsync
 
 from fief.crypto.token import generate_token
 from fief.dependencies.admin_authentication import is_authenticated_admin_session
@@ -11,6 +11,7 @@ from fief.dependencies.fief import get_fief
 from fief.dependencies.repositories import get_repository
 from fief.models import AdminSessionToken
 from fief.repositories import AdminSessionTokenRepository
+from fief.services.admin import ADMIN_PERMISSION_CODENAME
 from fief.settings import settings
 
 router = APIRouter()
@@ -42,6 +43,14 @@ async def callback(
     tokens, userinfo = await fief.auth_callback(
         code, str(request.url_for("dashboard.auth:callback"))
     )
+
+    try:
+        await fief.validate_access_token(
+            tokens["access_token"], required_permissions=[ADMIN_PERMISSION_CODENAME]
+        )
+    except FiefAccessTokenMissingPermission as e:
+        raise HTTPException(status.HTTP_403_FORBIDDEN) from e
+
     token, token_hash = generate_token()
     session_token = AdminSessionToken(
         token=token_hash,
