@@ -4,10 +4,10 @@ from typing import Any, TypedDict
 
 from fastapi import FastAPI
 
-from fief import __version__
+from fief import __version__, tasks
 from fief.db.main import create_main_async_session_maker, create_main_engine
 from fief.logger import init_logger, logger
-from fief.services.posthog import get_server_id, get_server_properties, posthog
+from fief.services.posthog import get_server_id
 from fief.settings import settings
 
 
@@ -31,9 +31,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[LifespanState, None]:
             "You can opt-out by setting the environment variable `TELEMETRY_ENABLED=false`.\n"
             "Read more about Fief's telemetry here: https://docs.fief.dev/telemetry"
         )
-        posthog.group_identify(
-            "server", get_server_id(), properties=get_server_properties()
-        )
+        tasks.send_task(tasks.heartbeat)
 
     yield {
         "main_async_session_maker": create_main_async_session_maker(main_engine),
