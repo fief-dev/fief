@@ -11,7 +11,7 @@ def schedule():
         CronTrigger.from_crontab("0 0 * * *"),
     )
     scheduler.add_job(
-        tasks.count_users.send,
+        tasks.heartbeat.send,
         CronTrigger.from_crontab("0 0 * * *"),
     )
     try:
