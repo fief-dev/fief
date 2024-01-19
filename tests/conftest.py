@@ -373,7 +373,7 @@ def pytest_generate_tests(metafunc: pytest.Metafunc):
     The parametrization adds two cases:
 
     * A case where the client is not authenticated.
-    * A case where the client is authenticated on another workspace.
+    * A case where the client is authenticated but not an admin.
 
     The parametrization injects the corresponding assertion function for each case.
 

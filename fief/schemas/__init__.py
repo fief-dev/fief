@@ -15,11 +15,9 @@ from fief.schemas import (
     webhook,
     webhook_log,
     well_known,
-    workspace,
 )
 
 __all__ = [
-    "workspace",
     "auth",
     "client",
     "email_template",

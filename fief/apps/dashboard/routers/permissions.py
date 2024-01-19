@@ -93,10 +93,12 @@ async def list_permissions(
         existing_permission = await repository.get_by_codename(form.data["codename"])
         if existing_permission is not None:
             form.codename.errors.append(
-                "A permission already exists with this codename. A codename must be unique within your workspace."
+                "A permission already exists with this codename. "
+                "A codename must be unique within your server."
             )
             return await form_helper.get_error_response(
-                "A permission already exists with this codename. A codename must be unique within your workspace.",
+                "A permission already exists with this codename. "
+                "A codename must be unique within your server.",
                 "permission_codename_already_exists",
             )
 
