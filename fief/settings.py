@@ -192,9 +192,9 @@ class Settings(BaseSettings):
             host=self.database_host,
             port=self.database_port,
             database=self.database_name,
-            path=settings.database_location,
+            path=self.database_location,
             schema=schema,
-            ssl_mode=settings.database_ssl_mode,
+            ssl_mode=self.database_ssl_mode,
         )
 
     def get_email_provider(self) -> EmailProvider:
