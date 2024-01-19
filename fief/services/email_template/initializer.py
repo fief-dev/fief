@@ -1,6 +1,5 @@
 from pathlib import Path
 
-from fief.db.main import get_single_main_async_session
 from fief.models import EmailTemplate
 from fief.repositories.email_template import EmailTemplateRepository
 from fief.services.email_template.types import EmailTemplateType
@@ -47,10 +46,3 @@ class EmailTemplateInitializer:
     def _load_template(self, name: str) -> str:
         with open(self.templates_dir / name) as file:
             return file.read()
-
-
-async def init_email_templates():
-    async with get_single_main_async_session() as session:
-        email_template_repository = EmailTemplateRepository(session)
-        email_template_initializer = EmailTemplateInitializer(email_template_repository)
-        await email_template_initializer.init_templates()
