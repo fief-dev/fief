@@ -39,7 +39,7 @@ app = FastAPI(
                 },
                 "host": {
                     "default": settings.fief_domain,
-                    "description": "Your Fief's workspace hostname",
+                    "description": "Your Fief server hostname",
                 },
             },
         }

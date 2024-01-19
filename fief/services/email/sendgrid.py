@@ -64,8 +64,8 @@ class Sendgrid(EmailProvider):
                 }
             )
         except HTTPError as e:
-            # Domain might exist on Sengrid but not on this Fief workspace
-            # e.g. it has been added on another workspace
+            # Domain might exist on Sengrid but not on this Fief server
+            # e.g. it has been added on another server
             # or it has been lost in the void.
             if self._is_domain_already_exists_error(e):
                 return self._retrieve_existing_domain(domain)
