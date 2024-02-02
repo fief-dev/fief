@@ -1,6 +1,5 @@
 import argparse
 import sys
-from ast import literal_eval
 from typing import IO
 
 import libcst as cst
@@ -18,9 +17,15 @@ class ConvertTablePrefixStrings(ContextAwareTransformer):
     def leave_SimpleString(
         self, original_node: cst.SimpleString, updated_node: cst.SimpleString
     ) -> cst.SimpleString | cst.FormattedString:
-        literal_string_value = literal_eval(updated_node.value)
-        if TABLE_PREFIX_PLACEHOLDER in literal_string_value:
-            before, after = literal_string_value.split(TABLE_PREFIX_PLACEHOLDER)
+        value = updated_node.evaluated_value
+
+        if not isinstance(value, str):
+            return updated_node
+
+        if TABLE_PREFIX_PLACEHOLDER in value:
+            before, after = value.split(TABLE_PREFIX_PLACEHOLDER)
+            before = before.replace('"', '\\"')
+            after = after.replace('"', '\\"')
             return cst.FormattedString(
                 [
                     cst.FormattedStringText(before),
@@ -28,6 +33,7 @@ class ConvertTablePrefixStrings(ContextAwareTransformer):
                     cst.FormattedStringText(after),
                 ]
             )
+
         return updated_node
 
 
