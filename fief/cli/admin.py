@@ -87,8 +87,7 @@ def add_commands(app: typer.Typer) -> typer.Typer:
     @asyncio_command
     async def migrate():
         """
-        Apply database migrations to the main database
-        and initialize required objects.
+        Apply database migrations to the database and initialize required objects.
         """
         await migrate_schema(engine)
         await initializer.init_all()
@@ -99,7 +98,7 @@ def add_commands(app: typer.Typer) -> typer.Typer:
         port: int = 8000,
         migrate: bool = typer.Option(
             True,
-            help="Run the migrations on main and workspaces databases before starting.",
+            help="Run the migrations and initialize required objects before starting.",
         ),
         create_main_user: bool = typer.Option(
             True, help="Create the main Fief user before starting if needed."
