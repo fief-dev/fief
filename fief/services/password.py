@@ -3,11 +3,8 @@ from typing import Self
 from zxcvbn_rs_py import zxcvbn
 
 from fief.locale import gettext_lazy as _
-from fief.settings import settings
 
-MIN_PASSWORD_LENGTH = settings.password_min_length
 MAX_PASSWORD_LENGTH = 128
-MIN_PASSWORD_STRENGTH_SCORE = settings.password_min_score
 
 
 class PasswordValidation:
@@ -17,16 +14,16 @@ class PasswordValidation:
         self.messages = messages or []
 
     @classmethod
-    def validate(cls, password: str) -> Self:
+    def validate(cls, password: str, *, min_length: int, min_score: int) -> Self:
         valid = True
         messages: list[str] = []
 
-        if len(password) < MIN_PASSWORD_LENGTH:
+        if len(password) < min_length:
             valid = False
             messages.append(
                 _(
                     "Password must be at least %(min)d characters long.",
-                    min=MIN_PASSWORD_LENGTH,
+                    min=min_length,
                 )
             )
         elif len(password) > MAX_PASSWORD_LENGTH:
@@ -39,7 +36,7 @@ class PasswordValidation:
             )
 
         password_strength = zxcvbn(password[0:MAX_PASSWORD_LENGTH])
-        if password_strength.score < MIN_PASSWORD_STRENGTH_SCORE:
+        if password_strength.score < min_score:
             valid = False
             messages.append(_("Password is not strong enough."))
 

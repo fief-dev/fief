@@ -74,6 +74,10 @@ ignore_missing_imports = true
 module = "bs4.*"
 ignore_missing_imports = true
 
+[[tool.mypy.overrides]]
+module = "attr.*"  # Imported by rich in .hatch/fief-server/lib/python3.11/site-packages/rich/pretty.py:31
+ignore_missing_imports = true
+
 [tool.ruff]
 target-version = "py311"
 extend-select = ["I", "TRY", "UP"]

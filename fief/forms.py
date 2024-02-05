@@ -341,11 +341,15 @@ class AddressFormField(FormField):
 class PasswordValidator:
     def __init__(self) -> None:
         self.field_flags = {"password_validator": True}
+        self.min_length = settings.password_min_length
+        self.min_score = settings.password_min_score
 
     def __call__(self, form: Form, field: Field) -> Any:
         value = field.data
         if value:
-            password_validation = PasswordValidation.validate(value)
+            password_validation = PasswordValidation.validate(
+                value, min_length=self.min_length, min_score=self.min_score
+            )
             field.flags.password_strength_score = password_validation.score
             if not password_validation.valid:
                 for message in password_validation.messages:

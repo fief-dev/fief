@@ -27,6 +27,7 @@ from fief.services.webhooks.models import (
     UserPasswordReset,
     UserUpdated,
 )
+from fief.settings import settings
 from fief.tasks import (
     SendTask,
     on_after_forgot_password,
@@ -396,7 +397,11 @@ class UserManager:
     async def validate_password(
         self, password: str, user: schemas.user.UserCreate | User
     ) -> None:
-        password_validation = PasswordValidation.validate(password)
+        password_validation = PasswordValidation.validate(
+            password,
+            min_length=settings.password_min_length,
+            min_score=settings.password_min_score,
+        )
         if not password_validation.valid:
             raise InvalidPasswordError(password_validation.messages)
 

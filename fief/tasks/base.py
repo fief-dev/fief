@@ -13,8 +13,8 @@ from sqlalchemy.orm import selectinload
 
 from fief.db import AsyncSession
 from fief.db.main import get_single_main_async_session
-from fief.locale import BabelMiddleware, get_babel_middleware_kwargs
 from fief.logger import logger
+from fief.middlewares.locale import BabelMiddleware, get_babel_middleware_kwargs
 from fief.models import Tenant, User
 from fief.models.generics import BaseModel
 from fief.paths import EMAIL_TEMPLATES_DIRECTORY
