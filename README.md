@@ -97,7 +97,6 @@ The worker can also be started with the following command:
 hatch run dev.worker.start
 ```
 
-
 ## License
 
 Fief is [fair-code](http://faircode.io) distributed under [**Elastic License 2.0 (ELv2)**](https://github.com/fief-dev/fief/blob/main/LICENSE.md).

@@ -12,6 +12,5 @@ hatch run python -m fief.cli migrate
 
 set +e
 hatch run translations.compile
-hatch run python -m fief.cli workspaces create-main
-hatch run python -m fief.cli workspaces create-main-user --user-email anne@bretagne.duchy --user-password herminetincture
+hatch run python -m fief.cli create-admin --user-email anne@bretagne.duchy --user-password herminetincture
 set -e
