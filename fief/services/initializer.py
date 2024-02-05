@@ -17,7 +17,9 @@ from fief.repositories import (
     TenantRepository,
     ThemeRepository,
     UserFieldRepository,
+    UserPermissionRepository,
     UserRepository,
+    UserRoleRepository,
 )
 from fief.schemas.user import UserCreateAdmin
 from fief.services.admin import (
@@ -26,6 +28,7 @@ from fief.services.admin import (
     ADMIN_ROLE_NAME,
 )
 from fief.services.email_template.initializer import EmailTemplateInitializer
+from fief.services.user_roles import UserRolesService
 from fief.services.webhooks.trigger import trigger_webhooks
 from fief.tasks import send_task
 
@@ -70,14 +73,26 @@ class Initializer:
             email_verification_repository = EmailVerificationRepository(session)
             user_fields = await UserFieldRepository(session).all()
             audit_logger = await get_audit_logger(None, None)
+            trigger_webhooks_partial = functools.partial(
+                trigger_webhooks, send_task=send_task
+            )
 
+            user_roles_service = UserRolesService(
+                UserRoleRepository(session),
+                UserPermissionRepository(session),
+                RoleRepository(session),
+                audit_logger,
+                trigger_webhooks_partial,
+                send_task,
+            )
             user_manager = await get_user_manager(
                 user_repository,
                 email_verification_repository,
                 user_fields,
                 send_task,
                 audit_logger,
-                functools.partial(trigger_webhooks, send_task=send_task),
+                trigger_webhooks_partial,
+                user_roles_service,
             )
 
             if password is None:
@@ -92,6 +107,11 @@ class Initializer:
                 ),
                 tenant.id,
             )
+
+            role_repository = RoleRepository(session)
+            admin_role = await role_repository.get_by_name(ADMIN_ROLE_NAME)
+            if admin_role is not None:
+                await user_roles_service.add_role(user, admin_role, run_in_worker=False)
 
         return user
 
@@ -153,7 +173,9 @@ class Initializer:
         role_repository = RoleRepository(session)
         permission_repository = PermissionRepository(session)
 
-        permission = permission_repository.get_by_codename(ADMIN_PERMISSION_CODENAME)
+        permission = await permission_repository.get_by_codename(
+            ADMIN_PERMISSION_CODENAME
+        )
         if permission is None:
             permission = await permission_repository.create(
                 Permission(
