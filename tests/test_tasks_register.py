@@ -7,7 +7,7 @@ from fief.db import AsyncSession
 from fief.repositories import UserRoleRepository
 from fief.services.email import EmailProvider
 from fief.tasks.register import OnAfterRegisterTask
-from fief.tasks.user_permissions import on_user_role_created
+from fief.tasks.user_roles import on_user_role_created
 from tests.data import TestData
 
 
