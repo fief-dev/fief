@@ -6,7 +6,7 @@ from sqlalchemy import Enum, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql.sqltypes import JSON, String
 
-from fief.models.base import TABLE_PREFIX_PLACEHOLDER, Base
+from fief.models.base import TABLE_PREFIX, Base
 from fief.models.client import Client
 from fief.models.generics import (
     GUID,
@@ -38,7 +38,7 @@ class AuthorizationCode(UUIDModel, CreatedUpdatedAt, ExpiresAt, Base):
     acr: Mapped[ACR] = mapped_column(
         Enum(
             ACR,
-            name=f"{TABLE_PREFIX_PLACEHOLDER}acr",
+            name=f"{TABLE_PREFIX}acr",
             values_callable=lambda x: [e.value for e in x],
         ),
         nullable=False,
