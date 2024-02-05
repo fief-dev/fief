@@ -1,7 +1,11 @@
 from fief import schemas, tasks
 from fief.logger import AuditLogger
 from fief.models import AuditLogMessage, Role, User, UserRole
-from fief.repositories import UserPermissionRepository, UserRoleRepository
+from fief.repositories import (
+    RoleRepository,
+    UserPermissionRepository,
+    UserRoleRepository,
+)
 from fief.services.user_role_permissions import UserRolePermissionsService
 from fief.services.webhooks.models import UserRoleCreated, UserRoleDeleted
 from fief.services.webhooks.trigger import TriggerWebhooks
@@ -25,12 +29,14 @@ class UserRolesService:
         self,
         user_role_repository: UserRoleRepository,
         user_permission_repository: UserPermissionRepository,
+        role_repository: RoleRepository,
         audit_logger: AuditLogger,
         trigger_webhooks: TriggerWebhooks,
         send_task: SendTask,
     ) -> None:
         self.user_role_repository = user_role_repository
         self.user_permission_repository = user_permission_repository
+        self.role_repository = role_repository
         self.audit_logger = audit_logger
         self.trigger_webhooks = trigger_webhooks
         self.send_task = send_task
@@ -88,3 +94,10 @@ class UserRolesService:
             self.send_task(tasks.on_user_role_deleted, str(user.id), str(role.id))
         else:
             await self.user_role_permissions.delete_role_permissions(user, role)
+
+    async def add_default_roles(
+        self, user: User, *, run_in_worker: bool = True
+    ) -> None:
+        default_roles = await self.role_repository.get_granted_by_default()
+        for role in default_roles:
+            await self.add_role(user, role, run_in_worker=run_in_worker)
