@@ -1,7 +1,6 @@
 # mypy: ignore-errors
 
 import asyncio
-import contextlib
 from logging.config import fileConfig
 
 from alembic import context

@@ -168,11 +168,11 @@ lint-check = [
 
 "migrations.create" = [
   "hatch run dev.db.start",
-  "alembic -c fief/alembic.ini -n main revision --autogenerate -m {args}",
+  "env GENERATE_MIGRATION=1 alembic -c fief/alembic.ini -n main revision --autogenerate -m {args}",
 ]
 "migrations.migrate" = [
   "hatch run dev.db.start",
-  "alembic -c fief/alembic.ini -n main upgrade head",
+  "env GENERATE_MIGRATION=1 alembic -c fief/alembic.ini -n main upgrade head",
 ]
 
 "telemetry.set-posthog-key" = [
