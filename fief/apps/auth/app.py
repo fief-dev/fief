@@ -48,7 +48,7 @@ app.add_middleware(
     allow_headers=["Authorization", "X-Requested-With"],
 )
 
-app.add_middleware(BabelMiddleware, **get_babel_middleware_kwargs())
+app.add_middleware(BabelMiddleware, **get_babel_middleware_kwargs())  # type: ignore
 app.include_router(oauth_router, include_in_schema=False)
 app.include_router(default_tenant_router)
 app.include_router(tenant_router)
