@@ -113,6 +113,8 @@ class TenantEmailDomain:
 
         data_dict = dataclasses.asdict(email_domain_data)
         records = data_dict.pop("records")
+
         email_domain.records = records
-        await self.tenant_repository.update(tenant)
+        await self.email_domain_repository.update(email_domain)
+
         return tenant
