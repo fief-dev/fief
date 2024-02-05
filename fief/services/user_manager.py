@@ -21,6 +21,7 @@ from fief.models import (
 )
 from fief.repositories import EmailVerificationRepository, UserRepository
 from fief.services.password import PasswordValidation
+from fief.services.user_roles import UserRolesService
 from fief.services.webhooks.models import (
     UserCreated,
     UserForgotPasswordRequested,
@@ -79,6 +80,7 @@ class UserManager:
         send_task: SendTask,
         audit_logger: AuditLogger,
         trigger_webhooks: TriggerWebhooks,
+        user_roles: UserRolesService,
     ):
         self.password_helper = password_helper
         self.user_repository = user_repository
@@ -87,6 +89,7 @@ class UserManager:
         self.send_task = send_task
         self.audit_logger = audit_logger
         self.trigger_webhooks = trigger_webhooks
+        self.user_roles = user_roles
 
     async def get(self, id: UUID4, tenant: UUID4) -> User:
         user = await self.user_repository.get_by_id_and_tenant(id, tenant)
@@ -322,6 +325,7 @@ class UserManager:
     async def on_after_register(self, user: User, *, request: Request | None = None):
         self.audit_logger(AuditLogMessage.USER_REGISTERED, subject_user_id=user.id)
         self.trigger_webhooks(UserCreated, user, schemas.user.UserRead)
+        await self.user_roles.add_default_roles(user, run_in_worker=False)
         self.send_task(on_after_register, str(user.id))
 
     async def on_after_update(self, user: User, *, request: Request | None = None):

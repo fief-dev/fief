@@ -32,6 +32,7 @@ from fief.dependencies.user_field import (
     get_user_fields,
     get_user_update_model,
 )
+from fief.dependencies.user_roles import get_user_roles_service
 from fief.dependencies.webhooks import TriggerWebhooks, get_trigger_webhooks
 from fief.errors import APIErrorCode
 from fief.logger import AuditLogger
@@ -53,6 +54,7 @@ from fief.repositories import (
 from fief.schemas.user import UF, UserCreateAdmin, UserUpdate, UserUpdateAdmin
 from fief.services.acr import ACR
 from fief.services.user_manager import UserManager
+from fief.services.user_roles import UserRolesService
 from fief.tasks import SendTask
 
 
@@ -65,6 +67,7 @@ async def get_user_manager(
     send_task: SendTask = Depends(get_send_task),
     audit_logger: AuditLogger = Depends(get_audit_logger),
     trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
+    user_roles: UserRolesService = Depends(get_user_roles_service),
 ):
     return UserManager(
         password_helper=password_helper,
@@ -74,6 +77,7 @@ async def get_user_manager(
         send_task=send_task,
         audit_logger=audit_logger,
         trigger_webhooks=trigger_webhooks,
+        user_roles=user_roles,
     )
 
 
