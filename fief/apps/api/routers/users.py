@@ -5,7 +5,7 @@ from fastapi.responses import JSONResponse
 from pydantic import UUID4
 from sqlalchemy.orm import joinedload
 
-from fief import schemas, tasks
+from fief import schemas
 from fief.crypto.access_token import generate_access_token
 from fief.dependencies.admin_authentication import is_authenticated_admin_api
 from fief.dependencies.logger import get_audit_logger
@@ -15,7 +15,7 @@ from fief.dependencies.permission import (
     get_user_permissions_getter,
 )
 from fief.dependencies.repositories import get_repository
-from fief.dependencies.tasks import get_send_task
+from fief.dependencies.user_roles import get_user_roles_service
 from fief.dependencies.users import (
     get_admin_user_update,
     get_paginated_user_oauth_accounts,
@@ -43,7 +43,6 @@ from fief.repositories import (
     TenantRepository,
     UserPermissionRepository,
     UserRepository,
-    UserRoleRepository,
 )
 from fief.schemas.generics import PaginatedResults
 from fief.services.acr import ACR
@@ -52,14 +51,16 @@ from fief.services.user_manager import (
     UserAlreadyExistsError,
     UserManager,
 )
+from fief.services.user_roles import (
+    UserRoleAlreadyExists,
+    UserRoleDoesNotExist,
+    UserRolesService,
+)
 from fief.services.webhooks.models import (
     UserDeleted,
     UserPermissionCreated,
     UserPermissionDeleted,
-    UserRoleCreated,
-    UserRoleDeleted,
 )
-from fief.tasks import SendTask
 
 router = APIRouter(dependencies=[Depends(is_authenticated_admin_api)])
 
@@ -357,13 +358,8 @@ async def list_user_roles(
 async def create_user_role(
     user_role_create: schemas.user_role.UserRoleCreate,
     user: User = Depends(get_user_by_id_or_404),
-    role_repository: RoleRepository = Depends(RoleRepository),
-    user_role_repository: UserRoleRepository = Depends(
-        get_repository(UserRoleRepository)
-    ),
-    send_task: SendTask = Depends(get_send_task),
-    audit_logger: AuditLogger = Depends(get_audit_logger),
-    trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
+    role_repository: RoleRepository = Depends(get_repository(RoleRepository)),
+    user_roles: UserRolesService = Depends(get_user_roles_service),
 ) -> None:
     role_id = user_role_create.id
     role = await role_repository.get_by_id(role_id)
@@ -374,26 +370,13 @@ async def create_user_role(
             detail=APIErrorCode.USER_ROLE_CREATE_NOT_EXISTING_ROLE,
         )
 
-    existing_user_role = await user_role_repository.get_by_role_and_user(
-        user.id, role_id
-    )
-    if existing_user_role is not None:
+    try:
+        await user_roles.add_role(user, role)
+    except UserRoleAlreadyExists as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=APIErrorCode.USER_ROLE_CREATE_ALREADY_ADDED_ROLE,
-        )
-
-    user_role = UserRole(user_id=user.id, role=role)
-    await user_role_repository.create(user_role)
-    audit_logger.log_object_write(
-        AuditLogMessage.OBJECT_CREATED,
-        user_role,
-        subject_user_id=user.id,
-        role_id=str(role.id),
-    )
-    trigger_webhooks(UserRoleCreated, user_role, schemas.user_role.UserRole)
-
-    send_task(tasks.on_user_role_created, str(user.id), str(role.id))
+        ) from e
 
 
 @router.delete(
@@ -405,27 +388,18 @@ async def create_user_role(
 async def delete_user_role(
     role_id: UUID4,
     user: User = Depends(get_user_by_id_or_404),
-    user_role_repository: UserRoleRepository = Depends(
-        get_repository(UserRoleRepository)
-    ),
-    send_task: SendTask = Depends(get_send_task),
-    audit_logger: AuditLogger = Depends(get_audit_logger),
-    trigger_webhooks: TriggerWebhooks = Depends(get_trigger_webhooks),
+    role_repository: RoleRepository = Depends(get_repository(RoleRepository)),
+    user_roles: UserRolesService = Depends(get_user_roles_service),
 ) -> None:
-    user_role = await user_role_repository.get_by_role_and_user(user.id, role_id)
-    if user_role is None:
+    role = await role_repository.get_by_id(role_id)
+
+    if role is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
 
-    await user_role_repository.delete(user_role)
-    audit_logger.log_object_write(
-        AuditLogMessage.OBJECT_DELETED,
-        user_role,
-        subject_user_id=user.id,
-        role_id=str(role_id),
-    )
-    trigger_webhooks(UserRoleDeleted, user_role, schemas.user_role.UserRole)
-
-    send_task(tasks.on_user_role_deleted, str(user.id), str(role_id))
+    try:
+        await user_roles.delete_role(user, role)
+    except UserRoleDoesNotExist as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND) from e
 
 
 @router.get(
