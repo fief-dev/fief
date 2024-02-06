@@ -1,6 +1,7 @@
 FROM mcr.microsoft.com/devcontainers/python:0-3.11
 
 ENV PYTHONUNBUFFERED 1
+ENV HATCH_CONFIG /workspaces/fief/.devcontainer/hatch.config.toml
 ENV FORWARDED_ALLOW_IPS *
 
 # [Optional] If your requirements rarely change, uncomment this section to add them to the image.
