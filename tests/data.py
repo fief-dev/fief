@@ -329,7 +329,7 @@ users: ModelMapping[User] = {
     ),
     "regular": User(
         id=uuid.uuid4(),
-        created_at=datetime.now(tz=UTC),
+        created_at=datetime.now(tz=UTC) + timedelta(seconds=1),
         email="anne@bretagne.duchy",
         email_verified=True,
         hashed_password=hashed_password,
@@ -337,7 +337,7 @@ users: ModelMapping[User] = {
     ),
     "regular_secondary": User(
         id=uuid.uuid4(),
-        created_at=datetime.now(tz=UTC) + timedelta(seconds=1),
+        created_at=datetime.now(tz=UTC) + timedelta(seconds=2),
         email="anne@nantes.city",
         email_verified=True,
         hashed_password=hashed_password,
@@ -345,7 +345,7 @@ users: ModelMapping[User] = {
     ),
     "regular_default_2": User(
         id=uuid.uuid4(),
-        created_at=datetime.now(tz=UTC) + timedelta(seconds=2),
+        created_at=datetime.now(tz=UTC) + timedelta(seconds=3),
         email="isabeau@bretagne.duchy",
         email_verified=True,
         hashed_password=hashed_password,
@@ -353,7 +353,7 @@ users: ModelMapping[User] = {
     ),
     "inactive": User(
         id=uuid.uuid4(),
-        created_at=datetime.now(tz=UTC) + timedelta(seconds=3),
+        created_at=datetime.now(tz=UTC) + timedelta(seconds=4),
         email="marguerite@bretagne.duchy",
         email_verified=True,
         hashed_password=hashed_password,
@@ -362,7 +362,7 @@ users: ModelMapping[User] = {
     ),
     "cased_email": User(
         id=uuid.uuid4(),
-        created_at=datetime.now(tz=UTC) + timedelta(seconds=4),
+        created_at=datetime.now(tz=UTC) + timedelta(seconds=5),
         email="Claude@bretagne.duchy",
         email_verified=True,
         hashed_password=hashed_password,
@@ -370,7 +370,7 @@ users: ModelMapping[User] = {
     ),
     "not_verified_email": User(
         id=uuid.uuid4(),
-        created_at=datetime.now(tz=UTC) + timedelta(seconds=5),
+        created_at=datetime.now(tz=UTC) + timedelta(seconds=6),
         email="charles@france.realm",
         email_verified=False,
         hashed_password=hashed_password,
