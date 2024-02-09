@@ -9,7 +9,7 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from fief import models
-from fief.models.base import TABLE_PREFIX_PLACEHOLDER
+from fief.models.base import TABLE_PREFIX
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -30,8 +30,7 @@ target_metadata = getattr(models, config.get_main_option("target_base")).metadat
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
-table_prefix = config.attributes.get("table_prefix", TABLE_PREFIX_PLACEHOLDER)
-version_table = f"{table_prefix}{config.get_main_option('version_table_name')}"
+version_table = f"{TABLE_PREFIX}{config.get_main_option('version_table_name')}"
 
 
 def run_migrations_offline() -> None:
@@ -63,7 +62,7 @@ def do_run_migrations(connection: Connection) -> None:
         connection=connection,
         target_metadata=target_metadata,
         version_table=version_table,
-        table_prefix=table_prefix,
+        table_prefix=TABLE_PREFIX,
     )
     with context.begin_transaction():
         context.run_migrations()

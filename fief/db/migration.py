@@ -4,13 +4,11 @@ from sqlalchemy.engine import Connection
 
 from fief.db import AsyncEngine
 from fief.paths import ALEMBIC_CONFIG_FILE
-from fief.settings import settings
 
 
 def _get_alembic_config(connection: Connection) -> Config:
-    config = Config(ALEMBIC_CONFIG_FILE, ini_section="main")
+    config = Config(ALEMBIC_CONFIG_FILE)
     config.attributes["connection"] = connection
-    config.attributes["table_prefix"] = settings.database_table_prefix
     return config
 
 
