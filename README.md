@@ -77,9 +77,9 @@ To get started quickly, we recommend you to use [GitHub Codespaces](https://gith
 <a href="https://github.com/codespaces/new?hide_repo_select=true&ref=main&repo=444125382"><img src="https://github.com/codespaces/badge.svg" alt="Open in GitHub Codespaces"></a>
 </p>
 
-When the Codespace is built, a main workspace and a main user are automatically created.
+When the Codespace is built, an admin user is automatically created.
 
-> **Main user credentials**
+> **Admin user credentials**
 >
 > Email: `anne@bretagne.duchy`
 >
