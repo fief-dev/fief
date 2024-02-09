@@ -1,19 +1,15 @@
-import argparse
-import sys
-from typing import IO
-
 import libcst as cst
-from libcst.codemod import (
-    CodemodContext,
-    ContextAwareTransformer,
-    TransformSuccess,
-    transform_module,
-)
+from libcst.codemod import VisitorBasedCodemodCommand
 
 from fief.models.base import TABLE_PREFIX_PLACEHOLDER
 
 
-class ConvertTablePrefixStrings(ContextAwareTransformer):
+class ConvertTablePrefixStrings(VisitorBasedCodemodCommand):
+    DESCRIPTION: str = (
+        "Converts strings containing table prefix placeholder "
+        "to a format-string with dynamic table prefix."
+    )
+
     def leave_SimpleString(
         self, original_node: cst.SimpleString, updated_node: cst.SimpleString
     ) -> cst.SimpleString | cst.FormattedString:
@@ -35,22 +31,3 @@ class ConvertTablePrefixStrings(ContextAwareTransformer):
             )
 
         return updated_node
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "file", help="The file to transform", type=argparse.FileType("r+")
-    )
-    args = parser.parse_args()
-    file: IO = args.file
-
-    context = CodemodContext()
-    result = transform_module(ConvertTablePrefixStrings(context), file.read())
-
-    if not isinstance(result, TransformSuccess):
-        print(f"Error: {result}")
-        sys.exit(1)
-
-    file.seek(0)
-    file.write(result.code)
