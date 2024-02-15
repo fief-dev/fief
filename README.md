@@ -9,8 +9,8 @@
 <p align="center">
     <a href="https://polar.sh/fief-dev">
     <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://polar.sh/embed/support-us.svg?org=fief-dev&&darkmode=1">
-      <img alt="Support me" src="https://polar.sh/embed/support-us.svg?org=fief-dev">
+      <source media="(prefers-color-scheme: dark)" srcset="https://polar.sh/embed/subscribe.svg?org=fief-devdarkmode=1">
+      <img alt="Support me" src="https://polar.sh/embed/subscribe.svg?org=fief-dev">
     </picture>
     </a>
 </p>
