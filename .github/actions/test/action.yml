@@ -56,7 +56,6 @@ runs:
         DATABASE_PASSWORD: ${{ inputs.database_password }}
         DATABASE_NAME: ${{ inputs.database_name }}
         DATABASE_SSL_MODE: ${{ inputs.database_ssl_mode }}
-        ROOT_DOMAIN: localhost:8000
         ALLOW_ORIGIN_REGEX: http://localhost:3000
         FIEF_CLIENT_ID: FIEF_CLIENT_ID
         FIEF_CLIENT_SECRET: FIEF_CLIENT_SECRET

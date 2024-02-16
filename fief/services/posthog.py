@@ -21,7 +21,7 @@ posthog = Posthog(
 
 @functools.cache
 def get_server_id() -> str:
-    domain = settings.root_domain
+    domain = settings.fief_domain
     server_id_hash = hashlib.sha256()
     server_id_hash.update(domain.encode("utf-8"))
     server_id_hash.update(settings.secret.get_secret_value().encode("utf-8"))
@@ -33,7 +33,7 @@ async def get_server_properties(session: AsyncSession) -> dict[str, Any]:
     users_count = await user_repository.count_all()
     return {
         "version": __version__,
-        "is_localhost": is_localhost(settings.root_domain),
+        "is_localhost": is_localhost(settings.fief_domain),
         "database_type": settings.database_type,
         "users_count": users_count,
     }

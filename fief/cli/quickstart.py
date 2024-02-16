@@ -58,7 +58,6 @@ def add_commands(app: typer.Typer) -> typer.Typer:
             "FIEF_CLIENT_SECRET": secrets.token_urlsafe(),
             "ENCRYPTION_KEY": generate_key().decode("utf-8"),
             "PORT": port,
-            "ROOT_DOMAIN": f"{host}:{port}",
             "FIEF_DOMAIN": f"{host}:{port}",
             "FIEF_MAIN_USER_EMAIL": user_email,
             "FIEF_MAIN_USER_PASSWORD": user_password,
