@@ -47,7 +47,6 @@ class Settings(BaseSettings):
     sentry_dsn_server: str | None = None
     sentry_dsn_worker: str | None = None
     telemetry_enabled: bool = True
-    root_domain: str = "localhost:8000"
     allow_origin_regex: str = "http://.*localhost:[0-9]+"
     port: int = 8000
 
