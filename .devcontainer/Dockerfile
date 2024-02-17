@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/devcontainers/python:0-3.11
+FROM mcr.microsoft.com/devcontainers/python:0-3.12
 
 ENV PYTHONUNBUFFERED 1
 ENV HATCH_CONFIG /workspaces/fief/.devcontainer/hatch.config.toml
