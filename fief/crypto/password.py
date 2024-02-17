@@ -1,21 +1,24 @@
-from passlib import pwd
-from passlib.context import CryptContext
+import secrets
+
+from pwdlib import PasswordHash
+from pwdlib.hashers.argon2 import Argon2Hasher
+from pwdlib.hashers.bcrypt import BcryptHasher
 
 
 class PasswordHelper:
     def __init__(self) -> None:
-        self.context = CryptContext(schemes=["argon2", "bcrypt"], deprecated="auto")
+        self.password_hash = PasswordHash((BcryptHasher(), Argon2Hasher()))
 
     def verify_and_update(
         self, plain_password: str, hashed_password: str
-    ) -> tuple[bool, str]:
-        return self.context.verify_and_update(plain_password, hashed_password)
+    ) -> tuple[bool, str | None]:
+        return self.password_hash.verify_and_update(hashed_password, plain_password)
 
     def hash(self, password: str) -> str:
-        return self.context.hash(password)
+        return self.password_hash.hash(password)
 
     def generate(self) -> str:
-        return pwd.genword(entropy=128)
+        return secrets.token_urlsafe()
 
 
 password_helper = PasswordHelper()
