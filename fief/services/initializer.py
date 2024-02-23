@@ -48,6 +48,10 @@ class AdminAPIKeyAlreadyExists(InitializerError):
     pass
 
 
+class UserDoesNotExist(InitializerError):
+    pass
+
+
 class Initializer:
     def __init__(self, engine: AsyncEngine, settings: "Settings") -> None:
         self.engine = engine
@@ -63,6 +67,8 @@ class Initializer:
 
     async def create_admin(self, email: str, password: str | None = None) -> User:
         async with self.sessionmaker() as session:
+            await self._init_admin_role(session)
+
             tenant_repository = TenantRepository(session)
             tenant = await tenant_repository.get_default()
 
@@ -132,6 +138,42 @@ class Initializer:
 
         return admin_api_key
 
+    async def grant_admin_role(self, email: str) -> User:
+        async with self.sessionmaker() as session:
+            await self._init_admin_role(session)
+
+            tenant_repository = TenantRepository(session)
+            tenant = await tenant_repository.get_default()
+
+            if tenant is None:
+                raise DefaultTenantDoesNotExist()
+
+            user_repository = UserRepository(session)
+            audit_logger = await get_audit_logger(None, None)
+            trigger_webhooks_partial = functools.partial(
+                trigger_webhooks, send_task=send_task
+            )
+            user_roles_service = UserRolesService(
+                UserRoleRepository(session),
+                UserPermissionRepository(session),
+                RoleRepository(session),
+                audit_logger,
+                trigger_webhooks_partial,
+                send_task,
+            )
+
+            user = await user_repository.get_by_email_and_tenant(email, tenant.id)
+
+            if user is None:
+                raise UserDoesNotExist()
+
+            role_repository = RoleRepository(session)
+            admin_role = await role_repository.get_by_name(ADMIN_ROLE_NAME)
+            if admin_role is not None:
+                await user_roles_service.add_role(user, admin_role, run_in_worker=False)
+
+        return user
+
     async def _init_default_tenant(self, session: AsyncSession) -> Tenant:
         repository = TenantRepository(session)
 
@@ -141,7 +183,8 @@ class Initializer:
             tenant_slug = await repository.get_available_slug(tenant_name)
             tenant = Tenant(name=tenant_name, slug=tenant_slug, default=True)
             tenant = await repository.create(tenant)
-            await self._init_default_client(session, tenant)
+
+        await self._init_default_client(session, tenant)
 
         return tenant
 
@@ -150,19 +193,30 @@ class Initializer:
     ) -> Client:
         repository = ClientRepository(session)
 
+        client_id = self.settings.fief_client_id
+        redirect_uris = [
+            f"http://{self.settings.fief_domain}/admin/auth/callback",
+            f"https://{self.settings.fief_domain}/admin/auth/callback",
+            f"http://{self.settings.fief_domain}/docs/oauth2-redirect",
+            f"https://{self.settings.fief_domain}/docs/oauth2-redirect",
+        ]
+
+        client = await repository.get_by_client_id(client_id)
+        if client is not None:
+            for redirect_uri in redirect_uris:
+                if redirect_uri not in client.redirect_uris:
+                    client.redirect_uris.append(redirect_uri)
+            await repository.update(client)
+            return client
+
         client = Client(
             name=f"{tenant.name}'s client",
             first_party=True,
             tenant=tenant,
-            redirect_uris=[
-                f"http://{self.settings.fief_domain}/admin/auth/callback",
-                f"https://{self.settings.fief_domain}/admin/auth/callback",
-                f"http://{self.settings.fief_domain}/docs/oauth2-redirect",
-                f"https://{self.settings.fief_domain}/docs/oauth2-redirect",
-            ],
+            redirect_uris=redirect_uris,
         )
 
-        client.client_id = self.settings.fief_client_id
+        client.client_id = client_id
         client.client_secret = self.settings.fief_client_secret
         if self.settings.fief_encryption_key is not None:
             client.encrypt_jwk = self.settings.fief_encryption_key

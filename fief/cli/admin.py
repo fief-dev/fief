@@ -12,8 +12,10 @@ from fief.services.initializer import (
     AdminAPIKeyAlreadyExists,
     DefaultTenantDoesNotExist,
     Initializer,
+    UserDoesNotExist,
 )
 from fief.services.user_manager import InvalidPasswordError, UserAlreadyExistsError
+from fief.services.user_roles import UserRoleAlreadyExists
 from fief.settings import settings
 
 
@@ -49,7 +51,7 @@ def add_commands(app: typer.Typer) -> typer.Typer:
             typer.echo("Admin created")
         except DefaultTenantDoesNotExist as e:
             typer.secho(
-                "Default tenant does not exist. Please run 'fief init'", fg="red"
+                "Default tenant does not exist. Please run 'fief migrate'", fg="red"
             )
             raise typer.Exit(code=1) from e
         except UserAlreadyExistsError as e:
@@ -72,7 +74,29 @@ def add_commands(app: typer.Typer) -> typer.Typer:
             await initializer.create_admin_api_key(token)
             typer.echo("Admin API key created")
         except AdminAPIKeyAlreadyExists as e:
-            typer.secho("This admin API key already exists", fg="red")
+            typer.secho("Admin API key already exists", fg="red")
+            raise typer.Exit(code=1) from e
+
+    @app.command("grant-admin-role")
+    @asyncio_command
+    async def grant_admin_role(
+        user_email: str = typer.Argument(..., help="The admin user email"),
+    ):
+        """Grant the admin role to an existing user."""
+
+        try:
+            await initializer.grant_admin_role(user_email)
+            typer.echo("Admin role granted")
+        except DefaultTenantDoesNotExist as e:
+            typer.secho(
+                "Default tenant does not exist. Please run 'fief migrate'", fg="red"
+            )
+            raise typer.Exit(code=1) from e
+        except UserDoesNotExist as e:
+            typer.secho("User does not exist", fg="red")
+            raise typer.Exit(code=1) from e
+        except UserRoleAlreadyExists as e:
+            typer.secho("User already has the admin role", fg="red")
             raise typer.Exit(code=1) from e
 
     @app.command()
@@ -132,7 +156,7 @@ def add_commands(app: typer.Typer) -> typer.Typer:
                         typer.echo("Admin created")
                     except DefaultTenantDoesNotExist as e:
                         typer.secho(
-                            "Default tenant does not exist. Please run 'fief init'",
+                            "Default tenant does not exist. Please run 'fief migrate'",
                             fg="red",
                         )
                         raise typer.Exit(code=1) from e
