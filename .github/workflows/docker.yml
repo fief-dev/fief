@@ -21,7 +21,7 @@ jobs:
           with:
             fief_version: ${{ inputs.fief_version }}
             tags: ${{ inputs.tags }}
-            sep_tags: '|'
+            sep_tags: ' '
             registry: ghcr.io
             image_name: ${{ github.repository }}
             github_token: ${{ secrets.GITHUB_TOKEN }}
