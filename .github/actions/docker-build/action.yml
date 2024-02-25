@@ -8,9 +8,6 @@ inputs:
   tags:
     description: "Tags (following Docker metadata syntax)"
     required: true
-  sep_tags:
-    description: "Tags separator. Should be ' ' for manual Docker build"
-    default: \n
   registry:
     description: "Docker registry"
     required: true
@@ -50,7 +47,6 @@ runs:
       with:
         images: ${{ inputs.registry }}/${{ inputs.image_name }}
         tags: ${{ inputs.tags }}
-        sep-tags: ${{ steps.meta.outputs.sep_tags }}
     - name: Build and push
       uses: docker/build-push-action@v5
       with:
