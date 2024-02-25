@@ -50,6 +50,7 @@ runs:
       with:
         images: ${{ inputs.registry }}/${{ inputs.image_name }}
         tags: ${{ inputs.tags }}
+        sep-tags: ${{ steps.meta.outputs.sep_tags }}
     - name: Build and push
       uses: docker/build-push-action@v5
       with:
@@ -58,7 +59,6 @@ runs:
         context: docker/
         platforms: linux/amd64, linux/arm64
         push: true
-        sep-tags: ${{ steps.meta.outputs.sep_tags }}
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
         cache-from: type=local,src=/tmp/.buildx-cache
