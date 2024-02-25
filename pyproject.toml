@@ -262,7 +262,7 @@ dependencies = [
 ]
 
 [project.scripts]
-fief = "fief.cli:app"
+fief = "fief.cli.__main__:app"
 
 [project.urls]
 Documentation = "https://docs.fief.dev"
