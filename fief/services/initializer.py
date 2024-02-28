@@ -203,9 +203,8 @@ class Initializer:
 
         client = await repository.get_by_client_id(client_id)
         if client is not None:
-            for redirect_uri in redirect_uris:
-                if redirect_uri not in client.redirect_uris:
-                    client.redirect_uris.append(redirect_uri)
+            updated_redirect_uris = set(client.redirect_uris) | set(redirect_uris)
+            client.redirect_uris = list(updated_redirect_uris)
             await repository.update(client)
             return client
 
