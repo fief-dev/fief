@@ -18,6 +18,7 @@ class HeartbeatTask(TaskBase):
             server_id = get_server_id()
             server_properties = await get_server_properties(session)
             posthog.group_identify("server", server_id, properties=server_properties)
+            posthog.flush()
             logger.debug(
                 "Heartbeat sent to Posthog",
                 server_id=server_id,
