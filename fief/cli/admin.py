@@ -1,5 +1,6 @@
 import asyncio
 import functools
+from typing import Union
 
 import typer
 import uvicorn
@@ -119,7 +120,14 @@ def add_commands(app: typer.Typer) -> typer.Typer:
     @app.command("run-server")
     def run_server(
         host: str = "0.0.0.0",
-        port: int = 8000,
+        workers: Union[int, None] = typer.Option(  # noqa: UP007
+            None,
+            help=(
+                "Number of workers processes to use. "
+                "Defaults to the $WEB_CONCURRENCY environment variable if available, "
+                "or 1."
+            ),
+        ),
         migrate: bool = typer.Option(
             True,
             help="Run the migrations and initialize required objects before starting.",
@@ -184,7 +192,7 @@ def add_commands(app: typer.Typer) -> typer.Typer:
                         typer.secho("This admin API key already exists")
 
         asyncio.run(_pre_run_server())
-        uvicorn.run("fief.app:app", host=host, port=port)
+        uvicorn.run("fief.app:app", host=host, port=settings.port, workers=workers)
 
     @app.command(
         "run-worker",
