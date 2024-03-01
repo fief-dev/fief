@@ -27,5 +27,4 @@ def trigger_webhooks(
 class TriggerWebhooks(Protocol):
     def __call__(
         self, event_type: type[WebhookEventType], object: M, schema_class: type[PM]
-    ) -> None:
-        ...
+    ) -> None: ...

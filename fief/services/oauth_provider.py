@@ -73,7 +73,7 @@ def get_oauth_provider_service(oauth_provider: "OAuthProvider") -> BaseOAuth2:
         "client_secret": oauth_provider.client_secret,
     }
     if provider == AvailableOAuthProvider.OPENID:
-        oauth_provider_class_kwargs[
-            "openid_configuration_endpoint"
-        ] = oauth_provider.openid_configuration_endpoint
+        oauth_provider_class_kwargs["openid_configuration_endpoint"] = (
+            oauth_provider.openid_configuration_endpoint
+        )
     return oauth_provider_class(**oauth_provider_class_kwargs)

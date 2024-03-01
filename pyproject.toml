@@ -144,12 +144,12 @@ test-cov-xml = "pytest --cov fief/ --cov-report=xml --exitfirst"
 
 lint = [
   "ruff format .",
-  "ruff --fix .",
+  "ruff check --fix .",
   "mypy fief/",
 ]
 lint-check = [
   "ruff format --check .",
-  "ruff .",
+  "ruff check .",
   "mypy fief/",
 ]
 

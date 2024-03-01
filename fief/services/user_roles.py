@@ -12,16 +12,13 @@ from fief.services.webhooks.trigger import TriggerWebhooks
 from fief.tasks import SendTask
 
 
-class UserRolesError(Exception):
-    ...
+class UserRolesError(Exception): ...
 
 
-class UserRoleAlreadyExists(UserRolesError):
-    ...
+class UserRoleAlreadyExists(UserRolesError): ...
 
 
-class UserRoleDoesNotExist(UserRolesError):
-    ...
+class UserRoleDoesNotExist(UserRolesError): ...
 
 
 class UserRolesService:

@@ -18,56 +18,48 @@ class BaseRepositoryProtocol(Protocol[M]):
     model: type[M]
     session: AsyncSession
 
-    def __init__(self, session: AsyncSession) -> None:
-        ...
+    def __init__(self, session: AsyncSession) -> None: ...
 
     async def paginate(
         self,
         statement: Select,
         limit=10,
         skip=0,
-    ) -> tuple[list[M], int]:
-        ...  # pragma: no cover
+    ) -> tuple[list[M], int]: ...  # pragma: no cover
 
     def orderize(
         self, statement: Select, ordering: list[tuple[list[str], bool]]
-    ) -> Select:
-        ...  # pragma: no cover
+    ) -> Select: ...  # pragma: no cover
 
-    async def get_one_or_none(self, statement: Select) -> M | None:
-        ...  # pragma: no cover
+    async def get_one_or_none(
+        self, statement: Select
+    ) -> M | None: ...  # pragma: no cover
 
-    async def list(self, statement: Select) -> list[M]:
-        ...  # pragma: no cover
+    async def list(self, statement: Select) -> list[M]: ...  # pragma: no cover
 
-    async def create(self, object: M) -> M:
-        ...  # pragma: no cover
+    async def create(self, object: M) -> M: ...  # pragma: no cover
 
-    async def update(self, object: M) -> None:
-        ...  # pragma: no cover
+    async def update(self, object: M) -> None: ...  # pragma: no cover
 
-    async def delete(self, object: M) -> None:
-        ...  # pragma: no cover
+    async def delete(self, object: M) -> None: ...  # pragma: no cover
 
-    async def _execute_query(self, statement: Select) -> Result:
-        ...  # pragma: no cover
+    async def _execute_query(self, statement: Select) -> Result: ...  # pragma: no cover
 
-    async def _execute_statement(self, statement: Executable) -> Result:
-        ...  # pragma: no cover
+    async def _execute_statement(
+        self, statement: Executable
+    ) -> Result: ...  # pragma: no cover
 
 
 class UUIDRepositoryProtocol(BaseRepositoryProtocol, Protocol[M_UUID]):
     model: type[M_UUID]
 
-    async def get_by_id(self, id: UUID4) -> M_UUID | None:
-        ...  # pragma: no cover
+    async def get_by_id(self, id: UUID4) -> M_UUID | None: ...  # pragma: no cover
 
 
 class ExpiresAtRepositoryProtocol(BaseRepositoryProtocol, Protocol[M_EXPIRES_AT]):
     model: type[M_EXPIRES_AT]
 
-    async def delete_expired(self) -> None:
-        ...  # pragma: no cover
+    async def delete_expired(self) -> None: ...  # pragma: no cover
 
 
 class BaseRepository(BaseRepositoryProtocol, Generic[M]):

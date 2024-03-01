@@ -52,24 +52,21 @@ class EmailTemplateRenderer:
     @overload
     async def render(
         self, type: Literal[EmailTemplateType.WELCOME], context: "WelcomeContext"
-    ) -> str:
-        ...  # pragma: no cover
+    ) -> str: ...  # pragma: no cover
 
     @overload
     async def render(
         self,
         type: Literal[EmailTemplateType.VERIFY_EMAIL],
         context: "VerifyEmailContext",
-    ) -> str:
-        ...  # pragma: no cover
+    ) -> str: ...  # pragma: no cover
 
     @overload
     async def render(
         self,
         type: Literal[EmailTemplateType.FORGOT_PASSWORD],
         context: "ForgotPasswordContext",
-    ) -> str:
-        ...  # pragma: no cover
+    ) -> str: ...  # pragma: no cover
 
     async def render(self, type, context: "EmailContext") -> str:
         jinja_environment = await self._get_jinja_environment()
@@ -120,24 +117,21 @@ class EmailSubjectRenderer:
     @overload
     async def render(
         self, type: Literal[EmailTemplateType.WELCOME], context: "WelcomeContext"
-    ) -> str:
-        ...  # pragma: no cover
+    ) -> str: ...  # pragma: no cover
 
     @overload
     async def render(
         self,
         type: Literal[EmailTemplateType.VERIFY_EMAIL],
         context: "VerifyEmailContext",
-    ) -> str:
-        ...  # pragma: no cover
+    ) -> str: ...  # pragma: no cover
 
     @overload
     async def render(
         self,
         type: Literal[EmailTemplateType.FORGOT_PASSWORD],
         context: "ForgotPasswordContext",
-    ) -> str:
-        ...  # pragma: no cover
+    ) -> str: ...  # pragma: no cover
 
     async def render(self, type, context: "EmailContext") -> str:
         jinja_environment = await self._get_jinja_environment()
