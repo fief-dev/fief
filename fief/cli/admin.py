@@ -1,5 +1,6 @@
 import asyncio
 import functools
+import os
 from typing import Union
 
 import typer
@@ -138,6 +139,10 @@ def add_commands(app: typer.Typer) -> typer.Typer:
         create_main_admin_api_key: bool = typer.Option(
             True, help="Create the main Fief admin API key before starting if needed."
         ),
+        app: str = typer.Option(
+            os.environ.get("FIEF_ASGI_APP_PATH", "fief.app:app"),
+            help="The ASGI app to run.",
+        ),
     ):
         """Run the Fief server."""
 
@@ -192,23 +197,30 @@ def add_commands(app: typer.Typer) -> typer.Typer:
                         typer.secho("This admin API key already exists")
 
         asyncio.run(_pre_run_server())
-        uvicorn.run("fief.app:app", host=host, port=settings.port, workers=workers)
+        uvicorn.run(app, host=host, port=settings.port, workers=workers)
 
     @app.command(
         "run-worker",
         context_settings={"allow_extra_args": True, "ignore_unknown_options": True},
         add_help_option=False,
     )
-    def run_worker(ctx: typer.Context):
+    def run_worker(
+        ctx: typer.Context,
+        worker: str = typer.Option(
+            os.environ.get("FIEF_WORKER_PATH", "fief.worker"), help="The worker to run."
+        ),
+        scheduler: str = typer.Option(
+            os.environ.get("FIEF_SCHEDULER_PATH", "fief.scheduler:schedule"),
+            help="The scheduler to run.",
+        ),
+    ):
         """
         Run the Fief worker.
 
         Just forwards the options to the Dramatiq CLI.
         """
         parser = dramatiq_cli.make_argument_parser()
-        args = parser.parse_args(
-            ctx.args + ["fief.worker", "-ffief.scheduler:schedule"]
-        )
+        args = parser.parse_args(ctx.args + [worker, f"-f{scheduler}"])
         dramatiq_cli.main(args)
 
     return app
