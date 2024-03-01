@@ -23,6 +23,9 @@ inputs:
   database_ssl_mode:
     description: "DB SSL mode"
     required: true
+  codecov_token:
+    description: "Codecov token"
+    required: true
 
 runs:
   using: "composite"
@@ -63,3 +66,5 @@ runs:
         hatch run test-cov-xml
     - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@v4
+      with:
+        token: ${{ inputs.codecov_token }}

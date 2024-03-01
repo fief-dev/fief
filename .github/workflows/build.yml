@@ -90,6 +90,7 @@ jobs:
           database_username: ${{ matrix.database_username }}
           database_password: ${{ matrix.database_password }}
           database_name: fief
+          codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
   pypi-release:
     runs-on: ubuntu-latest
