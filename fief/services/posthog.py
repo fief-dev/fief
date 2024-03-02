@@ -16,6 +16,7 @@ posthog = Posthog(
     POSTHOG_API_KEY,
     host="https://eu.posthog.com",
     disabled=not settings.telemetry_enabled,
+    sync_mode=True,
 )
 
 
