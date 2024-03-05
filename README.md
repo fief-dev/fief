@@ -20,6 +20,10 @@
 * Official website: [https://www.fief.dev](https://www.fief.dev)
 * Documentation: [https://docs.fief.dev](https://docs.fief.dev)
 
+## Support us
+
+<a href="https://polar.sh/fief-dev/subscriptions"><picture><source media="(prefers-color-scheme: dark)" srcset="https://polar.sh/embed/tiers.svg?org=fief-dev&darkmode"><img alt="Subscription Tiers on Polar" src="https://polar.sh/embed/tiers.svg?org=fief-dev"></picture></a>
+
 ## Contributing
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
