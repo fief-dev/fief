@@ -97,17 +97,17 @@ class Settings(BaseSettings):
     login_session_cookie_name: str = "fief_login_session"
     login_session_cookie_domain: str = ""
     login_session_cookie_secure: bool = True
-    login_session_lifetime_seconds: int = 600
+    login_session_lifetime_seconds: int = 3600
 
     registration_session_cookie_name: str = "fief_registration_session"
     registration_session_cookie_domain: str = ""
     registration_session_cookie_secure: bool = True
-    registration_session_lifetime_seconds: int = 600
+    registration_session_lifetime_seconds: int = 3600
 
     email_verification_code_length: int = 6
     email_verification_lifetime_seconds: int = 3600
 
-    oauth_session_lifetime_seconds: int = 600
+    oauth_session_lifetime_seconds: int = 3600
 
     session_cookie_name: str = "fief_session"
     session_cookie_domain: str = ""
