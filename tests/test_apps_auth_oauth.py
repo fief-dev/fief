@@ -133,6 +133,36 @@ class TestOAuthAuthorize:
         headers = response.headers
         assert headers["X-Fief-Error"] == "invalid_provider"
 
+    async def test_expired_login_session(
+        self,
+        test_client_auth: httpx.AsyncClient,
+        test_data: TestData,
+        main_session: AsyncSession,
+    ):
+        login_session = test_data["login_sessions"]["expired"]
+        client = login_session.client
+        tenant = client.tenant
+        path_prefix = tenant.slug if not tenant.default else ""
+
+        oauth_provider = test_data["oauth_providers"]["google"]
+        tenant_repository = TenantRepository(main_session)
+        tenant.oauth_providers = [oauth_provider]
+        await tenant_repository.update(tenant)
+
+        cookies = {}
+        cookies[settings.login_session_cookie_name] = login_session.token
+
+        response = await test_client_auth.get(
+            "/oauth/authorize",
+            params={"tenant": str(tenant.id), "provider": str(oauth_provider.id)},
+            cookies=cookies,
+        )
+
+        assert response.status_code == status.HTTP_303_SEE_OTHER
+
+        location = response.headers["Location"]
+        assert location.startswith(f"http://api.fief.dev{path_prefix}/authorize")
+
     @pytest.mark.parametrize("has_login_session", [False, True])
     async def test_valid(
         self,

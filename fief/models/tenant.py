@@ -5,6 +5,7 @@ from jwcrypto import jwk
 from pydantic import UUID4
 from sqlalchemy import Boolean, Column, ForeignKey, String, Table, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from starlette.datastructures import URL, URLPath
 from starlette.routing import Router
 
 from fief.crypto.jwk import generate_signature_jwk_string, load_jwk
@@ -83,16 +84,16 @@ class Tenant(UUIDModel, CreatedUpdatedAt, Base):
             host += f"/{self.slug}"
         return host
 
-    def url_for(self, request: Request, name: str, **path_params: Any) -> str:
+    def url_for(self, request: Request, name: str, **path_params: Any) -> URL:
         if not self.default:
             path_params["tenant_slug"] = self.slug
-        return str(request.url_for(name, **path_params))
+        return request.url_for(name, **path_params)
 
-    def url_path_for(self, request: Request, name: str, **path_params: Any) -> str:
+    def url_path_for(self, request: Request, name: str, **path_params: Any) -> URLPath:
         if not self.default:
             path_params["tenant_slug"] = self.slug
         router: Router = request.scope["router"]
-        return str(router.url_path_for(name, **path_params))
+        return router.url_path_for(name, **path_params)
 
     def get_oauth_provider(self, id: UUID4) -> OAuthProvider | None:
         for oauth_provider in self.oauth_providers:

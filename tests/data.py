@@ -587,6 +587,16 @@ login_sessions: ModelMapping[LoginSession] = {
         nonce="NONCE",
         client=clients["registration_disabled_tenant"],
     ),
+    "expired": LoginSession(
+        response_type="code",
+        response_mode="query",
+        redirect_uri="https://nantes.city/callback",
+        scope=["openid", "offline_access"],
+        state="STATE",
+        nonce="NONCE",
+        client=clients["default_tenant"],
+        expires_at=datetime.now(UTC) - timedelta(seconds=3600),
+    ),
 }
 
 registration_sessions: ModelMapping[RegistrationSession] = {

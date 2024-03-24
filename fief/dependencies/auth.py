@@ -1,7 +1,7 @@
 from datetime import UTC, datetime
 from typing import TypedDict
 
-from fastapi import Cookie, Depends, Query, Request, Response
+from fastapi import Cookie, Depends, HTTPException, Query, Request, Response, status
 
 from fief.dependencies.authentication_flow import get_authentication_flow
 from fief.dependencies.branding import get_show_branding
@@ -263,6 +263,7 @@ async def has_valid_session_token(
 
 
 async def get_optional_login_session(
+    request: Request,
     token: str | None = Cookie(None, alias=settings.login_session_cookie_name),
     login_session_repository: LoginSessionRepository = Depends(
         get_repository(LoginSessionRepository)
@@ -272,10 +273,18 @@ async def get_optional_login_session(
     if token is None:
         return None
 
-    login_session = await login_session_repository.get_by_token(token)
+    login_session = await login_session_repository.get_by_token(token, fresh=False)
     if login_session is None or login_session.client.tenant_id != tenant.id:
         raise LoginException(
             LoginError.get_invalid_session(_("Invalid login session")), fatal=True
+        )
+
+    if login_session.is_expired:
+        raise HTTPException(
+            status_code=status.HTTP_303_SEE_OTHER,
+            headers={
+                "Location": str(login_session.regenerate_authorization_url(request))
+            },
         )
 
     return login_session
