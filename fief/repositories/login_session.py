@@ -1,5 +1,3 @@
-from datetime import UTC, datetime
-
 from sqlalchemy import select
 
 from fief.models import LoginSession
@@ -18,5 +16,5 @@ class LoginSessionRepository(
     ) -> LoginSession | None:
         statement = select(LoginSession).where(LoginSession.token == token)
         if fresh:
-            statement = statement.where(LoginSession.expires_at > datetime.now(UTC))
+            statement = statement.where(LoginSession.is_expired.is_(False))
         return await self.get_one_or_none(statement)

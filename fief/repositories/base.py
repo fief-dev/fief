@@ -1,5 +1,4 @@
 from collections.abc import Sequence
-from datetime import UTC, datetime
 from typing import Any, Generic, Protocol, TypeVar, cast
 
 from fastapi import Depends
@@ -187,7 +186,7 @@ class UUIDRepositoryMixin(Generic[M_UUID]):
 
 class ExpiresAtMixin(Generic[M_EXPIRES_AT]):
     async def delete_expired(self: ExpiresAtRepositoryProtocol[M_EXPIRES_AT]):
-        statement = delete(self.model).where(self.model.expires_at < datetime.now(UTC))
+        statement = delete(self.model).where(self.model.is_expired.is_(True))
         await self._execute_statement(statement)
 
 
