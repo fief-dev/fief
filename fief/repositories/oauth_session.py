@@ -1,5 +1,3 @@
-from datetime import UTC, datetime
-
 from sqlalchemy import select
 
 from fief.models import OAuthSession
@@ -18,5 +16,5 @@ class OAuthSessionRepository(
     ) -> OAuthSession | None:
         statement = select(OAuthSession).where(OAuthSession.token == token)
         if fresh:
-            statement = statement.where(OAuthSession.expires_at > datetime.now(UTC))
+            statement = statement.where(OAuthSession.is_expired.is_(False))
         return await self.get_one_or_none(statement)

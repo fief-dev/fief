@@ -4,9 +4,10 @@ from datetime import UTC, datetime, timedelta
 from typing import Any, TypeVar
 
 from pydantic import UUID4, AnyUrl
-from sqlalchemy import TIMESTAMP
+from sqlalchemy import TIMESTAMP, ColumnElement
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declared_attr
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Mapped, MappedColumn, mapped_column
 from sqlalchemy.sql import func
 from sqlalchemy.types import CHAR, TypeDecorator, TypeEngine
@@ -104,7 +105,7 @@ def _get_default_expires_at(timedelta_seconds: int) -> datetime:
 
 class ExpiresAt(BaseModel):
     @declared_attr
-    def expires_at(cls) -> MappedColumn[TIMESTAMPAware]:
+    def expires_at(cls) -> MappedColumn[datetime]:
         try:
             default_lifetime_seconds = getattr(
                 cls,
@@ -118,6 +119,15 @@ class ExpiresAt(BaseModel):
         return mapped_column(
             TIMESTAMPAware(timezone=True), nullable=False, index=True, default=default
         )
+
+    @hybrid_property
+    def is_expired(self) -> bool:
+        return self.expires_at < datetime.now(UTC)
+
+    @is_expired.inplace.expression
+    @classmethod
+    def _is_expired_expression(cls) -> ColumnElement[bool]:
+        return cls.expires_at < datetime.now(UTC)
 
 
 def PydanticUrlString(
