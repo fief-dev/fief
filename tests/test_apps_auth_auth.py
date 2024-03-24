@@ -521,6 +521,23 @@ class TestAuthGetLogin:
 
         assert response.status_code == status.HTTP_200_OK
 
+    async def test_expired_login_session(
+        self, test_client_auth: httpx.AsyncClient, test_data: TestData
+    ):
+        login_session = test_data["login_sessions"]["expired"]
+        client = login_session.client
+        tenant = client.tenant
+        path_prefix = tenant.slug if not tenant.default else ""
+
+        cookies = {}
+        cookies[settings.login_session_cookie_name] = login_session.token
+
+        response = await test_client_auth.get(f"{path_prefix}/login", cookies=cookies)
+
+        assert response.status_code == status.HTTP_303_SEE_OTHER
+        location = response.headers["Location"]
+        assert location.startswith(f"http://api.fief.dev{path_prefix}/authorize")
+
     async def test_valid(
         self, test_client_auth: httpx.AsyncClient, test_data: TestData
     ):

@@ -1,5 +1,6 @@
 import json
 
+from fastapi.datastructures import URL
 from fastapi.responses import Response
 from starlette.background import BackgroundTask
 
@@ -7,7 +8,7 @@ from starlette.background import BackgroundTask
 class HXLocationResponse(Response):
     def __init__(
         self,
-        hx_path: str,
+        hx_path: str | URL,
         status_code: int = 200,
         hx_source: str | None = None,
         hx_event: str | None = None,
@@ -20,7 +21,7 @@ class HXLocationResponse(Response):
         background: BackgroundTask | None = None,
     ) -> None:
         super().__init__(None, status_code, headers, background=background)
-        hx_location_dict = {"path": hx_path}
+        hx_location_dict = {"path": str(hx_path)}
         if hx_source is not None:
             hx_location_dict["source"] = hx_source
         if hx_event is not None:

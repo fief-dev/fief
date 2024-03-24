@@ -28,7 +28,7 @@ async def get_session_token_or_login(
     if session_token is None or session_token.user.tenant_id != tenant.id:
         raise HTTPException(
             status_code=status.HTTP_307_TEMPORARY_REDIRECT,
-            headers={"Location": tenant.url_for(request, "auth:login")},
+            headers={"Location": str(tenant.url_for(request, "auth:login"))},
         )
     return session_token
 
@@ -47,6 +47,8 @@ async def get_verified_email_user_from_session_token_or_verify(
     if not user.email_verified:
         raise HTTPException(
             status_code=status.HTTP_307_TEMPORARY_REDIRECT,
-            headers={"Location": tenant.url_for(request, "auth:verify_email_request")},
+            headers={
+                "Location": str(tenant.url_for(request, "auth:verify_email_request"))
+            },
         )
     return user

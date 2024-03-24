@@ -1,4 +1,4 @@
-from fastapi import Cookie, Depends, Query
+from fastapi import Cookie, Depends, HTTPException, Query, Request, status
 from pydantic import UUID4
 
 from fief.dependencies.oauth_provider import get_oauth_providers
@@ -30,6 +30,7 @@ async def get_tenant_by_query(
 
 
 async def get_optional_login_session_with_tenant_query(
+    request: Request,
     token: str | None = Cookie(None, alias=settings.login_session_cookie_name),
     login_session_repository: LoginSessionRepository = Depends(
         get_repository(LoginSessionRepository)
@@ -40,12 +41,20 @@ async def get_optional_login_session_with_tenant_query(
     if token is None:
         return None
 
-    login_session = await login_session_repository.get_by_token(token)
+    login_session = await login_session_repository.get_by_token(token, fresh=False)
     if login_session is None or login_session.client.tenant_id != tenant.id:
         raise OAuthException(
             OAuthError.get_invalid_session(_("Invalid login session.")),
             oauth_providers=oauth_providers,
             tenant=tenant,
+        )
+
+    if login_session.is_expired:
+        raise HTTPException(
+            status_code=status.HTTP_303_SEE_OTHER,
+            headers={
+                "Location": str(login_session.regenerate_authorization_url(request))
+            },
         )
 
     return login_session
