@@ -163,3 +163,28 @@ jobs:
           registry: ghcr.io
           image_name: ${{ github.repository }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+
+  stronghold-build:
+    runs-on: ubuntu-latest
+    needs: [pypi-release]
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Wait package to be truly available from PyPI
+        shell: bash
+        run: |
+          sleep 120
+      - name: Set raw version variable
+        shell: bash
+        run: |
+          echo "${{ github.ref_name }}" | sed "s/v/RAW_VERSION=$1/" >>  $GITHUB_ENV
+      - name: Trigger Stronghold build
+        uses: octokit/request-action@v2.x
+        with:
+          route: POST /repos/{owner}/{repo}/actions/workflows/{workflow_id}/dispatches
+          owner: fief-dev
+          repo: stronghold
+          workflow_id: build.yml
+          fief_version: ${{ env.RAW_VERSION }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
