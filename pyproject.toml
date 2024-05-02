@@ -118,6 +118,7 @@ commit_extra_args = ["-e"]
 path = "fief/__init__.py"
 
 [tool.hatch.envs.default]
+installer = "uv"
 python = "3.12"
 dependencies = [
   "asgi-lifespan",
