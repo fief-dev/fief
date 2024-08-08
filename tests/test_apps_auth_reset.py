@@ -181,7 +181,10 @@ class TestPostResetPassword:
             },
         )
 
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code == status.HTTP_302_FOUND
+
+        redirect_uri = response.headers["Location"]
+        assert redirect_uri.endswith("/")
 
     async def test_valid_with_login_session(
         self,
