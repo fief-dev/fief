@@ -109,7 +109,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install hatch
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: "18"
       - name: Install Node dependencies
