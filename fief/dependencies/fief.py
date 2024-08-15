@@ -16,10 +16,11 @@ def _is_uvicorn_ssl() -> bool:
         for task in asyncio.all_tasks():
             coroutine = task.get_coro()
             frame = coroutine.cr_frame
-            args = frame.f_locals
-            if self := args.get("self"):
-                if isinstance(self, Server):
-                    return self.config.is_ssl
+            if frame is not None:
+                args = frame.f_locals
+                if self := args.get("self"):
+                    if isinstance(self, Server):
+                        return self.config.is_ssl
     except RuntimeError:
         pass
     return False

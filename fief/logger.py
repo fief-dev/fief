@@ -84,7 +84,7 @@ class AuditLogSink:
         self.task = task
 
     async def __call__(self, message: "Message"):
-        record: "Record" = message.record
+        record: Record = message.record
         self.task.send(
             json.dumps(
                 {

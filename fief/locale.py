@@ -26,7 +26,7 @@ def get_translations(
         translations = None
         for path in reversed(BABEL.locales_dirs):
             trans = support.Translations.load(path, locales=locale_code, domain=domain)
-            if translations and not type(translations) == support.NullTranslations:
+            if translations and not isinstance(translations, support.NullTranslations):
                 translations._catalog.update(trans._catalog)
             else:
                 translations = trans
