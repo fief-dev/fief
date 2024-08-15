@@ -51,7 +51,7 @@ runs:
         TELEMETRY_ENABLED: "0"
         SECRET: ThisShouldBeChangedInProduction
         ENCRYPTION_KEY: uSieBJ_695D2NA7bOPUJqFGCS2_qI8G4aI6L42WhjjM=
-        GENERATED_JWK_SIZE: "512"
+        GENERATED_JWK_SIZE: 1024
         DATABASE_TYPE: ${{ inputs.database_type }}
         DATABASE_HOST: ${{ inputs.database_host }}
         DATABASE_PORT: ${{ inputs.database_port }}
