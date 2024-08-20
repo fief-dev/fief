@@ -21,6 +21,7 @@ from fief.services.user_manager import (
 
 router = APIRouter()
 
+
 @router.api_route("/forgot", methods=["GET", "POST"], name="reset:forgot")
 async def forgot_password(
     request: Request,
