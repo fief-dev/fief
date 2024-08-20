@@ -22,8 +22,9 @@ class DeliverWebhookTask(TaskBase):
             if webhook is None:
                 raise ObjectDoesNotExistTaskError(Webhook, webhook_id)
 
-            message = CurrentMessage.get_current_message()
-            retries = message.options.get("retries", 0)
+            retries = 0
+            if (message := CurrentMessage.get_current_message()) is not None:
+                retries = message.options.get("retries", 0)
 
             webhook_log_repository = WebhookLogRepository(session)
             webhook_delivery = WebhookDelivery(webhook_log_repository)
