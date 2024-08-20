@@ -244,7 +244,7 @@ dependencies = [
     "postmarker ==1.0",
     "pydantic ==2.6.4",
     "python-multipart ==0.0.9",
-    "pydantic-settings ==2.2.1",
+    "pydantic-settings ==2.4.0",
     "pwdlib[argon2,bcrypt] ==0.2.1",
     "sendgrid ==6.11.0",
     "psycopg2 ==2.9.9",
