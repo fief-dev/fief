@@ -234,6 +234,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "ApprenticeofEnder",
+      "name": "Robert Babaev",
+      "avatar_url": "https://avatars.githubusercontent.com/u/32110856?v=4",
+      "profile": "https://robertbabaev.tech/home",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
