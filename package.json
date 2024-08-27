@@ -16,6 +16,8 @@
     "@uiw/codemirror-theme-github": "^4.21.21",
     "autoprefixer": "^10.4.17",
     "codemirror": "^6.0.1",
+    "htmx.org": "^1.9.12",
+    "hyperscript.org": "^0.9.12",
     "postcss": "^8.4.33",
     "rollup": "^3.29.4",
     "rollup-plugin-postcss": "^4.0.2",
