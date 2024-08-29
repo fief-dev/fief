@@ -130,7 +130,7 @@ class BaseRepository(BaseRepositoryProtocol, Generic[M]):
 
     async def get_one_or_none(self, statement: Select) -> M | None:
         result = await self._execute_query(statement)
-        return result.scalar()
+        return result.scalar_one_or_none()
 
     async def create(self, object: M) -> M:
         self.session.add(object)
