@@ -134,9 +134,9 @@ async def callback(
     )
 
     # Existing account
-    if oauth_account is not None and oauth_account.user is not None:
+    if oauth_account is not None:
         user = oauth_account.user
-        if not user.is_active:
+        if user and not user.is_active:
             raise OAuthException(
                 OAuthError.get_inactive_user(_("Your account is inactive.")),
                 oauth_providers=oauth_providers,
@@ -149,23 +149,39 @@ async def callback(
         oauth_account.expires_at = expires_at
         await oauth_account_repository.update(oauth_account)
 
-        # Redirect to consent or profile
-        if login_session is not None:
-            response = RedirectResponse(
-                tenant.url_path_for(request, "auth:consent"),
-                status_code=status.HTTP_302_FOUND,
+        if user:
+            # Redirect to consent or profile
+            if login_session is not None:
+                response = RedirectResponse(
+                    tenant.url_path_for(request, "auth:consent"),
+                    status_code=status.HTTP_302_FOUND,
+                )
+            else:
+                response = RedirectResponse(
+                    tenant.url_path_for(request, "auth.dashboard:profile"),
+                    status_code=status.HTTP_302_FOUND,
+                )
+            response = await authentication_flow.rotate_session_token(
+                response, user.id, session_token=session_token
             )
-        else:
-            response = RedirectResponse(
-                tenant.url_path_for(request, "auth.dashboard:profile"),
-                status_code=status.HTTP_302_FOUND,
+            response = await authentication_flow.set_login_hint(
+                response, str(oauth_provider.id)
             )
-        response = await authentication_flow.rotate_session_token(
-            response, user.id, session_token=session_token
+            return response
+
+        # Redirect to register
+        response = RedirectResponse(
+            tenant.url_path_for(request, "register:register"),
+            status_code=status.HTTP_302_FOUND,
         )
-        response = await authentication_flow.set_login_hint(
-            response, str(oauth_provider.id)
+
+        await registration_flow.create_registration_session(
+            response,
+            RegistrationSessionFlow.OAUTH,
+            tenant=tenant,
+            oauth_account=oauth_account,
         )
+
         return response
 
     # New account to create

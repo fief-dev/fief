@@ -16,7 +16,10 @@ from fief.settings import settings
 
 class OAuthAccount(UUIDModel, CreatedUpdatedAt, Base):
     __tablename__ = "oauth_accounts"
-    __table_args__ = (UniqueConstraint("oauth_provider_id", "user_id"),)
+    __table_args__ = (
+        UniqueConstraint("oauth_provider_id", "user_id"),
+        UniqueConstraint("oauth_provider_id", "account_id"),
+    )
 
     access_token: Mapped[str] = mapped_column(
         StringEncryptedType(Text, settings.encryption_key, FernetEngine), nullable=False
