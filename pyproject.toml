@@ -230,7 +230,7 @@ dependencies = [
     "asgi-babel==0.10.0",
     "asyncpg ==0.29.0",
     "dramatiq[redis] ==1.17.0",
-    "email_validator ==2.1.1",
+    "email_validator ==2.2.0",
     "fastapi ==0.112.2",
     "fief-client ==0.19.0",
     "furl ==2.1.3",
