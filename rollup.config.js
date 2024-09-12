@@ -156,4 +156,18 @@ module.exports = [
       terser(),
     ],
   },
+  {
+    input: './node_modules/htmx.org/dist/htmx.js',
+    output: {
+      file: './fief/static/htmx.bundle.js',
+      format: 'iife',
+    },
+  },
+    {
+    input: './node_modules/hyperscript.org/src/_hyperscript.js',
+    output: {
+      file: './fief/static/hyperscript.bundle.js',
+      format: 'iife',
+    },
+  },  
 ];
