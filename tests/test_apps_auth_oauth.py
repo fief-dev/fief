@@ -6,7 +6,7 @@ from unittest.mock import AsyncMock, MagicMock
 import httpx
 import pytest
 from fastapi import status
-from httpx_oauth.errors import GetIdEmailError
+from httpx_oauth.exceptions import GetIdEmailError
 from httpx_oauth.oauth2 import BaseOAuth2, GetAccessTokenError
 from pytest_mock import MockerFixture
 
@@ -308,7 +308,9 @@ class TestOAuthCallback:
         cookies[settings.login_session_cookie_name] = login_session.token
 
         oauth_provider_service_mock = MagicMock(spec=BaseOAuth2)
-        oauth_provider_service_mock.get_access_token.side_effect = GetAccessTokenError()
+        oauth_provider_service_mock.get_access_token.side_effect = GetAccessTokenError(
+            "ERROR"
+        )
         mocker.patch(
             "fief.apps.auth.routers.oauth.get_oauth_provider_service"
         ).return_value = oauth_provider_service_mock
@@ -349,9 +351,7 @@ class TestOAuthCallback:
                 "refresh_token": "REFRESH_TOKEN",
             }
         )
-        oauth_provider_service_mock.get_id_email.side_effect = GetIdEmailError(
-            {"error": "error_message"}
-        )
+        oauth_provider_service_mock.get_id_email.side_effect = GetIdEmailError()
         mocker.patch(
             "fief.apps.auth.routers.oauth.get_oauth_provider_service"
         ).return_value = oauth_provider_service_mock

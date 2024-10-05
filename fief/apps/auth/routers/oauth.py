@@ -2,7 +2,7 @@ from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, Query, Request, status
 from fastapi.responses import RedirectResponse
-from httpx_oauth.errors import GetIdEmailError
+from httpx_oauth.exceptions import GetIdEmailError
 from httpx_oauth.oauth2 import GetAccessTokenError
 
 from fief.dependencies.authentication_flow import get_authentication_flow
