@@ -336,23 +336,26 @@ class TestGetOAuthProviderUserAccessToken:
         "exception,error_code",
         [
             (
-                RefreshTokenNotSupportedError,
+                RefreshTokenNotSupportedError(),
                 APIErrorCode.OAUTH_PROVIDER_REFRESH_TOKEN_NOT_SUPPORTED,
             ),
-            (RefreshTokenError, APIErrorCode.OAUTH_PROVIDER_REFRESH_TOKEN_ERROR),
+            (
+                RefreshTokenError("ERROR"),
+                APIErrorCode.OAUTH_PROVIDER_REFRESH_TOKEN_ERROR,
+            ),
         ],
     )
     @pytest.mark.authenticated_admin
     async def test_expired_token_refresh_error(
         self,
-        exception: type[OAuth2Error],
+        exception: OAuth2Error,
         error_code: APIErrorCode,
         mocker: MockerFixture,
         test_client_api: httpx.AsyncClient,
         test_data: TestData,
     ):
         oauth_provider_service_mock = MagicMock(spec=BaseOAuth2)
-        oauth_provider_service_mock.refresh_token.side_effect = exception()
+        oauth_provider_service_mock.refresh_token.side_effect = exception
         mocker.patch(
             "fief.apps.api.routers.oauth_providers.get_oauth_provider_service"
         ).return_value = oauth_provider_service_mock
