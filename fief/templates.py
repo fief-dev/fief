@@ -7,7 +7,6 @@ from starlette.requests import Request
 from starlette.routing import Router
 
 from fief.locale import get_translations
-from fief.paths import TEMPLATES_DIRECTORY
 from fief.services.oauth_provider import get_oauth_provider_branding
 from fief.services.posthog import POSTHOG_API_KEY
 from fief.settings import settings
@@ -61,4 +60,4 @@ class LocaleJinja2Templates(Jinja2Templates):
         )
 
 
-templates = LocaleJinja2Templates(directory=TEMPLATES_DIRECTORY)
+templates = LocaleJinja2Templates(directory=settings.get_templates_directory())

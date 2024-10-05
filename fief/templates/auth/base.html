@@ -6,31 +6,35 @@
         <title id="head-title" hx-swap-oob="true">{% block head_title_content %}{% endblock %} · {{ tenant.name if tenant is defined else "Fief" }}</title>
       {% endblock %}
       <meta name="viewport" content="width=device-width, initial-scale=1">
-      <link rel="icon" href="{{ url_for('auth:static', path='/favicon.svg') }}" />
-      <link href="{{ url_for('auth:static', path='/auth.css') }}" rel="stylesheet">
-      {% if theme %}
-      <style>
-          {% if theme.font_css_url %}
-            @import url('{{ theme.font_css_url }}');
-          {% endif %}
+      {% block favicon %}
+        <link rel="icon" href="{{ url_for('auth:static', path='/favicon.svg') }}" />
+      {% endblock %}
+      {% block style %}
+        <link href="{{ url_for('auth:static', path='/auth.css') }}" rel="stylesheet">
+        {% if theme %}
+        <style>
+            {% if theme.font_css_url %}
+              @import url('{{ theme.font_css_url }}');
+            {% endif %}
 
-          :root {
-            --color-primary-300: {{ theme.primary_color_light }};
-            --color-primary-500: {{ theme.primary_color }};
-            --color-primary-600: {{ theme.primary_color_hover }};
-            --color-input: {{ theme.input_color }};
-            --color-bg-input: {{ theme.input_color_background }};
-            --color-light: {{ theme.light_color }};
-            --color-light-hover: {{ theme.light_color_hover }};
-            --color-accent: {{ theme.accent_color }};
+            :root {
+              --color-primary-300: {{ theme.primary_color_light }};
+              --color-primary-500: {{ theme.primary_color }};
+              --color-primary-600: {{ theme.primary_color_hover }};
+              --color-input: {{ theme.input_color }};
+              --color-bg-input: {{ theme.input_color_background }};
+              --color-light: {{ theme.light_color }};
+              --color-light-hover: {{ theme.light_color_hover }};
+              --color-accent: {{ theme.accent_color }};
 
-            color: {{ theme.text_color }};
-            background-color: {{ theme.background_color }};
-            font-size: {{ theme.font_size }}px;
-            font-family: {{ theme.font_family | safe }};
-          }
-        </style>
-      {% endif %}
+              color: {{ theme.text_color }};
+              background-color: {{ theme.background_color }};
+              font-size: {{ theme.font_size }}px;
+              font-family: {{ theme.font_family | safe }};
+            }
+          </style>
+        {% endif %}
+      {% endblock %}
       <script src="{{ url_for('auth:static', path='/dependencies.bundle.js') }}"></script>
       {% block javascripts_modules %}{% endblock %}
     {% endblock %}
