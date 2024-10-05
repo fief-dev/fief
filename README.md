@@ -27,7 +27,7 @@
 ## Contributing
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-27-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-28-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 All contributions to improve the project are welcome! In particular, bug and documentation fixes are really appreciated.
@@ -75,6 +75,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/ScottFred"><img src="https://avatars.githubusercontent.com/u/1937793?v=4?s=100" width="100px;" alt="Scott Fredericksen"/><br /><sub><b>Scott Fredericksen</b></sub></a><br /><a href="https://github.com/fief-dev/fief/commits?author=ScottFred" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://robertbabaev.tech/home"><img src="https://avatars.githubusercontent.com/u/32110856?v=4?s=100" width="100px;" alt="Robert Babaev"/><br /><sub><b>Robert Babaev</b></sub></a><br /><a href="https://github.com/fief-dev/fief/commits?author=ApprenticeofEnder" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/BlackIsBlack"><img src="https://avatars.githubusercontent.com/u/39253172?v=4?s=100" width="100px;" alt="Cameron"/><br /><sub><b>Cameron</b></sub></a><br /><a href="https://github.com/fief-dev/fief/issues?q=author%3ABlackIsBlack" title="Bug reports">🐛</a> <a href="https://github.com/fief-dev/fief/commits?author=BlackIsBlack" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/i-am-mike-davis"><img src="https://avatars.githubusercontent.com/u/139306671?v=4?s=100" width="100px;" alt="i-am-mike-davis"/><br /><sub><b>i-am-mike-davis</b></sub></a><br /><a href="https://github.com/fief-dev/fief/commits?author=i-am-mike-davis" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>
