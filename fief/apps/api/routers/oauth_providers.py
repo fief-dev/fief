@@ -17,7 +17,7 @@ from fief.dependencies.pagination import PaginatedObjects
 from fief.dependencies.repositories import get_repository
 from fief.dependencies.webhooks import TriggerWebhooks, get_trigger_webhooks
 from fief.errors import APIErrorCode
-from fief.logger import AuditLogger
+from fief.logger import AuditLogger, logger
 from fief.models import AuditLogMessage, OAuthProvider
 from fief.models.oauth_account import OAuthAccount
 from fief.repositories import (
@@ -196,6 +196,11 @@ async def get_user_access_token(
                 detail=APIErrorCode.OAUTH_PROVIDER_REFRESH_TOKEN_NOT_SUPPORTED,
             ) from e
         except RefreshTokenError as e:
+            logger.warning(
+                "Error while refreshing OAuth Provider access token",
+                message=e.message,
+                error_body=e.response.text if e.response is not None else None,
+            )
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=APIErrorCode.OAUTH_PROVIDER_REFRESH_TOKEN_ERROR,
