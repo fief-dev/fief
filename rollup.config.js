@@ -156,4 +156,15 @@ module.exports = [
       terser(),
     ],
   },
+  {
+    input: './js/dependencies.mjs',
+    output: {
+      file: './fief/static/dependencies.bundle.js',
+      format: 'iife',
+    },
+    plugins: [
+      nodeResolve(),
+      terser(),
+    ],
+  },
 ];
