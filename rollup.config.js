@@ -157,17 +157,14 @@ module.exports = [
     ],
   },
   {
-    input: './node_modules/htmx.org/dist/htmx.js',
+    input: './js/dependencies.mjs',
     output: {
-      file: './fief/static/htmx.bundle.js',
+      file: './fief/static/dependencies.bundle.js',
       format: 'iife',
     },
+    plugins: [
+      nodeResolve(),
+      terser(),
+    ],
   },
-    {
-    input: './node_modules/hyperscript.org/src/_hyperscript.js',
-    output: {
-      file: './fief/static/hyperscript.bundle.js',
-      format: 'iife',
-    },
-  },  
 ];
