@@ -253,6 +253,15 @@
         "bug",
         "code"
       ]
+    },
+    {
+      "login": "i-am-mike-davis",
+      "name": "i-am-mike-davis",
+      "avatar_url": "https://avatars.githubusercontent.com/u/139306671?v=4",
+      "profile": "https://github.com/i-am-mike-davis",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
