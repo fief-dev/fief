@@ -9,17 +9,22 @@ def create_engine(
     database_connection_parameters: DatabaseConnectionParameters,
 ) -> AsyncEngine:
     database_url, connect_args = database_connection_parameters
-    engine = create_async_engine(
-        database_url,
-        connect_args=connect_args,
-        echo=False,
-        use_insertmanyvalues=False,  # The default doesn't work with asyncpg starting 2.0.10. Should monitor that.
-        pool_recycle=settings.database_pool_recycle_seconds,
-        pool_pre_ping=settings.database_pool_pre_ping,
-        pool_size=settings.database_pool_size,
-        max_overflow=settings.database_pool_max_overflow,
-    )
-    dialect_name = engine.dialect.name
+    dialect_name = database_url.get_dialect().name
+    engine_params = {
+        "connect_args": connect_args,
+        "echo": False,
+        "use_insertmanyvalues": False,  # The default doesn't work with asyncpg starting 2.0.10. Should monitor that.
+        "pool_recycle": settings.database_pool_recycle_seconds,
+        "pool_pre_ping": settings.database_pool_pre_ping,
+    }
+    if dialect_name != "sqlite":
+        engine_params.update(
+            {
+                "pool_size": settings.database_pool_size,
+                "max_overflow": settings.database_pool_max_overflow,
+            }
+        )
+    engine = create_async_engine(database_url, **engine_params)
 
     # Special tweak for SQLite to better handle transaction
     # See: https://docs.sqlalchemy.org/en/14/dialects/sqlite.html#serializable-isolation-savepoints-transactional-ddl
