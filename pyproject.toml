@@ -215,7 +215,7 @@ requires-python = ">=3.12"
 dependencies = [
     "aiomysql ==0.2.0",
     "aiosqlite ==0.20.0",
-    "alembic ==1.13.2",
+    "alembic ==1.13.3",
     "apscheduler ==3.10.4",
     "argon2_cffi ==23.1.0",
     "asgi-babel==0.10.0",
