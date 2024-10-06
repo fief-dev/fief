@@ -170,11 +170,11 @@ lint-check = [
 "static.build" = "npm run build"
 
 "migrations.create" = [
-  "hatch run dev.db.start",
+  "docker compose up -d db",
   "env GENERATE_MIGRATION=1 alembic -c fief/alembic.ini revision --autogenerate -m {args}",
 ]
 "migrations.migrate" = [
-  "hatch run dev.db.start",
+  "docker compose up -d db",
   "env GENERATE_MIGRATION=1 alembic -c fief/alembic.ini upgrade head",
 ]
 
@@ -183,17 +183,8 @@ lint-check = [
   "rm fief/services/posthog.py.bak"
 ]
 
-"dev.db.create" = [
-  "docker volume create fief-dev-db",
-  "docker run -p 5432:5432 --name fief-dev-db -e PGDATA=/var/lib/postgresql/data/pgdata -e POSTGRES_USER=fief -e POSTGRES_PASSWORD=fiefpassword -v fief-dev-db:/var/lib/postgresql/data -d postgres:14-alpine",
-]
-"dev.db.start" = "docker start fief-dev-db"
-"dev.redis.create" = "docker run -d -p 6379:6379 --name fief-dev-redis redis:alpine"
-"dev.redis.start" = "docker start fief-dev-redis"
-"dev.env.start" = [
-  "hatch run dev.db.start",
-  "hatch run dev.redis.start",
-]
+"dev.env.start" = "docker compose up -d"
+"dev.env.stop" = "docker compose stop"
 "dev.server.start" = [
   "hatch run translations.compile",
   "hatch run static.build",
