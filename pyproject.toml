@@ -242,7 +242,7 @@ dependencies = [
     "pycountry >=23,<25",
     "python-slugify ==8.0.4",
     "pytz ==2024.1",
-    "rich ==13.8.1",
+    "rich ==13.9.2",
     "sentry_dramatiq ==0.3.3",
     "sentry-sdk ==2.14.0",
     "sqlalchemy[mypy] ==2.0.35",
