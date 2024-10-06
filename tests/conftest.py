@@ -306,7 +306,7 @@ async def test_client_generator(
 
         async with asgi_lifespan.LifespanManager(app):
             async with httpx.AsyncClient(
-                app=app, base_url="http://api.fief.dev"
+                transport=httpx.ASGITransport(app=app), base_url="http://api.fief.dev"
             ) as test_client:
                 test_client = await authenticated_admin(test_client)
                 yield test_client
