@@ -16,6 +16,8 @@ def create_engine(
         use_insertmanyvalues=False,  # The default doesn't work with asyncpg starting 2.0.10. Should monitor that.
         pool_recycle=settings.database_pool_recycle_seconds,
         pool_pre_ping=settings.database_pool_pre_ping,
+        pool_size=settings.database_pool_size,
+        max_overflow=settings.database_pool_max_overflow,
     )
     dialect_name = engine.dialect.name
 
