@@ -178,6 +178,12 @@ jobs:
         shell: bash
         run: |
           echo "${{ github.ref_name }}" | sed "s/v/RAW_VERSION=$1/" >>  $GITHUB_ENV
+      - name: Generate a token
+        id: generate-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.INTERNAL_GITHUB_APP_ID }}
+          private-key: ${{ secrets.INTERNAL_GITHUB_APP_PRIVATE_KEY }}
       - name: Trigger Stronghold build
         uses: octokit/request-action@v2.x
         with:
@@ -187,4 +193,4 @@ jobs:
           workflow_id: build.yml
           fief_version: ${{ env.RAW_VERSION }}
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
