@@ -31,6 +31,10 @@ def add_commands(app: typer.Typer) -> typer.Typer:
             False,
             help="Whether the Fief server will be served over SSL. For local development, it'll likely be false.",
         ),
+        use_docker_volume: bool = typer.Option(
+            False,
+            help="Store Fief server data in a Docker volume to ensure data persistence."
+        )
     ):
         """Generate secrets and environment variables to help users getting started quickly."""
 
@@ -88,6 +92,8 @@ def add_commands(app: typer.Typer) -> typer.Typer:
                 ],
                 "ghcr.io/fief-dev/fief:latest",
             ]
+            if use_docker_volume:
+                parts.append("-v 'fief_data:/data'")
             typer.echo(" \\\n  ".join(parts))
         else:
             for name, value in environment_variables.items():
