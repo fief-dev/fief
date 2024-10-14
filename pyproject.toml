@@ -222,7 +222,7 @@ dependencies = [
     "asyncpg ==0.29.0",
     "dramatiq[redis] ==1.17.0",
     "email_validator ==2.2.0",
-    "fastapi ==0.115.0",
+    "fastapi ==0.115.2",
     "fief-client ==0.20.0",
     "furl ==2.1.3",
     "httpx-oauth ==0.15.1",
