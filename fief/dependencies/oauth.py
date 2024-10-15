@@ -1,4 +1,4 @@
-from fastapi import Cookie, Depends, HTTPException, Query, Request, status
+from fastapi import Body, Cookie, Depends, HTTPException, Query, Request, status
 from pydantic import UUID4
 
 from fief.dependencies.oauth_provider import get_oauth_providers
@@ -12,6 +12,7 @@ from fief.repositories import (
     TenantRepository,
 )
 from fief.schemas.oauth import OAuthError
+from fief.schemas.oauth_callback import CallBackBody
 from fief.settings import settings
 
 
@@ -78,12 +79,18 @@ async def get_oauth_provider(
 
 async def get_oauth_session(
     code: str | None = Query(None),
+    callback_body: str | None = Body(None),
     state: str | None = Query(None),
     error: str | None = Query(None),
     oauth_session_repository: OAuthSessionRepository = Depends(
         get_repository(OAuthSessionRepository)
     ),
 ) -> OAuthSession:
+    if callback_body:
+        callback_object = CallBackBody.get_callback_body(callback_body)
+        code = callback_object.code
+        state = callback_object.state
+
     if error is not None:
         raise OAuthException(
             OAuthError.get_oauth_error(error),

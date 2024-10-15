@@ -251,6 +251,7 @@ dependencies = [
     "uvicorn[standard]==0.31.0",
     "WTForms==3.1.2",
     "zxcvbn-rs-py==0.1.1",
+    "pyjwt>=2.9.0",
 ]
 
 [project.scripts]

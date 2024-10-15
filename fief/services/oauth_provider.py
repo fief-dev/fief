@@ -12,11 +12,14 @@ from httpx_oauth.clients.openid import OpenID
 from httpx_oauth.clients.reddit import RedditOAuth2
 from httpx_oauth.oauth2 import BaseOAuth2
 
+from fief.models.oauth_apple import Apple
+
 if TYPE_CHECKING:
     from fief.models import OAuthProvider
 
 
 class AvailableOAuthProvider(StrEnum):
+    APPLE = "APPLE"
     DISCORD = "DISCORD"
     FACEBOOK = "FACEBOOK"
     GITHUB = "GITHUB"
@@ -49,6 +52,7 @@ OAUTH_PROVIDERS: dict[AvailableOAuthProvider, type[BaseOAuth2]] = {
     AvailableOAuthProvider.MICROSOFT: MicrosoftGraphOAuth2,
     AvailableOAuthProvider.REDDIT: RedditOAuth2,
     AvailableOAuthProvider.OPENID: OpenID,
+    AvailableOAuthProvider.APPLE: Apple,
 }
 
 

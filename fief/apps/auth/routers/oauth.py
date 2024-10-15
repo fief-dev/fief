@@ -1,9 +1,10 @@
 from datetime import UTC, datetime
 
-from fastapi import APIRouter, Depends, Query, Request, status
+from fastapi import APIRouter, Body, Depends, Query, Request, status
 from fastapi.responses import RedirectResponse
 from httpx_oauth.exceptions import GetIdEmailError
 from httpx_oauth.oauth2 import GetAccessTokenError
+from jwt import decode
 
 from fief.dependencies.authentication_flow import get_authentication_flow
 from fief.dependencies.oauth import (
@@ -30,6 +31,7 @@ from fief.models import (
 )
 from fief.repositories import OAuthAccountRepository, OAuthSessionRepository
 from fief.schemas.oauth import OAuthError
+from fief.schemas.oauth_callback import CallBackBody
 from fief.services.authentication_flow import AuthenticationFlow
 from fief.services.oauth_provider import get_oauth_provider_service
 from fief.services.registration_flow import RegistrationFlow
@@ -69,10 +71,12 @@ async def authorize(
     return RedirectResponse(authorize_url, status_code=status.HTTP_302_FOUND)
 
 
+@router.post("/callback", name="oauth:callback")
 @router.get("/callback", name="oauth:callback")
 async def callback(
     request: Request,
     code: str | None = Query(None),
+    callback_body: str | None = Body(None),
     code_verifier: str | None = Query(None),
     oauth_session: OAuthSession = Depends(get_oauth_session),
     login_session: LoginSession | None = Depends(get_optional_login_session),
@@ -87,6 +91,10 @@ async def callback(
     registration_flow: RegistrationFlow = Depends(get_registration_flow),
     session_token: SessionToken | None = Depends(get_session_token),
 ):
+    if callback_body:
+        callback_object = CallBackBody.get_callback_body(callback_body)
+        code = callback_object.code
+
     assert code is not None
 
     tenant = oauth_session.tenant
@@ -108,6 +116,7 @@ async def callback(
 
     access_token = access_token_dict["access_token"]
     refresh_token = access_token_dict.get("refresh_token")
+    id_token = access_token_dict.get("id_token")
     try:
         expires_at = datetime.fromtimestamp(access_token_dict["expires_at"], tz=UTC)
     except KeyError:
@@ -128,6 +137,19 @@ async def callback(
             oauth_providers=oauth_providers,
             tenant=tenant,
         ) from e
+    except KeyError:
+        if not id_token:
+            raise
+
+        # Decode the id_token
+        id_token_dict = decode(
+            id_token,
+            options={"verify_signature": False},
+            algorithms=["ES256"],
+        )
+
+        account_id = id_token_dict["sub"]
+        account_email = id_token_dict["email"]
 
     oauth_account = await oauth_account_repository.get_by_provider_and_account_id(
         oauth_provider.id, account_id
