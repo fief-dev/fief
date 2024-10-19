@@ -32,8 +32,8 @@ def add_commands(app: typer.Typer) -> typer.Typer:
             help="Whether the Fief server will be served over SSL. For local development, it'll likely be false.",
         ),
         use_docker_volume: bool = typer.Option(
-            False,
-            help="Store Fief server data in a Docker volume to ensure data persistence.",
+            True,
+            help="Store Fief server data in a Docker volume to ensure data persistence (ignored without `--docker`).",
         ),
     ):
         """Generate secrets and environment variables to help users getting started quickly."""
