@@ -33,8 +33,8 @@ def add_commands(app: typer.Typer) -> typer.Typer:
         ),
         use_docker_volume: bool = typer.Option(
             False,
-            help="Store Fief server data in a Docker volume to ensure data persistence."
-        )
+            help="Store Fief server data in a Docker volume to ensure data persistence.",
+        ),
     ):
         """Generate secrets and environment variables to help users getting started quickly."""
 
