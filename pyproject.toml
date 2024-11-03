@@ -220,7 +220,7 @@ dependencies = [
     "argon2_cffi ==23.1.0",
     "asgi-babel==0.10.0",
     "asyncpg ==0.29.0",
-    "dramatiq[redis] ==1.17.0",
+    "dramatiq[redis] ==1.17.1",
     "email_validator ==2.2.0",
     "fastapi ==0.115.4",
     "fief-client ==0.20.0",
