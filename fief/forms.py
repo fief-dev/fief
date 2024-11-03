@@ -222,7 +222,7 @@ class ComboboxSelectMultipleField(SelectMultipleField):
 
         for value, label in _choices:
             selected = value in data_values
-            yield (value, label, selected)
+            yield (value, label, selected, {})
 
     def process_data(self, value):
         try:
