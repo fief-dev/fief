@@ -91,6 +91,7 @@
       id="search"
       class="relative"
       method="get"
+      action="{{ url_for('dashboard.users:list') }}"
       hx-boost="true"
       hx-target="#main"
       hx-swap="none"

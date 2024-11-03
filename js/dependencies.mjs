@@ -1,4 +1,4 @@
-import * as htmx from 'htmx.org'
+import htmx from 'htmx.org'
 import _hyperscript from 'hyperscript.org'
 import slugify from 'slugify'
 
