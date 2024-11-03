@@ -238,7 +238,7 @@ dependencies = [
     "pydantic-settings ==2.6.1",
     "pwdlib[argon2,bcrypt] ==0.2.1",
     "sendgrid ==6.11.0",
-    "psycopg2 ==2.9.9",
+    "psycopg2 ==2.9.10",
     "pycountry >=23,<25",
     "python-slugify ==8.0.4",
     "pytz ==2024.2",
