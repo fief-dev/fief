@@ -219,7 +219,7 @@ dependencies = [
     "apscheduler ==3.10.4",
     "argon2_cffi ==23.1.0",
     "asgi-babel==0.10.0",
-    "asyncpg ==0.29.0",
+    "asyncpg ==0.30.0",
     "dramatiq[redis] ==1.17.1",
     "email_validator ==2.2.0",
     "fastapi ==0.115.4",
