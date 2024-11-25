@@ -216,7 +216,7 @@ dependencies = [
     "aiomysql ==0.2.0",
     "aiosqlite ==0.20.0",
     "alembic ==1.14.0",
-    "apscheduler ==3.10.4",
+    "apscheduler ==3.11.0",
     "argon2_cffi ==23.1.0",
     "asgi-babel==0.10.0",
     "asyncpg ==0.30.0",
