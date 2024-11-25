@@ -244,7 +244,7 @@ dependencies = [
     "pytz ==2024.2",
     "rich ==13.9.4",
     "sentry_dramatiq ==0.3.3",
-    "sentry-sdk ==2.18.0",
+    "sentry-sdk ==2.19.0",
     "sqlalchemy[mypy] ==2.0.36",
     "sqlalchemy-utils ==0.41.2",
     "typer ==0.12.5",
