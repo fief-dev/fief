@@ -247,7 +247,7 @@ dependencies = [
     "sentry-sdk ==2.18.0",
     "sqlalchemy[mypy] ==2.0.36",
     "sqlalchemy-utils ==0.41.2",
-    "typer ==0.12.5",
+    "typer ==0.15.1",
     "uvicorn[standard]==0.32.0",
     "WTForms==3.2.1",
     "zxcvbn-rs-py==0.1.1",
