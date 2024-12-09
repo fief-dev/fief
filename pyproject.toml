@@ -225,7 +225,7 @@ dependencies = [
     "fastapi ==0.115.4",
     "fief-client ==0.20.0",
     "furl ==2.1.3",
-    "httpx-oauth ==0.15.1",
+    "httpx-oauth ==0.16.0",
     "itsdangerous ==2.2.0",
     "Jinja2 ==3.1.4",
     "jwcrypto ==1.5.6",
