@@ -229,7 +229,7 @@ dependencies = [
     "itsdangerous ==2.2.0",
     "Jinja2 ==3.1.4",
     "jwcrypto ==1.5.6",
-    "loguru ==0.7.2",
+    "loguru ==0.7.3",
     "phonenumbers >=8.12.48,<8.14",
     "posthog >=3.0.1,<4",
     "postmarker ==1.0",
