@@ -233,7 +233,7 @@ dependencies = [
     "phonenumbers >=8.12.48,<8.14",
     "posthog >=3.0.1,<4",
     "postmarker ==1.0",
-    "pydantic ==2.9.2",
+    "pydantic ==2.10.6",
     "python-multipart ==0.0.17",
     "pydantic-settings ==2.6.1",
     "pwdlib[argon2,bcrypt] ==0.2.1",
