@@ -51,7 +51,9 @@ class SMTP(EmailProvider):
             if text is not None:
                 message.add_alternative(text, subtype="plain")
 
-            SMTP = smtplib.SMTP if self.ssl and self.starttls else smtplib.SMTP_SSL
+            SMTP = smtplib.SMTP
+            if self.ssl and not self.starttls:
+                SMTP = smtplib.SMTP_SSL
 
             with SMTP(self.host, self.port) as server:
                 if self.ssl and self.starttls:
