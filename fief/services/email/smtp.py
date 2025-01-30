@@ -20,12 +20,14 @@ class SMTP(EmailProvider):
         password: str | None = None,
         port: int = 587,
         ssl: bool | None = True,
+        starttls: bool | None = True,
     ) -> None:
         self.username = username
         self.password = password
         self.host = host
         self.port = port
         self.ssl = ssl
+        self.starttls = starttls
 
     def send_email(
         self,
@@ -49,8 +51,10 @@ class SMTP(EmailProvider):
             if text is not None:
                 message.add_alternative(text, subtype="plain")
 
-            with smtplib.SMTP(self.host, self.port) as server:
-                if self.ssl:
+            SMTP = smtplib.SMTP if self.ssl and self.starttls else smtplib.SMTP_SSL
+
+            with SMTP(self.host, self.port) as server:
+                if self.ssl and self.starttls:
                     context = ssl.create_default_context()
                     server.starttls(context=context)
                 if self.username and self.password:
