@@ -1,0 +1,429 @@
+msgid ""
+msgstr ""
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: POEditor.com\n"
+"Project-Id-Version: Fief\n"
+"Language: ru-RU\n"
+
+#: fief/templates/auth/login.html:7
+msgid "Welcome back!"
+msgstr "С возвращением!"
+
+#: fief/apps/auth/forms/auth.py:9 fief/apps/auth/forms/profile.py:14
+#: fief/apps/auth/forms/register.py:15 fief/apps/auth/forms/reset.py:9
+msgid "Email address"
+msgstr "Электронная почта"
+
+#: fief/apps/auth/forms/auth.py:11 fief/forms.py:358
+#: fief/templates/auth/dashboard/password.html:7
+#: fief/templates/auth/dashboard/sidebar.html:40
+msgid "Password"
+msgstr "Пароль"
+
+#: fief/templates/auth/login.html:5 fief/templates/auth/login.html:30
+msgid "Sign in"
+msgstr "Войти"
+
+#: fief/apps/auth/routers/auth.py:169
+msgid "Invalid email or password"
+msgstr "Неверный email или пароль"
+
+#: fief/apps/auth/routers/register.py:90
+msgid "A user with the same email address already exists."
+msgstr "Пользователь с таким email уже существует"
+
+#: fief/dependencies/auth.py:78
+msgid "response_type is missing"
+msgstr "Отсутствует response_type"
+
+#: fief/dependencies/auth.py:37
+msgid "client_id is missing"
+msgstr "Отсутствует client_id"
+
+#: fief/dependencies/auth.py:43
+msgid "Unknown client"
+msgstr "Неизвестный клиент"
+
+#: fief/apps/auth/routers/auth.py:351 fief/dependencies/auth.py:54
+msgid "redirect_uri is missing"
+msgstr "Отсутствует redirect_uri"
+
+#: fief/dependencies/auth.py:146
+msgid "scope is missing"
+msgstr "Отсутствует scope"
+
+#: fief/dependencies/auth.py:157
+msgid "scope should contain \"openid\""
+msgstr "scope должен содержать \"openid\""
+
+#: fief/dependencies/auth.py:204
+msgid "screen should either be \"login\" or \"register\""
+msgstr "screen должен быть либо \"login\", либо \"register\""
+
+#: fief/dependencies/auth.py:264
+msgid "Invalid login session"
+msgstr "Неверная сессия входа"
+
+#: fief/templates/auth/authorize.html:3 fief/templates/auth/authorize.html:5
+msgid "Authorize"
+msgstr "Авторизовать"
+
+#: fief/templates/auth/register.html:40
+msgid "I already have an account"
+msgstr "У меня уже есть аккаунт"
+
+#: fief/templates/auth/login.html:52 fief/templates/auth/register.html:9
+#: fief/templates/auth/register.html:17 fief/templates/auth/register.html:42
+msgid "Sign up"
+msgstr "Зарегистрироваться"
+
+#: fief/apps/auth/routers/auth.py:328
+msgid "The user denied access to their data."
+msgstr "Пользователь отказался предоставить доступ к своим данным."
+
+#: fief/dependencies/auth.py:177
+msgid "prompt should either be \"none\", \"login\" or \"register\""
+msgstr "prompt должен быть либо \"none\", либо \"login\", либо \"register\""
+
+#: fief/dependencies/auth.py:186
+msgid "User is not logged in"
+msgstr "Пользователь не вошел в систему"
+
+#: fief/dependencies/auth.py:324
+msgid "User consent is required for this scope"
+msgstr "Необходимо получить согласие пользователя для этого scope"
+
+#: fief/templates/auth/consent.html:5
+msgid "Consent"
+msgstr "Согласие"
+
+#: fief/templates/auth/consent.html:7
+msgid "%(name)s wants to access your account"
+msgstr "%(name)s хочет получить доступ к вашему аккаунту"
+
+#: fief/templates/auth/consent.html:12
+msgid "This will allow %(name)s to:"
+msgstr "Это позволит %(name)s:"
+
+#: fief/apps/auth/forms/auth.py:16
+msgid "Deny"
+msgstr "Отказать"
+
+#: fief/apps/auth/forms/auth.py:15
+msgid "Allow"
+msgstr "Разрешить"
+
+#: fief/apps/auth/routers/reset.py:47
+msgid "Check your inbox! If an account associated with this email address exists in our system, you'll receive a link to reset your password."
+msgstr "Проверьте свою почту. Если учетная запись, связанная с этим адресом электронной почты, существует в нашей системе, вы получите ссылку для сброса пароля."
+
+#: fief/apps/auth/routers/reset.py:75
+msgid "The reset password token is missing."
+msgstr "Токен сброса пароля отсутствует."
+
+#: fief/apps/auth/routers/reset.py:91
+msgid "The reset password token is invalid or expired."
+msgstr "Токен сброса пароля недействителен или истек срок его действия."
+
+#: fief/templates/auth/forgot_password.html:5
+#: fief/templates/auth/forgot_password.html:7
+msgid "Forgot password"
+msgstr "Забыли пароль"
+
+#: fief/templates/auth/forgot_password.html:17
+msgid "I remember my password"
+msgstr "Я помню свой пароль"
+
+#: fief/templates/auth/forgot_password.html:19
+msgid "Send me a reset link"
+msgstr "Отправить мне ссылку для сброса пароля"
+
+#: fief/templates/auth/login.html:28
+msgid "I forgot my password"
+msgstr "Забыл пароль"
+
+#: fief/templates/auth/reset_password.html:5
+#: fief/templates/auth/reset_password.html:7
+msgid "Reset password"
+msgstr "Сбросить пароль"
+
+#: fief/apps/auth/forms/password.py:14 fief/apps/auth/forms/reset.py:15
+msgid "New password"
+msgstr "Новый пароль"
+
+#: fief/templates/auth/reset_password.html:18
+msgid "Reset my password"
+msgstr "Сбросить мой пароль"
+
+#: fief/dependencies/auth.py:60
+msgid "redirect_uri is not authorized for this client"
+msgstr "redirect_uri не авторизован для этого клиента"
+
+#: fief/dependencies/auth.py:110
+msgid "request parameter is not supported"
+msgstr "Неподдерживаемый request parameter"
+
+#: fief/dependencies/auth.py:227
+msgid "Unsupported code_challenge_method"
+msgstr "Неподдерживаемый code_challenge_method"
+
+#: fief/forms.py:271
+msgid "This phone number is invalid."
+msgstr "Этот номер телефона недействителен."
+
+#: fief/forms.py:269
+msgid "The country code is missing."
+msgstr "Отсутствует код страны."
+
+#: fief/dependencies/auth.py:86
+msgid "response_type is invalid"
+msgstr "Неверный response_type"
+
+#: fief/dependencies/auth.py:128
+msgid "nonce parameter is required for this response_type"
+msgstr "Необходим параметр nonce для этого response_type"
+
+#: fief/templates/macros/branding.html:3
+msgid "Powered and secured by"
+msgstr "Обеспечено и защищено"
+
+#: fief/templates/auth/login.html:51
+msgid "Don't have an account?"
+msgstr "У вас нет аккаунта?"
+
+#: fief/templates/auth/logout.html:3 fief/templates/auth/logout.html:5
+msgid "Sign out"
+msgstr "Выйти"
+
+#: fief/forms.py:290
+msgid "Address line 1"
+msgstr "Адрес 1"
+
+#: fief/forms.py:295
+msgid "Address line 2"
+msgstr "Адрес 2"
+
+#: fief/forms.py:301
+msgid "Postal code"
+msgstr "Почтовый индекс"
+
+#: fief/forms.py:306
+msgid "City"
+msgstr "Город"
+
+#: fief/forms.py:311
+msgid "State"
+msgstr "Область/Штат"
+
+#: fief/forms.py:317
+msgid "Country"
+msgstr "Страна"
+
+#: fief/forms.py:66
+msgid "CSRF failed."
+msgstr "CSRF не выполнен."
+
+#: fief/apps/auth/routers/oauth.py:99
+msgid "Missing authorization code."
+msgstr "Отсутствует authorization code."
+
+#: fief/apps/auth/routers/oauth.py:111
+msgid "Invalid OAuth session."
+msgstr "Неверная сессия OAuth."
+
+#: fief/apps/auth/routers/oauth.py:127
+msgid "An error occurred while getting the access token."
+msgstr "Произошла ошибка при получении access token."
+
+#: fief/apps/auth/routers/oauth.py:165
+msgid "Your account is inactive."
+msgstr "Ваш аккаунт не активен."
+
+#: fief/dependencies/oauth.py:24
+msgid "Unknown tenant"
+msgstr "Неизвестный tenant"
+
+#: fief/dependencies/oauth.py:44
+msgid "Invalid login session."
+msgstr "Неверная сессия входа."
+
+#: fief/dependencies/oauth.py:60
+msgid "Unknown OAuth provider"
+msgstr "Неизвестный OAuth provider"
+
+#: fief/templates/auth/login.html:15
+msgid "Sign in with %(provider)s"
+msgstr "Войти с помощью %(provider)s"
+
+#: fief/templates/auth/register.html:7 fief/templates/auth/register.html:15
+#: fief/templates/auth/register.html:35
+msgid "Finalize sign up"
+msgstr "Завершить регистрацию"
+
+#: fief/templates/auth/register.html:54
+msgid "Sign up with %(provider)s"
+msgstr "Зарегистрироваться с помощью %(provider)s"
+
+#: fief/apps/auth/routers/register.py:54
+msgid "Registration is disabled"
+msgstr "Регистрация отключена"
+
+#: fief/apps/auth/forms/password.py:9
+msgid "Old password"
+msgstr "Старый пароль"
+
+#: fief/apps/auth/forms/password.py:19
+msgid "Confirm new password"
+msgstr "Подтвердить новый пароль"
+
+#: fief/apps/auth/routers/dashboard.py:128
+msgid "A user with this email address already exists."
+msgstr "Пользователь с таким адресом электронной почты уже существует."
+
+#: fief/apps/auth/routers/dashboard.py:80
+msgid "Your profile has successfully been updated."
+msgstr "Ваш профиль успешно обновлен."
+
+#: fief/apps/auth/routers/dashboard.py:209
+msgid "Old password is invalid."
+msgstr "Старый пароль недействителен."
+
+#: fief/apps/auth/routers/dashboard.py:217
+msgid "Passwords don't match."
+msgstr "Пароли не совпадают."
+
+#: fief/apps/auth/routers/dashboard.py:224
+msgid "Your password has been changed successfully."
+msgstr "Пароль успешно изменен."
+
+#: fief/apps/auth/routers/oauth.py:149
+msgid "An error occurred while querying the provider API. Original error message: %(message)s"
+msgstr "Произошла ошибка при запросе API поставщика. Оригинальное сообщение об ошибке: %(message)s"
+
+#: fief/dependencies/auth.py:277
+msgid "Missing login session. You should return to %(tenant)s and try to login again"
+msgstr "Сессия входа отсутствует. Вы должны вернуться в %(tenant)s и попробовать войти снова"
+
+#: fief/templates/auth/dashboard/index.html:7
+#: fief/templates/auth/dashboard/index.html:10
+#: fief/templates/auth/dashboard/sidebar.html:31
+msgid "Profile"
+msgstr "Профиль"
+
+#: fief/templates/auth/dashboard/index.html:43
+msgid "Update profile"
+msgstr "Обновить профиль"
+
+#: fief/templates/auth/dashboard/password.html:10
+#: fief/templates/auth/dashboard/password.html:23
+msgid "Change password"
+msgstr "Изменить пароль"
+
+#: fief/templates/auth/dashboard/sidebar.html:16
+msgid "Back to application"
+msgstr "Вернуться в приложение"
+
+#. Shown in a small badge over a button. Keep it extra-short.
+#. 
+#. https://s3.eu-west-1.amazonaws.com/po-pub/i/oI8dlw8Cf6lS4C4fv0FByxXe.png
+#: fief/templates/auth/login.html:38
+msgid "Used last"
+msgstr "Последний раз использовано"
+
+#: fief/services/password.py:43
+msgid "Password is not strong enough."
+msgstr "Пароль недостаточно силен."
+
+#: fief/templates/macros/forms.html:307
+msgid "Weak"
+msgstr "Слабый"
+
+#: fief/templates/macros/forms.html:309
+msgid "Acceptable"
+msgstr "Приемлемый"
+
+#: fief/templates/macros/forms.html:311
+msgid "Good"
+msgstr "Хороший"
+
+#: fief/services/password.py:26
+msgid "Password must be at least %(min)d characters long."
+msgstr "Пароль должен быть не менее %(min)d символов в длину."
+
+#: fief/services/password.py:34
+msgid "Password must be at most %(max)d characters long."
+msgstr "Пароль должен быть не более %(max)d символов в длину."
+
+#: fief/apps/auth/forms/profile.py:17
+msgid "Confirm your password"
+msgstr "Подтвердите пароль"
+
+#: fief/apps/auth/forms/verify_email.py:8
+msgid "Verification code"
+msgstr "Код подтверждения"
+
+#: fief/apps/auth/routers/auth.py:239
+msgid "The verification code is invalid. Please check that you have entered it correctly. If the code was copied and pasted, ensure it has not expired. If it has been more than one hour, please request a new verification code."
+msgstr "Код подтверждения недействителен. Пожалуйста, проверьте, правильно ли вы его ввели. Если код был скопирован и вставлен, убедитесь, что он не истек срок действия. Если он был более чем один час назад, пожалуйста, запросите новый код подтверждения."
+
+#: fief/apps/auth/routers/dashboard.py:117
+msgid "Your password is invalid."
+msgstr "Ваш пароль недействителен."
+
+#: fief/apps/auth/routers/dashboard.py:167
+msgid "The verification code is invalid. Please check that you have entered it correctly. If the code was copied and pasted, ensure it has not expired. If it has been more than one hour, start over the email change process."
+msgstr "Код подтверждения недействителен. Пожалуйста, проверьте, правильно ли вы его ввели. Если код был скопирован и вставлен, убедитесь, что он не истек срок действия. Если он был более чем один час назад, запросите новый код подтверждения для изменения электронной почты."
+
+#: fief/templates/auth/verify_email.html:6
+#: fief/templates/auth/verify_email.html:8
+msgid "Verify your email"
+msgstr "Подтвердите электронную почту"
+
+#: fief/templates/auth/verify_email.html:29
+msgid "To complete the email verification process, please check your email for the verification code. Enter the code below to verify your email address."
+msgstr "Чтобы завершить процесс подтверждения электронной почты, пожалуйста, проверьте электронную почту на наличие кода подтверждения. Введите код ниже, чтобы подтвердить свой адрес электронной почты."
+
+#: fief/templates/auth/verify_email.html:33
+msgid "Resend the code"
+msgstr "Отправить код повторно"
+
+#: fief/templates/auth/dashboard/email/verify.html:47
+#: fief/templates/auth/verify_email.html:34
+msgid "Verify my email"
+msgstr "Подтвердить мою электронную почту"
+
+#: fief/templates/auth/dashboard/index.html:12
+msgid "Email"
+msgstr "Электронная почта"
+
+#: fief/templates/auth/dashboard/index.html:13
+msgid "Manage your email address to receive important updates and notifications."
+msgstr "Управляйте адресом электронной почты для получения важных обновлений и уведомлений."
+
+#: fief/templates/auth/dashboard/index.html:23
+msgid "Change"
+msgstr "Изменить"
+
+#: fief/templates/auth/dashboard/index.html:29
+msgid "Profile information"
+msgstr "Информация о профиле"
+
+#: fief/templates/auth/dashboard/index.html:30
+msgid "Manage your profile information."
+msgstr "Управляйте информацией о вашем профиле."
+
+#: fief/templates/auth/dashboard/email/change.html:21
+#: fief/templates/auth/dashboard/email/verify.html:45
+msgid "Cancel"
+msgstr "Отменить"
+
+#: fief/templates/auth/dashboard/email/change.html:23
+msgid "Change email address"
+msgstr "Изменить адрес электронной почты"
+
+#: fief/templates/auth/dashboard/email/verify.html:30
+msgid "To complete the email change, please check your email for the verification code. Enter the code below to verify your new email address."
+msgstr "Чтобы завершить изменение электронной почты, пожалуйста, проверьте электронную почту на наличие кода подтверждения. Введите код ниже, чтобы подтвердить новый адрес электронной почты."
+
