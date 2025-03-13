@@ -272,158 +272,158 @@ msgstr "已停止注册"
 
 #: fief/apps/auth/forms/password.py:9
 msgid "Old password"
-msgstr ""
+msgstr "原密码"
 
 #: fief/apps/auth/forms/password.py:19
 msgid "Confirm new password"
-msgstr ""
+msgstr "确认新密码"
 
 #: fief/apps/auth/routers/dashboard.py:128
 msgid "A user with this email address already exists."
-msgstr ""
+msgstr "该电子邮箱地址已被使用"
 
 #: fief/apps/auth/routers/dashboard.py:80
 msgid "Your profile has successfully been updated."
-msgstr ""
+msgstr "个人资料已更新成功"
 
 #: fief/apps/auth/routers/dashboard.py:209
 msgid "Old password is invalid."
-msgstr ""
+msgstr "原密码不正确"
 
 #: fief/apps/auth/routers/dashboard.py:217
 msgid "Passwords don't match."
-msgstr ""
+msgstr "两次输入的密码不一致"
 
 #: fief/apps/auth/routers/dashboard.py:224
 msgid "Your password has been changed successfully."
-msgstr ""
+msgstr "密码修改成功"
 
 #: fief/apps/auth/routers/oauth.py:149
 msgid "An error occurred while querying the provider API. Original error message: %(message)s"
-msgstr ""
+msgstr "查询服务提供商API时出错。原始错误信息：%(message)s"
 
 #: fief/dependencies/auth.py:277
 msgid "Missing login session. You should return to %(tenant)s and try to login again"
-msgstr ""
+msgstr "登录会话缺失。请返回 %(tenant)s 重新登录"
 
 #: fief/templates/auth/dashboard/index.html:7
 #: fief/templates/auth/dashboard/index.html:10
 #: fief/templates/auth/dashboard/sidebar.html:31
 msgid "Profile"
-msgstr ""
+msgstr "个人资料"
 
 #: fief/templates/auth/dashboard/index.html:43
 msgid "Update profile"
-msgstr ""
+msgstr "更新个人资料"
 
 #: fief/templates/auth/dashboard/password.html:10
 #: fief/templates/auth/dashboard/password.html:23
 msgid "Change password"
-msgstr ""
+msgstr "修改密码"
 
 #: fief/templates/auth/dashboard/sidebar.html:16
 msgid "Back to application"
-msgstr ""
+msgstr "返回应用"
 
 #. Shown in a small badge over a button. Keep it extra-short.
 #. 
 #. https://s3.eu-west-1.amazonaws.com/po-pub/i/oI8dlw8Cf6lS4C4fv0FByxXe.png
 #: fief/templates/auth/login.html:38
 msgid "Used last"
-msgstr ""
+msgstr "上次使用"
 
 #: fief/services/password.py:43
 msgid "Password is not strong enough."
-msgstr ""
+msgstr "密码强度不够"
 
 #: fief/templates/macros/forms.html:307
 msgid "Weak"
-msgstr ""
+msgstr "弱"
 
 #: fief/templates/macros/forms.html:309
 msgid "Acceptable"
-msgstr ""
+msgstr "一般"
 
 #: fief/templates/macros/forms.html:311
 msgid "Good"
-msgstr ""
+msgstr "强"
 
 #: fief/services/password.py:26
 msgid "Password must be at least %(min)d characters long."
-msgstr ""
+msgstr "密码长度至少为 %(min)d 个字符"
 
 #: fief/services/password.py:34
 msgid "Password must be at most %(max)d characters long."
-msgstr ""
+msgstr "密码长度最多为 %(max)d 个字符"
 
 #: fief/apps/auth/forms/profile.py:17
 msgid "Confirm your password"
-msgstr ""
+msgstr "确认密码"
 
 #: fief/apps/auth/forms/verify_email.py:8
 msgid "Verification code"
-msgstr ""
+msgstr "验证码"
 
 #: fief/apps/auth/routers/auth.py:239
 msgid "The verification code is invalid. Please check that you have entered it correctly. If the code was copied and pasted, ensure it has not expired. If it has been more than one hour, please request a new verification code."
-msgstr ""
+msgstr "验证码无效。请检查输入是否正确。如果是复制粘贴的验证码，请确保验证码未过期。如果已超过一小时，请重新获取验证码。"
 
 #: fief/apps/auth/routers/dashboard.py:117
 msgid "Your password is invalid."
-msgstr ""
+msgstr "密码不正确"
 
 #: fief/apps/auth/routers/dashboard.py:167
 msgid "The verification code is invalid. Please check that you have entered it correctly. If the code was copied and pasted, ensure it has not expired. If it has been more than one hour, start over the email change process."
-msgstr ""
+msgstr "验证码无效。请检查输入是否正确。如果是复制粘贴的验证码，请确保验证码未过期。如果已超过一小时，请重新开始邮箱修改流程。"
 
 #: fief/templates/auth/verify_email.html:6
 #: fief/templates/auth/verify_email.html:8
 msgid "Verify your email"
-msgstr ""
+msgstr "验证你的邮箱"
 
 #: fief/templates/auth/verify_email.html:29
 msgid "To complete the email verification process, please check your email for the verification code. Enter the code below to verify your email address."
-msgstr ""
+msgstr "请查看邮箱获取验证码。在下方输入验证码以完成邮箱验证。"
 
 #: fief/templates/auth/verify_email.html:33
 msgid "Resend the code"
-msgstr ""
+msgstr "重新发送验证码"
 
 #: fief/templates/auth/dashboard/email/verify.html:47
 #: fief/templates/auth/verify_email.html:34
 msgid "Verify my email"
-msgstr ""
+msgstr "验证我的邮箱"
 
 #: fief/templates/auth/dashboard/index.html:12
 msgid "Email"
-msgstr ""
+msgstr "邮箱"
 
 #: fief/templates/auth/dashboard/index.html:13
 msgid "Manage your email address to receive important updates and notifications."
-msgstr ""
+msgstr "管理你的邮箱地址以接收重要更新和通知。"
 
 #: fief/templates/auth/dashboard/index.html:23
 msgid "Change"
-msgstr ""
+msgstr "修改"
 
 #: fief/templates/auth/dashboard/index.html:29
 msgid "Profile information"
-msgstr ""
+msgstr "个人资料信息"
 
 #: fief/templates/auth/dashboard/index.html:30
 msgid "Manage your profile information."
-msgstr ""
+msgstr "管理你的个人资料信息。"
 
 #: fief/templates/auth/dashboard/email/change.html:21
 #: fief/templates/auth/dashboard/email/verify.html:45
 msgid "Cancel"
-msgstr ""
+msgstr "取消"
 
 #: fief/templates/auth/dashboard/email/change.html:23
 msgid "Change email address"
-msgstr ""
+msgstr "修改邮箱地址"
 
 #: fief/templates/auth/dashboard/email/verify.html:30
 msgid "To complete the email change, please check your email for the verification code. Enter the code below to verify your new email address."
-msgstr ""
+msgstr "请查看邮箱获取验证码。在下方输入验证码以验证你的新邮箱地址。"
 
