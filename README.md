@@ -8,8 +8,8 @@
 
 ## Getting started
 
-* Official website: [https://www.fief.dev](https://www.fief.dev)
-* Documentation: [https://docs.fief.dev](https://docs.fief.dev)
+- Official website: [https://www.fief.dev](https://www.fief.dev)
+- Documentation: [https://docs.fief.dev](https://docs.fief.dev)
 
 ## Support us
 
@@ -31,7 +31,9 @@
 ## Contributing
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+
 [![All Contributors](https://img.shields.io/badge/all_contributors-28-orange.svg?style=flat-square)](#contributors-)
+
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 All contributions to improve the project are welcome! In particular, bug and documentation fixes are really appreciated.
