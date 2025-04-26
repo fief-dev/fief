@@ -143,6 +143,9 @@ class Settings(BaseSettings):
     password_min_length: int = 8
     password_min_score: int = Field(ge=0, le=4, default=3)
 
+    branding: bool = True
+    override_templates_directory: DirectoryPath | None = None
+
     model_config = SettingsConfigDict(
         env_file=".env", extra="ignore", secrets_dir=initial_settings.secrets_dir
     )
@@ -205,4 +208,6 @@ class Settings(BaseSettings):
         return provider_class(**self.email_provider_params)
 
     def get_templates_directory(self) -> Sequence[Path]:
+        if self.override_templates_directory:
+            return [Path(self.override_templates_directory), TEMPLATES_DIRECTORY]
         return [TEMPLATES_DIRECTORY]

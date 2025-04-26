@@ -1,2 +1,5 @@
+from fief.settings import settings
+
+
 async def get_show_branding() -> bool:
-    return True
+    return settings.branding

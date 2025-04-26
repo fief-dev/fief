@@ -5,7 +5,7 @@ from starlette.types import Receive, Scope, Send
 
 
 class CORSMiddlewarePath(CORSMiddleware):
-    def __init__(self, path_regex: str, *args, **kwargs) -> None:
+    def __init__(self, *args, path_regex: str, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.path_regex = re.compile(path_regex)
 
