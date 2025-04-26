@@ -6,6 +6,15 @@
     <em>Users and authentication management SaaS</em>
 </p>
 
+> [!IMPORTANT]
+> Fief, as you know it today, is wrapping up its current chapter.
+> We're working on a completely new and exciting vision for the future!
+>
+> This means we won't be adding new features or fixing bugs in this codebase anymore.
+> Thank you so much for being part of the journey so far — your support has meant the world to us.
+>
+> **Stay tuned — we can't wait to show you what's next! 🚀**
+
 ## Getting started
 
 - Official website: [https://www.fief.dev](https://www.fief.dev)
