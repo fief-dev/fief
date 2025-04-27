@@ -1,5 +1,0 @@
-{% import "macros/forms.html" as forms %}
-
-{% call(oauth_provider) forms.form_combobox_select_field_results(oauth_providers, "id", "display_name", "No OAuth Provider is matching your query.") %}
-  {{ oauth_provider.display_name }}
-{% endcall %}

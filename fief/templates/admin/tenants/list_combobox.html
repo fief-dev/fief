@@ -1,5 +1,0 @@
-{% import "macros/forms.html" as forms %}
-
-{% call(tenant) forms.form_combobox_select_field_results(tenants, "id", "name", "No tenant is matching your query.") %}
-  {{ tenant.name }}
-{% endcall %}

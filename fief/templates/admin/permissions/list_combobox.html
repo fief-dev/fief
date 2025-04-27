@@ -1,5 +1,0 @@
-{% import "macros/forms.html" as forms %}
-
-{% call(permission) forms.form_combobox_select_field_results(permissions, "id", "codename", "No permission is matching your query.") %}
-  {{ permission.codename }}
-{% endcall %}
