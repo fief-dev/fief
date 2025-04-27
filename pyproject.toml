@@ -37,22 +37,14 @@ dependencies = [
     "pytest-cov",
     "mkdocs-material",
     "mkdocstrings[python]",
-    
+    "pwdlib[argon2,bcrypt]",
 ]
 
 [tool.hatch.envs.default.scripts]
 test = "pytest"
 test-cov-xml = "pytest --cov-report=xml"
-lint = [
-  "ruff format .",
-  "ruff check --fix .",
-  "mypy fief/",
-]
-lint-check = [
-  "ruff format --check .",
-  "ruff check .",
-  "mypy fief/",
-]
+lint = ["ruff format .", "ruff check --fix .", "mypy fief/ tests/"]
+lint-check = ["ruff format --check .", "ruff check .", "mypy fief/"]
 docs-serve = "mkdocs serve"
 docs-build = "mkdocs build"
 
@@ -62,9 +54,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "fief"
-authors = [
-  { name = "fief", email = "contact@fief.dev" }
-]
+authors = [{ name = "fief", email = "contact@fief.dev" }]
 description = "Authentication toolkit for Python"
 readme = "README.md"
 dynamic = ["version"]
@@ -73,9 +63,7 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
 ]
 requires-python = ">=3.10"
-dependencies = [
-    "anyio",
-]
+dependencies = ["anyio", "pwdlib[argon2]"]
 
 [project.urls]
 Documentation = "https://www.fief.dev"
