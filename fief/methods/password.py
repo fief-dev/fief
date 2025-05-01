@@ -5,23 +5,22 @@ from pwdlib.exceptions import UnknownHashError
 
 from fief.storage import StorageProtocol
 
-from ._exceptions import ProtocolException
-from ._model import ProtocolModel
-
-
-class PasswordModelData(typing.TypedDict):
-    hashed_password: str
-
+from ._exceptions import MethodException
+from ._model import MethodModel
 
 PROTOCOL_TYPE = "password"
 
 
-class PasswordModel(
-    ProtocolModel[typing.Literal["password"], PasswordModelData], typing.Protocol
+class PasswordMethodModelData(typing.TypedDict):
+    hashed_password: str
+
+
+class PasswordMethodModel(
+    MethodModel[typing.Literal["password"], PasswordMethodModelData], typing.Protocol
 ): ...
 
 
-PM = typing.TypeVar("PM", bound=PasswordModel)
+PM = typing.TypeVar("PM", bound=PasswordMethodModel)
 
 
 class PasswordHasherProtocol(typing.Protocol):
@@ -37,11 +36,11 @@ class PasswordHasherProtocol(typing.Protocol):
     ) -> str: ...  # pragma: no cover
 
 
-class PasswordException(ProtocolException):
-    """Base class for all exceptions raised by the password protocol."""
+class PasswordMethodException(MethodException):
+    """Base class for all exceptions raised by the password method."""
 
 
-class AlreadyEnrolledException(PasswordException):
+class AlreadyEnrolledException(PasswordMethodException):
     """Exception raised when a user is already enrolled with a password."""
 
     def __init__(self, user_id: typing.Any) -> None:
@@ -49,9 +48,9 @@ class AlreadyEnrolledException(PasswordException):
         super().__init__(f"User {user_id} already has a password enrolled.")
 
 
-class Password(typing.Generic[PM]):
+class PasswordMethod(typing.Generic[PM]):
     """
-    Protocol for password-based authentication.
+    Method for password-based authentication.
 
     Parameters:
         storage: The storage instance to persist password data.

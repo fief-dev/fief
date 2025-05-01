@@ -7,35 +7,41 @@ from pwdlib import PasswordHash
 from pwdlib.hashers.argon2 import Argon2Hasher
 from pwdlib.hashers.bcrypt import BcryptHasher
 
-from fief.protocols.password import (
+from fief.methods.password import (
     AlreadyEnrolledException,
-    Password,
-    PasswordModelData,
+    PasswordMethod,
+    PasswordMethodModelData,
 )
 from tests.fixtures import MockStorage
 
 
 @dataclasses.dataclass
-class PasswordModel:
+class PasswordMethodModel:
     type: typing.Literal["password"]
     user_id: str
-    data: PasswordModelData
+    data: PasswordMethodModelData
     id: uuid.UUID = dataclasses.field(default_factory=uuid.uuid4)
 
 
 @pytest.fixture
-def storage() -> MockStorage[PasswordModel]:
-    return MockStorage(PasswordModel)
+def storage() -> MockStorage[PasswordMethodModel]:
+    return MockStorage(PasswordMethodModel)
 
 
 @pytest.fixture
-def password(storage: MockStorage[PasswordModel]) -> Password[PasswordModel]:
-    return Password(storage, hasher=PasswordHash((Argon2Hasher(), BcryptHasher())))
+def password_method(
+    storage: MockStorage[PasswordMethodModel],
+) -> PasswordMethod[PasswordMethodModel]:
+    return PasswordMethod(
+        storage, hasher=PasswordHash((Argon2Hasher(), BcryptHasher()))
+    )
 
 
 class TestEnroll:
     def test_already_enrolled(
-        self, password: Password[PasswordModel], storage: MockStorage[PasswordModel]
+        self,
+        password_method: PasswordMethod[PasswordMethodModel],
+        storage: MockStorage[PasswordMethodModel],
     ) -> None:
         user_id = "user_id"
 
@@ -46,14 +52,16 @@ class TestEnroll:
         )
 
         with pytest.raises(AlreadyEnrolledException):
-            password.enroll(user_id, "password")
+            password_method.enroll(user_id, "password")
 
     def test_valid(
-        self, password: Password[PasswordModel], storage: MockStorage[PasswordModel]
+        self,
+        password_method: PasswordMethod[PasswordMethodModel],
+        storage: MockStorage[PasswordMethodModel],
     ) -> None:
         user_id = "user_id"
 
-        model = password.enroll(user_id, "password")
+        model = password_method.enroll(user_id, "password")
 
         assert model.id is not None
         assert model.type == "password"
@@ -69,18 +77,24 @@ class TestEnroll:
 
 
 class TestAuthenticate:
-    def test_missing_user(self, password: Password[PasswordModel]) -> None:
-        result = password.authenticate(None, "password")
+    def test_missing_user(
+        self, password_method: PasswordMethod[PasswordMethodModel]
+    ) -> None:
+        result = password_method.authenticate(None, "password")
 
         assert result is False
 
-    def test_not_enrolled(self, password: Password[PasswordModel]) -> None:
-        result = password.authenticate("user_id", "password")
+    def test_not_enrolled(
+        self, password_method: PasswordMethod[PasswordMethodModel]
+    ) -> None:
+        result = password_method.authenticate("user_id", "password")
 
         assert result is False
 
     def test_invalid_password(
-        self, password: Password[PasswordModel], storage: MockStorage[PasswordModel]
+        self,
+        password_method: PasswordMethod[PasswordMethodModel],
+        storage: MockStorage[PasswordMethodModel],
     ) -> None:
         user_id = "user_id"
         plain_password = "password"
@@ -88,15 +102,17 @@ class TestAuthenticate:
         storage.create(
             type="password",
             user_id=user_id,
-            data={"hashed_password": password._hasher.hash(plain_password)},
+            data={"hashed_password": password_method._hasher.hash(plain_password)},
         )
 
-        result = password.authenticate(user_id, "invalid")
+        result = password_method.authenticate(user_id, "invalid")
 
         assert result is False
 
     def test_invalid_hash(
-        self, password: Password[PasswordModel], storage: MockStorage[PasswordModel]
+        self,
+        password_method: PasswordMethod[PasswordMethodModel],
+        storage: MockStorage[PasswordMethodModel],
     ) -> None:
         user_id = "user_id"
 
@@ -104,12 +120,14 @@ class TestAuthenticate:
             type="password", user_id=user_id, data={"hashed_password": "invalid_hash"}
         )
 
-        result = password.authenticate(user_id, "password")
+        result = password_method.authenticate(user_id, "password")
 
         assert result is False
 
     def test_valid(
-        self, password: Password[PasswordModel], storage: MockStorage[PasswordModel]
+        self,
+        password_method: PasswordMethod[PasswordMethodModel],
+        storage: MockStorage[PasswordMethodModel],
     ) -> None:
         user_id = "user_id"
         plain_password = "password"
@@ -117,15 +135,17 @@ class TestAuthenticate:
         storage.create(
             type="password",
             user_id=user_id,
-            data={"hashed_password": password._hasher.hash(plain_password)},
+            data={"hashed_password": password_method._hasher.hash(plain_password)},
         )
 
-        result = password.authenticate(user_id, plain_password)
+        result = password_method.authenticate(user_id, plain_password)
 
         assert result is True
 
     def test_valid_update_hash(
-        self, password: Password[PasswordModel], storage: MockStorage[PasswordModel]
+        self,
+        password_method: PasswordMethod[PasswordMethodModel],
+        storage: MockStorage[PasswordMethodModel],
     ) -> None:
         user_id = "user_id"
         plain_password = "password"
@@ -135,7 +155,7 @@ class TestAuthenticate:
             type="password", user_id=user_id, data={"hashed_password": outdated_hash}
         )
 
-        result = password.authenticate(user_id, plain_password)
+        result = password_method.authenticate(user_id, plain_password)
 
         assert result is True
 

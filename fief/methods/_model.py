@@ -4,7 +4,7 @@ T = typing.TypeVar("T", bound=str)
 D = typing.TypeVar("D", bound=typing.Mapping[str, typing.Any])
 
 
-class ProtocolModel(typing.Protocol[T, D]):
+class MethodModel(typing.Protocol[T, D]):
     id: typing.Any
     type: T
     user_id: typing.Any
@@ -12,5 +12,5 @@ class ProtocolModel(typing.Protocol[T, D]):
 
 
 _all__ = [
-    "ProtocolModel",
+    "MethodModel",
 ]
