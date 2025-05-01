@@ -1,6 +1,9 @@
+import dataclasses
 import typing
+import uuid
 
 from fief.storage import AsyncStorageProtocol, M, StorageProtocol
+from fief.user import UserProtocol
 
 
 class MockStorage(StorageProtocol[M]):
@@ -51,3 +54,13 @@ class MockAsyncStorage(AsyncStorageProtocol[M]):
                     setattr(item, key, value)
                 return item
         return None
+
+
+@dataclasses.dataclass
+class User(UserProtocol):
+    email: str
+    id: uuid.UUID = dataclasses.field(default_factory=uuid.uuid4)
+
+    @classmethod
+    def identifier_fields(cls) -> tuple[str]:
+        return ("email",)

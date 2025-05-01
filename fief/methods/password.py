@@ -6,7 +6,7 @@ from pwdlib.exceptions import UnknownHashError
 from fief.storage import StorageProtocol
 
 from ._exceptions import MethodException
-from ._model import MethodModel
+from ._model import MethodModelProtocol
 
 PROTOCOL_TYPE = "password"
 
@@ -16,7 +16,8 @@ class PasswordMethodModelData(typing.TypedDict):
 
 
 class PasswordMethodModel(
-    MethodModel[typing.Literal["password"], PasswordMethodModelData], typing.Protocol
+    MethodModelProtocol[typing.Literal["password"], PasswordMethodModelData],
+    typing.Protocol,
 ): ...
 
 
