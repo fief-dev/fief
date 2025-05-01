@@ -3,14 +3,15 @@ import typing
 M = typing.TypeVar("M")
 
 
-class StorageProtocol(typing.Protocol):
+class StorageProtocol(typing.Protocol[M]):
     """Protocol for storage classes."""
 
-    def get_one(self, model: type[M], **kwargs: typing.Any) -> M | None:
+    model: type[M]
+
+    def get_one(self, **kwargs: typing.Any) -> M | None:
         """Get one object by kwargs.
 
         Args:
-            model: The model class.
             **kwargs: The kwargs to filter by.
 
         Returns:
@@ -18,25 +19,10 @@ class StorageProtocol(typing.Protocol):
         """
         ...
 
-    def get_all(
-        self, model: type[M], **kwargs: typing.Any
-    ) -> typing.Generator[M, None, None]:
-        """Get all objects by kwargs.
-
-        Args:
-            model: The model class.
-            **kwargs: The kwargs to filter by.
-
-        Returns:
-            Generator yielding all matching objects.
-        """
-        ...
-
-    def create(self, model: type[M], **data: typing.Any) -> M:
+    def create(self, **data: typing.Any) -> M:
         """Create a new object.
 
         Args:
-            model: The model class.
             **data: The data to create the object with.
 
         Returns:
@@ -44,11 +30,10 @@ class StorageProtocol(typing.Protocol):
         """
         ...
 
-    def update(self, model: type[M], id: typing.Any, **data: typing.Any) -> M | None:
+    def update(self, id: typing.Any, **data: typing.Any) -> M | None:
         """Update an existing object.
 
         Args:
-            model: The model class.
             id: The ID of the object to update.
             **data: The data to update the object with.
 
@@ -58,14 +43,15 @@ class StorageProtocol(typing.Protocol):
         ...
 
 
-class AsyncStorageProtocol(typing.Protocol):
+class AsyncStorageProtocol(typing.Protocol[M]):
     """Protocol for async storage classes."""
 
-    async def get_one(self, model: type[M], **kwargs: typing.Any) -> M | None:
+    model: type[M]
+
+    async def get_one(self, **kwargs: typing.Any) -> M | None:
         """Get one object by kwargs.
 
         Args:
-            model: The model class.
             **kwargs: The kwargs to filter by.
 
         Returns:
@@ -73,25 +59,10 @@ class AsyncStorageProtocol(typing.Protocol):
         """
         ...
 
-    async def get_all(
-        self, model: type[M], **kwargs: typing.Any
-    ) -> typing.AsyncGenerator[M, None]:
-        """Get all objects by kwargs.
-
-        Args:
-            model: The model class.
-            **kwargs: The kwargs to filter by.
-
-        Returns:
-            AsyncGenerator yielding all matching objects.
-        """
-        ...
-
-    async def create(self, model: type[M], **data: typing.Any) -> M:
+    async def create(self, **data: typing.Any) -> M:
         """Create a new object.
 
         Args:
-            model: The model class.
             **data: The data to create the object with.
 
         Returns:
@@ -99,13 +70,10 @@ class AsyncStorageProtocol(typing.Protocol):
         """
         ...
 
-    async def update(
-        self, model: type[M], id: typing.Any, **data: typing.Any
-    ) -> M | None:
+    async def update(self, id: typing.Any, **data: typing.Any) -> M | None:
         """Update an existing object.
 
         Args:
-            model: The model class.
             id: The ID of the object to update.
             **data: The data to update the object with.
 

@@ -38,6 +38,7 @@ dependencies = [
     "mkdocs-material",
     "mkdocstrings[python]",
     "pwdlib[argon2,bcrypt]",
+    "sqlalchemy[asyncio]",
 ]
 
 [tool.hatch.envs.default.scripts]
@@ -64,6 +65,9 @@ classifiers = [
 ]
 requires-python = ">=3.10"
 dependencies = ["anyio", "pwdlib[argon2]"]
+
+[project.optional-dependencies]
+sqlalchemy = ["sqlalchemy[asyncio]"]
 
 [project.urls]
 Documentation = "https://www.fief.dev"

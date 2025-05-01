@@ -13,9 +13,12 @@ class PasswordModelData(typing.TypedDict):
     hashed_password: str
 
 
-class PasswordModel(ProtocolModel, typing.Protocol):
-    type: typing.Literal["password"]
-    data: PasswordModelData
+PROTOCOL_TYPE = "password"
+
+
+class PasswordModel(
+    ProtocolModel[typing.Literal["password"], PasswordModelData], typing.Protocol
+): ...
 
 
 PM = typing.TypeVar("PM", bound=PasswordModel)
@@ -51,23 +54,19 @@ class Password(typing.Generic[PM]):
     Protocol for password-based authentication.
 
     Parameters:
-        model: The password model class.
         storage: The storage instance to persist password data.
         hasher: The password hasher implementation.
             If None, recommended defaults are used.
     """
 
-    _model: type[PM]
-    _storage: StorageProtocol
+    _storage: StorageProtocol[PM]
     _hasher: PasswordHasherProtocol
 
     def __init__(
         self,
-        model: type[PM],
-        storage: StorageProtocol,
+        storage: StorageProtocol[PM],
         hasher: PasswordHasherProtocol | None = None,
     ) -> None:
-        self._model = model
         self._storage = storage
         self._hasher = hasher or PasswordHash.recommended()
 
@@ -85,9 +84,7 @@ class Password(typing.Generic[PM]):
             AlreadyEnrolledException: If the user already has a password enrolled.
         """
         # Check if the user already has a password
-        existing_password = self._storage.get_one(
-            self._model, user_id=user_id, type="password"
-        )
+        existing_password = self._storage.get_one(user_id=user_id, type=PROTOCOL_TYPE)
         if existing_password is not None:
             raise AlreadyEnrolledException(user_id)
 
@@ -95,8 +92,7 @@ class Password(typing.Generic[PM]):
         hashed_password = self._hasher.hash(password)
 
         return self._storage.create(
-            self._model,
-            type="password",
+            type=PROTOCOL_TYPE,
             user_id=user_id,
             data={"hashed_password": hashed_password},
         )
@@ -114,9 +110,7 @@ class Password(typing.Generic[PM]):
         # Get the password model
         password_model: PM | None = None
         if user_id is not None:
-            password_model = self._storage.get_one(
-                self._model, user_id=user_id, type="password"
-            )
+            password_model = self._storage.get_one(user_id=user_id, type=PROTOCOL_TYPE)
 
         if user_id is None or password_model is None:
             # Run the hasher to mitigate timing attack
@@ -135,10 +129,7 @@ class Password(typing.Generic[PM]):
         # Update the password hash if needed
         if is_valid and updated_hash is not None:
             self._storage.update(
-                self._model,
                 password_model.id,
-                type="password",
-                user_id=user_id,
                 data={"hashed_password": updated_hash},
             )
 

@@ -1,11 +1,14 @@
 import typing
 
+T = typing.TypeVar("T", bound=str)
+D = typing.TypeVar("D", bound=typing.Mapping[str, typing.Any])
 
-class ProtocolModel(typing.Protocol):
+
+class ProtocolModel(typing.Protocol[T, D]):
     id: typing.Any
-    type: str
+    type: T
     user_id: typing.Any
-    data: dict[str, typing.Any]
+    data: D
 
 
 _all__ = [

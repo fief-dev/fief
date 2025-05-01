@@ -24,25 +24,22 @@ class PasswordModel:
 
 
 @pytest.fixture
-def storage() -> MockStorage:
-    return MockStorage()
+def storage() -> MockStorage[PasswordModel]:
+    return MockStorage(PasswordModel)
 
 
 @pytest.fixture
-def password(storage: MockStorage) -> Password[PasswordModel]:
-    return Password(
-        PasswordModel, storage, hasher=PasswordHash((Argon2Hasher(), BcryptHasher()))
-    )
+def password(storage: MockStorage[PasswordModel]) -> Password[PasswordModel]:
+    return Password(storage, hasher=PasswordHash((Argon2Hasher(), BcryptHasher())))
 
 
 class TestEnroll:
     def test_already_enrolled(
-        self, password: Password[PasswordModel], storage: MockStorage
+        self, password: Password[PasswordModel], storage: MockStorage[PasswordModel]
     ) -> None:
         user_id = "user_id"
 
         storage.create(
-            PasswordModel,
             type="password",
             user_id=user_id,
             data={"hashed_password": "hashed_password"},
@@ -52,7 +49,7 @@ class TestEnroll:
             password.enroll(user_id, "password")
 
     def test_valid(
-        self, password: Password[PasswordModel], storage: MockStorage
+        self, password: Password[PasswordModel], storage: MockStorage[PasswordModel]
     ) -> None:
         user_id = "user_id"
 
@@ -63,7 +60,7 @@ class TestEnroll:
         assert model.user_id == user_id
         assert model.data["hashed_password"] is not None
 
-        stored_model = storage.get_one(PasswordModel, id=model.id)
+        stored_model = storage.get_one(id=model.id)
         assert stored_model is not None
         assert stored_model.id == model.id
         assert stored_model.type == "password"
@@ -83,13 +80,12 @@ class TestAuthenticate:
         assert result is False
 
     def test_invalid_password(
-        self, password: Password[PasswordModel], storage: MockStorage
+        self, password: Password[PasswordModel], storage: MockStorage[PasswordModel]
     ) -> None:
         user_id = "user_id"
         plain_password = "password"
 
         storage.create(
-            PasswordModel,
             type="password",
             user_id=user_id,
             data={"hashed_password": password._hasher.hash(plain_password)},
@@ -100,15 +96,12 @@ class TestAuthenticate:
         assert result is False
 
     def test_invalid_hash(
-        self, password: Password[PasswordModel], storage: MockStorage
+        self, password: Password[PasswordModel], storage: MockStorage[PasswordModel]
     ) -> None:
         user_id = "user_id"
 
         storage.create(
-            PasswordModel,
-            type="password",
-            user_id=user_id,
-            data={"hashed_password": "invalid_hash"},
+            type="password", user_id=user_id, data={"hashed_password": "invalid_hash"}
         )
 
         result = password.authenticate(user_id, "password")
@@ -116,13 +109,12 @@ class TestAuthenticate:
         assert result is False
 
     def test_valid(
-        self, password: Password[PasswordModel], storage: MockStorage
+        self, password: Password[PasswordModel], storage: MockStorage[PasswordModel]
     ) -> None:
         user_id = "user_id"
         plain_password = "password"
 
         storage.create(
-            PasswordModel,
             type="password",
             user_id=user_id,
             data={"hashed_password": password._hasher.hash(plain_password)},
@@ -133,23 +125,20 @@ class TestAuthenticate:
         assert result is True
 
     def test_valid_update_hash(
-        self, password: Password[PasswordModel], storage: MockStorage
+        self, password: Password[PasswordModel], storage: MockStorage[PasswordModel]
     ) -> None:
         user_id = "user_id"
         plain_password = "password"
         outdated_hash = BcryptHasher().hash(plain_password)
 
         stored_model = storage.create(
-            PasswordModel,
-            type="password",
-            user_id=user_id,
-            data={"hashed_password": outdated_hash},
+            type="password", user_id=user_id, data={"hashed_password": outdated_hash}
         )
 
         result = password.authenticate(user_id, plain_password)
 
         assert result is True
 
-        updated_stored_model = storage.get_one(PasswordModel, id=stored_model.id)
+        updated_stored_model = storage.get_one(id=stored_model.id)
         assert updated_stored_model is not None
         assert updated_stored_model.data["hashed_password"] != outdated_hash
