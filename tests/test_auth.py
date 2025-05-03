@@ -97,7 +97,7 @@ class TestSignin:
         password_method: PasswordMethod[PasswordMethodModel],
     ) -> None:
         user = storage.create(email="alienor@aquitaine.duchy")
-        password_method.enroll(user.id, "richard")
+        password_method.enroll(user.id, password="richard")
 
         authenticated_user = auth_manager.signin(
             ("password", {"password": "wrongpassword"}), email="alienor@aquitaine.duchy"
@@ -111,7 +111,7 @@ class TestSignin:
         password_method: PasswordMethod[PasswordMethodModel],
     ) -> None:
         user = storage.create(email="alienor@aquitaine.duchy")
-        password_method.enroll(user.id, "richard")
+        password_method.enroll(user.id, password="richard")
 
         authenticated_user = auth_manager.signin(
             ("password", {"password": "richard"}), email="alienor@aquitaine.duchy"

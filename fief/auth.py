@@ -149,3 +149,13 @@ class AuthManager(typing.Generic[U]):
             if method.name == name:
                 return method
         raise UnknownMethodException(name)
+
+
+__all__ = [
+    "U",
+    "AuthManager",
+    "AuthException",
+    "MissingIdentifierFieldsException",
+    "UnknownMethodException",
+    "UserAlreadyExistsException",
+]

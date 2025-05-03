@@ -1,11 +1,13 @@
 import typing
+from collections.abc import Mapping
 
+import typing_extensions
 from pwdlib import PasswordHash
 from pwdlib.exceptions import UnknownHashError
 
 from fief.storage import StorageProtocol
 
-from ._exceptions import MethodException
+from ._exceptions import InvalidMethodRequestException, MethodException
 from ._model import MethodModelProtocol
 from ._protocol import MethodProtocol
 
@@ -47,6 +49,14 @@ class AlreadyEnrolledException(PasswordMethodException):
         super().__init__(f"User {user_id} already has a password enrolled.")
 
 
+class EnrollKwargs(typing.TypedDict):
+    password: str
+
+
+class AuthenticateKwargs(typing.TypedDict):
+    password: str
+
+
 class PasswordMethod(MethodProtocol, typing.Generic[PM]):
     """
     Method for password-based authentication.
@@ -74,12 +84,14 @@ class PasswordMethod(MethodProtocol, typing.Generic[PM]):
         self._hasher = hasher or PasswordHash.recommended()
         self.name = name
 
-    def enroll(self, user_id: typing.Any, password: str) -> PM:
+    def enroll(
+        self, user_id: typing.Any, **kwargs: typing_extensions.Unpack[EnrollKwargs]
+    ) -> PM:
         """Enroll a user with a password.
 
         Args:
             user_id: The user ID.
-            password: The password.
+            **kwargs: The password data.
 
         Returns:
             PM: The created password model.
@@ -93,7 +105,7 @@ class PasswordMethod(MethodProtocol, typing.Generic[PM]):
             raise AlreadyEnrolledException(user_id)
 
         # Hash the password
-        hashed_password = self._hasher.hash(password)
+        hashed_password = self._hasher.hash(kwargs["password"])
 
         return self._storage.create(
             name=self.name,
@@ -101,7 +113,11 @@ class PasswordMethod(MethodProtocol, typing.Generic[PM]):
             data={"hashed_password": hashed_password},
         )
 
-    def authenticate(self, user_id: typing.Any | None, password: str) -> bool:
+    def authenticate(
+        self,
+        user_id: typing.Any | None,
+        **kwargs: typing_extensions.Unpack[AuthenticateKwargs],
+    ) -> bool:
         """Authenticate a user with a password.
 
         Args:
@@ -111,6 +127,8 @@ class PasswordMethod(MethodProtocol, typing.Generic[PM]):
         Returns:
             bool: True if authentication was successful, False otherwise.
         """
+        password = kwargs["password"]
+
         # Get the password model
         password_model: PM | None = None
         if user_id is not None:
@@ -138,3 +156,53 @@ class PasswordMethod(MethodProtocol, typing.Generic[PM]):
             )
 
         return is_valid
+
+    def validate_enroll_request(self, data: Mapping[str, typing.Any]) -> EnrollKwargs:
+        """
+        Validate the enroll request data.
+
+        Args:
+            data: The request data.
+
+        Returns:
+            The validated data.
+        """
+        if "password" not in data:
+            raise InvalidMethodRequestException(
+                [
+                    {
+                        "type": "missing",
+                        "loc": ("password",),
+                        "msg": "This field is required.",
+                        "input": data,
+                    }
+                ]
+            )
+
+        return {"password": str(data["password"])}
+
+    def validate_authenticate_request(
+        self, data: Mapping[str, typing.Any]
+    ) -> AuthenticateKwargs:
+        """
+        Validate the authenticate request data.
+
+        Args:
+            data: The request data.
+
+        Returns:
+            The validated data.
+        """
+        if "password" not in data:
+            raise InvalidMethodRequestException(
+                [
+                    {
+                        "type": "missing",
+                        "loc": ("password",),
+                        "msg": "This field is required.",
+                        "input": data,
+                    }
+                ]
+            )
+
+        return {"password": str(data["password"])}

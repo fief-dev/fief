@@ -1,4 +1,5 @@
 import typing
+from collections.abc import Mapping
 
 
 class MethodProtocol(typing.Protocol):
@@ -13,3 +14,11 @@ class MethodProtocol(typing.Protocol):
     def authenticate(
         self, user_id: typing.Any | None, *args: typing.Any, **kwargs: typing.Any
     ) -> bool: ...
+
+    def validate_enroll_request(
+        self, data: Mapping[str, typing.Any]
+    ) -> Mapping[str, typing.Any]: ...
+
+    def validate_authenticate_request(
+        self, data: Mapping[str, typing.Any]
+    ) -> Mapping[str, typing.Any]: ...
