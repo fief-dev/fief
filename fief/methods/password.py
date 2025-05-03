@@ -7,8 +7,7 @@ from fief.storage import StorageProtocol
 
 from ._exceptions import MethodException
 from ._model import MethodModelProtocol
-
-PROTOCOL_TYPE = "password"
+from ._protocol import MethodProtocol
 
 
 class PasswordMethodModelData(typing.TypedDict):
@@ -16,8 +15,7 @@ class PasswordMethodModelData(typing.TypedDict):
 
 
 class PasswordMethodModel(
-    MethodModelProtocol[typing.Literal["password"], PasswordMethodModelData],
-    typing.Protocol,
+    MethodModelProtocol[PasswordMethodModelData], typing.Protocol
 ): ...
 
 
@@ -49,7 +47,7 @@ class AlreadyEnrolledException(PasswordMethodException):
         super().__init__(f"User {user_id} already has a password enrolled.")
 
 
-class PasswordMethod(typing.Generic[PM]):
+class PasswordMethod(MethodProtocol, typing.Generic[PM]):
     """
     Method for password-based authentication.
 
@@ -57,8 +55,12 @@ class PasswordMethod(typing.Generic[PM]):
         storage: The storage instance to persist password data.
         hasher: The password hasher implementation.
             If None, recommended defaults are used.
+        name: The name of the method.
+            Must be unique across all methods.
+            Defaults to "password".
     """
 
+    name: str
     _storage: StorageProtocol[PM]
     _hasher: PasswordHasherProtocol
 
@@ -66,9 +68,11 @@ class PasswordMethod(typing.Generic[PM]):
         self,
         storage: StorageProtocol[PM],
         hasher: PasswordHasherProtocol | None = None,
+        name: str = "password",
     ) -> None:
         self._storage = storage
         self._hasher = hasher or PasswordHash.recommended()
+        self.name = name
 
     def enroll(self, user_id: typing.Any, password: str) -> PM:
         """Enroll a user with a password.
@@ -84,7 +88,7 @@ class PasswordMethod(typing.Generic[PM]):
             AlreadyEnrolledException: If the user already has a password enrolled.
         """
         # Check if the user already has a password
-        existing_password = self._storage.get_one(user_id=user_id, type=PROTOCOL_TYPE)
+        existing_password = self._storage.get_one(user_id=user_id, name=self.name)
         if existing_password is not None:
             raise AlreadyEnrolledException(user_id)
 
@@ -92,7 +96,7 @@ class PasswordMethod(typing.Generic[PM]):
         hashed_password = self._hasher.hash(password)
 
         return self._storage.create(
-            type=PROTOCOL_TYPE,
+            name=self.name,
             user_id=user_id,
             data={"hashed_password": hashed_password},
         )
@@ -110,7 +114,7 @@ class PasswordMethod(typing.Generic[PM]):
         # Get the password model
         password_model: PM | None = None
         if user_id is not None:
-            password_model = self._storage.get_one(user_id=user_id, type=PROTOCOL_TYPE)
+            password_model = self._storage.get_one(user_id=user_id, name=self.name)
 
         if user_id is None or password_model is None:
             # Run the hasher to mitigate timing attack

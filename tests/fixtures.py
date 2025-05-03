@@ -2,8 +2,8 @@ import dataclasses
 import typing
 import uuid
 
+from fief.auth import UserProtocol
 from fief.storage import AsyncStorageProtocol, M, StorageProtocol
-from fief.user import UserProtocol
 
 
 class MockStorage(StorageProtocol[M]):

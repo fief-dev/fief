@@ -8,7 +8,7 @@ class StorageProtocol(typing.Protocol[M]):
 
     model: type[M]
 
-    def get_one(self, **kwargs: typing.Any) -> M | None:
+    def get_one(self, **kwargs: typing.Any) -> M | None:  # pragma: no cover
         """Get one object by kwargs.
 
         Args:
@@ -19,7 +19,7 @@ class StorageProtocol(typing.Protocol[M]):
         """
         ...
 
-    def create(self, **data: typing.Any) -> M:
+    def create(self, **data: typing.Any) -> M:  # pragma: no cover
         """Create a new object.
 
         Args:
@@ -30,7 +30,9 @@ class StorageProtocol(typing.Protocol[M]):
         """
         ...
 
-    def update(self, id: typing.Any, **data: typing.Any) -> M | None:
+    def update(
+        self, id: typing.Any, **data: typing.Any
+    ) -> M | None:  # pragma: no cover
         """Update an existing object.
 
         Args:
@@ -48,7 +50,7 @@ class AsyncStorageProtocol(typing.Protocol[M]):
 
     model: type[M]
 
-    async def get_one(self, **kwargs: typing.Any) -> M | None:
+    async def get_one(self, **kwargs: typing.Any) -> M | None:  # pragma: no cover
         """Get one object by kwargs.
 
         Args:
@@ -59,7 +61,7 @@ class AsyncStorageProtocol(typing.Protocol[M]):
         """
         ...
 
-    async def create(self, **data: typing.Any) -> M:
+    async def create(self, **data: typing.Any) -> M:  # pragma: no cover
         """Create a new object.
 
         Args:
@@ -70,7 +72,9 @@ class AsyncStorageProtocol(typing.Protocol[M]):
         """
         ...
 
-    async def update(self, id: typing.Any, **data: typing.Any) -> M | None:
+    async def update(
+        self, id: typing.Any, **data: typing.Any
+    ) -> M | None:  # pragma: no cover
         """Update an existing object.
 
         Args:

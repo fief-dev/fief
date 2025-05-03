@@ -1,5 +1,4 @@
 import dataclasses
-import typing
 import uuid
 
 import pytest
@@ -17,7 +16,7 @@ from tests.fixtures import MockStorage
 
 @dataclasses.dataclass
 class PasswordMethodModel:
-    type: typing.Literal["password"]
+    name: str
     user_id: str
     data: PasswordMethodModelData
     id: uuid.UUID = dataclasses.field(default_factory=uuid.uuid4)
@@ -46,7 +45,7 @@ class TestEnroll:
         user_id = "user_id"
 
         storage.create(
-            type="password",
+            name="password",
             user_id=user_id,
             data={"hashed_password": "hashed_password"},
         )
@@ -64,14 +63,14 @@ class TestEnroll:
         model = password_method.enroll(user_id, "password")
 
         assert model.id is not None
-        assert model.type == "password"
+        assert model.name == "password"
         assert model.user_id == user_id
         assert model.data["hashed_password"] is not None
 
         stored_model = storage.get_one(id=model.id)
         assert stored_model is not None
         assert stored_model.id == model.id
-        assert stored_model.type == "password"
+        assert stored_model.name == "password"
         assert stored_model.user_id == user_id
         assert stored_model.data["hashed_password"] is not None
 
@@ -100,7 +99,7 @@ class TestAuthenticate:
         plain_password = "password"
 
         storage.create(
-            type="password",
+            name="password",
             user_id=user_id,
             data={"hashed_password": password_method._hasher.hash(plain_password)},
         )
@@ -117,7 +116,7 @@ class TestAuthenticate:
         user_id = "user_id"
 
         storage.create(
-            type="password", user_id=user_id, data={"hashed_password": "invalid_hash"}
+            name="password", user_id=user_id, data={"hashed_password": "invalid_hash"}
         )
 
         result = password_method.authenticate(user_id, "password")
@@ -133,7 +132,7 @@ class TestAuthenticate:
         plain_password = "password"
 
         storage.create(
-            type="password",
+            name="password",
             user_id=user_id,
             data={"hashed_password": password_method._hasher.hash(plain_password)},
         )
@@ -152,7 +151,7 @@ class TestAuthenticate:
         outdated_hash = BcryptHasher().hash(plain_password)
 
         stored_model = storage.create(
-            type="password", user_id=user_id, data={"hashed_password": outdated_hash}
+            name="password", user_id=user_id, data={"hashed_password": outdated_hash}
         )
 
         result = password_method.authenticate(user_id, plain_password)

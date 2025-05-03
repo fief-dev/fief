@@ -1,12 +1,11 @@
 import typing
 
-T = typing.TypeVar("T", bound=str)
 D = typing.TypeVar("D", bound=typing.Mapping[str, typing.Any])
 
 
-class MethodModelProtocol(typing.Protocol[T, D]):
+class MethodModelProtocol(typing.Protocol[D]):
     id: typing.Any
-    type: T
+    name: str
     user_id: typing.Any
     data: D
 
