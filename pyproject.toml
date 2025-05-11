@@ -13,6 +13,7 @@ no_implicit_reexport = true
 strict_equality = true
 disallow_untyped_defs = true
 
+
 [tool.pytest.ini_options]
 addopts = "--cov=fief/ --cov-report=term-missing"
 
@@ -39,6 +40,7 @@ dependencies = [
     "mkdocstrings[python]",
     "pwdlib[argon2,bcrypt]",
     "sqlalchemy[asyncio]",
+    "starlette",
 ]
 
 [tool.hatch.envs.default.scripts]
@@ -64,7 +66,7 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
 ]
 requires-python = ">=3.10"
-dependencies = ["anyio", "pwdlib[argon2]"]
+dependencies = ["anyio", "dishka", "pwdlib[argon2]"]
 
 [project.optional-dependencies]
 sqlalchemy = ["sqlalchemy[asyncio]"]

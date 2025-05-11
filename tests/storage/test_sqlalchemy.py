@@ -31,7 +31,7 @@ def session() -> Iterator[Session]:
 
 @pytest.fixture
 def storage(session: Session) -> SQLAlchemyStorage[Model]:
-    return SQLAlchemyStorage(Model, lambda: session)
+    return SQLAlchemyStorage(Model, session)
 
 
 def test_storage(storage: SQLAlchemyStorage[Model]) -> None:

@@ -1,9 +1,10 @@
 import dataclasses
 import typing
 import uuid
+from collections.abc import Callable
 
 from fief.auth import UserProtocol
-from fief.storage import AsyncStorageProtocol, M, StorageProtocol
+from fief.storage import AsyncStorageProtocol, M, StorageProtocol, StorageProvider
 
 
 class MockStorage(StorageProtocol[M]):
@@ -27,6 +28,13 @@ class MockStorage(StorageProtocol[M]):
             if getattr(item, "id", None) == id:
                 for key, value in data.items():
                     setattr(item, key, value)
+                return item
+        return None
+
+    def delete(self, id: typing.Any) -> M | None:
+        for item in self.storage:
+            if getattr(item, "id", None) == id:
+                self.storage.remove(item)
                 return item
         return None
 
@@ -54,6 +62,31 @@ class MockAsyncStorage(AsyncStorageProtocol[M]):
                     setattr(item, key, value)
                 return item
         return None
+
+    async def delete(self, id: typing.Any) -> M | None:
+        for item in self.storage:
+            if getattr(item, "id", None) == id:
+                self.storage.remove(item)
+                return item
+        return None
+
+
+class MockProviderBase(StorageProvider):
+    storage_class: type[MockStorage[typing.Any] | MockAsyncStorage[typing.Any]]
+
+    def get_model_provider(self, model: type[M]) -> Callable[..., "StorageProtocol[M]"]:
+        def _provide() -> StorageProtocol[model]:  # type: ignore[valid-type]
+            return self.storage_class(model)
+
+        return _provide
+
+
+class MockProvider(MockProviderBase):
+    storage_class = MockStorage
+
+
+class MockAsyncProvider(MockProviderBase):
+    storage_class = MockAsyncStorage
 
 
 @dataclasses.dataclass

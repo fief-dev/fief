@@ -1,6 +1,22 @@
 import typing
+from collections.abc import Callable, Sequence
+
+import dishka
 
 M = typing.TypeVar("M")
+
+
+class StorageProvider(dishka.Provider):
+    models: list[type]
+
+    def __init__(self, models: Sequence[type[M]] | None = None):
+        super().__init__()
+        self.models = list(models or [])
+        for model in self.models:
+            self.provide(self.get_model_provider(model), scope=dishka.Scope.REQUEST)
+
+    def get_model_provider(self, model: type[M]) -> Callable[..., "StorageProtocol[M]"]:
+        raise NotImplementedError()
 
 
 class StorageProtocol(typing.Protocol[M]):
@@ -41,6 +57,17 @@ class StorageProtocol(typing.Protocol[M]):
 
         Returns:
             The updated object or None if not found.
+        """
+        ...
+
+    def delete(self, id: typing.Any) -> M | None:  # pragma: no cover
+        """Delete an existing object.
+
+        Args:
+            id: The ID of the object to delete.
+
+        Returns:
+            The deleted object or None if not found.
         """
         ...
 
@@ -86,9 +113,21 @@ class AsyncStorageProtocol(typing.Protocol[M]):
         """
         ...
 
+    async def delete(self, id: typing.Any) -> M | None:  # pragma: no cover
+        """Delete an existing object.
+
+        Args:
+            id: The ID of the object to delete.
+
+        Returns:
+            The deleted object or None if not found.
+        """
+        ...
+
 
 __all__ = [
     "M",
     "StorageProtocol",
     "AsyncStorageProtocol",
+    "StorageProvider",
 ]
