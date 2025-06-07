@@ -5,11 +5,16 @@ import dishka
 from pwdlib import PasswordHash
 from pwdlib.exceptions import UnknownHashError
 
-from fief.storage import StorageProtocol
+from fief.storage import AsyncStorageProtocol, StorageProtocol
 
 from ._exceptions import InvalidMethodRequestException, MethodException
 from ._model import MethodModelRawProtocol, MethodModelSQLAlchemyProtocol
-from ._protocol import MethodProtocol, MethodProvider
+from ._protocol import (
+    AsyncMethodProtocol,
+    AsyncMethodProvider,
+    MethodProtocol,
+    MethodProvider,
+)
 
 
 class PasswordMethodModelData(typing.TypedDict):
@@ -62,8 +67,64 @@ class AuthenticateKwargs(typing.TypedDict):
     password: str
 
 
+class _PasswordMethodBase:
+    """Base class for password methods to share common functionality."""
+
+    def validate_enroll_request(self, data: Mapping[str, typing.Any]) -> EnrollKwargs:
+        """
+        Validate the enroll request data.
+
+        Args:
+            data: The request data.
+
+        Returns:
+            The validated data.
+        """
+        if "password" not in data:
+            raise InvalidMethodRequestException(
+                [
+                    {
+                        "type": "missing",
+                        "loc": ("password",),
+                        "msg": "This field is required.",
+                        "input": data,
+                    }
+                ]
+            )
+
+        return {"password": str(data["password"])}
+
+    def validate_authenticate_request(
+        self, data: Mapping[str, typing.Any]
+    ) -> AuthenticateKwargs:
+        """
+        Validate the authenticate request data.
+
+        Args:
+            data: The request data.
+
+        Returns:
+            The validated data.
+        """
+        if "password" not in data:
+            raise InvalidMethodRequestException(
+                [
+                    {
+                        "type": "missing",
+                        "loc": ("password",),
+                        "msg": "This field is required.",
+                        "input": data,
+                    }
+                ]
+            )
+
+        return {"password": str(data["password"])}
+
+
 class PasswordMethod(
-    MethodProtocol[EnrollKwargs, AuthenticateKwargs], typing.Generic[PM]
+    _PasswordMethodBase,
+    MethodProtocol[EnrollKwargs, AuthenticateKwargs],
+    typing.Generic[PM],
 ):
     """
     Method for password-based authentication.
@@ -160,56 +221,6 @@ class PasswordMethod(
 
         return is_valid
 
-    def validate_enroll_request(self, data: Mapping[str, typing.Any]) -> EnrollKwargs:
-        """
-        Validate the enroll request data.
-
-        Args:
-            data: The request data.
-
-        Returns:
-            The validated data.
-        """
-        if "password" not in data:
-            raise InvalidMethodRequestException(
-                [
-                    {
-                        "type": "missing",
-                        "loc": ("password",),
-                        "msg": "This field is required.",
-                        "input": data,
-                    }
-                ]
-            )
-
-        return {"password": str(data["password"])}
-
-    def validate_authenticate_request(
-        self, data: Mapping[str, typing.Any]
-    ) -> AuthenticateKwargs:
-        """
-        Validate the authenticate request data.
-
-        Args:
-            data: The request data.
-
-        Returns:
-            The validated data.
-        """
-        if "password" not in data:
-            raise InvalidMethodRequestException(
-                [
-                    {
-                        "type": "missing",
-                        "loc": ("password",),
-                        "msg": "This field is required.",
-                        "input": data,
-                    }
-                ]
-            )
-
-        return {"password": str(data["password"])}
-
 
 class PasswordMethodProvider(MethodProvider[PM]):
     method_class = PasswordMethod
@@ -232,3 +243,150 @@ class PasswordMethodProvider(MethodProvider[PM]):
             return PasswordMethod(storage=storage, hasher=self.hasher, name=self.name)
 
         return _provide
+
+
+class PasswordAsyncMethod(
+    _PasswordMethodBase,
+    AsyncMethodProtocol[EnrollKwargs, AuthenticateKwargs],
+    typing.Generic[PM],
+):
+    """
+    Async method for password-based authentication.
+
+    Parameters:
+        storage: The storage instance to persist password data.
+        hasher: The password hasher implementation.
+            If None, recommended defaults are used.
+        name: The name of the method.
+            Must be unique across all methods.
+            Defaults to "password".
+    """
+
+    name: str
+    _storage: AsyncStorageProtocol[PM]
+    _hasher: PasswordHasherProtocol
+
+    def __init__(
+        self,
+        storage: AsyncStorageProtocol[PM],
+        hasher: PasswordHasherProtocol | None = None,
+        name: str = "password",
+    ) -> None:
+        self._storage = storage
+        self._hasher = hasher or PasswordHash.recommended()
+        self.name = name
+
+    async def enroll(self, user_id: typing.Any, data: EnrollKwargs) -> PM:
+        """Enroll a user with a password.
+
+        Args:
+            user_id: The user ID.
+            **kwargs: The password data.
+
+        Returns:
+            PM: The created password model.
+
+        Raises:
+            AlreadyEnrolledException: If the user already has a password enrolled.
+        """
+        # Check if the user already has a password
+        existing_password = await self._storage.get_one(user_id=user_id, name=self.name)
+        if existing_password is not None:
+            raise AlreadyEnrolledException(user_id)
+
+        # Hash the password
+        hashed_password = self._hasher.hash(data["password"])
+
+        return await self._storage.create(
+            name=self.name,
+            user_id=user_id,
+            data={"hashed_password": hashed_password},
+        )
+
+    async def authenticate(
+        self, user_id: typing.Any | None, data: AuthenticateKwargs
+    ) -> bool:
+        """Authenticate a user with a password.
+
+        Args:
+            user_id: The user ID. It can be None if no user was found by identifier.
+            password: The password.
+
+        Returns:
+            bool: True if authentication was successful, False otherwise.
+        """
+        password = data["password"]
+
+        # Get the password model
+        password_model: PM | None = None
+        if user_id is not None:
+            password_model = await self._storage.get_one(
+                user_id=user_id, name=self.name
+            )
+
+        if user_id is None or password_model is None:
+            # Run the hasher to mitigate timing attack
+            # Inspired from Django: https://code.djangoproject.com/ticket/20760
+            self._hasher.hash(password)
+            return False
+
+        # Verify the password
+        try:
+            is_valid, updated_hash = self._hasher.verify_and_update(
+                password, typing.cast(str, password_model.data["hashed_password"])
+            )
+        except UnknownHashError:
+            return False
+
+        # Update the password hash if needed
+        if is_valid and updated_hash is not None:
+            await self._storage.update(
+                password_model.id,
+                data={"hashed_password": updated_hash},
+            )
+
+        return is_valid
+
+
+class PasswordAsyncMethodProvider(AsyncMethodProvider[PM]):
+    method_class = PasswordAsyncMethod
+
+    def __init__(
+        self,
+        model: type[PM],
+        hasher: PasswordHasherProtocol | None = None,
+        name: str = "password",
+    ) -> None:
+        super().__init__(model, name)
+        self.hasher = hasher or PasswordHash.recommended()
+
+    def get_provider(
+        self, storage_component: str
+    ) -> Callable[..., PasswordAsyncMethod[PM]]:
+        def _provide(
+            storage: typing.Annotated[  # type: ignore[name-defined]
+                AsyncStorageProtocol[self.model],  # pyright: ignore
+                dishka.FromComponent(storage_component),
+            ],
+        ) -> PasswordAsyncMethod[self.model]:  # type: ignore[name-defined]
+            return PasswordAsyncMethod(
+                storage=storage, hasher=self.hasher, name=self.name
+            )
+
+        return _provide
+
+
+__all__ = [
+    "PasswordMethodModelData",
+    "PasswordMethodModelRaw",
+    "PasswordMethodModelSQLAlchemy",
+    "PasswordHasherProtocol",
+    "PasswordMethodException",
+    "AlreadyEnrolledException",
+    "EnrollKwargs",
+    "AuthenticateKwargs",
+    "PasswordMethod",
+    "PasswordMethodProvider",
+    "PasswordAsyncMethod",
+    "PasswordAsyncMethodProvider",
+]

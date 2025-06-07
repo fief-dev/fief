@@ -49,3 +49,47 @@ class MethodProvider(typing.Generic[MM]):
         self, storage_component: str
     ) -> Callable[..., MethodProtocol[typing.Any, typing.Any]]:
         raise NotImplementedError()
+
+
+class AsyncMethodProtocol(typing.Protocol[EnrollKwargs, AuthenticateKwargs]):
+    """Base protocol for asynchronous authentication methods."""
+
+    name: str
+
+    async def enroll(
+        self,
+        user_id: typing.Any,
+        data: EnrollKwargs,
+    ) -> typing.Any: ...  # pragma: no cover
+
+    async def authenticate(
+        self, user_id: typing.Any | None, data: AuthenticateKwargs
+    ) -> bool: ...  # pragma: no cover
+
+    def validate_enroll_request(
+        self, data: Mapping[str, typing.Any]
+    ) -> EnrollKwargs: ...  # pragma: no cover
+
+    def validate_authenticate_request(
+        self, data: Mapping[str, typing.Any]
+    ) -> AuthenticateKwargs: ...  # pragma: no cover
+
+
+AMP = typing.TypeVar("AMP", bound=AsyncMethodProtocol[typing.Any, typing.Any])
+
+
+class AsyncMethodProvider(typing.Generic[MM]):
+    method_class: typing.ClassVar[type[AsyncMethodProtocol[typing.Any, typing.Any]]]
+    model: type[MM]
+    name: str
+
+    def __init__(self, model: type[MM], name: str) -> None:
+        super().__init__()
+        self.model = model
+        self.name = name
+        self.method_type = self.method_class[model]  # type: ignore[index]
+
+    def get_provider(
+        self, storage_component: str
+    ) -> Callable[..., AsyncMethodProtocol[typing.Any, typing.Any]]:
+        raise NotImplementedError()
