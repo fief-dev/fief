@@ -41,10 +41,13 @@ dependencies = [
     "ruff",
     "pytest",
     "pytest-cov",
+    "trio",
     "mkdocs-material",
     "mkdocstrings[python]",
     "pwdlib[argon2,bcrypt]",
     "sqlalchemy[asyncio]",
+    "aiosqlite",
+    "asgiref",
     "starlette",
 ]
 
@@ -75,6 +78,7 @@ dependencies = ["anyio", "dishka", "pwdlib[argon2]"]
 
 [project.optional-dependencies]
 sqlalchemy = ["sqlalchemy[asyncio]"]
+asgi = ["asgiref"]
 
 [project.urls]
 Documentation = "https://www.fief.dev"

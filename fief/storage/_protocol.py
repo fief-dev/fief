@@ -72,6 +72,21 @@ class StorageProtocol(typing.Protocol[M]):
         ...
 
 
+class AsyncStorageProvider(dishka.Provider):
+    models: list[type]
+
+    def __init__(self, models: Sequence[type] | None = None):
+        super().__init__()
+        self.models = list(models or [])
+        for model in self.models:
+            self.provide(self.get_model_provider(model), scope=dishka.Scope.REQUEST)
+
+    def get_model_provider(
+        self, model: type[M]
+    ) -> Callable[..., "AsyncStorageProtocol[M]"]:
+        raise NotImplementedError()
+
+
 class AsyncStorageProtocol(typing.Protocol[M]):
     """Protocol for async storage classes."""
 
@@ -130,4 +145,5 @@ __all__ = [
     "StorageProtocol",
     "AsyncStorageProtocol",
     "StorageProvider",
+    "AsyncStorageProvider",
 ]
