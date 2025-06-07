@@ -1,27 +1,32 @@
 import typing
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 
-import typing_extensions
+import dishka
 from pwdlib import PasswordHash
 from pwdlib.exceptions import UnknownHashError
 
 from fief.storage import StorageProtocol
 
 from ._exceptions import InvalidMethodRequestException, MethodException
-from ._model import MethodModelProtocol
-from ._protocol import MethodProtocol
+from ._model import MethodModelRawProtocol, MethodModelSQLAlchemyProtocol
+from ._protocol import MethodProtocol, MethodProvider
 
 
 class PasswordMethodModelData(typing.TypedDict):
     hashed_password: str
 
 
-class PasswordMethodModel(
-    MethodModelProtocol[PasswordMethodModelData], typing.Protocol
+class PasswordMethodModelRaw(
+    MethodModelRawProtocol[PasswordMethodModelData], typing.Protocol
 ): ...
 
 
-PM = typing.TypeVar("PM", bound=PasswordMethodModel)
+class PasswordMethodModelSQLAlchemy(
+    MethodModelSQLAlchemyProtocol[PasswordMethodModelData], typing.Protocol
+): ...
+
+
+PM = typing.TypeVar("PM", bound=PasswordMethodModelRaw | PasswordMethodModelSQLAlchemy)
 
 
 class PasswordHasherProtocol(typing.Protocol):
@@ -57,7 +62,9 @@ class AuthenticateKwargs(typing.TypedDict):
     password: str
 
 
-class PasswordMethod(MethodProtocol, typing.Generic[PM]):
+class PasswordMethod(
+    MethodProtocol[EnrollKwargs, AuthenticateKwargs], typing.Generic[PM]
+):
     """
     Method for password-based authentication.
 
@@ -84,9 +91,7 @@ class PasswordMethod(MethodProtocol, typing.Generic[PM]):
         self._hasher = hasher or PasswordHash.recommended()
         self.name = name
 
-    def enroll(
-        self, user_id: typing.Any, **kwargs: typing_extensions.Unpack[EnrollKwargs]
-    ) -> PM:
+    def enroll(self, user_id: typing.Any, data: EnrollKwargs) -> PM:
         """Enroll a user with a password.
 
         Args:
@@ -105,7 +110,7 @@ class PasswordMethod(MethodProtocol, typing.Generic[PM]):
             raise AlreadyEnrolledException(user_id)
 
         # Hash the password
-        hashed_password = self._hasher.hash(kwargs["password"])
+        hashed_password = self._hasher.hash(data["password"])
 
         return self._storage.create(
             name=self.name,
@@ -114,9 +119,7 @@ class PasswordMethod(MethodProtocol, typing.Generic[PM]):
         )
 
     def authenticate(
-        self,
-        user_id: typing.Any | None,
-        **kwargs: typing_extensions.Unpack[AuthenticateKwargs],
+        self, user_id: typing.Any | None, data: AuthenticateKwargs
     ) -> bool:
         """Authenticate a user with a password.
 
@@ -127,7 +130,7 @@ class PasswordMethod(MethodProtocol, typing.Generic[PM]):
         Returns:
             bool: True if authentication was successful, False otherwise.
         """
-        password = kwargs["password"]
+        password = data["password"]
 
         # Get the password model
         password_model: PM | None = None
@@ -143,7 +146,7 @@ class PasswordMethod(MethodProtocol, typing.Generic[PM]):
         # Verify the password
         try:
             is_valid, updated_hash = self._hasher.verify_and_update(
-                password, password_model.data["hashed_password"]
+                password, typing.cast(str, password_model.data["hashed_password"])
             )
         except UnknownHashError:
             return False
@@ -206,3 +209,26 @@ class PasswordMethod(MethodProtocol, typing.Generic[PM]):
             )
 
         return {"password": str(data["password"])}
+
+
+class PasswordMethodProvider(MethodProvider[PM]):
+    method_class = PasswordMethod
+
+    def __init__(
+        self,
+        model: type[PM],
+        hasher: PasswordHasherProtocol | None = None,
+        name: str = "password",
+    ) -> None:
+        super().__init__(model, name)
+        self.hasher = hasher or PasswordHash.recommended()
+
+    def get_provider(self, storage_component: str) -> Callable[..., PasswordMethod[PM]]:
+        def _provide(
+            storage: typing.Annotated[  # type: ignore[name-defined]
+                StorageProtocol[self.model], dishka.FromComponent(storage_component)  # pyright: ignore
+            ],
+        ) -> PasswordMethod[self.model]:  # type: ignore[name-defined]
+            return PasswordMethod(storage=storage, hasher=self.hasher, name=self.name)
+
+        return _provide

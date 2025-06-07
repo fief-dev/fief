@@ -1,10 +1,9 @@
 """Module for user authentication and management."""
 
 import typing
-from collections.abc import Sequence
 
 from fief._exceptions import FiefException
-from fief.methods import MethodProtocol
+from fief.methods import AuthenticateKwargs, EnrollKwargs, MethodProtocol
 from fief.storage import StorageProtocol
 
 
@@ -18,14 +17,6 @@ class MissingIdentifierFieldsException(AuthException):
     def __init__(self, fields: list[str]) -> None:
         self.fields = fields
         super().__init__(f"Missing identifier fields: {fields}")
-
-
-class UnknownMethodException(AuthException):
-    """Exception raised when an unknown authentication method is used."""
-
-    def __init__(self, method: str) -> None:
-        self.method = method
-        super().__init__(f"Unknown authentication method: {method}")
 
 
 class UserAlreadyExistsException(AuthException):
@@ -56,24 +47,22 @@ U = typing.TypeVar("U", bound=UserProtocol)
 class AuthManager(typing.Generic[U]):
     """Class to manage user authentication and methods."""
 
-    def __init__(
-        self,
-        model: type[U],
-        storage: StorageProtocol[U],
-        methods: Sequence[MethodProtocol],
-    ) -> None:
+    def __init__(self, model: type[U], storage: StorageProtocol[U]) -> None:
         self.model = model
         self.storage = storage
-        self.methods = methods
 
     def signup(
-        self, method: tuple[str, dict[str, typing.Any]], **fields: typing.Any
+        self,
+        method: MethodProtocol[EnrollKwargs, AuthenticateKwargs],
+        enroll_data: EnrollKwargs,
+        **fields: typing.Any,
     ) -> U:
         """
         Sign up a new user using the specified authentication method and fields.
 
         Args:
-            method: A tuple containing the authentication method name and its arguments.
+            method_cls: The authentication method class to use.
+            enroll_data: The data for the method's enroll function.
             **fields: The user fields to create the new user. It must contain
                 all the identifier fields.
 
@@ -85,9 +74,6 @@ class AuthManager(typing.Generic[U]):
             MissingIdentifierFieldsException: If any of the identifier fields are missing.
             UnknownMethodException: If the authentication method is unknown.
         """
-        method_name, method_kwargs = method
-        method_instance = self._get_method(method_name)
-
         identifier_fields = self._validate_identifier_fields(fields)
 
         existing_user = self.storage.get_one(
@@ -99,18 +85,22 @@ class AuthManager(typing.Generic[U]):
             )
 
         user = self.storage.create(**fields)
-        method_instance.enroll(user.id, **method_kwargs)
+        method.enroll(user.id, enroll_data)
 
         return user
 
     def signin(
-        self, method: tuple[str, dict[str, typing.Any]], **fields: typing.Any
+        self,
+        method: MethodProtocol[EnrollKwargs, AuthenticateKwargs],
+        auth_data: AuthenticateKwargs,
+        **fields: typing.Any,
     ) -> U | None:
         """
         Sign in a user using the specified authentication method and fields.
 
         Args:
-            method: A tuple containing the authentucation method name and its arguments.
+            method_cls: The authentication method class to use.
+            auth_data: The data for the method's authenticate function.
             **fields: The fields to identify the user.
 
         Returns:
@@ -120,9 +110,6 @@ class AuthManager(typing.Generic[U]):
             MissingIdentifierFieldsException: If any of the identifier fields are missing.
             UnknownMethodException: If the authentication method is unknown.
         """
-        method_name, method_kwargs = method
-        method_instance = self._get_method(method_name)
-
         identifier_fields = self._validate_identifier_fields(fields)
 
         user = self.storage.get_one(
@@ -130,7 +117,7 @@ class AuthManager(typing.Generic[U]):
         )
         user_id = user.id if user else None
 
-        if method_instance.authenticate(user_id, **method_kwargs) and user is not None:
+        if method.authenticate(user_id, auth_data) and user is not None:
             return user
 
         return None
@@ -144,18 +131,11 @@ class AuthManager(typing.Generic[U]):
             raise MissingIdentifierFieldsException(missing_fields)
         return identifier_fields
 
-    def _get_method(self, name: str) -> MethodProtocol:
-        for method in self.methods:
-            if method.name == name:
-                return method
-        raise UnknownMethodException(name)
-
 
 __all__ = [
     "U",
     "AuthManager",
     "AuthException",
     "MissingIdentifierFieldsException",
-    "UnknownMethodException",
     "UserAlreadyExistsException",
 ]

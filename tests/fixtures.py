@@ -3,7 +3,8 @@ import typing
 import uuid
 from collections.abc import Callable
 
-from fief.auth import UserProtocol
+from fief._auth import UserProtocol
+from fief.methods._model import MethodModelRawProtocol
 from fief.storage import AsyncStorageProtocol, M, StorageProtocol, StorageProvider
 
 
@@ -90,10 +91,18 @@ class MockAsyncProvider(MockProviderBase):
 
 
 @dataclasses.dataclass
-class User(UserProtocol):
+class UserModel(UserProtocol):
     email: str
     id: uuid.UUID = dataclasses.field(default_factory=uuid.uuid4)
 
     @classmethod
     def identifier_fields(cls) -> tuple[str]:
         return ("email",)
+
+
+@dataclasses.dataclass
+class MethodModel(MethodModelRawProtocol[typing.Any]):
+    name: str
+    user_id: uuid.UUID
+    data: typing.Any
+    id: uuid.UUID = dataclasses.field(default_factory=uuid.uuid4)

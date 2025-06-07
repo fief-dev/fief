@@ -9,7 +9,7 @@ M = typing.TypeVar("M")
 class StorageProvider(dishka.Provider):
     models: list[type]
 
-    def __init__(self, models: Sequence[type[M]] | None = None):
+    def __init__(self, models: Sequence[type] | None = None):
         super().__init__()
         self.models = list(models or [])
         for model in self.models:

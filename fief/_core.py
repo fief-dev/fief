@@ -4,29 +4,59 @@ from collections.abc import Sequence
 
 import dishka
 
-from fief.storage import StorageProvider
-from fief.storage._protocol import M, StorageProtocol
+from fief._auth import AuthManager, U
+from fief.methods import MM, MP, MethodProtocol, MethodProvider
+from fief.storage import M, StorageProtocol, StorageProvider
 
 if typing.TYPE_CHECKING:
     from dishka.provider import BaseProvider
 
 
-class Fief:
+class FiefRequest(typing.Generic[U]):
+    def __init__(self, fief: "Fief[U]", container: dishka.Container) -> None:
+        self.fief = fief
+        self.container = container
+
+    def get_storage(self, model: type[M]) -> StorageProtocol[M]:
+        component_key = self.fief._model_component_map.get(model)
+        return self.container.get(StorageProtocol[model], component_key)  # type: ignore[valid-type]
+
+    def get_method(self, type: type[MP], name: str | None = None) -> MP:
+        names = self.fief._method_map.get(type, [])
+        if name is not None and name not in names:
+            raise ValueError(  # noqa: TRY003
+                f"Method {name} is not registered for type {type.__name__}"
+            )
+        if name is None and len(names) > 1:
+            raise ValueError(  # noqa: TRY003
+                f"Multiple methods registered for type {type.__name__}, specify a name"
+            )
+        return self.container.get(type, names[0] if name is None else name)
+
+    def get_auth_manager(self) -> AuthManager[U]:
+        user_model = self.fief.user_model
+        return AuthManager(user_model, self.get_storage(user_model))
+
+
+class Fief(typing.Generic[U]):
     _model_component_map: dict[type, str]
+    _method_map: dict[type[MethodProtocol[typing.Any, typing.Any]], list[str]]
 
-    def __init__(self, storage: StorageProvider | Sequence[StorageProvider]) -> None:
-        providers: list[BaseProvider] = []
-
+    def __init__(
+        self,
+        storage: StorageProvider | Sequence[StorageProvider],
+        methods: Sequence[MethodProvider[MM]],
+        user_model: type[U],
+    ) -> None:
+        self.user_model = user_model
         storage_providers = self._init_storage(storage)
-        providers.extend(storage_providers)
+        method_providers = self._init_methods(methods)
+        self.container = dishka.make_container(*(*storage_providers, *method_providers))
 
-        self.container = dishka.make_container(*providers)
-        self._request_container: dishka.Container | None = None
-
-    def __enter__(self) -> "Fief":
+    def __enter__(self) -> FiefRequest[U]:
         self.exit_stack = contextlib.ExitStack()
-        self._request_container = self.exit_stack.enter_context(self.container())
-        return self
+        request_container = self.exit_stack.enter_context(self.container())
+        return FiefRequest(self, request_container)
 
     def __exit__(
         self,
@@ -35,17 +65,9 @@ class Fief:
         traceback: typing.Any,
     ) -> None:
         self.exit_stack.close()
-        self._request_container = None
 
-    def get_storage(self, model: type[M]) -> StorageProtocol[M]:
-        component_key = self._model_component_map.get(model)
-        return self.request_container.get(StorageProtocol[model], component_key)  # type: ignore[valid-type]
-
-    @property
-    def request_container(self) -> dishka.Container:
-        if self._request_container is None:
-            raise RuntimeError()
-        return self._request_container
+    def close(self) -> None:
+        self.container.close()
 
     def _init_storage(
         self, storage: StorageProvider | Sequence[StorageProvider]
@@ -66,4 +88,26 @@ class Fief:
             providers.append(s.to_component(component_key))
 
         self._model_component_map = model_component_map
+        return providers
+
+    def _init_methods(
+        self, methods: Sequence[MethodProvider[MM]]
+    ) -> list["BaseProvider"]:
+        providers: list[BaseProvider] = []
+        names: set[str] = set()
+        method_map: dict[type[MethodProtocol[typing.Any, typing.Any]], list[str]] = {}
+        for method in methods:
+            if method.name in names:
+                raise ValueError(  # noqa: TRY003
+                    f"Method with name {method.name} is already registered"
+                )
+            model_component_key = self._model_component_map[method.model]
+            provider = dishka.Provider(component=method.name)
+            provider.provide(
+                method.get_provider(model_component_key), scope=dishka.Scope.REQUEST
+            )
+            names.add(method.name)
+            method_map.setdefault(method.method_type, []).append(method.name)
+            providers.append(provider)
+        self._method_map = method_map
         return providers

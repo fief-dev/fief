@@ -2,7 +2,7 @@
 target-version = "py310"
 
 [tool.ruff.lint]
-extend-select = ["I", "TRY", "UP"]
+extend-select = ["I", "TRY", "UP", "T20"]
 
 [tool.mypy]
 warn_redundant_casts = true
@@ -17,6 +17,11 @@ disallow_untyped_defs = true
 [tool.pytest.ini_options]
 addopts = "--cov=fief/ --cov-report=term-missing"
 
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if typing.TYPE_CHECKING:",
+] # See: https://github.com/nedbat/coveragepy/issues/831
 
 [tool.hatch]
 

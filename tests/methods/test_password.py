@@ -51,7 +51,7 @@ class TestEnroll:
         )
 
         with pytest.raises(AlreadyEnrolledException):
-            password_method.enroll(user_id, password="password")
+            password_method.enroll(user_id, {"password": "password"})
 
     def test_valid(
         self,
@@ -60,7 +60,7 @@ class TestEnroll:
     ) -> None:
         user_id = "user_id"
 
-        model = password_method.enroll(user_id, password="password")
+        model = password_method.enroll(user_id, {"password": "password"})
 
         assert model.id is not None
         assert model.name == "password"
@@ -79,14 +79,14 @@ class TestAuthenticate:
     def test_missing_user(
         self, password_method: PasswordMethod[PasswordMethodModel]
     ) -> None:
-        result = password_method.authenticate(None, password="password")
+        result = password_method.authenticate(None, {"password": "password"})
 
         assert result is False
 
     def test_not_enrolled(
         self, password_method: PasswordMethod[PasswordMethodModel]
     ) -> None:
-        result = password_method.authenticate("user_id", password="password")
+        result = password_method.authenticate("user_id", {"password": "password"})
 
         assert result is False
 
@@ -104,7 +104,7 @@ class TestAuthenticate:
             data={"hashed_password": password_method._hasher.hash(plain_password)},
         )
 
-        result = password_method.authenticate(user_id, password="invalid")
+        result = password_method.authenticate(user_id, {"password": "invalid"})
 
         assert result is False
 
@@ -119,7 +119,7 @@ class TestAuthenticate:
             name="password", user_id=user_id, data={"hashed_password": "invalid_hash"}
         )
 
-        result = password_method.authenticate(user_id, password="password")
+        result = password_method.authenticate(user_id, {"password": "password"})
 
         assert result is False
 
@@ -137,7 +137,7 @@ class TestAuthenticate:
             data={"hashed_password": password_method._hasher.hash(plain_password)},
         )
 
-        result = password_method.authenticate(user_id, password=plain_password)
+        result = password_method.authenticate(user_id, {"password": plain_password})
 
         assert result is True
 
@@ -154,7 +154,7 @@ class TestAuthenticate:
             name="password", user_id=user_id, data={"hashed_password": outdated_hash}
         )
 
-        result = password_method.authenticate(user_id, password=plain_password)
+        result = password_method.authenticate(user_id, {"password": plain_password})
 
         assert result is True
 
