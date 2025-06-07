@@ -5,7 +5,13 @@ from collections.abc import Callable
 
 from fief._auth import UserProtocol
 from fief.methods._model import MethodModelRawProtocol
-from fief.storage import AsyncStorageProtocol, M, StorageProtocol, StorageProvider
+from fief.storage import (
+    AsyncStorageProtocol,
+    AsyncStorageProvider,
+    M,
+    StorageProtocol,
+    StorageProvider,
+)
 
 
 class MockStorage(StorageProtocol[M]):
@@ -72,8 +78,8 @@ class MockAsyncStorage(AsyncStorageProtocol[M]):
         return None
 
 
-class MockProviderBase(StorageProvider):
-    storage_class: type[MockStorage[typing.Any] | MockAsyncStorage[typing.Any]]
+class MockProvider(StorageProvider):
+    storage_class = MockStorage
 
     def get_model_provider(self, model: type[M]) -> Callable[..., "StorageProtocol[M]"]:
         def _provide() -> StorageProtocol[model]:  # type: ignore[valid-type]
@@ -82,12 +88,16 @@ class MockProviderBase(StorageProvider):
         return _provide
 
 
-class MockProvider(MockProviderBase):
-    storage_class = MockStorage
-
-
-class MockAsyncProvider(MockProviderBase):
+class MockAsyncProvider(AsyncStorageProvider):
     storage_class = MockAsyncStorage
+
+    def get_model_provider(
+        self, model: type[M]
+    ) -> Callable[..., "AsyncStorageProtocol[M]"]:
+        def _provide() -> AsyncStorageProtocol[model]:  # type: ignore[valid-type]
+            return self.storage_class(model)
+
+        return _provide
 
 
 @dataclasses.dataclass
