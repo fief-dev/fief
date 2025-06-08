@@ -13,6 +13,11 @@ no_implicit_reexport = true
 strict_equality = true
 disallow_untyped_defs = true
 
+[tool.pyright]
+include = ["fief", "tests"]
+pythonVersion = "3.10"
+venvPath = ".hatch"
+venv = "fief"
 
 [tool.pytest.ini_options]
 addopts = "--cov=fief/ --cov-report=term-missing"
@@ -49,6 +54,8 @@ dependencies = [
     "aiosqlite",
     "asgiref",
     "starlette",
+    "httpx",
+    "asgi-lifespan",
 ]
 
 [tool.hatch.envs.default.scripts]
