@@ -54,6 +54,87 @@ def test_storage_provider() -> None:
         )
 
     fief = Fief(
+        storage=SQLAlchemyProvider("sqlite:///db.db"),
+        methods=(),
+        user_model=UserModel,
+    )
+
+    with fief as fief_request:
+        storage_a = fief_request.get_storage(ModelA)
+        assert isinstance(storage_a, SQLAlchemyStorage)
+        assert storage_a.model is ModelA
+        storage_a_bind = storage_a.session.bind
+        assert isinstance(storage_a_bind, sa.Engine)
+        assert str(storage_a_bind.url) == "sqlite:///db.db"
+
+        storage_b = fief_request.get_storage(ModelB)
+        assert isinstance(storage_b, SQLAlchemyStorage)
+        assert storage_b.model is ModelB
+        storage_b_bind = storage_b.session.bind
+        assert isinstance(storage_b_bind, sa.Engine)
+        assert str(storage_b_bind.url) == "sqlite:///db.db"
+
+    fief.close()
+
+
+@pytest.mark.parametrize("anyio_backend", ["asyncio"])
+async def test_async_storage_provider(anyio_backend: str) -> None:
+    class Base(DeclarativeBase):
+        pass
+
+    class ModelA(Base):
+        __tablename__ = "model_a"
+        id: Mapped[int] = mapped_column(
+            sa.Integer, primary_key=True, autoincrement=True
+        )
+
+    class ModelB(Base):
+        __tablename__ = "model_b"
+        id: Mapped[int] = mapped_column(
+            sa.Integer, primary_key=True, autoincrement=True
+        )
+
+    fief = FiefAsync(
+        storage=SQLAlchemyAsyncProvider("sqlite+aiosqlite:///db.db"),
+        methods=(),
+        user_model=UserModel,
+    )
+
+    async with fief as fief_request:
+        storage_a = await fief_request.get_storage(ModelA)
+        assert isinstance(storage_a, SQLAlchemyAsyncStorage)
+        assert storage_a.model is ModelA
+        storage_a_bind = storage_a.session.bind
+        assert isinstance(storage_a_bind, sa_asyncio.AsyncEngine)
+        assert str(storage_a_bind.url) == "sqlite+aiosqlite:///db.db"
+
+        storage_b = await fief_request.get_storage(ModelB)
+        assert isinstance(storage_b, SQLAlchemyAsyncStorage)
+        assert storage_b.model is ModelB
+        storage_b_bind = storage_b.session.bind
+        assert isinstance(storage_b_bind, sa_asyncio.AsyncEngine)
+        assert str(storage_b_bind.url) == "sqlite+aiosqlite:///db.db"
+
+    await fief.close()
+
+
+def test_multiple_storage_providers() -> None:
+    class Base(DeclarativeBase):
+        pass
+
+    class ModelA(Base):
+        __tablename__ = "model_a"
+        id: Mapped[int] = mapped_column(
+            sa.Integer, primary_key=True, autoincrement=True
+        )
+
+    class ModelB(Base):
+        __tablename__ = "model_b"
+        id: Mapped[int] = mapped_column(
+            sa.Integer, primary_key=True, autoincrement=True
+        )
+
+    fief = Fief(
         storage=(
             SQLAlchemyProvider("sqlite:///db_a.db", models=[ModelA]),
             SQLAlchemyProvider("sqlite:///db_b.db", models=[ModelB]),
@@ -86,7 +167,7 @@ def test_storage_provider() -> None:
 
 
 @pytest.mark.parametrize("anyio_backend", ["asyncio"])
-async def test_async_storage_provider(anyio_backend: str) -> None:
+async def test_async_multiple_storage_providers(anyio_backend: str) -> None:
     class Base(DeclarativeBase):
         pass
 
@@ -136,7 +217,7 @@ async def test_async_storage_provider(anyio_backend: str) -> None:
 
 def test_method_provider() -> None:
     fief = Fief(
-        storage=MockProvider(models=[UserModel, MethodModel]),
+        storage=MockProvider(),
         methods=(
             PasswordMethodProvider(MethodModel),
             PasswordMethodProvider(MethodModel, name="password2"),
@@ -156,7 +237,7 @@ def test_method_provider() -> None:
 @pytest.mark.anyio
 async def test_async_method_provider() -> None:
     fief = FiefAsync(
-        storage=MockAsyncProvider(models=[UserModel, MethodModel]),
+        storage=MockAsyncProvider(),
         methods=(
             PasswordAsyncMethodProvider(MethodModel),
             PasswordAsyncMethodProvider(MethodModel, name="password2"),
@@ -186,10 +267,7 @@ class PasswordMethodModel:
 @pytest.fixture
 def fief() -> Fief[UserModel]:
     return Fief(
-        storage=(
-            MockProvider(models=[UserModel]),
-            MockProvider(models=[PasswordMethodModel]),
-        ),
+        storage=MockProvider(),
         methods=(PasswordMethodProvider(PasswordMethodModel),),
         user_model=UserModel,
     )
@@ -204,10 +282,7 @@ def fief_request(fief: Fief[UserModel]) -> Generator[FiefRequest[UserModel]]:
 @pytest.fixture
 def fief_async() -> FiefAsync[UserModel]:
     return FiefAsync(
-        storage=(
-            MockAsyncProvider(models=[UserModel]),
-            MockAsyncProvider(models=[PasswordMethodModel]),
-        ),
+        storage=MockAsyncProvider(),
         methods=(PasswordAsyncMethodProvider(PasswordMethodModel),),
         user_model=UserModel,
     )

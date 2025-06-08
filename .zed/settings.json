@@ -18,14 +18,5 @@
                 }
             ]
         }
-    },
-    "lsp": {
-        "pyright": {
-            "settings": {
-                "python": {
-                    "pythonPath": ".hatch/fief/bin/python"
-                }
-            }
-        }
     }
 }

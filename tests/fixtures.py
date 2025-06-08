@@ -81,8 +81,8 @@ class MockAsyncStorage(AsyncStorageProtocol[M]):
 class MockProvider(StorageProvider):
     storage_class = MockStorage
 
-    def get_model_provider(self, model: type[M]) -> Callable[..., "StorageProtocol[M]"]:
-        def _provide() -> StorageProtocol[model]:  # type: ignore[valid-type]
+    def get_provider(self) -> Callable[..., StorageProtocol[typing.Any]]:
+        def _provide(model: type[M]) -> StorageProtocol[M]:
             return self.storage_class(model)
 
         return _provide
@@ -91,10 +91,8 @@ class MockProvider(StorageProvider):
 class MockAsyncProvider(AsyncStorageProvider):
     storage_class = MockAsyncStorage
 
-    def get_model_provider(
-        self, model: type[M]
-    ) -> Callable[..., "AsyncStorageProtocol[M]"]:
-        def _provide() -> AsyncStorageProtocol[model]:  # type: ignore[valid-type]
+    def get_provider(self) -> Callable[..., AsyncStorageProtocol[typing.Any]]:
+        def _provide(model: type[M]) -> AsyncStorageProtocol[M]:
             return self.storage_class(model)
 
         return _provide

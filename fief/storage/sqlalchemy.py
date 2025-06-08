@@ -76,10 +76,11 @@ class SQLAlchemyProvider(StorageProvider):
                 raise
             session.commit()
 
-    def get_model_provider(self, model: type[M]) -> Callable[..., StorageProtocol[M]]:
+    def get_provider(self) -> Callable[..., StorageProtocol[typing.Any]]:
         def _provide(
+            model: type[M],
             session: Session,
-        ) -> StorageProtocol[model]:  # type: ignore[valid-type]
+        ) -> StorageProtocol[M]:
             return self.storage_class(model, session)
 
         return _provide
@@ -147,12 +148,11 @@ class SQLAlchemyAsyncProvider(AsyncStorageProvider):
                 raise
             await session.commit()
 
-    def get_model_provider(
-        self, model: type[M]
-    ) -> Callable[..., AsyncStorageProtocol[M]]:
+    def get_provider(self) -> Callable[..., AsyncStorageProtocol[typing.Any]]:
         def _provide(
+            model: type[M],
             session: AsyncSession,
-        ) -> AsyncStorageProtocol[model]:  # type: ignore[valid-type]
+        ) -> AsyncStorageProtocol[M]:
             return self.storage_class(model, session)
 
         return _provide

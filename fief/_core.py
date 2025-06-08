@@ -83,7 +83,9 @@ class FiefRequest(_FiefRequestBase[U], typing.Generic[U]):
         self.container = container
 
     def get_storage(self, model: type[M]) -> StorageProtocol[M]:
-        component_key = self.fief._model_component_map.get(model)
+        component_key = self.fief._model_component_map.get(
+            model, dishka.DEFAULT_COMPONENT
+        )
         return self.container.get(StorageProtocol[model], component_key)  # type: ignore[valid-type]
 
     def get_method(self, type: type[MP], name: str | None = None) -> MP:
@@ -211,13 +213,19 @@ class Fief(typing.Generic[U]):
     def _init_storage(
         self, storage: StorageProvider | Sequence[StorageProvider]
     ) -> list["BaseProvider"]:
+        self._model_component_map = {}
+
         if isinstance(storage, StorageProvider):
-            storage = [storage]
+            return [storage]
 
         providers: list[BaseProvider] = []
         model_component_map: dict[type, str] = {}
         for i, s in enumerate(storage):
             component_key = f"storage_{i}"
+            if s.models is None:
+                raise ValueError(  # noqa: TRY003
+                    "You must provide models on the storage providers if you have multiple ones"
+                )
             for model in s.models:
                 if model in model_component_map:
                     raise ValueError(  # noqa: TRY003
@@ -240,7 +248,9 @@ class Fief(typing.Generic[U]):
                 raise ValueError(  # noqa: TRY003
                     f"Method with name {method.name} is already registered"
                 )
-            model_component_key = self._model_component_map[method.model]
+            model_component_key = self._model_component_map.get(
+                method.model, dishka.DEFAULT_COMPONENT
+            )
             provider = dishka.Provider(component=method.name)
             provider.provide(
                 method.get_provider(model_component_key), scope=dishka.Scope.REQUEST
@@ -259,7 +269,9 @@ class FiefAsyncRequest(_FiefRequestBase[U], typing.Generic[U]):
         self.container = container
 
     async def get_storage(self, model: type[M]) -> AsyncStorageProtocol[M]:
-        component_key = self.fief._model_component_map.get(model)
+        component_key = self.fief._model_component_map.get(
+            model, dishka.DEFAULT_COMPONENT
+        )
         return await self.container.get(AsyncStorageProtocol[model], component_key)  # type: ignore[valid-type]
 
     async def get_user_storage(self) -> AsyncStorageProtocol[U]:
@@ -389,13 +401,19 @@ class FiefAsync(typing.Generic[U]):
     def _init_storage(
         self, storage: AsyncStorageProvider | Sequence[AsyncStorageProvider]
     ) -> list["BaseProvider"]:
+        self._model_component_map = {}
+
         if isinstance(storage, AsyncStorageProvider):
-            storage = [storage]
+            return [storage]
 
         providers: list[BaseProvider] = []
         model_component_map: dict[type, str] = {}
         for i, s in enumerate(storage):
             component_key = f"storage_{i}"
+            if s.models is None:
+                raise ValueError(  # noqa: TRY003
+                    "You must provide models on the storage providers if you have multiple ones"
+                )
             for model in s.models:
                 if model in model_component_map:
                     raise ValueError(  # noqa: TRY003
@@ -420,7 +438,9 @@ class FiefAsync(typing.Generic[U]):
                 raise ValueError(  # noqa: TRY003
                     f"Method with name {method.name} is already registered"
                 )
-            model_component_key = self._model_component_map[method.model]
+            model_component_key = self._model_component_map.get(
+                method.model, dishka.DEFAULT_COMPONENT
+            )
             provider = dishka.Provider(component=method.name)
             provider.provide(
                 method.get_provider(model_component_key), scope=dishka.Scope.REQUEST

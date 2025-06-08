@@ -7,15 +7,14 @@ M = typing.TypeVar("M")
 
 
 class StorageProvider(dishka.Provider):
-    models: list[type]
+    models: list[type] | None
 
     def __init__(self, models: Sequence[type] | None = None):
         super().__init__()
-        self.models = list(models or [])
-        for model in self.models:
-            self.provide(self.get_model_provider(model), scope=dishka.Scope.REQUEST)
+        self.models = list(models) if models is not None else None
+        self.provide(self.get_provider(), scope=dishka.Scope.REQUEST)
 
-    def get_model_provider(self, model: type[M]) -> Callable[..., "StorageProtocol[M]"]:
+    def get_provider(self) -> Callable[..., "StorageProtocol[typing.Any]"]:
         raise NotImplementedError()
 
 
@@ -73,17 +72,14 @@ class StorageProtocol(typing.Protocol[M]):
 
 
 class AsyncStorageProvider(dishka.Provider):
-    models: list[type]
+    models: list[type] | None
 
     def __init__(self, models: Sequence[type] | None = None):
         super().__init__()
-        self.models = list(models or [])
-        for model in self.models:
-            self.provide(self.get_model_provider(model), scope=dishka.Scope.REQUEST)
+        self.models = list(models) if models is not None else None
+        self.provide(self.get_provider(), scope=dishka.Scope.REQUEST)
 
-    def get_model_provider(
-        self, model: type[M]
-    ) -> Callable[..., "AsyncStorageProtocol[M]"]:
+    def get_provider(self) -> Callable[..., "AsyncStorageProtocol[typing.Any]"]:
         raise NotImplementedError()
 
 
