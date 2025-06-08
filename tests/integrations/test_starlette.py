@@ -14,8 +14,8 @@ from fief import FiefAsync
 from fief._core import FiefAsyncRequest
 from fief.integrations.starlette import (
     FiefMiddleware,
+    FiefStarlette,
     MissingFiefRequestException,
-    get_fief,
 )
 from tests.fixtures import MockAsyncProvider, UserModel
 
@@ -57,34 +57,37 @@ async def test_middleware(fief: FiefAsync[UserModel]) -> None:
         assert response.status_code == 200
 
 
-@pytest.mark.anyio
-async def test_get_client_missing(fief: FiefAsync[UserModel]) -> None:
-    async def index(request: Request) -> PlainTextResponse:
-        with pytest.raises(MissingFiefRequestException):
-            get_fief(request)
-        return PlainTextResponse("Hello, world!")
-
-    app = Starlette(routes=[Route("/", index)])
-
-    async with get_client(app) as client:
-        response = await client.get("/")
-        assert response.status_code == 200
+@pytest.fixture
+def fief_starlette(fief: FiefAsync[UserModel]) -> FiefStarlette[UserModel]:
+    return FiefStarlette(fief)
 
 
 @pytest.mark.anyio
-async def test_get_client_ok(fief: FiefAsync[UserModel]) -> None:
-    async def index(request: Request) -> PlainTextResponse:
-        fief = get_fief(request)
-        assert isinstance(fief, FiefAsyncRequest)
-        return PlainTextResponse("Hello, world!")
+class TestFiefStarlette:
+    async def test_get_middleware_missing(
+        self, fief_starlette: FiefStarlette[UserModel]
+    ) -> None:
+        async def index(request: Request) -> PlainTextResponse:
+            with pytest.raises(MissingFiefRequestException):
+                fief_starlette.get(request)
+            return PlainTextResponse("Hello, world!")
 
-    app = Starlette(
-        routes=[Route("/", index)],
-        middleware=[
-            Middleware(FiefMiddleware[UserModel], fief=fief),
-        ],
-    )
+        app = Starlette(routes=[Route("/", index)])
 
-    async with get_client(app) as client:
-        response = await client.get("/")
-        assert response.status_code == 200
+        async with get_client(app) as client:
+            await client.get("/")
+
+    async def test_get_ok(self, fief_starlette: FiefStarlette[UserModel]) -> None:
+        async def index(request: Request) -> PlainTextResponse:
+            fief = fief_starlette.get(request)
+            assert isinstance(fief, FiefAsyncRequest)
+            return PlainTextResponse("Hello, world!")
+
+        app = Starlette(
+            routes=[Route("/", index)],
+            middleware=[fief_starlette.get_middleware()],
+        )
+
+        async with get_client(app) as client:
+            response = await client.get("/")
+            assert response.status_code == 200

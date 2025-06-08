@@ -54,8 +54,11 @@ dependencies = [
     "aiosqlite",
     "asgiref",
     "starlette",
+    "python-multipart>=0.0.18",
     "httpx",
     "asgi-lifespan",
+    "uvicorn",
+    "fastapi",
 ]
 
 [tool.hatch.envs.default.scripts]
@@ -86,6 +89,8 @@ dependencies = ["anyio", "dishka", "pwdlib[argon2]"]
 [project.optional-dependencies]
 sqlalchemy = ["sqlalchemy[asyncio]"]
 asgi = ["asgiref"]
+starlette = ["starlette"]
+fastapi = ["fastapi"]
 
 [project.urls]
 Documentation = "https://www.fief.dev"

@@ -1,9 +1,10 @@
 import typing
 
+from starlette.middleware import Middleware
 from starlette.requests import Request
 
 from .. import FiefAsync, FiefAsyncRequest
-from .._core import U, UserProtocol
+from .._core import U
 from .._exceptions import FiefException
 
 if typing.TYPE_CHECKING:
@@ -25,27 +26,22 @@ class MissingFiefRequestException(FiefException):
     def __init__(self) -> None:
         super().__init__(
             "Fief request is missing in the request state. "
-            "Hint: use FiefMiddleware to add it."
+            "Hint: make sure you added the Fief middleware to your application."
         )
 
 
-def get_fief(request: Request) -> FiefAsyncRequest[UserProtocol]:
-    """
-    Get the Fief request from the Starlette request state.
+class FiefStarlette(typing.Generic[U]):
+    def __init__(self, fief: FiefAsync[U]) -> None:
+        self.fief = fief
 
-    Args:
-        request: The Starlette request object.
+    def get_middleware(self) -> Middleware:
+        return Middleware(FiefMiddleware[U], fief=self.fief)
 
-    Returns:
-        The Fief request object.
-
-    Raises:
-        MissingFiefRequestException: If the Fief request is not found in the request state.
-    """
-    try:
-        return request.state.fief
-    except AttributeError as e:
-        raise MissingFiefRequestException() from e
+    def get(self, request: Request) -> FiefAsyncRequest[U]:
+        try:
+            return request.state.fief
+        except AttributeError as e:
+            raise MissingFiefRequestException() from e
 
 
-__all__ = ["FiefMiddleware", "get_fief", "MissingFiefRequestException"]
+__all__ = ["FiefMiddleware", "FiefStarlette", "MissingFiefRequestException"]
