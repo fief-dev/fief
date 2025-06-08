@@ -3,7 +3,7 @@ import typing
 from starlette.requests import Request
 
 from .. import FiefAsync, FiefAsyncRequest
-from .._auth import U, UserProtocol
+from .._core import U, UserProtocol
 from .._exceptions import FiefException
 
 if typing.TYPE_CHECKING:

@@ -10,7 +10,7 @@ if typing.TYPE_CHECKING:
     )
 
 from .. import FiefAsync
-from .._auth import U
+from .._core import U
 
 
 class FiefMiddleware(typing.Generic[U]):

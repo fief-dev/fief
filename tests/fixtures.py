@@ -3,7 +3,7 @@ import typing
 import uuid
 from collections.abc import Callable
 
-from fief._auth import UserProtocol
+from fief._core import UserProtocol
 from fief.methods._model import MethodModelRawProtocol
 from fief.storage import (
     AsyncStorageProtocol,
