@@ -246,7 +246,7 @@ dependencies = [
     "sentry_dramatiq ==0.3.3",
     "sentry-sdk ==2.18.0",
     "sqlalchemy[mypy] ==2.0.36",
-    "sqlalchemy-utils ==0.41.2",
+    "sqlalchemy-utils ==0.42.0",
     "typer ==0.12.5",
     "uvicorn[standard]==0.32.0",
     "WTForms==3.2.1",
